@@ -3,3 +3,6 @@
 <h1>DeepG: R toolbox for deep neural networks optimized for genomic datasets</h1>
 
 The goal of the package is to speed up the development of biofinformatical tools for sequence classification, homology detection and other bioinformatical tasks. It is developed for biologists and advanced AI researchers. DeepG is a collaborative effort from the McHardy Lab at the *Helmholtz Centre of Infection Research*, The Bischl lab at the *University of Munich* and the Huttenhower lab at *Harvard T.H. Chan School of Public Health*
+
+For installation and usage, please see the ISMB Tutorial
+https://colab.research.google.com/drive/175jIdXcDcgPUvaBo2rH2Lupbpjnp5O7G?usp=sharing
