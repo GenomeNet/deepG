@@ -1,0 +1,23 @@
+##gff-version 3
+#!gff-spec-version 1.21
+#!processor NCBI annotwriter
+#!genome-build ViralProj15476
+#!genome-build-accession NCBI_Assembly:GCF_000864765.1
+##sequence-region NC_001802.1 1 9181
+##species https://www.ncbi.nlm.nih.gov/Taxonomy/Browser/wwwtax.cgi?id=11676
+NC_001802.1	RefSeq	region	1	4901	.	+	.	ID=id0;Dbxref=taxon:11676;gb-acronym=HIV-1;gbkey=Src;genome=genomic;mol_type=genomic RNA;note=strain for reference annotation
+NC_001802.1	RefSeq	biological_region	1	96	.	+	.	ID=id1;Note=repeat%3B positions of RNA transcription initialization and polyadenylation;gbkey=Region
+NC_001802.1	RefSeq	polyA_signal_sequence	73	78	.	+	.	ID=id2;Note=both 5' and 3' poly A signals are transcribed into RNA%2C but the 5' one is suppressed;gbkey=regulatory;regulatory_class=polyA_signal_sequence
+NC_001802.1	RefSeq	five_prime_UTR	97	181	.	+	.	ID=id3;gbkey=5'UTR
+NC_001802.1	RefSeq	primer_binding_site	182	199	.	+	.	ID=id4;gbkey=primer_bind
+NC_001802.1	RefSeq	gene	336	1838	.	+	.	ID=gene1;Dbxref=GeneID:155030;Name=gag;gbkey=Gene;gene=gag;gene_biotype=protein_coding;locus_tag=HIV1gp2
+NC_001802.1	RefSeq	CDS	336	1838	.	+	0	ID=cds1;Parent=gene1;Dbxref=Genbank:NP_057850.1,GeneID:155030;Name=NP_057850.1;gbkey=CDS;gene=gag;product=Pr55(Gag);protein_id=NP_057850.1
+NC_001802.1	RefSeq	gene	2127	2565	.	+	.	ID=gene2;Dbxref=GeneID:155459;Name=vif;gbkey=Gene;gene=vif;gene_biotype=protein_coding;locus_tag=HIV1gp3
+NC_001802.1	RefSeq	CDS	2127	2565	.	+	0	ID=cds2;Parent=gene2;Dbxref=Genbank:NP_057851.1,GeneID:155459;Name=NP_057851.1;gbkey=CDS;gene=vif;product=Vif;protein_id=NP_057851.1
+NC_001802.1	RefSeq	gene	2905	3996	.	+	.	ID=gene3;Dbxref=GeneID:155807;Name=vpr;gbkey=Gene;gene=vpr;gene_biotype=protein_coding;locus_tag=HIV1gp4
+NC_001802.1	RefSeq	CDS	2905	3319	.	+	0	ID=cds3;Parent=gene3;Dbxref=Genbank:NP_057852.2,GeneID:155807;Name=NP_057852.2;Note=An artificial frameshift eliminating the orf-disrupting nucleotide at position 5320 is introduced to obtain the typical HIV-1 Vpr protein sequence. For this particular HIV-1 strain%2C HXB2%2C only a short (78 amino acid long) variant of the Vpr sequence can be obtained by translation of nucleotides 5105 through 5341 without the frameshift;exception=artificial frameshift;gbkey=CDS;gene=vpr;product=Vpr;protein_id=NP_057852.2
+NC_001802.1	RefSeq	CDS	3621	3996	.	+	1	ID=cds3;Parent=gene3;Dbxref=Genbank:NP_057852.2,GeneID:155807;Name=NP_057852.2;Note=An artificial frameshift eliminating the orf-disrupting nucleotide at position 5320 is introduced to obtain the typical HIV-1 Vpr protein sequence. For this particular HIV-1 strain%2C HXB2%2C only a short (78 amino acid long) variant of the Vpr sequence can be obtained by translation of nucleotides 5105 through 5341 without the frameshift;exception=artificial frameshift;gbkey=CDS;gene=vpr;product=Vpr;protein_id=NP_057852.2
+NC_001802.1	RefSeq	gene	4106	4570	.	+	.	ID=gene4;Dbxref=GeneID:155871;Name=tat;gbkey=Gene;gene=tat;gene_biotype=protein_coding;locus_tag=HIV1gp5
+NC_001802.1	RefSeq	CDS	4106	4227	.	+	0	ID=cds4;Parent=gene4;Dbxref=Genbank:NP_057853.1,GeneID:155871;Name=NP_057853.1;Note=the length of Tat varies depending on virus strain or clade;gbkey=CDS;gene=tat;product=Tat;protein_id=NP_057853.1
+NC_001802.1	RefSeq	CDS	4227	4570	.	+	1	ID=cds4;Parent=gene4;Dbxref=Genbank:NP_057853.1,GeneID:155871;Name=NP_057853.1;Note=the length of Tat varies depending on virus strain or clade;gbkey=CDS;gene=tat;product=Tat;protein_id=NP_057853.1
+###

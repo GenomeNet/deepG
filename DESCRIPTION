@@ -1,0 +1,44 @@
+Package: deepG
+Type: Package
+Title: deepG
+Version: 0.2.0
+Encoding: UTF-8
+Author: Philipp C. Muench
+Authors@R: c(
+    person(given = "Philipp Muench",
+    role = c("aut", "cre"), 
+    email = "pmu15@helmholtz-hzi.de"))
+Maintainer: Philipp Muench <pmu15@helmholtz-hzi.de>
+Description: deepG is a R library that contains a collection of scripts required for LSTM models generation and analysis. It also comes with genomic datasets for testing and the possibility to extrect cell response. 
+License: AGPL_3 + file LICENSE
+Depends:
+    R (>= 3.5.0)
+Imports:
+    tensorflow,
+    reticulate,
+    keras,
+    data.table,
+    methods,
+    abind,
+    stringr,
+    purrr,
+    tokenizers,
+    readr,
+    tm,
+    magrittr,
+    dplyr,
+    remotes,
+    hdf5r,
+    xfun,
+    Rtsne,
+    plyr,
+    ggplot2,
+    yardstick,
+    jpeg,
+    png,
+    microseq
+Remotes: r-tensorflow/wavenet
+NeedsCompilation: yes
+RoxygenNote: 7.1.1
+Suggests: 
+    testthat
