@@ -16,7 +16,9 @@ sequenceToArray(
   use_quality = FALSE,
   quality_vector = NULL,
   cnn_format,
-  target_len = 1
+  target_len = 1,
+  use_coverage = FALSE,
+  cov_vector = NULL
 )
 }
 \arguments{
@@ -32,7 +34,7 @@ sequenceToArray(
 
 \item{target_middle}{Boolean, target is in middle of sequence.}
 
-\item{ambiguous_nuc}{How to handle nucleotides outside vocabulary, either "zero", "discard" or "equal". If "zero", input gets encoded as zero vector; 
+\item{ambiguous_nuc}{How to handle nucleotides outside vocabulary, either "zero", "discard" or "equal". If "zero", input gets encoded as zero vector;
 if "equal" input is 1/length(vocabulary) x length(vocabulary). If "discard" samples containing nucleotides outside vocabulary get discarded.}
 
 \item{nuc_dist}{Nucleotide distribution.}
@@ -41,7 +43,7 @@ if "equal" input is 1/length(vocabulary) x length(vocabulary). If "discard" samp
 
 \item{quality_vector}{Vector of quality probabilities.}
 
-\item{cnn_format}{Boolean. If true, nucleotides on the left and right side of the predicted nucleotide (language model) are 
+\item{cnn_format}{Boolean. If true, nucleotides on the left and right side of the predicted nucleotide (language model) are
 concatenated in the first layer, which make the structure more suitable to CNN architectures (without RNN).}
 }
 \description{

@@ -4,7 +4,7 @@
 \alias{conf_matrix_cb}
 \title{confusion matrix callback}
 \usage{
-conf_matrix_cb(path, tensorboard.log, run.name, confMatLabels)
+conf_matrix_cb(tensorboard.log, run.name, confMatLabels, cm_dir)
 }
 \description{
 confusion matrix callback

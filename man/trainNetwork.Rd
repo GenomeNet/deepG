@@ -59,17 +59,26 @@ trainNetwork(
   class_weight = NULL,
   concat_seq = NULL,
   target_len = 1,
-  print_scores = TRUE
+  print_scores = TRUE,
+  train_val_split_csv = NULL,
+  use_coverage = FALSE,
+  set_learning = NULL,
+  proportion_entries = NULL,
+  sample_by_file_size = FALSE,
+  rds_options = list(train_model = "label", num_targets = 1)
 )
 }
 \arguments{
-\item{train_type}{Either "lm" for language model, "label_header", "label_folder" or "label_csv". Language model is trained to predict character in sequence.
+\item{train_type}{Either "lm" for language model, "label_header", "label_folder", "label_csv" or "label_rds". Language model is trained to predict character in sequence.
 "label_header"/"label_folder" are trained to predict a corresponding class, given a sequence as input. If "label_header", class will be read from fasta headers.
 If "label_folder", class will be read from folder, i.e. all files in one folder must belong to the same class.
 If "label_csv", targets are read from a csv file. This file should have one column names "file". The targets then correspond to entries in that row (except "file"
 column). Example: if we are currently working with a file called "a.fasta", there should be a row in our csv file
    file  |  label_1 | label_2
-"a.fasta"     1          8}
+"a.fasta"     1          8
+If "label_rds", generator will iterate over set of .rds files containing each a list of input and target tensors. Not implemented for model
+with multiple inputs. If "lm_rds", generator will iterate over set of .rds files and will split tensor according to target_len argument
+(targets are last target_len nucleotides of each sequence).}
 
 \item{built_model}{Call to a function that creates a model. \code{create_model_function} can be either "create_model_lstm_cnn", "create_model_wavenet"
 or "create_model_lstm_cnn_target_middle".
@@ -78,7 +87,10 @@ Example: \code{built_model = list(create_model_function = "create_model_lstm_cnn
 
 \item{model}{A keras model.}
 
-\item{path}{Path to folder where individual or multiple FASTA or FASTQ files are located for validation. If \code{train_type} is \code{label_folder}, should be a vector
+\item{path}{Path to folder where individual or multiple FASTA or FASTQ files are located for training. If \code{train_type} is \code{label_folder}, should be a vector
+containing a path for each class. If \code{train_type} is not \code{label_folder}, can be a list of directories.}
+
+\item{path.val}{Path to folder where individual or multiple FASTA or FASTQ files are located for validation. If \code{train_type} is \code{label_folder}, should be a vector
 containing a path for each class. If \code{train_type} is not \code{label_folder}, can be a list of directories.}
 
 \item{dataset}{Dataframe holding training samples in RAM instead of using generator.}
@@ -86,7 +98,7 @@ containing a path for each class. If \code{train_type} is not \code{label_folder
 \item{checkpoint_path}{Path to checkpoints folder.}
 
 \item{validation.split}{Defines the fraction of the batches that will be used for validation (compared to size of training data), i.e. one validtion iteration
-processed \code{batch.size} * \code{steps.per.epoch} * \code{validation.split samples}.}
+processed \code{batch.size} x \code{steps.per.epoch} x \code{validation.split} samples.}
 
 \item{run.name}{Name of the run (without file ending). Name will be used to identify output from callbacks.}
 
@@ -127,7 +139,7 @@ will run for (\code{epochs} - \code{initial_epochs}) rounds and not \code{epochs
 
 \item{output}{List of optional outputs, no output if none is TRUE.}
 
-\item{tb_images}{Boolean, whether to show plots in tensorboard. Note this doubles the time needed for validation step.}
+\item{tb_images}{Boolean, whether to show plots in tensorboard.}
 
 \item{format}{File format, "fasta" or "fastq".}
 
@@ -153,8 +165,8 @@ Assume a sequence "AACCGTA". Output correspond as follows
 
 \item{reset_states}{Boolean, whether to reset hidden states of RNN layer at every new input file.}
 
-\item{ambiguous_nuc}{How to handle nucleotides outside vocabulary, either "zero", "discard", "empirical" or "equal". If "zero", input gets encoded as zero vector; 
-if "equal" input is 1/length(vocabulary) x length(vocabulary). If "discard" samples containing nucleotides outside vocabulary get discarded. 
+\item{ambiguous_nuc}{How to handle nucleotides outside vocabulary, either "zero", "discard", "empirical" or "equal". If "zero", input gets encoded as zero vector;
+if "equal" input is 1/length(vocabulary) x length(vocabulary). If "discard" samples containing nucleotides outside vocabulary get discarded.
 If "empirical" use nucleotide distribution of current file.}
 
 \item{proportion_per_file}{Numerical value between 0 and 1. Proportion of possible samples to take from one file. Takes samples from random subsequence.}
@@ -172,28 +184,28 @@ For example (0.97, 0.01, 0.01, 0.01) instead of (1, 0, 0, 0).}
 
 \item{add_input_as_seq}{Boolean vector specifying for each entry in \code{added_label_path} if rows from csv should be encoded as a sequence or used directly.
 If a row in your csv file is a sequence this should be true. For example you may want to add another sequence, say ACCGT. Then this would correspond to 1,2,2,3,4 in
-csv file (if vocabulary = c("A", "C", "G", "T")).  If \code{add_input_as_seq} is TRUE, 12234 gets one-hot encoded, so added input is a 3D tensor.  If \code{add_input_as_seq} is 
+csv file (if vocabulary = c("A", "C", "G", "T")).  If \code{add_input_as_seq} is TRUE, 12234 gets one-hot encoded, so added input is a 3D tensor.  If \code{add_input_as_seq} is
 FALSE this will feed network just raw data (a 2D tensor).}
 
 \item{target_from_csv}{Path to csv file with target mapping. One column should be called "file" and other entries in row are the targets.}
 
 \item{target_split}{If target gets read from csv file, list of names to devide target tensor into list of tensors.
 Example: if csv file has header names "file", "label_1", "label_2", "label_3" und target_split = list(c("label_1", "label_2"), "label_3"),
-this will devide target matrix to list of length 2, where the first element contains columns named "label_1" and "label_2" and the 
+this will devide target matrix to list of length 2, where the first element contains columns named "label_1" and "label_2" and the
 second entry contains the column named "label_3".}
 
 \item{validation_only_after_training}{Boolean, whether to skip validation during training and only do one validation after training.}
 
 \item{skip_amb_nuc}{Threshold of ambiguous nucleotides to accept in fasta entry. Complete entry will get discarded otherwise.}
 
-\item{max_samples}{Maximum number of samples to use from one file. If not NULL and file has more than \code{max_samples} samples, will randomly choose a 
+\item{max_samples}{Maximum number of samples to use from one file. If not NULL and file has more than \code{max_samples} samples, will randomly choose a
 subset of \code{max_samples} samples.}
 
-\item{split_seq}{Split input sequence into two sequences while removing nucleotide in middle. If input is x_1,..., x_(n+1), input gets split into 
+\item{split_seq}{Split input sequence into two sequences while removing nucleotide in middle. If input is x_1,..., x_(n+1), input gets split into
 input_1 = x_1,..., x_m and input_2 = x_(n+1),..., x_(m+2) where m = ceiling((n+1)/2) and n = maxlen. Note that x_(m+1) is not used. Can be used for transfer learning,
 when switching from language model trained with target in middle to label classification.}
 
-\item{class_weight}{Vector with number of samples for each class in training data. Order should correspond to \code{labelVocabulary}.
+\item{class_weight}{List of weights for output. Order should correspond to \code{labelVocabulary}.
 You can use \code{get_class_weight} function to estimates class weights: class_weights <- get_class_weights(path = path, train_type = train_type)
 If train_type = "label_csv" you need to add path to csv file:
 class_weights <- get_class_weights(path = path, train_type = train_type, csv_path = target_from_csv)}
@@ -204,6 +216,18 @@ Example: If 1.entry AACC, 2. entry TTTG and concat_seq = "ZZZ" this becomes AACC
 \item{target_len}{Number of nucleotides to predict at once.}
 
 \item{print_scores}{Whether to print train/validation scores during training.}
+
+\item{train_val_split_csv}{A csv file specifying train/validation split. csv file should contain one column named "file" and one columnn named
+"type". The "file" column contains names of fasta/fastq files and "type" column specifies if file is used for training or validation.
+Entries in "type" must be named "train" or "val", otherwise file will not be used for either. path and path.val arguments should be the same.
+Not implemented for train_type = "label_folder".}
+
+\item{set_learning}{When you want to assign one label to set of samples. Only implemented for train_type = "label_folder".
+Input is a list with the following parameters
+(1) \code{samples_per_target}, how many samples to use for one target; (2) \code{maxlen} length of one sample
+(3) \code{reshape_mode} "time_dist" or "multi_input".}
+
+\item{rds_options}{Options for rds}
 }
 \description{
 Depth and number of neurons per layer of the netwok can be specified.

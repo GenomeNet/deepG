@@ -23,7 +23,7 @@ getStartInd(
 
 \item{step}{Distance between samples from one entry in \code{seq_vector}.}
 
-\item{train_mode}{Either "lm" for language model or "label" for label classification. Language models need one character more 
+\item{train_mode}{Either "lm" for language model or "label" for label classification. Language models need one character more
 (the target) for one sample.}
 
 \item{ignore_amb_nuc}{Discard all samples that contain characters outside vocabulary.}

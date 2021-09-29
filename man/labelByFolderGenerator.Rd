@@ -37,7 +37,7 @@ labelByFolderGenerator(
 )
 }
 \arguments{
-\item{corpus.dir}{Input directory where .fasta files are located or path to single file ending with .fasta or .fastq 
+\item{corpus.dir}{Input directory where .fasta files are located or path to single file ending with .fasta or .fastq
 (as specified in format argument).}
 
 \item{format}{File format, either fasta or fastq.}
@@ -74,8 +74,8 @@ labelByFolderGenerator(
 
 \item{onesColumn}{Which column of target matrix contains ones}
 
-\item{ambiguous_nuc}{How to handle nucleotides outside vocabulary, either "zero", "discard", "empirical" or "equal". If "zero", input gets encoded as zero vector; 
-if "equal" input is 1/length(vocabulary) x length(vocabulary). If "discard" samples containing nucleotides outside vocabulary get discarded. 
+\item{ambiguous_nuc}{How to handle nucleotides outside vocabulary, either "zero", "discard", "empirical" or "equal". If "zero", input gets encoded as zero vector;
+if "equal" input is 1/length(vocabulary) x length(vocabulary). If "discard" samples containing nucleotides outside vocabulary get discarded.
 If "empirical" use nucleotide distribution of current file.}
 
 \item{proportion_per_file}{Numerical value between 0 and 1. Proportion of possible samples to take from one file. Takes samples from random subsequence.}
@@ -91,15 +91,15 @@ For example (0.97, 0.01, 0.01, 0.01) instead of (1, 0, 0, 0).}
 
 \item{add_input_as_seq}{Boolean vector specifying for each entry in \code{added_label_path} if rows from csv should be encoded as a sequence or used directly.
 If a row in your csv file is a sequence this should be true. For example you may want to add another sequence, say ACCGT. Then this would correspond to 1,2,2,3,4 in
-csv file (if vocabulary = c("A", "C", "G", "T")).  If \code{add_input_as_seq} is TRUE, 12234 gets one-hot encoded, so added input is a 3D tensor.  If \code{add_input_as_seq} is 
+csv file (if vocabulary = c("A", "C", "G", "T")).  If \code{add_input_as_seq} is TRUE, 12234 gets one-hot encoded, so added input is a 3D tensor.  If \code{add_input_as_seq} is
 FALSE this will feed network just raw data (a 2D tensor).}
 
 \item{skip_amb_nuc}{Threshold of ambiguous nucleotides to accept in fasta entry. Complete entry will get discarded otherwise.}
 
-\item{max_samples}{Maximum number of samples to use from one file. If not NULL and file has more than \code{max_samples} samples, will randomly choose a 
+\item{max_samples}{Maximum number of samples to use from one file. If not NULL and file has more than \code{max_samples} samples, will randomly choose a
 subset of \code{max_samples} samples.}
 
-\item{split_seq}{Split input sequence into two sequences while removing nucleotide in middle. If input is x_1,..., x_(n+1), input gets split into 
+\item{split_seq}{Split input sequence into two sequences while removing nucleotide in middle. If input is x_1,..., x_(n+1), input gets split into
 input_1 = x_1,..., x_m and input_2 = x_(n+1),..., x_(m+2) where m = ceiling((n+1)/2) and n = maxlen. Note that x_(m+1) is not used. Can be used for transfer learning,
 when switching from language model trained with target in middle to label classification.}
 
@@ -107,11 +107,11 @@ when switching from language model trained with target in middle to label classi
 Example: If 1.entry AACC, 2. entry TTTG and concat_seq = "ZZZ" this becomes AACCZZZTTTG.}
 }
 \value{
-A list of length 2. First element is a 3-dimensional tensor with dimensions (batch.size, maxlen, length(vocabulary)), encoding 
-the predictor sequences. Second element is a matrix with dimensions (batch.size, numTargets), encoding the targets. If 
+A list of length 2. First element is a 3-dimensional tensor with dimensions (batch.size, maxlen, length(vocabulary)), encoding
+the predictor sequences. Second element is a matrix with dimensions (batch.size, numTargets), encoding the targets. If
 \code{read_data = TRUE} first element is a list of two 3-dimensional tensor with dimensions (batch.size, maxlen, length(vocabulary)) each.
 }
 \description{
-\code{labelByFolderGenerator} Iterates over folder containing .fasta files and produces one-hot-encoding of predictor sequences 
+\code{labelByFolderGenerator} Iterates over folder containing .fasta files and produces one-hot-encoding of predictor sequences
 and target variables. Files in \code{corpus.dir} should all belong to one class.
 }

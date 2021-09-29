@@ -8,13 +8,16 @@
 #' @inheritParams fastaFileGenerator
 #' @inheritParams labelByFolderGenerator
 #' @inheritParams fastaLabelGenerator
-#' @param train_type Either "lm" for language model, "label_header", "label_folder" or "label_csv". Language model is trained to predict character in sequence.
+#' @param train_type Either "lm" for language model, "label_header", "label_folder", "label_csv" or "label_rds". Language model is trained to predict character in sequence.
 #' "label_header"/"label_folder" are trained to predict a corresponding class, given a sequence as input. If "label_header", class will be read from fasta headers.
 #' If "label_folder", class will be read from folder, i.e. all files in one folder must belong to the same class.
 #' If "label_csv", targets are read from a csv file. This file should have one column names "file". The targets then correspond to entries in that row (except "file"
 #' column). Example: if we are currently working with a file called "a.fasta", there should be a row in our csv file
 #'    file  |  label_1 | label_2
 #' "a.fasta"     1          8
+#' If "label_rds", generator will iterate over set of .rds files containing each a list of input and target tensors. Not implemented for model
+#' with multiple inputs. If "lm_rds", generator will iterate over set of .rds files and will split tensor according to target_len argument
+#' (targets are last target_len nucleotides of each sequence).
 #' @param model A keras model.
 #' @param built_model Call to a function that creates a model. \code{create_model_function} can be either "create_model_lstm_cnn", "create_model_wavenet"
 #' or "create_model_lstm_cnn_target_middle".
@@ -22,12 +25,12 @@
 #' Example: \code{built_model = list(create_model_function = "create_model_lstm_cnn", function_args = list(maxlen = 50, lstm_layer_size = 32, layers.lstm = 1)}
 #' @param path Path to folder where individual or multiple FASTA or FASTQ files are located for training. If \code{train_type} is \code{label_folder}, should be a vector
 #' containing a path for each class. If \code{train_type} is not \code{label_folder}, can be a list of directories.
-#' @param path Path to folder where individual or multiple FASTA or FASTQ files are located for validation. If \code{train_type} is \code{label_folder}, should be a vector
+#' @param path.val Path to folder where individual or multiple FASTA or FASTQ files are located for validation. If \code{train_type} is \code{label_folder}, should be a vector
 #' containing a path for each class. If \code{train_type} is not \code{label_folder}, can be a list of directories.
 #' @param dataset Dataframe holding training samples in RAM instead of using generator.
 #' @param checkpoint_path Path to checkpoints folder.
 #' @param validation.split Defines the fraction of the batches that will be used for validation (compared to size of training data), i.e. one validtion iteration
-#' processed \code{batch.size} * \code{steps.per.epoch} * \code{validation.split samples}.
+#' processed \code{batch.size} x \code{steps.per.epoch} x \code{validation.split} samples.
 #' @param run.name Name of the run (without file ending). Name will be used to identify output from callbacks.
 #' @param batch.size Number of samples that are used for one network update.
 #' @param epochs Number of iterations.
@@ -48,7 +51,7 @@
 #' @param seed Sets seed for set.seed function, for reproducible results when using \code{randomFiles} or \code{shuffleFastaEntries}
 #' @param shuffleFastaEntries Logical, shuffle entries in file.
 #' @param output List of optional outputs, no output if none is TRUE.
-#' @param tb_images Boolean, whether to show plots in tensorboard. Note this doubles the time needed for validation step.
+#' @param tb_images Boolean, whether to show plots in tensorboard.
 #' @param format File format, "fasta" or "fastq".
 #' @param fileLog Write name of files used for training to csv file if path is specified.
 #' @param labelVocabulary Character vector of possible targets. Targets outside \code{labelVocabulary} will get discarded if
@@ -72,15 +75,20 @@
 #' @param early_stopping_time Time in seconds after which to stop training.
 #' @param validation_only_after_training Boolean, whether to skip validation during training and only do one validation after training.
 #' @param skip_amb_nuc Threshold of ambiguous nucleotides to accept in fasta entry. Complete entry will get discarded otherwise.
-#' @param class_weight Vector with number of samples for each class in training data. Order should correspond to \code{labelVocabulary}.
+#' @param class_weight List of weights for output. Order should correspond to \code{labelVocabulary}.
 #' You can use \code{get_class_weight} function to estimates class weights: class_weights <- get_class_weights(path = path, train_type = train_type)
 #' If train_type = "label_csv" you need to add path to csv file:
 #' class_weights <- get_class_weights(path = path, train_type = train_type, csv_path = target_from_csv)
-#' @param print_scores Whether to print train/validation scores during training.  
-#' @param train_val_split_csv A csv file specifying train/validation split. csv file should contain one column named "file" and one columnn named 
-#' "type". The "file" column contains names of fasta/fastq files and "type" column specifies if file is used for training or validation. 
+#' @param print_scores Whether to print train/validation scores during training.
+#' @param train_val_split_csv A csv file specifying train/validation split. csv file should contain one column named "file" and one columnn named
+#' "type". The "file" column contains names of fasta/fastq files and "type" column specifies if file is used for training or validation.
 #' Entries in "type" must be named "train" or "val", otherwise file will not be used for either. path and path.val arguments should be the same.
 #' Not implemented for train_type = "label_folder".
+#' @param set_learning When you want to assign one label to set of samples. Only implemented for train_type = "label_folder".
+#' Input is a list with the following parameters
+#' (1) \code{samples_per_target}, how many samples to use for one target; (2) \code{maxlen} length of one sample
+#' (3) \code{reshape_mode} "time_dist" or "multi_input".
+#' @param rds_options Options for rds
 #' @export
 trainNetwork <- function(train_type = "lm",
                          built_model = list(create_model_function = NULL, function_args = list()),
@@ -142,11 +150,20 @@ trainNetwork <- function(train_type = "lm",
                          concat_seq = NULL,
                          target_len = 1,
                          print_scores = TRUE,
-                         train_val_split_csv = NULL) {
-  
-  tensorflow::tf$random$set_seed(seed[1])
-  stopifnot(train_type %in% c("lm", "label_header", "label_folder", "label_csv"))
+                         train_val_split_csv = NULL,
+                         use_coverage = FALSE,
+                         set_learning = NULL,
+                         proportion_entries = NULL,
+                         sample_by_file_size = FALSE,
+                         rds_options = list(train_model = "label", num_targets = 1)) {
+
+  stopifnot(train_type %in% c("lm", "label_header", "label_folder", "label_csv", "label_rds", "lm_rds"))
   stopifnot(ambiguous_nuc %in% c("zero", "equal", "discard", "empirical"))
+  stopifnot(length(vocabulary) == length(unique(vocabulary)))
+  stopifnot(length(labelVocabulary) == length(unique(labelVocabulary)))
+  labelByFolder <- FALSE
+
+  if (train_type == "label_header") target_from_csv <- NULL
   if (train_type == "label_csv") {
     train_type <- "label_header"
     if (is.null(target_from_csv)) {
@@ -157,65 +174,70 @@ trainNetwork <- function(train_type = "lm",
       output_label_csv <- read.csv2(target_from_csv, header = TRUE, stringsAsFactors = FALSE)
       if (dim(output_label_csv)[2] == 1) {
         output_label_csv <- read.csv(target_from_csv, header = TRUE, stringsAsFactors = FALSE)
-      } 
+      }
       labelVocabulary <- names(output_label_csv)
       labelVocabulary <- labelVocabulary[labelVocabulary != "file"]
     }
   }
-  
+
   if (!is.null(skip_amb_nuc)) {
     if((skip_amb_nuc > 1) | (skip_amb_nuc <0)) {
       stop("skip_amb_nuc should be between 0 and 1 or NULL")
     }
   }
-  
+
   if (!is.null(proportion_per_file)) {
     if(any(proportion_per_file > 1) | any(proportion_per_file  < 0)) {
       stop("proportion_per_file should be between 0 and 1 or NULL")
     }
   }
-  
+
   if (!is.null(class_weight) && (length(class_weight) != length(labelVocabulary))) {
     stop("class_weight and labelVocabulary must have same length")
   }
-  
-  # train validation split via csv file 
+
+  if (!is.null(concat_seq)) {
+    if (use_coverage) stop("Coverage encoding not implemented for concat_seq")
+    if (train_type == "lm") stop("Concatenation not implemented for language model")
+  }
+
+  # train validation split via csv file
   if (!is.null(train_val_split_csv)) {
     if (train_type == "label_folder") {
       stop('train_val_split_csv not implemented for train_type = "label_folder"')
     }
     if (is.null(path.val)) {
-      path.val <- path 
+      path.val <- path
     } else {
       if (!all(unlist(path.val) %in% unlist(path))) {
         warning("Train/validation split split done via file in train_val_split_csv. Only using files from path argument.")
       }
       path.val <- path
     }
-    
+
     train_val_file <- read.csv2(train_val_split_csv, header = TRUE, stringsAsFactors = FALSE)
     if (dim(train_val_file)[2] == 1) {
       train_val_file <- read.csv(train_val_split_csv, header = TRUE, stringsAsFactors = FALSE)
     }
     train_val_file <- dplyr::distinct(train_val_file)
-    
+
     if (!all(c("file", "type") %in% names(train_val_file))) {
-      stop("Column names of train_val_split_csv file must be 'file' and 'type'") 
-    }  
-    
+      stop("Column names of train_val_split_csv file must be 'file' and 'type'")
+    }
+
     if (length(train_val_file$file) != length(unique(train_val_file$file))) {
       stop("In train_val_split_csv all entires in 'file' column must be unique")
     }
-    
+
     train_files <- train_val_file %>% dplyr::filter(type == "train")
     train_files <- as.character(train_files$file)
-    val_files <- train_val_file %>% dplyr::filter(type == "val")
+    val_files <- train_val_file %>% dplyr::filter(type == "val" | type == "validation")
     val_files <- as.character(val_files$file)
   } else {
     train_files <- NULL
     val_files <- NULL
   }
-  
+
   wavenet_format <- FALSE ; target_middle <- FALSE ; cnn_format <- FALSE
   if (train_type == "lm") {
     stopifnot(output_format %in% c("target_right", "target_middle_lstm", "target_middle_cnn", "wavenet", "dummy_gen"))
@@ -223,29 +245,27 @@ trainNetwork <- function(train_type = "lm",
     if (output_format == "target_middle_cnn") cnn_format <- TRUE
     if (output_format == "wavenet") wavenet_format <- TRUE
   }
-  
+
   if (is.null(built_model$create_model_function) + is.null(model) == 0) {
     stop("Two models were specified. Set either model or built_model$create_model_function argument to NULL.")
   }
-  
+
   if (train_type == "lm") {
     labelGen <- FALSE
-    labelByFolder <- FALSE
   }
-  
+
   if (train_type == "label_header") {
     labelGen <- TRUE
-    labelByFolder <- FALSE
     if (is.null(target_from_csv)) stopifnot(!is.null(labelVocabulary))
   }
-  
+
   if (train_type == "label_folder") {
     labelGen <- TRUE
     labelByFolder <- TRUE
     stopifnot(!is.null(labelVocabulary))
     stopifnot(length(path) == length(labelVocabulary))
   }
-  
+
   if (output$none) {
     output$checkpoints <- FALSE
     output$tensorboard <- FALSE
@@ -253,23 +273,10 @@ trainNetwork <- function(train_type = "lm",
     output$serialize_model <- FALSE
     output$full_model <- FALSE
   }
-  
+
   # set model arguments
   if (!is.null(built_model[[1]])) {
-    if (built_model[[1]] == "create_model_lstm_cnn_target_middle") {
-      if (!read_data){
-        # target_middle <- TRUE
-        # wavenet_format <- FALSE
-      }
-    }
-    if (built_model[[1]] == "create_model_lstm_cnn") {
-      #target_middle <- FALSE
-      #wavenet_format <- FALSE
-    }
-    if (built_model[[1]] == "create_model_wavenet") {
-      #target_middle <- TRUE
-      #wavenet_format <- TRUE
-    }
+
     new_arguments <- names(built_model[[2]])
     default_arguments <- formals(built_model[[1]])
     # overwrite default arguments
@@ -281,42 +288,58 @@ trainNetwork <- function(train_type = "lm",
       formals(create_model_lstm_cnn) <- default_arguments
       model <- create_model_lstm_cnn()
     }
-    
+
     if (built_model[[1]] == "create_model_lstm_cnn_target_middle") {
       formals(create_model_lstm_cnn_target_middle) <- default_arguments
       model <- create_model_lstm_cnn_target_middle()
     }
-    
+
     if (built_model[[1]] == "create_model_wavenet") {
       if (!wavenet_format) {
         warning("Argument wavenet_format should be TRUE when using wavenet architecture.")
       }
-      
+
       formals(create_model_wavenet) <- default_arguments
       model <- create_model_wavenet()
     }
   }
-  
+
   model_weights <- model$get_weights()
-  
+
   # function arguments
   argumentList <- as.list(match.call(expand.dots=FALSE))
-  
+
   label.vocabulary.size <- length(labelVocabulary)
   vocabulary.size <- length(vocabulary)
-  
+
   # extract maxlen from model
-  num_in_layers <- length(model$inputs)
-  if (num_in_layers == 1) {
-    maxlen <- model$input$shape[[2]]
-  } else {
-    if (!target_middle & !read_data & !split_seq) {
-      maxlen <- model$input[[num_in_layers]]$shape[[2]]
+  if (is.null(set_learning)) {
+    num_in_layers <- length(model$inputs)
+    if (num_in_layers == 1) {
+      maxlen <- model$input$shape[[2]]
     } else {
-      maxlen <- model$inputs[[num_in_layers - 1]]$shape[[2]] + model$inputs[[num_in_layers]]$shape[[2]]
+      if (!target_middle & !read_data & !split_seq) {
+        maxlen <- model$input[[num_in_layers]]$shape[[2]]
+      } else {
+        maxlen <- model$inputs[[num_in_layers - 1]]$shape[[2]] + model$inputs[[num_in_layers]]$shape[[2]]
+      }
     }
+    samples_per_target <- NULL
+    new_batch_size <- NULL
+    reshape_mode <- NULL
+  } else {
+    reshape_mode <- set_learning$reshape_mode
+    maxlen <- set_learning$maxlen
+    samples_per_target <- set_learning$samples_per_target
+    if (reshape_mode == "multi_input" & (length(model$inputs) != samples_per_target)) {
+      stop_text <- paste("Model should have as many input layers as samples_per_target. Model has",
+                         length(model$inputs), "input layers but samples_per_target =", samples_per_target)
+      stop(stop_text)
+    }
+    new_batch_size <- batch.size
+    batch.size <- samples_per_target * batch.size
   }
-  
+
   # get solver and learning rate
   solver <- stringr::str_to_lower(model$optimizer$get_config()["name"])
   learning.rate <- keras::k_eval(model$optimizer$lr)
@@ -332,11 +355,11 @@ trainNetwork <- function(train_type = "lm",
   if (solver == "sgd") {
     optimizer <- keras::optimizer_sgd(lr = learning.rate)
   }
-  
+
   if (labelByFolder) {
     if (length(path) == 1) warning("Training with just one label")
   }
-  
+
   if (output$checkpoints) {
     # create folder for checkpoints using run.name
     # filenames contain epoch, validation loss and validation accuracy
@@ -352,22 +375,22 @@ trainNetwork <- function(train_type = "lm",
       }
     }
   }
-  
+
   # Check if fileLog is unique
   if (!is.null(fileLog) && dir.exists(fileLog)) {
     stop(paste0("fileLog entry is already present. Please give this file a unique name."))
   }
-  
+
   # Check if run.name is unique
   if (output$tensorboard && dir.exists(file.path(tensorboard.log, run.name))) {
     stop(paste0("Tensorboard entry '", run.name , "' is already present. Please give your run a unique name."))
   }
-  
+
   # add empty hparam dict if non exists
   if (!reticulate::py_has_attr(model, "hparam")) {
     model$hparam <- reticulate::dict()
   }
-  
+
   # tempory file to log training data
   removeLog <- FALSE
   if (is.null(fileLog)) {
@@ -375,110 +398,133 @@ trainNetwork <- function(train_type = "lm",
     fileLog <- tempfile(pattern = "", fileext = ".csv")
   } else {
     if (!endsWith(fileLog, ".csv")) fileLog <- paste0(fileLog, ".csv")
+    #fileLogVal <- tempfile(pattern = "", fileext = ".csv")
   }
   if (reset_states) {
     fileLogVal <- tempfile(pattern = "", fileext = ".csv")
   } else {
     fileLogVal <- NULL
   }
-  
+
   # if no dataset is supplied, external fasta generator will generate batches
   if (is.null(dataset)) {
     message("Starting fasta generator...")
-    
+
     if (output_format == "dummy_gen") {
       gen <- dummy_gen(model, batch.size)
       gen.val <- dummy_gen(model, batch.size)
       removeLog <- FALSE
     } else {
-      
-      if (!labelGen) {
-        
+
+      if (train_type == "lm") {
+
         # generator for training
         gen <- fastaFileGenerator(corpus.dir = path, batch.size = batch.size,
                                   maxlen = maxlen, step = step, randomFiles = randomFiles,
-                                  vocabulary = vocabulary, seed = seed[1],
+                                  vocabulary = vocabulary, seed = seed[1], proportion_entries = proportion_entries,
                                   shuffleFastaEntries = shuffleFastaEntries, format = format,
                                   fileLog = fileLog, reverseComplements = reverseComplements,
                                   output_format = output_format, ambiguous_nuc = ambiguous_nuc,
                                   proportion_per_file = proportion_per_file, skip_amb_nuc = skip_amb_nuc,
                                   use_quality_score = use_quality_score, padding = padding,
                                   added_label_path = added_label_path, add_input_as_seq = add_input_as_seq,
-                                  max_samples = max_samples, concat_seq = concat_seq, target_len = target_len,
-                                  file_filter = train_files)
-        
+                                  max_samples = max_samples, concat_seq = NULL, target_len = target_len,
+                                  file_filter = train_files, use_coverage = use_coverage, sample_by_file_size = sample_by_file_size)
+
         # generator for validation
         gen.val <- fastaFileGenerator(corpus.dir = path.val, batch.size = batch.size,
                                       maxlen = maxlen, step = step, randomFiles = randomFiles,
-                                      vocabulary = vocabulary, seed = seed[2],
+                                      vocabulary = vocabulary, seed = seed[2], proportion_entries = proportion_entries,
                                       shuffleFastaEntries = shuffleFastaEntries, format = format,
-                                      fileLog = fileLogVal, reverseComplements = FALSE,
+                                      fileLog = fileLogVal, reverseComplements = FALSE, sample_by_file_size = sample_by_file_size,
                                       output_format = output_format, skip_amb_nuc = skip_amb_nuc,
                                       ambiguous_nuc = ambiguous_nuc, proportion_per_file = proportion_per_file,
                                       use_quality_score = use_quality_score, padding = padding,
                                       added_label_path = added_label_path, add_input_as_seq = add_input_as_seq,
-                                      max_samples = max_samples, concat_seq = concat_seq, target_len = target_len,
-                                      file_filter = val_files)
-        
-        # label generator
-      } else {
-        # label by folder
-        if (labelByFolder) {
-          #' @param reverseComplementEncoding Logical, use both original sequence and reverse.complement as two input sequences.
-          
-          # initialize training generators
-          initializeGenerators(directories = path, format = format, batch.size = batch.size, maxlen = maxlen, vocabulary = vocabulary,
-                               verbose = FALSE, randomFiles = randomFiles, step = step, showWarnings = FALSE, seed = seed[1],
-                               shuffleFastaEntries = shuffleFastaEntries, numberOfFiles = numberOfFiles, skip_amb_nuc = skip_amb_nuc,
-                               fileLog = fileLog, reverseComplements = reverseComplements, reverseComplementEncoding = reverseComplementEncoding, val = FALSE, ambiguous_nuc = ambiguous_nuc,
-                               proportion_per_file = proportion_per_file, read_data = read_data, use_quality_score = use_quality_score,
-                               padding = padding, max_samples = max_samples, split_seq = split_seq, concat_seq = concat_seq,
-                               added_label_path = added_label_path, add_input_as_seq = add_input_as_seq)
-          
-          # initialize validation generators
-          initializeGenerators(directories = path.val, format = format, batch.size = batch.size, maxlen = maxlen,
-                               vocabulary = vocabulary, verbose = FALSE, randomFiles = randomFiles, step = step,
-                               showWarnings = FALSE, seed = seed[2], shuffleFastaEntries = shuffleFastaEntries, skip_amb_nuc = skip_amb_nuc,
-                               numberOfFiles = NULL, fileLog = fileLogVal, reverseComplements = FALSE, reverseComplementEncoding = reverseComplementEncoding, val = TRUE,
-                               ambiguous_nuc = ambiguous_nuc, proportion_per_file = proportion_per_file, read_data = read_data,
-                               use_quality_score = use_quality_score, padding = padding, max_samples = max_samples,
-                               split_seq = split_seq, concat_seq = concat_seq, added_label_path = added_label_path,
-                               add_input_as_seq = add_input_as_seq)
-          
-          gen <- labelByFolderGeneratorWrapper(val = FALSE, path = path)
-          gen.val <- labelByFolderGeneratorWrapper(val = TRUE, path = path.val)
-          
-        } else {
-          
-          # generator for training
-          gen <- fastaLabelGenerator(corpus.dir = path, format = format, batch.size = batch.size, maxlen = maxlen,
-                                     vocabulary = vocabulary, verbose = FALSE, randomFiles = randomFiles, step = step,
-                                     showWarnings = FALSE, seed = seed[1], shuffleFastaEntries = shuffleFastaEntries,
-                                     fileLog = fileLog, labelVocabulary = labelVocabulary, reverseComplements = reverseComplements,
-                                     ambiguous_nuc = ambiguous_nuc, proportion_per_file = proportion_per_file,
-                                     read_data = read_data, use_quality_score = use_quality_score, padding = padding,
-                                     added_label_path = added_label_path, add_input_as_seq = add_input_as_seq,
-                                     skip_amb_nuc = skip_amb_nuc, max_samples = max_samples, concat_seq = concat_seq,
-                                     target_from_csv = target_from_csv, target_split = target_split, file_filter = train_files)
-          
-          # generator for validation
-          gen.val <- fastaLabelGenerator(corpus.dir = path.val, format = format, batch.size = batch.size, maxlen = maxlen,
-                                         vocabulary = vocabulary, verbose = FALSE, randomFiles = randomFiles, step = step,
-                                         showWarnings = FALSE, seed = seed[2], shuffleFastaEntries = shuffleFastaEntries,
-                                         fileLog = fileLogVal, labelVocabulary = labelVocabulary, reverseComplements = FALSE,
-                                         ambiguous_nuc = ambiguous_nuc, proportion_per_file = proportion_per_file,
-                                         added_label_path = added_label_path, add_input_as_seq = add_input_as_seq,
-                                         read_data = read_data, use_quality_score = use_quality_score, padding = padding,
-                                         skip_amb_nuc = skip_amb_nuc, max_samples = max_samples, concat_seq = concat_seq,
-                                         target_from_csv = target_from_csv, target_split = target_split, file_filter = val_files)
-          
-        }
+                                      max_samples = max_samples, concat_seq = NULL, target_len = target_len,
+                                      file_filter = val_files, use_coverage = use_coverage)
+
+      }
+      # label by folder
+      if (train_type == "label_folder") {
+
+        # initialize training generators
+        initializeGenerators(directories = path, format = format, batch.size = batch.size, maxlen = maxlen, vocabulary = vocabulary,
+                             verbose = FALSE, randomFiles = randomFiles, step = step, showWarnings = FALSE, seed = seed[1],
+                             shuffleFastaEntries = shuffleFastaEntries, numberOfFiles = numberOfFiles, skip_amb_nuc = skip_amb_nuc,
+                             fileLog = fileLog, reverseComplements = reverseComplements, reverseComplementEncoding = reverseComplementEncoding, val = FALSE, ambiguous_nuc = ambiguous_nuc,
+                             proportion_per_file = proportion_per_file, read_data = read_data, use_quality_score = use_quality_score,
+                             padding = padding, max_samples = max_samples, split_seq = split_seq, concat_seq = concat_seq,
+                             added_label_path = added_label_path, add_input_as_seq = add_input_as_seq, use_coverage = use_coverage,
+                             set_learning = set_learning, proportion_entries = proportion_entries, sample_by_file_size = sample_by_file_size)
+
+        # initialize validation generators
+        initializeGenerators(directories = path.val, format = format, batch.size = batch.size, maxlen = maxlen,
+                             vocabulary = vocabulary, verbose = FALSE, randomFiles = randomFiles, step = step,
+                             showWarnings = FALSE, seed = seed[2], shuffleFastaEntries = shuffleFastaEntries, skip_amb_nuc = skip_amb_nuc,
+                             numberOfFiles = NULL, fileLog = fileLogVal, reverseComplements = FALSE, reverseComplementEncoding = reverseComplementEncoding, val = TRUE,
+                             ambiguous_nuc = ambiguous_nuc, proportion_per_file = proportion_per_file, read_data = read_data,
+                             use_quality_score = use_quality_score, padding = padding, max_samples = max_samples,
+                             split_seq = split_seq, concat_seq = concat_seq, added_label_path = added_label_path,
+                             add_input_as_seq = add_input_as_seq, use_coverage = use_coverage, set_learning = set_learning,
+                             proportion_entries = proportion_entries, sample_by_file_size = sample_by_file_size)
+
+        gen <- labelByFolderGeneratorWrapper(val = FALSE, path = path,  new_batch_size = new_batch_size,
+                                             samples_per_target = samples_per_target,
+                                             batch.size = batch.size, voc_len = length(vocabulary),
+                                             maxlen = maxlen, reshape_mode = reshape_mode)
+        gen.val <- labelByFolderGeneratorWrapper(val = TRUE, path = path.val, new_batch_size = new_batch_size,
+                                                 samples_per_target = samples_per_target,
+                                                 batch.size = batch.size, voc_len = length(vocabulary),
+                                                 maxlen = maxlen, reshape_mode = reshape_mode)
+      }
+
+      if (train_type == "label_csv" | train_type == "label_header") {
+
+        # generator for training
+        gen <- fastaLabelGenerator(corpus.dir = path, format = format, batch.size = batch.size, maxlen = maxlen,
+                                   vocabulary = vocabulary, verbose = FALSE, randomFiles = randomFiles, step = step,
+                                   showWarnings = FALSE, seed = seed[1], shuffleFastaEntries = shuffleFastaEntries,
+                                   fileLog = fileLog, labelVocabulary = labelVocabulary, reverseComplements = reverseComplements,
+                                   ambiguous_nuc = ambiguous_nuc, proportion_per_file = proportion_per_file,
+                                   read_data = read_data, use_quality_score = use_quality_score, padding = padding,
+                                   added_label_path = added_label_path, add_input_as_seq = add_input_as_seq,
+                                   skip_amb_nuc = skip_amb_nuc, max_samples = max_samples, concat_seq = concat_seq,
+                                   target_from_csv = target_from_csv, target_split = target_split, file_filter = train_files,
+                                   use_coverage = use_coverage, proportion_entries = proportion_entries,
+                                   sample_by_file_size = sample_by_file_size)
+
+        # generator for validation
+        gen.val <- fastaLabelGenerator(corpus.dir = path.val, format = format, batch.size = batch.size, maxlen = maxlen,
+                                       vocabulary = vocabulary, verbose = FALSE, randomFiles = randomFiles, step = step,
+                                       showWarnings = FALSE, seed = seed[2], shuffleFastaEntries = shuffleFastaEntries,
+                                       fileLog = fileLogVal, labelVocabulary = labelVocabulary, reverseComplements = FALSE,
+                                       ambiguous_nuc = ambiguous_nuc, proportion_per_file = proportion_per_file,
+                                       added_label_path = added_label_path, add_input_as_seq = add_input_as_seq,
+                                       read_data = read_data, use_quality_score = use_quality_score, padding = padding,
+                                       skip_amb_nuc = skip_amb_nuc, max_samples = max_samples, concat_seq = concat_seq,
+                                       target_from_csv = target_from_csv, target_split = target_split, file_filter = val_files,
+                                       use_coverage = use_coverage, proportion_entries = proportion_entries,
+                                       sample_by_file_size = sample_by_file_size)
+
+      }
+
+      if (train_type %in% c("label_rds", "lm_rds")) {
+        reverseComplements <- FALSE
+        step <- 1
+        if (train_type == "label_rds") target_len <- NULL
+        gen <- gen_rds(rds_folder = path, batch_size = batch.size, fileLog = fileLog,
+                       max_samples = max_samples, proportion_per_file = proportion_per_file,
+                       target_len = target_len)
+        gen.val <- gen_rds(rds_folder = path.val, batch_size = batch.size,
+                           max_samples = max_samples, proportion_per_file = proportion_per_file,
+                           target_len = target_len)
       }
     }
-    
+
     # callbacks
     callbacks <- vector("list")
-    
+
     if (reduce_lr_on_plateau) {
       if (is.list(model$outputs)) {
         monitor <- "val_loss"
@@ -489,17 +535,37 @@ trainNetwork <- function(train_type = "lm",
                                      lr.plateau.factor = lr.plateau.factor,
                                      monitor = monitor)
     }
-    
+
     if (output$log) {
       callbacks <- c(callbacks, log_cb(run.name))
     }
-    
+
     if (!output$tensorboard) tb_images <- FALSE
     if (output$tensorboard) {
-      
+
+      # add balanced acc score
+      metrics <- model$metrics
+      num_targets <- ifelse(train_type == "lm", length(vocabulary), length(labelVocabulary))
+      contains_macro_acc_metric <- FALSE
+      for (i in 1:length(model$metrics)) {
+        if (model$metrics[[i]]$name == "balanced_acc") contains_macro_acc_metric <- TRUE
+      }
+
+      if (!contains_macro_acc_metric) {
+        if (tb_images) {
+          if (!reticulate::py_has_attr(model, "cm_dir")) {
+            cm_dir <- file.path(tempdir(), paste(sample(letters, 7), collapse = ""))
+            dir.create(cm_dir)
+            model$cm_dir <- cm_dir
+          }
+          metrics <- c(metrics, balanced_acc_wrapper(num_targets = num_targets, cm_dir = model$cm_dir))
+        }
+      }
+
       # count files in path
+      if (train_type == "label_rds") format <- "rds"
       num_train_files <- count_files(path = path, format = format, train_type = train_type)
-      
+
       complete_tb <- tensorboard_complete_cb(default_arguments = default_arguments, model = model, tensorboard.log = tensorboard.log, run.name = run.name, train_type = train_type,
                                              model_path = model_path, path = path, validation.split = validation.split, batch.size = batch.size, epochs = epochs,
                                              max.queue.size = max.queue.size, lr.plateau.factor = lr.plateau.factor, patience = patience, cooldown = cooldown,
@@ -509,10 +575,10 @@ trainNetwork <- function(train_type = "lm",
                                              create_model_function = built_model$create_model_function, vocabulary.size = vocabulary.size, gen_cb = gen_cb, argumentList = argumentList,
                                              maxlen = maxlen, labelGen = labelGen, labelByFolder = labelByFolder, label.vocabulary.size = label.vocabulary.size, tb_images = FALSE,
                                              target_middle = target_middle, num_train_files = num_train_files, fileLog = fileLog, proportion_per_file = proportion_per_file,
-                                             skip_amb_nuc = skip_amb_nuc, max_samples = max_samples)
+                                             skip_amb_nuc = skip_amb_nuc, max_samples = max_samples, proportion_entries = proportion_entries)
       callbacks <- c(callbacks, complete_tb)
     }
-    
+
     if (output$checkpoints) {
       if (wavenet_format) {
         # can only save weights for wavenet
@@ -521,16 +587,16 @@ trainNetwork <- function(train_type = "lm",
       callbacks <- c(callbacks, checkpoint_cb(filepath = filepath_checkpoints, save_weights_only = save_weights_only,
                                               save_best_only = save_best_only))
     }
-    
+
     if (reset_states) {
       callbacks <- c(callbacks, reset_states_cb(fileLog = fileLog, fileLogVal = fileLogVal))
     }
-    
+
     if (!is.null(early_stopping_time)) {
       callbacks <- c(callbacks, early_stopping_cb(early_stopping_patience = early_stopping_patience,
                                                   early_stopping_time = early_stopping_time))
     }
-    
+
     # skip validation callback
     if (validation_only_after_training | is.null(validation.split) || validation.split == 0) {
       validation_data <- NULL
@@ -538,99 +604,45 @@ trainNetwork <- function(train_type = "lm",
       validation_data <- gen.val
     }
     validation_steps <- ceiling(steps.per.epoch * validation.split)
-    
+
     if (validation_only_after_training) {
       callbacks <- c(callbacks, validation_after_training_cb(gen.val = gen.val, validation_steps = validation_steps))
     }
-    
+
     if (tb_images) {
       if (is.list(model$output)) {
         warning("Tensorboard images (confusion matrix) not implemented for model with multiple outputs.
                Setting tb_images to FALSE")
         tb_images <- FALSE
       }
-      
+
       if (model$loss == "binary_crossentropy") {
         warning("Tensorboard images (confusion matrix) not implemented for sigmoid activation in last layer.
                Setting tb_images to FALSE")
         tb_images <- FALSE
       }
     }
-    
+
     if (tb_images) {
-      
-      if (!reticulate::py_has_attr(model, "cm_log")) {
-        model$cm_log <- tempfile(pattern = "", fileext = ".csv")
-      }
+
       if (train_type == "lm") {
         confMatLabels <- vocabulary
       } else {
         confMatLabels <- labelVocabulary
       }
-      
-      #add f1-score for binary classification
-      cm_log <- tempfile(pattern = "", fileext = ".csv")
-      model$cm_log <- cm_log
-      num_targets <- ifelse(train_type == "lm", length(vocabulary), length(labelVocabulary))
-      # add f1-score for binary classification
-      f1 <- keras::custom_metric("f1", function(y_true, y_pred) {
-        
-        true <- keras::k_argmax(y_true)
-        pred <- keras::k_argmax(y_pred)
-        if (!is.list(dim(y_true))) {
-          df <- data.frame(as.array(true), as.array(pred))
-          write.table(x = df, file = model$cm_log, append = TRUE, col.names = FALSE, row.names = FALSE)
-        }
-        if (num_targets == 2) {
-          labels <- tensorflow::tf$math$argmax(y_true, axis = 1L)
-          predictions <- tensorflow::tf$math$argmax(y_pred, axis = 1L)
-          TP <- tensorflow::tf$cast(tensorflow::tf$math$count_nonzero(predictions * labels), dtype = "float32")
-          #TN <-  tensorflow::tf$cast(tensorflow::tf$math$count_nonzero((predictions - 1L) * (labels - 1L)), dtype = "float32")
-          FP <-  tensorflow::tf$cast(tensorflow::tf$math$count_nonzero(predictions * (labels - 1L)), dtype = "float32")
-          FN <-  tensorflow::tf$cast(tensorflow::tf$math$count_nonzero((predictions - 1L) * labels), dtype = "float32")
-          precision <- tensorflow::tf$math$divide_no_nan(TP, TP + FP)
-          recall <- tensorflow::tf$math$divide_no_nan(TP, TP + FN)
-          two <- tensorflow::tf$constant(2)
-          A <- two * precision * recall
-          B <- precision + recall
-          f1_score <- tensorflow::tf$math$divide_no_nan(A, B)
-          return(f1_score)
-        } else {
-          return(Inf)
-        }
-      })
-      
-      contains_f1_metric <- FALSE
-      
-      for (i in 1:length(model$metrics)) {
-        if (model$metrics[[i]]$name == "f1") contains_f1_metric   <- TRUE
-      }
-      
-      if (contains_f1_metric) {
-        model_metrics <- model$metrics
-      } else {
-        model_metrics <- c(model$metrics, f1)
-      }
-      
+
       model %>% keras::compile(loss = model$loss,
-                               optimizer = model$optimizer, metrics = model_metrics)
-      
-      callbacks <- c(callbacks, conf_matrix_cb(path = model$cm_log, tensorboard.log = tensorboard.log,
-                                               run.name = run.name, confMatLabels = confMatLabels))
+                               optimizer = model$optimizer, metrics = metrics)
+
+      callbacks <- c(callbacks, conf_matrix_cb(tensorboard.log = tensorboard.log,
+                                               run.name = run.name,
+                                               confMatLabels = confMatLabels,
+                                               cm_dir = model$cm_dir))
     }
-    
+
     # training
     message("Start training ...")
-    
-    if (!is.null(class_weight)) {
-      weight_list <- list()
-      weight_list[["0"]] <- 1
-      for (i in 2:(length(class_weight))) {
-        weight_list[[as.character(i-1)]] <- class_weight[1]/class_weight[i]
-      }
-      class_weight <- weight_list
-    }
-    
+
     model <- keras::set_weights(model, model_weights)
     history <-
       model %>% keras::fit_generator(
@@ -645,14 +657,14 @@ trainNetwork <- function(train_type = "lm",
         class_weight = class_weight,
         verbose = print_scores
       )
-    
+
     if (validation_only_after_training) {
       history$val_loss <- model$val_loss
       history$val_acc <- model$val_acc
       model$val_loss <- NULL
       model$val_acc <- NULL
     }
-    
+
   } else {
     model <- keras::set_weights(model, model_weights)
     message("Start training ...")
@@ -663,20 +675,20 @@ trainNetwork <- function(train_type = "lm",
       validation_split = validation.split,
       epochs = epochs)
   }
-  
-  if (removeLog) {
+
+  if (removeLog & file.exists(fileLog)) {
     file.remove(fileLog)
   }
-  
+
   # save final model
   message("Training done.")
-  
+
   if (output$serialize_model) {
     Rmodel <-
       keras::serialize_model(model, include_optimizer = TRUE)
     save(Rmodel, file = paste0(run.name, "_full_model.Rdata"))
   }
-  
+
   if (output$full_model) {
     keras::save_model_hdf5(
       model,
@@ -687,4 +699,3 @@ trainNetwork <- function(train_type = "lm",
   }
   return(history)
 }
-

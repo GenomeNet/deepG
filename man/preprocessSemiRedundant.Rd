@@ -24,7 +24,7 @@ If no vocabulary exists, it is generated from the input char}
 \description{
 Outputs semi-redundant set of input character string.
 Collapse, tokenize, and vectorize the character.
-Use this function with a character string as input. For example, 
+Use this function with a character string as input. For example,
 if the input text is ABCDEFGHI and the length(maxlen) is 5, the generating chunks would be:
 X(1): ABCDE and Y(1): F;
 X(2): BCDEF and Y(2): G;

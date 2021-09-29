@@ -35,7 +35,7 @@ hyper_param_model_outside_cb(
 
 \item{vocabulary}{Vector of allowed characters. Character outside vocabulary get encoded as specified in \code{ambiguous_nuc}.}
 
-\item{path}{Path to folder where individual or multiple FASTA or FASTQ files are located for validation. If \code{train_type} is \code{label_folder}, should be a vector
+\item{path}{Path to folder where individual or multiple FASTA or FASTQ files are located for training. If \code{train_type} is \code{label_folder}, should be a vector
 containing a path for each class. If \code{train_type} is not \code{label_folder}, can be a list of directories.}
 
 \item{reverseComplements}{Logical, for every new file decide randomly to use original data or its reverse complement.}

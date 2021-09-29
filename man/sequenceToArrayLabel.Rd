@@ -12,7 +12,9 @@ sequenceToArrayLabel(
   ambiguous_nuc = "zero",
   nuc_dist = NULL,
   use_quality = FALSE,
-  quality_vector = NULL
+  quality_vector = NULL,
+  use_coverage = FALSE,
+  cov_vector = NULL
 )
 }
 \arguments{
@@ -24,7 +26,7 @@ sequenceToArrayLabel(
 
 \item{startInd}{Start positions of samples in \code{sequence}.}
 
-\item{ambiguous_nuc}{How to handle nucleotides outside vocabulary, either "zero", "discard" or "equal". If "zero", input gets encoded as zero vector; 
+\item{ambiguous_nuc}{How to handle nucleotides outside vocabulary, either "zero", "discard" or "equal". If "zero", input gets encoded as zero vector;
 if "equal" input is 1/length(vocabulary) x length(vocabulary). If "discard" samples containing nucleotides outside vocabulary get discarded.}
 
 \item{nuc_dist}{Nucleotide distribution.}

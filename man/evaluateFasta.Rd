@@ -9,6 +9,7 @@ evaluateFasta(
   model = NULL,
   batch.size = 100,
   step = 1,
+  padding = FALSE,
   vocabulary = c("a", "c", "g", "t"),
   label_vocabulary = c("a", "c", "g", "t"),
   numberOfBatches = 10,
@@ -16,15 +17,16 @@ evaluateFasta(
   format = "fasta",
   filename = "",
   target_middle = FALSE,
-  plot = FALSE,
   mode = "lm",
-  acc_per_batch = FALSE,
   output_format = "target_right",
   ambiguous_nuc = "zero",
   evaluate_all_files = FALSE,
   verbose = TRUE,
   max_iter = 20000,
-  target_from_csv = NULL
+  target_from_csv = NULL,
+  max_samples = NULL,
+  proportion_per_file = NULL,
+  seed = 1234
 )
 }
 \arguments{
@@ -35,6 +37,8 @@ evaluateFasta(
 \item{batch.size}{Number of samples per batch.}
 
 \item{step}{How often to take a sample.}
+
+\item{padding}{Whether to pad sequences too short for one sample with zeros.}
 
 \item{vocabulary}{Vector of allowed characters, character outside vocabulary get encoded as 0-vector.}
 
@@ -48,21 +52,17 @@ evaluateFasta(
 
 \item{filename}{Name of output file.}
 
-\item{plot}{Returns density plot of accuracies if TRUE.}
-
 \item{mode}{Either "lm" for language model and "label_header", "label_csv" or "label_folder" for label classification.}
-
-\item{acc_per_batch}{Whether to return vector with accuracies for every batch.}
 
 \item{output_format}{Determines shape of output tensor for language model.
 Either "target_right", "target_middle_lstm", "target_middle_cnn" or "wavenet".
 Assume a sequence "AACCGTA". Output correspond as follows
 "target_right": X = "AACCGT", Y = "A"
 "target_middle_lstm": X = (X_1 = "AAC", X_2 = "ATG"), Y = "C" (note reversed order of X_2)
-"target_middle_cnn": X = "AACGTA", Y = "C" 
+"target_middle_cnn": X = "AACGTA", Y = "C"
 "wavenet": X = "AACCGT", Y = "ACCGTA"}
 
-\item{ambiguous_nuc}{How to handle nucleotides outside vocabulary, either "zero", "discard" or "equal". If "zero", input gets encoded as zero vector; 
+\item{ambiguous_nuc}{How to handle nucleotides outside vocabulary, either "zero", "discard" or "equal". If "zero", input gets encoded as zero vector;
 if "equal" input is 1/length(vocabulary) x length(vocabulary). If "discard" samples containing nucleotides outside vocabulary get discarded.}
 
 \item{evaluate_all_files}{Boolean, if TRUE will iterate over all files in \code{fasta.path} once. \code{numberOfBatches} will be overwritten.}
@@ -73,7 +73,14 @@ if "equal" input is 1/length(vocabulary) x length(vocabulary). If "discard" samp
 
 \item{target_from_csv}{Path to csv file with target mapping. One column should be called "file" and other entries in row are the targets.}
 
-\item{model.path}{Path to pretrained model.}
+\item{max_samples}{Maximum number of samples to use from one file. If not NULL and file has more than \code{max_samples} samples, will randomly choose a
+subset of \code{max_samples} samples.}
+
+\item{proportion_per_file}{Numerical value between 0 and 1. Proportion of possible samples to take from one file. Takes samples from random subsequence.}
+
+\item{seed}{Sets seed for set.seed function, for reproducible results when using \code{randomFiles} or \code{shuffleFastaEntries}}
+
+\item{auc}{Whether to include auc metric. Only possible for 2 targets.}
 }
 \description{
 Returns accuracies per batch and overall confusion matrix. Evaluates \code{batch.size} * \code{numberOfBatches} samples.

@@ -4,18 +4,18 @@
 #'
 #' @param char character string of text with the length of one
 #' @param verbose TRUE/FALSE
-#' @examples 
+#' @examples
 #' getVocabulary(data(crispr_sample))
 #' getVocabulary("abcd")
 #' @export
 getVocabulary <- function(char, verbose = F) {
-  
+
   stopifnot(!is.null(char))
   stopifnot(nchar(char) > 0)
-  
+
   vocabulary <- sort(unique(tokenizers::tokenize_characters(
     stringr::str_c(stringr::str_to_lower(char),collapse = "\n"), strip_non_alphanum = FALSE, simplify = TRUE)))
-  
+
   if (verbose)
     message("The vocabulary:", vocabulary)
   return(vocabulary)
@@ -26,13 +26,13 @@ getVocabulary <- function(char, verbose = F) {
 #' @description
 #' Outputs semi-redundant set of input character string.
 #' Collapse, tokenize, and vectorize the character.
-#' Use this function with a character string as input. For example, 
+#' Use this function with a character string as input. For example,
 #' if the input text is ABCDEFGHI and the length(maxlen) is 5, the generating chunks would be:
 #' X(1): ABCDE and Y(1): F;
 #' X(2): BCDEF and Y(2): G;
 #' X(3): CDEFG and Y(3): H;
 #' X(4): DEFGH and Y(4): I
-#' 
+#'
 #' @param char character input string of text with the length of one
 #' @param maxlen length of the semi-redundant sequences
 #' @param vocabulary char contains the vocabulary from the input char
@@ -43,28 +43,28 @@ preprocessSemiRedundant <- function(char,
                                     maxlen = 250,
                                     vocabulary = c("l", "p", "a", "c", "g", "t"),
                                     verbose = F) {
-  
+
   stopifnot(!is.null(char))
   stopifnot(nchar(char) > 0)
   stopifnot(maxlen > 0)
-  
+
   # Load, collapse, and tokenize text ("ACGT" -> "a" "c" "g" "t")
   text <- tokenizers::tokenize_characters(stringr::str_c(stringr::str_to_lower(char), collapse = "\n"), strip_non_alphanum = FALSE, simplify = TRUE)
-  
+
   # Generating vocabulary from input char with the function getVocabulary()
   if (missing(vocabulary)) {
     if (verbose)
       message("Finding the vocabulary ...")
     vocabulary <- getVocabulary(char)
   }
-  
+
   if(verbose)
     message("Vocabulary size:", length(vocabulary))
   # Cut the text in semi-redundant sequences of maxlen characters
-  
+
   if (verbose)
     message("Generation of semi-redundant sequences ...")
-  
+
   dataset <- purrr::map(seq(1, length(text) - maxlen, by = 1),
                         ~ list(sentece = text[.x:(.x + maxlen - 1)],
                                next_char = text[.x + maxlen]))
@@ -73,7 +73,7 @@ preprocessSemiRedundant <- function(char,
     array(0, dim = c(length(dataset$sentece), maxlen, length(vocabulary)))
   y <- array(0, dim = c(length(dataset$sentece), length(vocabulary)))
   # Vectorization
-  
+
   if (verbose)
     message("Vectorization ...")
   if (verbose)
@@ -90,13 +90,13 @@ preprocessSemiRedundant <- function(char,
     # target (next nucleotide in sequence)
     y[i,] <- as.integer(vocabulary == dataset$next_char[[i]])
   }
-  
+
   results <- list("X" = x, "Y" = y)
   return(results)
 }
 
-#' Wrapper of the preprocessSemiRedundant()-function 
-#' 
+#' Wrapper of the preprocessSemiRedundant()-function
+#'
 #' @description
 #' Is called on the genomic contents of one
 #' FASTA file. Multiple entries are combined with newline characters.
@@ -110,8 +110,8 @@ preprocessFasta <- function(path,
                             maxlen = 250,
                             vocabulary = c("l", "p", "a", "c", "g", "t"),
                             verbose = F) {
-  
-  
+
+
   # process corpus
   if (endsWith(path, "fasta")) {
     fasta.file <- microseq::readFasta(path)
@@ -119,55 +119,55 @@ preprocessFasta <- function(path,
   if (endsWith(path, "fastq")) {
     fasta.file <- microseq::readFastq(path)
   }
-  seq <- paste(fasta.file$Sequence, collapse = "") 
-  
+  seq <- paste(fasta.file$Sequence, collapse = "")
+
   if(verbose)
     message("Preprocessing the data ...")
-  
+
   seq.processed <-
     preprocessSemiRedundant(char = seq, maxlen = maxlen, vocabulary = vocabulary,
-                            verbose = F) 
+                            verbose = F)
   return(seq.processed)
 }
 
-#' One-hot-encodes integer sequence  
-#' 
-#' \code{sequenceToArray} Helper function for \code{\link{{fastaFileGenerator}}, returns one hot encoding for sequence  
-#' 
-#' @param sequence Sequence of integers. 
+#' One-hot-encodes integer sequence
+#'
+#' \code{sequenceToArray} Helper function for \code{\link{{fastaFileGenerator}}, returns one hot encoding for sequence
+#'
+#' @param sequence Sequence of integers.
 #' @param maxlen Length of one sample
-#' @param vocabulary Set of characters to encode.   
-#' @param startInd Start positions of samples in \code{sequence}.  
+#' @param vocabulary Set of characters to encode.
+#' @param startInd Start positions of samples in \code{sequence}.
 #' @param wavenet_format Boolean.
-#' @param cnn_format Boolean. If true, nucleotides on the left and right side of the predicted nucleotide (language model) are 
+#' @param cnn_format Boolean. If true, nucleotides on the left and right side of the predicted nucleotide (language model) are
 #' concatenated in the first layer, which make the structure more suitable to CNN architectures (without RNN).
-#' @param target_middle Boolean, target is in middle of sequence.   
-#' @param ambiguous_nuc How to handle nucleotides outside vocabulary, either "zero", "discard" or "equal". If "zero", input gets encoded as zero vector; 
-#' if "equal" input is 1/length(vocabulary) x length(vocabulary). If "discard" samples containing nucleotides outside vocabulary get discarded.  
-#' @param nuc_dist Nucleotide distribution.   
-#' @param use_quality Use quality scores. 
+#' @param target_middle Boolean, target is in middle of sequence.
+#' @param ambiguous_nuc How to handle nucleotides outside vocabulary, either "zero", "discard" or "equal". If "zero", input gets encoded as zero vector;
+#' if "equal" input is 1/length(vocabulary) x length(vocabulary). If "discard" samples containing nucleotides outside vocabulary get discarded.
+#' @param nuc_dist Nucleotide distribution.
+#' @param use_quality Use quality scores.
 #' @param quality_vector Vector of quality probabilities.
 #' @export
 sequenceToArray <- function(sequence, maxlen, vocabulary, startInd, wavenet_format = FALSE, target_middle = FALSE,
                             ambiguous_nuc = "zero", nuc_dist = NULL, use_quality = FALSE, quality_vector = NULL,
-                            cnn_format, target_len = 1) {
-  
+                            cnn_format, target_len = 1, use_coverage = FALSE, cov_vector = NULL) {
+
   stopifnot(length(sequence) > maxlen)
   startInd <- startInd - startInd[1] + 1
   numberOfSamples <- length(startInd)
-  
+
   # every row in z one-hot encodes one character in sequence, oov is zero-vector
   z  <- keras::to_categorical(sequence, num_classes = length(vocabulary) + 2)[ , -c(1, length(vocabulary) + 2)]
-  
+
   if (use_quality) {
-    ones_pos <- apply(z, 1, which.max)  
+    ones_pos <- apply(z, 1, which.max)
     is_zero_row <- apply(z == 0, 1, all)
-    z <- purrr::map(1:length(quality_vector), ~create_quality_vector(pos = ones_pos[.x], prob = quality_vector[.x], 
-                                                                     voc_length = length(vocabulary))) %>% unlist() %>% 
+    z <- purrr::map(1:length(quality_vector), ~create_quality_vector(pos = ones_pos[.x], prob = quality_vector[.x],
+                                                                     voc_length = length(vocabulary))) %>% unlist() %>%
       matrix(ncol = length(vocabulary), byrow = TRUE)
     z[is_zero_row, ] <- 0
   }
-  
+
   if (ambiguous_nuc == "equal") {
     amb_nuc_pos <- which(sequence == (length(vocabulary) + 1))
     z[amb_nuc_pos, ] <- matrix(rep(1/length(vocabulary), ncol(z) * length(amb_nuc_pos)), ncol = ncol(z))
@@ -176,6 +176,11 @@ sequenceToArray <- function(sequence, maxlen, vocabulary, startInd, wavenet_form
     amb_nuc_pos <- which(sequence == (length(vocabulary) + 1))
     z[amb_nuc_pos, ] <- matrix(rep(nuc_dist, length(amb_nuc_pos)), nrow = length(amb_nuc_pos), byrow = TRUE)
   }
+
+  if (use_coverage) {
+    z <- z * cov_vector
+  }
+
   if (target_len == 1) {
     if (!target_middle) {
       if (!wavenet_format) {
@@ -193,7 +198,7 @@ sequenceToArray <- function(sequence, maxlen, vocabulary, startInd, wavenet_form
           start <- startInd[i]
           x[i, , ] <- z[start : (start + maxlen - 1), ]
           y[i, , ] <- z[(start + 1) : (start + maxlen), ]
-        } 
+        }
         return(list(x, y))
       } else {
         x <- array(0, dim = c(numberOfSamples, maxlen + 1, length(vocabulary)))
@@ -221,7 +226,7 @@ sequenceToArray <- function(sequence, maxlen, vocabulary, startInd, wavenet_form
         y <- z[startInd + len_input_1, ]
         return(list(x, y))
       } else {
-        
+
       }
     }
     # target_len > 1
@@ -270,46 +275,46 @@ sequenceToArray <- function(sequence, maxlen, vocabulary, startInd, wavenet_form
         }
         return(list(x, y))
       } else {
-        
+
       }
     }
   }
 }
 
-#' One-hot-encodes integer  
-#' 
+#' One-hot-encodes integer
+#'
 #' \code{sequenceToArrayLabel} Helper function for \code{\link{{fastaLabelGenerator}}, returns one hot encoding for sequence and returns samples from
-#' specified positions  
+#' specified positions
 #'
 #' @param sequence Sequence of integers.
-#' @param maxlen Length of predictor sequence.  
-#' @param vocabulary Set of characters to encode.    
-#' @param startInd Start positions of samples in \code{sequence}.  
-#' @param ambiguous_nuc How to handle nucleotides outside vocabulary, either "zero", "discard" or "equal". If "zero", input gets encoded as zero vector; 
-#' if "equal" input is 1/length(vocabulary) x length(vocabulary). If "discard" samples containing nucleotides outside vocabulary get discarded.  
-#' @param nuc_dist Nucleotide distribution.   
-#' @param use_quality Use quality scores. 
+#' @param maxlen Length of predictor sequence.
+#' @param vocabulary Set of characters to encode.
+#' @param startInd Start positions of samples in \code{sequence}.
+#' @param ambiguous_nuc How to handle nucleotides outside vocabulary, either "zero", "discard" or "equal". If "zero", input gets encoded as zero vector;
+#' if "equal" input is 1/length(vocabulary) x length(vocabulary). If "discard" samples containing nucleotides outside vocabulary get discarded.
+#' @param nuc_dist Nucleotide distribution.
+#' @param use_quality Use quality scores.
 #' @param quality_vector Vector of quality probabilities.
 #' @export
 sequenceToArrayLabel <- function(sequence, maxlen, vocabulary, startInd, ambiguous_nuc = "zero", nuc_dist = NULL,
-                                 use_quality = FALSE, quality_vector = NULL) {
-  
+                                 use_quality = FALSE, quality_vector = NULL, use_coverage = FALSE, cov_vector = NULL) {
+
   stopifnot(length(sequence) > (maxlen - 1))
   startInd <- startInd - startInd[1] + 1
   numberOfSamples <- length(startInd)
-  
+
   # every row in z one-hot encodes one character in sequence, oov is zero-vector
   z  <- keras::to_categorical(sequence, num_classes = length(vocabulary) + 2)[ , -c(1, length(vocabulary) + 2)]
-  z <- matrix(z, ncol = length(vocabulary)) 
-  
+  z <- matrix(z, ncol = length(vocabulary))
+
   if (use_quality) {
-    ones_pos <- apply(z, 1, which.max)  
+    ones_pos <- apply(z, 1, which.max)
     is_zero_row <- apply(z == 0, 1, all)
-    z <- purrr::map(1:length(quality_vector), ~create_quality_vector(pos = ones_pos[.x], prob = quality_vector[.x], 
+    z <- purrr::map(1:length(quality_vector), ~create_quality_vector(pos = ones_pos[.x], prob = quality_vector[.x],
                                                                      voc_length = length(vocabulary))) %>% unlist() %>% matrix(ncol = length(vocabulary), byrow = TRUE)
     z[is_zero_row, ] <- 0
   }
-  
+
   if (ambiguous_nuc == "equal") {
     amb_nuc_pos <- which(sequence == (length(vocabulary) + 1))
     z[amb_nuc_pos, ] <- matrix(rep(1/length(vocabulary), ncol(z) * length(amb_nuc_pos)), ncol = ncol(z))
@@ -318,6 +323,11 @@ sequenceToArrayLabel <- function(sequence, maxlen, vocabulary, startInd, ambiguo
     amb_nuc_pos <- which(sequence == (length(vocabulary) + 1))
     z[amb_nuc_pos, ] <- matrix(rep(nuc_dist, length(amb_nuc_pos)), nrow = length(amb_nuc_pos), byrow = TRUE)
   }
+
+  if (use_coverage) {
+    z <- z * cov_vector
+  }
+
   x <- array(0, dim = c(numberOfSamples, maxlen, length(vocabulary)))
   for (i in 1:numberOfSamples) {
     start <- startInd[i]
@@ -328,17 +338,17 @@ sequenceToArrayLabel <- function(sequence, maxlen, vocabulary, startInd, ambiguo
 
 #' Computes start position of samples
 #'
-#' Helper function for \code{\link{{fastaLabelGenerator}} and \code{\link{{fastaFileGenerator}}. Computes positions in sequence where samples can be extracted 
-#' 
+#' Helper function for \code{\link{{fastaLabelGenerator}} and \code{\link{{fastaFileGenerator}}. Computes positions in sequence where samples can be extracted
+#'
 #' @param seq_vector Vector of character sequences.
 #' @param length_vector Length of sequences in \code{seq_vector}.
 #' @param maxlen Length of one predictor sequence.
-#' @param step Distance between samples from one entry in \code{seq_vector}.   
-#' @param train_mode Either "lm" for language model or "label" for label classification. Language models need one character more 
+#' @param step Distance between samples from one entry in \code{seq_vector}.
+#' @param train_mode Either "lm" for language model or "label" for label classification. Language models need one character more
 #' (the target) for one sample.
 #' @param ignore_amb_nuc Discard all samples that contain characters outside vocabulary.
 #' @export
-getStartInd <- function(seq_vector, length_vector, maxlen, 
+getStartInd <- function(seq_vector, length_vector, maxlen,
                         step, train_mode = "label", discard_amb_nuc = FALSE, vocabulary = c("A", "C", "G", "T")) {
   stopifnot(train_mode == "lm" | train_mode == "label")
   if (!discard_amb_nuc) {
@@ -367,24 +377,24 @@ getStartInd <- function(seq_vector, length_vector, maxlen,
       }
     }
   } else {
-    indexVector <- startIndicesIgnoreAmbNuc(seq_vector = seq_vector, length_vector = length_vector, 
+    indexVector <- startIndicesIgnoreAmbNuc(seq_vector = seq_vector, length_vector = length_vector,
                                             maxlen = maxlen, step = step, vocabulary = c(vocabulary, "0"), train_mode = train_mode)
-  }  
+  }
   return(indexVector)
 }
 
 
 #' Helper function for getStartInd, extracts the start positions of all potential samples (considering step size and vocabulary)
-#' 
+#'
 #' @param seq Sequences.
 #' @param length_vector Length of sequences in \code{seq_vector}.
-#' @param maxlen Length of one sample. 
+#' @param maxlen Length of one sample.
 #' @param step How often to take a sample.
 #' @param vocabulary Vector of allowed characters in samples.
-#' @param train_mode "lm" or "label". 
+#' @param train_mode "lm" or "label".
 #' @export
 startIndicesIgnoreAmbNucSingleSeq <- function(seq, maxlen, step, vocabulary, train_mode = "lm") {
-  
+
   vocabulary <- stringr::str_to_lower(vocabulary)
   vocabulary <- c(vocabulary, "0")
   seq <- stringr::str_to_lower(seq)
@@ -393,63 +403,63 @@ startIndicesIgnoreAmbNucSingleSeq <- function(seq, maxlen, step, vocabulary, tra
   stopifnot(len_seq >= maxlen)
   # regular expressions for allowed characters
   voc_pattern <- paste0("[^", paste0(vocabulary, collapse = ""), "]")
-  
+
   pos_of_amb_nucleotides <- stringr::str_locate_all(seq, pattern = voc_pattern)[[1]][ , 1]
   non_start_index <-  pos_of_amb_nucleotides - maxlen + 1
-  
-  # define range of unallowed start indices   
-  non_start_index <- purrr::map(non_start_index, ~(.x:(.x + maxlen - 1))) %>% 
-    unlist() %>% union((len_seq - maxlen + 2):len_seq) %>% unique()  
-  # drop non-positive values 
+
+  # define range of unallowed start indices
+  non_start_index <- purrr::map(non_start_index, ~(.x:(.x + maxlen - 1))) %>%
+    unlist() %>% union((len_seq - maxlen + 2):len_seq) %>% unique()
+  # drop non-positive values
   if (length(non_start_index[non_start_index < 1])) {
     non_start_index <- unique(c(1, non_start_index[non_start_index >= 1]))
   }
-  
+
   non_start_index <- non_start_index %>% sort()
   allowed_start <- setdiff(1:len_seq, non_start_index)
-  len_start_vector <- length(allowed_start) 
-  
-  
+  len_start_vector <- length(allowed_start)
+
+
   if (len_start_vector < 1) {
     # message("Can not extract a single sampling point with current settings.")
     return(NULL)
   }
-  
-  # only keep indices with sufficient distance, as defined by step 
+
+  # only keep indices with sufficient distance, as defined by step
   start_indices <- vector("integer")
   index <- allowed_start[1]
   start_indices[1] <- index
   count <- 1
-  if (length(allowed_start) > 1) { 
+  if (length(allowed_start) > 1) {
     for (j in 1:(length(allowed_start) - 1)) {
       if (allowed_start[j + 1] - index >= step) {
-        count <- count + 1  
+        count <- count + 1
         start_indices[count] <- allowed_start[j + 1]
         index <- allowed_start[j + 1]
       }
     }
   }
-  
+
   start_indices
 }
 
 
 #' Helper function for getStartInd, extracts the start positions of all potential samples (considering step size and vocabulary)
-#' 
+#'
 #' @param seq_vector Vector of character sequences.
 #' @param length_vector Length of sequences in \code{seq_vector}.
-#' @param maxlen Length of one sample. 
+#' @param maxlen Length of one sample.
 #' @param step How often to take a sample.
 #' @param vocabulary Vector of allowed characters in samples.
-#' @param train_mode "lm" or "label". 
+#' @param train_mode "lm" or "label".
 #' @export
 startIndicesIgnoreAmbNuc <- function(seq_vector, length_vector, maxlen, step, vocabulary, train_mode = "lm") {
   startInd <- purrr::map(1:length(seq_vector), ~startIndicesIgnoreAmbNucSingleSeq(seq = seq_vector[.x],
-                                                                                  maxlen = maxlen, 
+                                                                                  maxlen = maxlen,
                                                                                   step = step,
                                                                                   vocabulary = vocabulary,
                                                                                   train_mode = train_mode))
-  
+
   cum_sum_length <- cumsum(length_vector)
   if (length(startInd) > 1) {
     for (i in 2:length(startInd)) {
@@ -460,8 +470,8 @@ startIndicesIgnoreAmbNuc <- function(seq_vector, length_vector, maxlen, step, vo
   startInd
 }
 
-#' convert fastq quality score to probability 
-#' 
+#' convert fastq quality score to probability
+#'
 #' @export
 quality_to_probability <- function(quality_vector) {
   Q <- utf8ToInt(quality_vector) - 33
@@ -472,7 +482,7 @@ quality_to_probability <- function(quality_vector) {
 create_quality_vector <- function(pos, prob, voc_length = 4) {
   vec <- rep(0, voc_length)
   vec[pos] <- prob
-  vec[-pos] <- (1 - prob)/(voc_length - 1) 
+  vec[-pos] <- (1 - prob)/(voc_length - 1)
   vec
 }
 
@@ -493,16 +503,65 @@ remove_amb_nuc_entries <- function(fasta.file, skip_amb_nuc, pattern) {
 #' @param train_type Either "label_folder", "label_header" or "label_csv".
 #' @export
 get_class_weight <- function(path,
-                             labelVocabulary = NULL, 
+                             labelVocabulary = NULL,
                              format = "fasta",
                              # estimate class distribution from subset
                              file_proportion = 1,
                              train_type = "label_folder",
                              csv_path = NULL) {
-  
+
+  classes <- count_nuc(path = path,
+                       labelVocabulary = labelVocabulary,
+                       format = format,
+                       file_proportion = file_proportion,
+                       train_type = train_type,
+                       csv_path = csv_path)
+
+  zero_entry <- classes == 0
+  if (sum(zero_entry) > 0) {
+    warning_message <- paste("The following classes have no samples:", paste(labelVocabulary[zero_entry]),
+                             "\n Try bigger file_proportion size or check labelVocabulary.")
+    warning(warning_message)
+  }
+
+  if (!is.list(classes)) {
+    weight_list <- list()
+    weight_list[["0"]] <- 1
+    for (i in 2:(length(classes))) {
+      weight_list[[as.character(i-1)]] <- classes[1]/classes[i]
+    }
+    classes <- weight_list
+  } else {
+    weight_collection <- list()
+    for (j in 1:length(classes)) {
+      weight_list <- list()
+      weight_list[["0"]] <- 1
+      for (i in 2:(length(classes[[j]]))) {
+        weight_list[[as.character(i-1)]] <- classes[[j]][1]/classes[[j]][i]
+      }
+      weigth_collection[[j]] <- weight_list
+    }
+    classes <- weight_collection
+  }
+
+  classes
+}
+
+#' Count nucleotides per class
+#'
+#' @inheritParams get_class_weight
+#' @export
+count_nuc <- function(path,
+                      labelVocabulary = NULL,
+                      format = "fasta",
+                      # estimate class distribution from subset
+                      file_proportion = 1,
+                      train_type = "label_folder",
+                      csv_path = NULL) {
+
   classes <- rep(0, length(labelVocabulary))
   names(classes) <- labelVocabulary
-  
+
   # label by folder
   if (train_type == "label_folder") {
     for (j in 1:length(path)) {
@@ -512,17 +571,17 @@ get_class_weight <- function(path,
       }
       for (i in files) {
         if (format == "fasta") {
-          fasta.file <- microseq::readFasta(i) 
+          fasta.file <- microseq::readFasta(i)
         }
         if (format == "fastq") {
-          fasta.file <- microseq::readFastq(i) 
+          fasta.file <- microseq::readFastq(i)
         }
         freq <- sum(nchar(fasta.file$Sequence))
         classes[i] <- classes[i] + freq
       }
     }
   }
-  
+
   # label header
   if (train_type == "label_header") {
     files <- list.files(unlist(path), full.names = TRUE)
@@ -531,10 +590,10 @@ get_class_weight <- function(path,
     }
     for (i in files) {
       if (format == "fasta") {
-        fasta.file <- microseq::readFasta(i) 
+        fasta.file <- microseq::readFasta(i)
       }
       if (format == "fastq") {
-        fasta.file <- microseq::readFastq(i) 
+        fasta.file <- microseq::readFastq(i)
       }
       df <- data.frame(Header = fasta.file$Header, freq = nchar(fasta.file$Sequence))
       df <- aggregate(df$freq, by = list(Category = df$Header), FUN = sum)
@@ -545,59 +604,54 @@ get_class_weight <- function(path,
       }
     }
   }
-  
+
   # label csv
   if (train_type == "label_csv") {
-    
+
     label_csv <- read.csv2(csv_path, header = TRUE, stringsAsFactors = FALSE)
     if (dim(label_csv)[2] == 1) {
       label_csv <- read.csv(csv_path, header = TRUE, stringsAsFactors = FALSE)
-    } 
+    }
     if (!("file" %in% names(label_csv))) {
       stop('csv file needs one column named "file"')
     }
-    
+
     row_sums <- label_csv %>% dplyr::select(-file) %>% rowSums()
     if (!(all(row_sums == 1))) {
       stop("Can only estimate class weights if labels are mutually exclusive.")
     }
-    
+
     if (is.null(labelVocabulary) || missing(labelVocabulary)) {
       labelVocabulary <-  names(label_csv)[!names(label_csv) == "file"]
     } else {
       label_csv <- label_csv %>% dplyr::select(c(dplyr::all_of(labelVocabulary), "file"))
     }
-    
+
     classes <- rep(0, length(labelVocabulary))
     names(classes) <- labelVocabulary
-    
-    files <- list.files(unlist(path), full.names = TRUE)
+
+    path <- unlist(path)
+    single_file_index <- stringr::str_detect(path, "fasta$|fastq$")
+    files <- c(list.files(path[!single_file_index], full.names = TRUE), path[single_file_index])
     if (file_proportion < 1) {
       files <- sample(files, floor(file_proportion * length(files)))
     }
     for (i in files) {
       if (format == "fasta") {
-        fasta.file <- microseq::readFasta(i) 
+        fasta.file <- microseq::readFasta(i)
       }
       if (format == "fastq") {
-        fasta.file <- microseq::readFastq(i) 
+        fasta.file <- microseq::readFastq(i)
       }
       count_nuc <- sum(nchar(fasta.file$Sequence))
-      df <- label_csv %>% dplyr::filter(file == basename(i)) 
+      df <- label_csv %>% dplyr::filter(file == basename(i))
       if (nrow(df) == 0) next
       index <- df[1, ] == 1
       current_label <- names(df)[index]
       classes[current_label] <- classes[current_label] + count_nuc
     }
   }
-  
-  zero_entry <- classes == 0
-  if (sum(zero_entry) > 0) {
-    warning_message <- paste("The following classes have no samples:", labelVocabulary[zero_entry],   
-                             "\n Try bigger file_proportion size or check labelVocabulary.")
-    warning(warning_message)
-  }
-  classes
+  return(classes)
 }
 
 #' Take random subset
@@ -635,51 +689,64 @@ random_subset <- function(proportion_per_file, fasta.file, use_beta_dist = FALSE
 }
 
 #' @export
-read_fasta_fastq <- function(format, skip_amb_nuc, file_index, pattern, shuffleFastaEntries, concat, concat_seq,
-                             reverseComplements, fasta.files) {
+read_fasta_fastq <- function(format, skip_amb_nuc, file_index, pattern, shuffleFastaEntries,
+                             reverseComplements, fasta.files, use_coverage = FALSE, proportion_entries = NULL,
+                             labelVocabulary = NULL, filter_header = FALSE, target_from_csv = NULL) {
   if (format == "fasta") {
     if (is.null(skip_amb_nuc)) {
-      fasta.file <- microseq::readFasta(fasta.files[file_index]) 
+      fasta.file <- microseq::readFasta(fasta.files[file_index])
     } else {
       fasta.file <- remove_amb_nuc_entries(microseq::readFasta(fasta.files[file_index]), skip_amb_nuc = skip_amb_nuc,
-                                           pattern = pattern) 
+                                           pattern = pattern)
     }
-    
+
+    if (filter_header & is.null(target_from_csv)) {
+      label_vector <- trimws(stringr::str_to_lower(fasta.file$Header))
+      label_filter <- label_vector %in% labelVocabulary
+      fasta.file <- fasta.file[label_filter, ]
+    }
+
+    if (!is.null(proportion_entries) && proportion_entries < 1) {
+      index <- sample(nrow(fasta.file), max(1, floor(nrow(fasta.file) * proportion_entries)))
+      fasta.file <- fasta.file[index, ]
+    }
+
     if (shuffleFastaEntries) {
       fasta.file <- fasta.file[sample(nrow(fasta.file)), ]
     }
-    
+
     if (reverseComplements & sample(c(TRUE, FALSE), 1)) {
       fasta.file$Sequence <- microseq::reverseComplement(fasta.file$Sequence)
     }
-    
-    if (concat) {
-      fasta.file <- data.frame(Header = basename(fasta.files[file_index]), Sequence = paste(fasta.file$Sequence, collapse = concat_seq), 
-                               stringsAsFactors = FALSE)
-    }
+
   }
   if (format == "fastq") {
     if (is.null(skip_amb_nuc)) {
-      fasta.file <- microseq::readFastq(fasta.files[file_index]) 
+      fasta.file <- microseq::readFastq(fasta.files[file_index])
     } else {
       fasta.file <- remove_amb_nuc_entries(microseq::readFastq(fasta.files[file_index]), skip_amb_nuc = skip_amb_nuc,
-                                           pattern = pattern) 
+                                           pattern = pattern)
     }
-    
+
+    if (filter_header & is.null(target_from_csv)) {
+      label_vector <- trimws(stringr::str_to_lower(fasta.file$Header))
+      label_filter <- label_vector %in% labelVocabulary
+      fasta.file <- fasta.file[label_filter, ]
+    }
+
+    if (!is.null(proportion_entries) && proportion_entries < 1) {
+      index <- sample(nrow(fasta.file), max(1, floor(nrow(fasta.file) * proportion_entries)))
+      fasta.file <- fasta.file[index, ]
+    }
+
     if (shuffleFastaEntries) {
       fasta.file <- fasta.file[sample(nrow(fasta.file)), ]
     }
-    
+
     if (reverseComplements & sample(c(TRUE, FALSE), 1)) {
       fasta.file$Sequence <- microseq::reverseComplement(fasta.file$Sequence)
     }
-    
-    if (concat) {
-      fasta.file <- data.frame(Header = basename(fasta.files[file_index]), Sequence = paste(fasta.file$Sequence, collapse = concat_seq),
-                               stringsAsFactors = FALSE)
-    }
   }
-  
   return(fasta.file)
 }
 
@@ -689,30 +756,30 @@ input_from_csv <- function(added_label_path) {
   label_csv <- read.csv2(added_label_path, header = TRUE, stringsAsFactors = FALSE)
   if (dim(label_csv)[2] == 1) {
     label_csv <- read.csv(added_label_path, header = TRUE, stringsAsFactors = FALSE)
-  } 
+  }
   label_csv <- data.table::as.data.table(label_csv)
   label_csv$file <- stringr::str_to_lower(as.character(label_csv$file))
   data.table::setkey(label_csv, file)
-  #   data.table::setkey(label_csv, file)  
+  #   data.table::setkey(label_csv, file)
   # if ("file" %in% names(label_csv) & "header" %in% names(label_csv)) {
   #   stop('names in added_label_path should contain "header" or "file" not both')
   # } else if ("header" %in% names(label_csv)) {
   #   added_label_by_header <- TRUE
   #   label_csv$file <- stringr::str_to_lower(as.character(label_csv$header))
-  #   data.table::setkey(label_csv, header)    
+  #   data.table::setkey(label_csv, header)
   # } else if ("file" %in% names(label_csv)) {
   #   added_label_by_header <- FALSE
   #   label_csv$file <- stringr::str_to_lower(as.character(label_csv$file))
-  #   data.table::setkey(label_csv, file)    
+  #   data.table::setkey(label_csv, file)
   # } else {
   #   stop('file in added_label_path must contain one column named "header" or "file"')
   # }
-  # 
+  #
   # if (!added_label_by_header) {
   #   fasta.file$Header <- rep(basename(fasta.files[file_index]), nrow(fasta.file))
   # }
   added_label_by_header <- FALSE
-  
+
   if (!("file" %in% names(label_csv))) {
     stop('names in added_label_path should contain one column named "file" ')
   }
@@ -722,20 +789,20 @@ input_from_csv <- function(added_label_path) {
   return(list(label_csv = label_csv, col_name = col_name))
 }
 
-#' @import data.table 
+#' @import data.table
 #' @export
 csv_to_tensor <- function(label_csv, added_label_vector, added_label_by_header, batch.size,
                           start_index_list) {
   .datatable.aware = TRUE
   label_tensor <- matrix(0, ncol = ncol(label_csv) - 1, nrow = batch.size, byrow = TRUE)
-  
+
   if (added_label_by_header) {
     header_unique <- unique(added_label_vector)
     for (i in header_unique) {
       label_from_csv <- label_csv[ .(i), -"header"]
       index_label_vector <- added_label_vector == i
       if (nrow(label_from_csv) > 0) {
-        label_tensor[index_label_vector, ] <- matrix(as.matrix(label_from_csv[1, ]), 
+        label_tensor[index_label_vector, ] <- matrix(as.matrix(label_from_csv[1, ]),
                                                      nrow = sum(index_label_vector), ncol = ncol(label_tensor), byrow = TRUE)
       }
     }
@@ -745,10 +812,10 @@ csv_to_tensor <- function(label_csv, added_label_vector, added_label_by_header, 
       row_filter <- added_label_vector[i]
       label_from_csv <- label_csv[data.table(row_filter), -"file"]
       samples_per_file <- length(start_index_list[[i]])
-      assign_rows <-  row_index:(row_index + samples_per_file - 1) 
-      
+      assign_rows <-  row_index:(row_index + samples_per_file - 1)
+
       if (nrow(na.omit(label_from_csv)) > 0) {
-        label_tensor[assign_rows, ] <- matrix(as.matrix(label_from_csv[1, ]), 
+        label_tensor[assign_rows, ] <- matrix(as.matrix(label_from_csv[1, ]),
                                               nrow = samples_per_file, ncol = ncol(label_tensor), byrow = TRUE)
       }
       row_index <- row_index + samples_per_file
@@ -757,13 +824,13 @@ csv_to_tensor <- function(label_csv, added_label_vector, added_label_by_header, 
   return(label_tensor)
 }
 
-#' Devide tensor to list of subsets 
+#' Devide tensor to list of subsets
 #'
 #' @export
 slice_tensor <- function(tensor, target_split) {
-  
+
   num_row <- nrow(tensor)
-  l <- vector("list", length = length(target_split)) 
+  l <- vector("list", length = length(target_split))
   for (i in 1:length(target_split)) {
     if (length(target_split[[i]]) == 1 | num_row == 1) {
       l[[i]] <- matrix(tensor[ , target_split[[i]]], ncol = length(target_split[[i]]))
@@ -800,9 +867,9 @@ count_files <- function(path, format = "fasta", train_type) {
     }
   }
   if (train_type == "label_folder") {
-    return(num_files) 
+    return(num_files)
   } else {
-    return(sum(num_files)) 
+    return(sum(num_files))
   }
 }
 
@@ -810,21 +877,28 @@ list_fasta_files <- function(corpus.dir, format, file_filter) {
   if (is.list(corpus.dir)) {
     fasta.files <- list()
     for (i in 1:length(corpus.dir)) {
-      fasta.files[[i]] <- list.files(
-        path = xfun::normalize_path(corpus.dir[[i]]),
-        pattern = paste0("\\.", format, "$"),
-        full.names = TRUE)
+
+      if (endsWith(corpus.dir[[i]], paste0(".", format))) {
+        fasta.files[[i]] <- corpus.dir[[i]]
+
+      } else {
+
+        fasta.files[[i]] <- list.files(
+          path = xfun::normalize_path(corpus.dir[[i]]),
+          pattern = paste0("\\.", format, "$"),
+          full.names = TRUE)
+      }
     }
     fasta.files <- unlist(fasta.files)
     num_files <- length(fasta.files)
   } else {
-    
+
     # single file
     if (endsWith(corpus.dir, paste0(".", format))) {
-      num_files <- 1 
-      fasta.files <- corpus.dir   
+      num_files <- 1
+      fasta.files <- corpus.dir
     } else {
-      
+
       fasta.files <- list.files(
         path = xfun::normalize_path(corpus.dir),
         pattern = paste0("\\.", format, "$"),
@@ -832,15 +906,92 @@ list_fasta_files <- function(corpus.dir, format, file_filter) {
       num_files <- length(fasta.files)
     }
   }
-  
+
   if (!is.null(file_filter)) {
     fasta.files <- fasta.files[basename(fasta.files) %in% file_filter]
+    if (length(fasta.files) < 1) {
+      stop_text <- paste0("None of the files from ", unlist(corpus.dir),
+                          " are present in train_val_split_csv table for either train or validation. \n")
+      stop(stop_text)
+    }
   }
-  
-  if (length(fasta.files) < 1) {
-    stop_text <- paste0("None of the files from ", unlist(corpus.dir), " are present in train_val_split_csv table for either train or validation. \n")
-    stop(stop_text)
-  }
-  
+
   return(fasta.files)
+}
+
+get_coverage <- function(fasta.file) {
+  header <- fasta.file$Header
+  cov <- stringr::str_extract(header, "cov_\\d+") %>%
+    stringr::str_extract("\\d+") %>% as.integer()
+  cov[is.na(cov)] <- 1
+  return(cov)
+}
+
+get_coverage_concat <- function(fasta.file, concat_seq) {
+  header <- fasta.file$Header
+  cov <- stringr::str_extract(header, "cov_\\d+") %>%
+    stringr::str_extract("\\d+") %>% as.integer()
+  cov[is.na(cov)] <- 1
+  len_vec <- nchar(fasta.file$Sequence)
+  cov <- purrr::map(1:nrow(fasta.file), ~rep(cov[.x], times = len_vec[.x]))
+  cov <- lapply(cov, append, rep(1, nchar(concat_seq)))
+  cov <- unlist(cov)
+  cov <- cov[-((length(cov) - nchar(concat_seq)) : length(cov))]
+  return(cov)
+}
+
+
+reshape_tensor <- function(x, y, new_batch_size,
+                           samples_per_target,
+                           batch.size, path, voc_len,
+                           maxlen, reshape_mode = "time_dist") {
+
+  if (reshape_mode == "time_dist") {
+
+    x_new <- array(0, dim = c(new_batch_size, samples_per_target, maxlen, voc_len))
+    y_new <- array(0, dim = c(new_batch_size, length(path)))
+    for (i in 1:new_batch_size) {
+      index <- (1:samples_per_target) + (i-1)*samples_per_target
+      x_new[i, , , ] <- x[index, , ]
+      y_new[i, ]  <- y[index[1], ]
+    }
+
+    return(list(x = x_new, y = y_new))
+  }
+
+  if (reshape_mode == "multi_input") {
+
+    x_list <- vector("list", samples_per_target)
+    for (i in 1:samples_per_target) {
+      x_index <- base::seq(i, batch.size, samples_per_target)
+      x_list[[i]] <- x[x_index, , ]
+    }
+    y <- y[base::seq(1, batch.size, samples_per_target), ]
+    return(list(x = x_list, y = y))
+  }
+}
+
+#' Transform confusion matrix with total numbers to matrix with percentages.
+#'
+#' @export
+cm_perc <- function(cm, round_dig = 2) {
+  col_sums <- colSums(cm)
+  for (i in 1:ncol(cm)) {
+    if (col_sums[i] == 0) {
+      cm[ , i] <- 0
+    } else {
+      cm[ , i] <- cm[ , i]/col_sums[i]
+    }
+  }
+  cm <- round(cm, round_dig)
+}
+
+create_conf_mat_obj <- function(m, confMatLabels) {
+  dimnames(m) <- list(Truth = confMatLabels, Prediction = confMatLabels)
+  l <- list()
+  m <- as.table(m)
+  l[["table"]] <- m
+  l[["dots"]] <- list()
+  class(l) <- "conf_mat"
+  return(l)
 }

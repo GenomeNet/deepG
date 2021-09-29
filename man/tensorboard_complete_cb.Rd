@@ -47,7 +47,8 @@ tensorboard_complete_cb(
   fileLog,
   proportion_per_file,
   skip_amb_nuc,
-  max_samples
+  max_samples,
+  proportion_entries
 )
 }
 \arguments{
@@ -57,19 +58,22 @@ tensorboard_complete_cb(
 
 \item{run.name}{Name of the run (without file ending). Name will be used to identify output from callbacks.}
 
-\item{train_type}{Either "lm" for language model, "label_header", "label_folder" or "label_csv". Language model is trained to predict character in sequence.
+\item{train_type}{Either "lm" for language model, "label_header", "label_folder", "label_csv" or "label_rds". Language model is trained to predict character in sequence.
 "label_header"/"label_folder" are trained to predict a corresponding class, given a sequence as input. If "label_header", class will be read from fasta headers.
 If "label_folder", class will be read from folder, i.e. all files in one folder must belong to the same class.
 If "label_csv", targets are read from a csv file. This file should have one column names "file". The targets then correspond to entries in that row (except "file"
 column). Example: if we are currently working with a file called "a.fasta", there should be a row in our csv file
    file  |  label_1 | label_2
-"a.fasta"     1          8}
+"a.fasta"     1          8
+If "label_rds", generator will iterate over set of .rds files containing each a list of input and target tensors. Not implemented for model
+with multiple inputs. If "lm_rds", generator will iterate over set of .rds files and will split tensor according to target_len argument
+(targets are last target_len nucleotides of each sequence).}
 
-\item{path}{Path to folder where individual or multiple FASTA or FASTQ files are located for validation. If \code{train_type} is \code{label_folder}, should be a vector
+\item{path}{Path to folder where individual or multiple FASTA or FASTQ files are located for training. If \code{train_type} is \code{label_folder}, should be a vector
 containing a path for each class. If \code{train_type} is not \code{label_folder}, can be a list of directories.}
 
 \item{validation.split}{Defines the fraction of the batches that will be used for validation (compared to size of training data), i.e. one validtion iteration
-processed \code{batch.size} * \code{steps.per.epoch} * \code{validation.split samples}.}
+processed \code{batch.size} x \code{steps.per.epoch} x \code{validation.split} samples.}
 
 \item{batch.size}{Number of samples that are used for one network update.}
 
@@ -103,7 +107,7 @@ will run for (\code{epochs} - \code{initial_epochs}) rounds and not \code{epochs
 
 \item{reverseComplements}{Logical, for every new file decide randomly to use original data or its reverse complement.}
 
-\item{tb_images}{Boolean, whether to show plots in tensorboard. Note this doubles the time needed for validation step.}
+\item{tb_images}{Boolean, whether to show plots in tensorboard.}
 
 \item{fileLog}{Write name of files used for training to csv file if path is specified.}
 
@@ -111,7 +115,7 @@ will run for (\code{epochs} - \code{initial_epochs}) rounds and not \code{epochs
 
 \item{skip_amb_nuc}{Threshold of ambiguous nucleotides to accept in fasta entry. Complete entry will get discarded otherwise.}
 
-\item{max_samples}{Maximum number of samples to use from one file. If not NULL and file has more than \code{max_samples} samples, will randomly choose a 
+\item{max_samples}{Maximum number of samples to use from one file. If not NULL and file has more than \code{max_samples} samples, will randomly choose a
 subset of \code{max_samples} samples.}
 }
 \description{
