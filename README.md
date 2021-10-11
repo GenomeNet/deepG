@@ -6,3 +6,5 @@ The goal of the package is to speed up the development of biofinformatical tools
 
 For installation and usage, please see the ISMB Tutorial
 https://colab.research.google.com/drive/175jIdXcDcgPUvaBo2rH2Lupbpjnp5O7G?usp=sharing
+
+[![DOI](https://zenodo.org/badge/387820006.svg)](https://zenodo.org/badge/latestdoi/387820006)
