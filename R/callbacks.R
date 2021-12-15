@@ -797,3 +797,105 @@ f1_wrapper <- function(num_targets = 2) {
                                      ))
   return(f1_stateful(num_targets = num_targets))
 }
+
+#' Mean AUC score (mean or median)
+#'
+#' @param model_output_size Number of neurons in output layer of model, for which metric will be applied to.
+#' @param loss Loss function of model, for which metric will be applied to; must be "binary_crossentropy"
+#' or "catergorical_crossentropy".
+#' @export
+auc_wrapper <- function(model_output_size,
+                        loss = "binary_crossentropy") {
+
+  stopifnot(loss %in% c("binary_crossentropy", "categorical_crossentropy"))
+  if (loss == "categorical_crossentropy" & model_output_size != 2) {
+    stop("Output size must be two, when loss is catergorical_crossentropy")
+  }
+  metric_name <- ifelse(loss == "binary_crossentropy" & model_output_size > 1,
+                        "mean_AUC", "AUC")
+
+  auc_stateful <- reticulate::PyClass("AUC",
+                                      inherit = tensorflow::tf$keras$metrics$Metric,
+                                      list(
+
+                                        `__init__` = function(self, model_output_size, loss, metric_name) {
+                                          super()$`__init__`(name = metric_name)
+                                          self$model_output_size <- model_output_size
+                                          self$loss <- loss
+                                          if (loss == "binary_crossentropy") {
+                                            self$auc_scores <- self$add_weight(name = "auc_vector", shape = c(1, model_output_size), initializer="zeros")
+                                            self$auc_score <-  self$add_weight(name = "auc_score", initializer="zeros")
+                                            self$auc_list <- vector("list", model_output_size)
+                                            for (i in 1:model_output_size) {
+                                              assign(paste0("m_", i), tensorflow::tf$keras$metrics$AUC())
+                                            }
+                                            #purrr::map(1:model_output_size, ~assign(paste0("m_", .x), tensorflow::tf$keras$metrics$AUC()))
+                                            parse_text <- purrr::map(1:model_output_size, ~parse(text = paste0("m_", .x)))
+                                            self$auc_list <- purrr::map(1:model_output_size, ~eval(parse_text[[.x]]))
+                                            self$shape <- c(1L, as.integer(self$model_output_size))
+                                          } else {
+                                            self$auc_scores <- self$add_weight(name = "auc_vector", shape = c(1, 1), initializer="zeros")
+                                            self$auc_score <-  self$add_weight(name = "auc_score", initializer="zeros")
+                                            self$auc_list <- vector("list", 1)
+                                            assign(paste0("m_", 1), tensorflow::tf$keras$metrics$AUC())
+                                            parse_text <- purrr::map(1, ~parse(text = paste0("m_", .x)))
+                                            self$auc_list <- purrr::map(1, ~eval(parse_text[[.x]]))
+                                            self$shape <- c(1L, 1L)
+                                          }
+                                          NULL
+                                        },
+
+                                        update_state = function(self, y_true, y_pred, sample_weight = NULL) {
+                                          self$compute_auc(y_true, y_pred)
+                                          current_auc_list <- vector("list", length(self$auc_list))
+                                          # for (i in 1:length(self$auc_list)) {
+                                          #   current_auc_list[[i]] <- self$auc_list[[i-1]]$result()
+                                          # }
+                                          current_auc_list <-  purrr::map(1:length(self$auc_list),
+                                                                          ~self$auc_list[[.x - 1]]$result())
+                                          current_auc <- unlist(current_auc_list)
+                                          current_auc <- tensorflow::tf$reshape(tensor = current_auc, shape = self$shape)
+                                          self$auc_scores$assign(current_auc)
+                                          NULL
+                                        },
+
+                                        result = function(self) {
+                                          self$auc_score$assign(tensorflow::tf$math$reduce_mean(self$auc_scores))
+                                          return(self$auc_score)
+                                        },
+
+                                        compute_auc = function(self, y_true, y_pred) {
+
+                                          if (self$loss == "binary_crossentropy") {
+                                            if (self$model_output_size > 1) {
+                                              # for (i in 0:(length(self$auc_list) - 1)) {
+                                              #   self$auc_list[[i]]$update_state(y_true[ , i+1], y_pred[ , i+1])
+                                              # }
+                                              purrr::map(0:(length(self$auc_list) - 1),
+                                                         ~self$auc_list[[.x]]$update_state(y_true[ , .x+1], y_pred[ , .x+1]))
+                                            } else {
+                                              self$auc_list[[0]]$update_state(y_true, y_pred)
+                                            }
+
+                                          } else {
+                                            y_true_temp <- y_true[ , 1]
+                                            y_pred_temp <- tensorflow::tf$math$argmax(y_pred, axis = 1L)
+                                            self$auc_list[[0]]$update_state(y_true_temp, y_pred_temp)
+                                          }
+                                          NULL
+                                        },
+
+                                        reset_states = function(self) {
+                                          # for (i in 0:(length(self$auc_list) - 1)) {
+                                          #   self$auc_list[[i]]$reset_states()
+                                          # }
+                                          purrr::map(0:(length(self$auc_list) - 1),
+                                                     ~self$auc_list[[.x]]$reset_states())
+                                          self$auc_scores$assign_sub(self$auc_scores)
+                                          NULL
+                                        }
+
+                                      ))
+
+  return(auc_stateful(model_output_size = model_output_size, loss = loss, metric_name = metric_name))
+}
