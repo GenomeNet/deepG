@@ -84,8 +84,7 @@ create_model_lstm_cnn <- function(
   num_output_layers = 1,
   auc_metric = FALSE,
   f1_metric = FALSE,
-  bal_acc = FALSE
-) {
+  bal_acc = FALSE) {
 
   num_targets <- layer_dense[length(layer_dense)]
   layers.lstm <- length(layer_lstm)
