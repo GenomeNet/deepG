@@ -46,10 +46,12 @@
 #' Example: If 1.entry AACC, 2. entry TTTG and concat_seq = "ZZZ" this becomes AACCZZZTTTG.
 #' @param target_len Number of nucleotides to predict at once.
 #' @param file_filter Vector of file names to use from corpus.dir.
-#' @param use_coverage Boolean. Whether to use coverage as encoding rather than one-hot encoding.
+#' @param use_coverage Integer or NULL. If not NULL, use coverage as encoding rather than one-hot encoding and normalize .
 #' @param proportion_entries Proportion of fasta entries to keep. For example, if fasta file has 50 entries and proportion_entries = 0.1,
 #' will randomly select 5 entries.
 #' @param sample_by_file_size Sample new file weighted by file size (possible to repeatedly sample the same file).
+#' @param n_gram Integer, encode target not nucleotide wise but combine n nucleotides at once. For example for n=2, "AA" ->  (1, 0,..., 0),
+#' "AC" ->  (0, 1, 0,..., 0), "TT" -> (0,..., 0, 1), where the one-hot vector have length length(vocabulary)^n.
 #' @import data.table
 #' @export
 fastaFileGenerator <- function(corpus.dir,
@@ -79,12 +81,21 @@ fastaFileGenerator <- function(corpus.dir,
                                concat_seq = NULL,
                                target_len = 1,
                                file_filter = NULL,
-                               use_coverage = FALSE,
+                               use_coverage = NULL,
                                proportion_entries = NULL,
-                               sample_by_file_size = FALSE) {
+                               sample_by_file_size = FALSE,
+                               n_gram = NULL,
+                               n_gram_stride = 1) {
 
   if (!is.null(concat_seq) && (!all(stringr::str_split(concat_seq,"")[[1]] %in% vocabulary))) {
     stop("Characters of separating sequence should be in vocabulary")
+  }
+  if (is.null(use_coverage)) {
+    use_coverage <- FALSE
+    max_cov <- NULL
+  } else {
+    max_cov <- use_coverage
+    use_coverage <- TRUE
   }
   stopifnot(output_format %in% c("target_right", "target_middle_lstm", "target_middle_cnn", "wavenet"))
   wavenet_format <- FALSE; target_middle <- FALSE; cnn_format <- FALSE
@@ -102,9 +113,14 @@ fastaFileGenerator <- function(corpus.dir,
   }
 
   # adjust maxlen
+  original_maxlen <- maxlen
+  #if (is.null(n_gram)) {
   if (target_len > 1) {
     maxlen <- maxlen + target_len - 1
   }
+  #} else {
+  #  target_len <- target_len + n_gram - 1
+  #}
 
   set.seed(seed)
   vocabulary <- stringr::str_to_lower(vocabulary)
@@ -452,10 +468,10 @@ fastaFileGenerator <- function(corpus.dir,
             seq_vector <- seq_vector[-short_seq_index]
             length_vector <- length_vector[-short_seq_index]
             if (use_quality_score) {
-              quality_scores <- quality_scores[-short_seq_index]
+              quality_scores <<- quality_scores[-short_seq_index]
             }
             if (use_coverage) {
-              cov_vector <- cov_vector[-short_seq_index]
+              cov_vector <<- cov_vector[-short_seq_index]
             }
             if (additional_labels) {
               header_vector <<- header_vector[-short_seq_index]
@@ -550,10 +566,11 @@ fastaFileGenerator <- function(corpus.dir,
                                                 maxlen = maxlen, vocabulary = vocabulary, ambiguous_nuc = ambiguous_nuc,
                                                 startInd =  start_index_list[[.x]], use_quality = use_quality_score,
                                                 quality_vector = quality_list[[.x]], cnn_format = cnn_format, target_len = target_len,
-                                                cov_vector = coverage_list[[.x]], use_coverage = use_coverage)
+                                                cov_vector = coverage_list[[.x]], use_coverage = use_coverage, max_cov = max_cov,
+                                                n_gram = n_gram, n_gram_stride = n_gram_stride)
       )
 
-      if (target_len == 1) {
+      if (!is.list(array_list[[1]][[2]])) {
         if (!target_middle) {
           x <- array_list[[1]][[1]]
           y <- array_list[[1]][[2]]
@@ -566,7 +583,11 @@ fastaFileGenerator <- function(corpus.dir,
 
           # coerce y type to matrix
           if (dim(x)[1] == 1) {
-            dim(y) <- c(1, length(vocabulary))
+            if (is.null(n_gram)) {
+              dim(y) <-  c(1, length(vocabulary))
+            } else {
+              dim(y) <-  c(1, length(vocabulary)^n_gram)
+            }
           }
         } else {
           x_1 <- array_list[[1]][[1]][[1]]
@@ -583,7 +604,11 @@ fastaFileGenerator <- function(corpus.dir,
 
           # coerce y type to matrix
           if (dim(x_1)[1] == 1) {
-            dim(y) <- c(1, length(vocabulary))
+            if (is.null(n_gram)) {
+              dim(y) <-  c(1, length(vocabulary))
+            } else {
+              dim(y) <-  c(1, length(vocabulary)^n_gram)
+            }
           }
         }
       } else {
@@ -602,7 +627,11 @@ fastaFileGenerator <- function(corpus.dir,
           # coerce y type to matrix
           if (dim(x)[1] == 1) {
             for (i in 1:length(y)) {
-              dim(y[[i]]) <- c(1, length(vocabulary))
+              if (is.null(n_gram)) {
+                dim(y[[i]]) <-  c(1, length(vocabulary))
+              } else {
+                dim(y[[i]]) <-  c(1, length(vocabulary)^n_gram)
+              }
             }
           }
         } else {
@@ -623,7 +652,11 @@ fastaFileGenerator <- function(corpus.dir,
           # coerce y type to matrix
           if (dim(x_1)[1] == 1) {
             for (i in 1:length(y)) {
-              dim(y[[i]]) <- c(1, length(vocabulary))
+              if (is.null(n_gram)) {
+                dim(y[[i]]) <-  c(1, length(vocabulary))
+              } else {
+                dim(y[[i]]) <-  c(1, length(vocabulary)^n_gram)
+              }
             }
           }
         }
@@ -641,8 +674,8 @@ fastaFileGenerator <- function(corpus.dir,
                                ~sequenceToArray(sequence_list[[.x]], ambiguous_nuc = ambiguous_nuc,
                                                 maxlen = maxlen, vocabulary = vocabulary, nuc_dist = nuc_dist_list[[.x]],
                                                 startInd =  start_index_list[[.x]], wavenet_format = TRUE, use_quality = use_quality_score,
-                                                quality_vector = quality_list[[.x]], cnn_format = FALSE,
-                                                cov_vector = coverage_list[[.x]], use_coverage = use_coverage)
+                                                quality_vector = quality_list[[.x]], cnn_format = FALSE, n_gram = n_gram,
+                                                cov_vector = coverage_list[[.x]], use_coverage = use_coverage, max_cov = max_cov)
       )
 
       x <- array_list[[1]][[1]]
@@ -773,10 +806,19 @@ fastaLabelGenerator <- function(corpus.dir,
                                 target_from_csv = NULL,
                                 target_split = NULL,
                                 file_filter = NULL,
-                                use_coverage = FALSE,
+                                use_coverage = NULL,
                                 proportion_entries = NULL,
-                                sample_by_file_size = FALSE) {
+                                sample_by_file_size = FALSE,
+                                n_gram = NULL) {
 
+  n_gram <- NULL
+  if (is.null(use_coverage)) {
+    use_coverage <- FALSE
+    max_cov <- NULL
+  } else {
+    max_cov <- use_coverage
+    use_coverage <- TRUE
+  }
   if (!is.null(concat_seq) && (!all(stringr::str_split(concat_seq,"")[[1]] %in% vocabulary))) {
     stop("Characters of separating sequence should be in vocabulary")
   }
@@ -791,6 +833,11 @@ fastaLabelGenerator <- function(corpus.dir,
   concat <- !is.null(concat_seq)
   additional_labels <- !is.null(added_label_path)
   seq_vector <- NULL
+
+  # adjust maxlen for n_gram
+  if (!is.null(n_gram)) {
+    maxlen <- maxlen + n_gram - 1
+  }
 
   for (i in letters) {
     if (!(i %in% stringr::str_to_lower(vocabulary))) {
@@ -1223,10 +1270,10 @@ fastaLabelGenerator <- function(corpus.dir,
             length_vector <- length_vector[-short_seq_index]
             label_vector <- label_vector[-short_seq_index]
             if (use_quality_score) {
-              quality_scores <- quality_scores[-short_seq_index]
+              quality_scores <<- quality_scores[-short_seq_index]
             }
             if (use_coverage) {
-              cov_vector <- cov_vector[-short_seq_index]
+              cov_vector <<- cov_vector[-short_seq_index]
             }
           }
         }
@@ -1337,7 +1384,7 @@ fastaLabelGenerator <- function(corpus.dir,
                                                                               maxlen = maxlen, vocabulary = vocabulary, nuc_dist = nuc_dist_list[[.x]],
                                                                               startInd =  start_index_list[[.x]], quality_vector = quality_list[[.x]],
                                                                               use_quality = use_quality_score, cov_vector = coverage_list[[.x]],
-                                                                              use_coverage = use_coverage)
+                                                                              use_coverage = use_coverage, max_cov = max_cov, n_gram = n_gram)
     )
 
     # one hot encode targets
@@ -1509,10 +1556,20 @@ labelByFolderGenerator <- function(corpus.dir,
                                    max_samples = NULL,
                                    split_seq = FALSE,
                                    concat_seq = NULL,
-                                   use_coverage = FALSE,
+                                   file_filter = NULL,
+                                   use_coverage = NULL,
                                    proportion_entries = NULL,
-                                   sample_by_file_size = FALSE) {
+                                   sample_by_file_size = FALSE,
+                                   n_gram = NULL) {
 
+  n_gram <- NULL
+  if (is.null(use_coverage)) {
+    use_coverage <- FALSE
+    max_cov <- NULL
+  } else {
+    max_cov <- use_coverage
+    use_coverage <- TRUE
+  }
   if (!is.null(concat_seq) && (!all(stringr::str_split(concat_seq,"")[[1]] %in% vocabulary))) {
     stop("Characters of separating sequence should be in vocabulary")
   }
@@ -1530,6 +1587,11 @@ labelByFolderGenerator <- function(corpus.dir,
     stop("Using read data and skipping files at the same time not implemented yet")
   }
   additional_labels <- ifelse(is.null(added_label_path), FALSE, TRUE)
+
+  # adjust maxlen for n_gram
+  if (!is.null(n_gram)) {
+    maxlen <- maxlen + n_gram - 1
+  }
 
   if (split_seq) {
     maxlen <- maxlen + 1
@@ -1554,31 +1616,11 @@ labelByFolderGenerator <- function(corpus.dir,
   }
   tokenizer_pred <- keras::fit_text_tokenizer(keras::text_tokenizer(char_level = TRUE, lower = TRUE, oov_token = "0"), c(vocabulary, amb_nuc_token))
 
-  if (is.list(corpus.dir)) {
-    fasta.files <- list()
-    for (i in 1:length(corpus.dir)) {
-      fasta.files[[i]] <- list.files(
-        path = xfun::normalize_path(corpus.dir[[i]]),
-        pattern = paste0("\\.", format, "$"),
-        full.names = TRUE)
-    }
-    fasta.files <- unlist(fasta.files)
-    num_files <- length(fasta.files)
-  } else {
-
-    # single file
-    if (endsWith(corpus.dir, paste0(".", format))) {
-      num_files <- 1
-      fasta.files <- corpus.dir
-    } else {
-
-      fasta.files <- list.files(
-        path = xfun::normalize_path(corpus.dir),
-        pattern = paste0("\\.", format, "$"),
-        full.names = TRUE)
-      num_files <- length(fasta.files)
-    }
-  }
+  # get fasta files
+  fasta.files <- list_fasta_files(corpus.dir = corpus.dir,
+                                  format = format,
+                                  file_filter = file_filter)
+  num_files <- length(fasta.files)
 
   if (sample_by_file_size) {
     randomFiles <- FALSE
@@ -1973,7 +2015,7 @@ labelByFolderGenerator <- function(corpus.dir,
               quality_scores <- quality_scores[-short_seq_index]
             }
             if (use_coverage) {
-              cov_vector <- cov_vector[-short_seq_index]
+              cov_vector <<- cov_vector[-short_seq_index]
             }
             if (additional_labels) {
               header_vector <- header_vector[-short_seq_index]
@@ -2068,7 +2110,7 @@ labelByFolderGenerator <- function(corpus.dir,
                                                                               maxlen = maxlen, vocabulary = vocabulary, nuc_dist = nuc_dist_list[[.x]],
                                                                               startInd =  start_index_list[[.x]], use_quality = use_quality_score,
                                                                               quality_vector = quality_list[[.x]], cov_vector = coverage_list[[.x]],
-                                                                              use_coverage = use_coverage)
+                                                                              max_cov = max_cov, use_coverage = use_coverage, n_gram = n_gram)
     )
 
     x <- array_x_list[[1]]
@@ -2225,11 +2267,13 @@ initializeGenerators <- function(directories,
                                  skip_amb_nuc = NULL,
                                  max_samples = NULL,
                                  split_seq = FALSE,
+                                 file_filter = NULL,
                                  concat_seq = NULL,
-                                 use_coverage = FALSE,
+                                 use_coverage = NULL,
                                  set_learning = NULL,
                                  proportion_entries = NULL,
-                                 sample_by_file_size = FALSE) {
+                                 sample_by_file_size = FALSE,
+                                 n_gram = NULL) {
 
   # adjust batch.size
   if (is.null(set_learning)) {
@@ -2253,6 +2297,7 @@ initializeGenerators <- function(directories,
   argg <- c(as.list(environment()))
   # variables with just one entry
   argg["directories"] <- NULL
+  argg["file_filter"] <- NULL
   argg["val"] <- NULL
   argg["vocabulary"] <- NULL
   argg["numTargets"] <- NULL
@@ -2273,7 +2318,7 @@ initializeGenerators <- function(directories,
   argg["set_learning"] <- NULL
   argg["proportion_entries"] <- NULL
   argg["sample_by_file_size"] <- NULL
-
+  argg["n_gram"] <- NULL
 
   for (i in 1:length(argg)) {
     if (length(argg[[i]]) == 1) {
@@ -2312,6 +2357,7 @@ initializeGenerators <- function(directories,
                                        read_data = read_data,
                                        use_quality_score = use_quality_score,
                                        padding = padding[i],
+                                       file_filter = file_filter,
                                        added_label_path = added_label_path,
                                        add_input_as_seq = add_input_as_seq,
                                        skip_amb_nuc = skip_amb_nuc,
@@ -2320,7 +2366,8 @@ initializeGenerators <- function(directories,
                                        concat_seq = concat_seq,
                                        use_coverage = use_coverage,
                                        proportion_entries = proportion_entries,
-                                       sample_by_file_size = sample_by_file_size
+                                       sample_by_file_size = sample_by_file_size,
+                                       n_gram = n_gram
   )"
       )
       eval(parse(text = genAsText))
@@ -2353,6 +2400,7 @@ initializeGenerators <- function(directories,
                                        read_data = read_data,
                                        use_quality_score = use_quality_score,
                                        padding = padding[i],
+                                       file_filter = file_filter,
                                        added_label_path = added_label_path,
                                        add_input_as_seq = add_input_as_seq,
                                        skip_amb_nuc = skip_amb_nuc,
@@ -2361,7 +2409,8 @@ initializeGenerators <- function(directories,
                                        concat_seq = concat_seq,
                                        use_coverage = use_coverage,
                                        proportion_entries = proportion_entries,
-                                       sample_by_file_size = sample_by_file_size
+                                       sample_by_file_size = sample_by_file_size,
+                                       n_gram = n_gram
   )"
       )
       eval(parse(text = genAsTextVal))
@@ -2379,7 +2428,8 @@ initializeGenerators <- function(directories,
 labelByFolderGeneratorWrapper <- function(val, new_batch_size = NULL,
                                           samples_per_target = NULL, batch.size = NULL,
                                           path = NULL, voc_len = NULL, maxlen = NULL,
-                                          reshape_mode = NULL) {
+                                          reshape_mode = NULL,  buffer_len = NULL,
+                                          concat_maxlen = NULL) {
   if (!val) {
     function() {
       directories <- path
@@ -2425,6 +2475,8 @@ labelByFolderGeneratorWrapper <- function(val, new_batch_size = NULL,
                             path = path,
                             voc_len = voc_len,
                             maxlen = maxlen,
+                            concat_maxlen = concat_maxlen,
+                            buffer_len = buffer_len,
                             reshape_mode = reshape_mode)
         return(l)
       } else {
@@ -2476,6 +2528,8 @@ labelByFolderGeneratorWrapper <- function(val, new_batch_size = NULL,
                             path = path,
                             voc_len = voc_len,
                             maxlen = maxlen,
+                            concat_maxlen = concat_maxlen,
+                            buffer_len = buffer_len,
                             reshape_mode = reshape_mode)
         return(l)
       } else {
@@ -2544,23 +2598,41 @@ dummy_gen <- function(model, batch_size) {
 gen_rds <- function(rds_folder, batch_size, fileLog = NULL,
                     max_samples = NULL,
                     proportion_per_file = NULL,
-                    target_len = NULL) {
+                    target_len = NULL,
+                    n_gram = NULL, n_gram_stride = 1) {
 
   is_lm <- !is.null(target_len)
+
+  if (!is.null(n_gram) & is_lm && (target_len < n_gram)) {
+    stop("target_len needs to be at least as big as n_gram.")
+  }
+
+  # original_target_len <- target_len
+  #if (!is.null(n_gram)) {
+  #   target_len <- target_len + n_gram - 1
+  #}
+
   if (endsWith(rds_folder, ".rds")) {
     rds_files <- rds_folder
   } else {
     rds_files <- list.files(unlist(rds_folder), pattern = ".rds", full.names = TRUE)
   }
+
   file_index <- 1
   num_files <- length(rds_files)
   rds_file <- readRDS(rds_files[file_index])
   x_complete <- rds_file[[1]]
-  y_complete <- rds_file[[2]]
+  if (!is_lm) y_complete <- rds_file[[2]]
+  # if (!is.null(n_gram)) {
+  #   x_complete <- n_gram_of_3d_tensor(tensor_3d = x_complete, n = n_gram)
+  # }
+
   x_dim_start <- dim(x_complete)
-  y_dim_start <- dim(y_complete)
-  if (x_dim_start[1] != y_dim_start[1]) {
-    stop("Different number of samples for input and target")
+  if (!is_lm) {
+    y_dim_start <- dim(y_complete)
+    if (x_dim_start[1] != y_dim_start[1]) {
+      stop("Different number of samples for input and target")
+    }
   }
   sample_index <- 1:x_dim_start[1]
 
@@ -2577,7 +2649,7 @@ gen_rds <- function(rds_folder, batch_size, fileLog = NULL,
   }
 
   x_dim <- x_dim_start
-  y_dim <- y_dim_start
+  if (!is_lm) y_dim <- y_dim_start
 
   function() {
 
@@ -2603,6 +2675,10 @@ gen_rds <- function(rds_folder, batch_size, fileLog = NULL,
           }
           rds_file <<- readRDS(rds_files[file_index])
           x_complete <<- rds_file[[1]]
+          # if (!is.null(n_gram)) {
+          #   x_complete <<- n_gram_of_3d_tensor(tensor_3d = x_complete, n = n_gram)
+          # }
+
           x_dim <<- dim(x_complete)
 
           if (!is_lm) {
@@ -2632,6 +2708,7 @@ gen_rds <- function(rds_folder, batch_size, fileLog = NULL,
           write.table(x = rds_files[file_index], file = fileLog, append = TRUE, col.names = FALSE, row.names = FALSE)
         }
       }
+
       if (length(sample_index) == 0) next
       if (length(sample_index) == 1) {
         index <- sample_index
@@ -2663,6 +2740,177 @@ gen_rds <- function(rds_folder, batch_size, fileLog = NULL,
       }
     }
 
+    # if (!is.null(n_gram) & is_lm) {
+    #    x <- x[ , 1:(dim(x)[2] - n_gram + 1), ]
+    #    if (is.matrix(x)) {
+    #      x <- array(x, dim = c(1, dim(x)))
+    #    }
+    #  }
+
+    if (!is.null(n_gram) & is_lm) {
+      y <- do.call(rbind, y)
+      y_list <- list()
+      for (i in 1:batch_size) {
+        index <- (i-1)  + (1 + (0:(target_len-1)) * batch_size)
+        n_gram_matrix <- n_gram_of_matrix(input_matrix = y[index, ], n = n_gram)
+        y_list[[i]] <- n_gram_matrix
+      }
+      y_tensor <- keras::k_stack(y_list, axis = 1L) %>% keras::k_eval()
+      y <- vector("list", dim(y_tensor)[2])
+      for (i in 1:dim(y_tensor)[2]) {
+        y_subset <- y_tensor[ , i, ]
+        if (batch_size == 1) y_subset <- matrix(y_subset, nrow = 1)
+        y[[i]] <- y_subset
+      }
+
+      if (is.list(y) & length(y) == 1) {
+        y <- y[[1]]
+      }
+
+      if (n_gram_stride > 1 & is.list(y)) {
+        stride_index <- 0:(length(y)-1) %% n_gram_stride == 0
+        y <- y[stride_index]
+
+      }
+    }
+
     return(list(x, y))
   }
+}
+
+#' Collect samples from generator and store in rds file.
+#'
+#' Repeatedly take one random sample from random file and combine samples. Files are sampled weighted by file size.
+#'
+#' @inheritParams fastaFileGenerator
+#' @inheritParams fastaLabelGenerator
+#' @inheritParams initializeGenerators
+#' @inheritParams labelByFolderGeneratorWrapper
+#' @param output_path Where to store output rds file.
+dataset_from_gen <- function(output_path,
+                             num_samples = 1000,
+                             train_type = "lm",
+                             output_format = "target_right",
+                             path,
+                             format = "fasta",
+                             maxlen = 250,
+                             vocabulary = c("a", "c", "g", "t"),
+                             seed = 1234,
+                             reverseComplements = FALSE,
+                             ambiguous_nuc = "zeros",
+                             use_quality_score = FALSE,
+                             padding = FALSE,
+                             added_label_path = NULL,
+                             add_input_as_seq = NULL,
+                             skip_amb_nuc = NULL,
+                             concat_seq = NULL,
+                             target_len = 1,
+                             use_coverage = FALSE,
+                             reshape_mode = NULL,
+                             set_learning = NULL) {
+
+  stopifnot(train_type %in% c("lm", "label_header", "label_folder", "label_csv"))
+
+  if (train_type == "lm") {
+
+    gen <- fastaFileGenerator(corpus.dir = path,
+                              format = format,
+                              batch.size = num_samples,
+                              maxlen = maxlen,
+                              max_iter = 10000,
+                              vocabulary = vocabulary,
+                              verbose = FALSE,
+                              randomFiles = TRUE,
+                              step = 1,
+                              showWarnings = FALSE,
+                              seed = seed,
+                              shuffleFastaEntries = TRUE,
+                              numberOfFiles = NULL,
+                              fileLog = NULL,
+                              reverseComplements = reverseComplements,
+                              output_format = output_format,
+                              ambiguous_nuc = ambiguous_nuc,
+                              use_quality_score = use_quality_score,
+                              proportion_per_file = NULL,
+                              padding = padding,
+                              added_label_path = added_label_path,
+                              add_input_as_seq = add_input_as_seq,
+                              skip_amb_nuc = skip_amb_nuc,
+                              max_samples = 1,
+                              concat_seq = concat_seq,
+                              target_len = target_len,
+                              file_filter = NULL,
+                              use_coverage = FALSE,
+                              proportion_entries = NULL,
+                              sample_by_file_size = TRUE)
+  }
+
+  if (train_type == "label_header" | train_type == "label_csv") {
+
+    gen <- fastaLabelGenerator(corpus.dir = path,
+                               format = format,
+                               batch.size = num_samples,
+                               maxlen = maxlen,
+                               max_iter = 10000,
+                               vocabulary = vocabulary,
+                               verbose = FALSE,
+                               randomFiles = TRUE,
+                               step = 1,
+                               showWarnings = FALSE,
+                               seed = seed,
+                               shuffleFastaEntries = TRUE,
+                               numberOfFiles = NULL,
+                               fileLog = NULL,
+                               labelVocabulary = labelVocabulary,
+                               reverseComplements = reverseComplements,
+                               ambiguous_nuc = ambiguous_nuc,
+                               proportion_per_file = NULL,
+                               read_data = FALSE,
+                               use_quality_score = use_quality_score,
+                               padding = padding,
+                               skip_amb_nuc = skip_amb_nuc,
+                               max_samples = 1,
+                               concat_seq = concat_seq,
+                               added_label_path = added_label_path,
+                               add_input_as_seq = add_input_as_seq,
+                               target_from_csv = target_from_csv,
+                               target_split = NULL,
+                               file_filter = NULL,
+                               use_coverage = use_coverage,
+                               proportion_entries = NULL,
+                               sample_by_file_size = TRUE)
+  }
+
+  if (train_type == "label_folder") {
+
+    if (is.null(set_learning)) {
+      samples_per_target <- NULL
+      new_batch_size <- NULL
+      reshape_mode <- NULL
+    } else {
+      reshape_mode <- set_learning$reshape_mode
+      maxlen <- set_learning$maxlen
+      samples_per_target <- set_learning$samples_per_target
+      new_batch_size <- batch.size
+      batch.size <- samples_per_target * batch.size
+    }
+
+    initializeGenerators(directories = path, format = format, batch.size = num_samples, maxlen = maxlen, vocabulary = vocabulary,
+                         verbose = FALSE, randomFiles = TRUE, step = 1, showWarnings = FALSE, seed = seed,
+                         shuffleFastaEntries = TRUE, numberOfFiles = NULL, skip_amb_nuc = skip_amb_nuc,
+                         fileLog = NULL, reverseComplements = reverseComplements, reverseComplementEncoding = FALSE,
+                         val = FALSE, ambiguous_nuc = ambiguous_nuc,
+                         proportion_per_file = NULL, read_data = FALSE, use_quality_score = use_quality_score,
+                         padding = padding, max_samples = 1, split_seq = FALSE, concat_seq = concat_seq,
+                         added_label_path = added_label_path, add_input_as_seq = add_input_as_seq, use_coverage = use_coverage,
+                         set_learning = set_learning, proportion_entries = NULL, sample_by_file_size = TRUE)
+
+    gen <- labelByFolderGeneratorWrapper(val = FALSE, path = path, new_batch_size = new_batch_size,
+                                         samples_per_target = samples_per_target,
+                                         batch.size = batch.size, voc_len = length(vocabulary),
+                                         maxlen = maxlen, reshape_mode = reshape_mode)
+  }
+
+  tensor_list <- gen()
+  saveRDS(tensor_list, file = output_path)
 }

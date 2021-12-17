@@ -150,14 +150,24 @@ preprocessFasta <- function(path,
 #' @export
 sequenceToArray <- function(sequence, maxlen, vocabulary, startInd, wavenet_format = FALSE, target_middle = FALSE,
                             ambiguous_nuc = "zero", nuc_dist = NULL, use_quality = FALSE, quality_vector = NULL,
-                            cnn_format, target_len = 1, use_coverage = FALSE, cov_vector = NULL) {
+                            cnn_format, target_len = 1, use_coverage = FALSE, max_cov = NULL, cov_vector = NULL,
+                            n_gram = NULL, n_gram_stride = 1) {
 
-  stopifnot(length(sequence) > maxlen)
+  voc_len <- length(vocabulary)
+  if (!is.null(n_gram)) {
+    if (target_len < n_gram) stop("target_len needs to be at least as big as n_gram")
+    #   sequence <- int_to_n_gram(int_seq = sequence, n = n_gram, voc_size = length(vocabulary))
+    #   target_len <- target_len - n_gram + 1
+    #   maxlen <- maxlen - n_gram + 1
+    #   voc_len <- length(vocabulary)^n_gram
+  }
+
   startInd <- startInd - startInd[1] + 1
   numberOfSamples <- length(startInd)
 
   # every row in z one-hot encodes one character in sequence, oov is zero-vector
-  z  <- keras::to_categorical(sequence, num_classes = length(vocabulary) + 2)[ , -c(1, length(vocabulary) + 2)]
+  num_classes <- voc_len + 2
+  z  <- keras::to_categorical(sequence, num_classes = num_classes)[ , -c(1, num_classes)]
 
   if (use_quality) {
     ones_pos <- apply(z, 1, which.max)
@@ -169,71 +179,83 @@ sequenceToArray <- function(sequence, maxlen, vocabulary, startInd, wavenet_form
   }
 
   if (ambiguous_nuc == "equal") {
-    amb_nuc_pos <- which(sequence == (length(vocabulary) + 1))
-    z[amb_nuc_pos, ] <- matrix(rep(1/length(vocabulary), ncol(z) * length(amb_nuc_pos)), ncol = ncol(z))
+    amb_nuc_pos <- which(sequence == (voc_len + 1))
+    z[amb_nuc_pos, ] <- matrix(rep(1/voc_len, ncol(z) * length(amb_nuc_pos)), ncol = ncol(z))
   }
   if (ambiguous_nuc == "empirical") {
-    amb_nuc_pos <- which(sequence == (length(vocabulary) + 1))
+    if (!is.null(n_gram)) stop("Can only use equal, zero or discard option for ambiguous_nuc when using n_gram encoding")
+    amb_nuc_pos <- which(sequence == (voc_len + 1))
     z[amb_nuc_pos, ] <- matrix(rep(nuc_dist, length(amb_nuc_pos)), nrow = length(amb_nuc_pos), byrow = TRUE)
   }
 
   if (use_coverage) {
-    z <- z * cov_vector
+    z <- z * (cov_vector/max_cov)
   }
 
   if (target_len == 1) {
     if (!target_middle) {
       if (!wavenet_format) {
-        x <- array(0, dim = c(numberOfSamples, maxlen, length(vocabulary)))
+        # target right
+        x <- array(0, dim = c(numberOfSamples, maxlen, voc_len))
         for (i in 1:numberOfSamples) {
           start <- startInd[i]
           x[i, , ] <- z[start : (start + maxlen - 1), ]
         }
+        #if (!is.null(n_gram)) x <- x[ , 1:(dim(x)[2] - n_gram + 1), ]
+
         y <- z[startInd + maxlen, ]
-        return(list(x, y))
-      } else if (!cnn_format){
-        x <- array(0, dim = c(numberOfSamples, maxlen, length(vocabulary)))
-        y <- array(0, dim = c(numberOfSamples, maxlen, length(vocabulary)))
+      } else if (!cnn_format) {
+        # wavenet
+        if (!is.null(n_gram)) stop("Wavenet format not implemented for n_gram.")
+        x <- array(0, dim = c(numberOfSamples, maxlen, voc_len))
+        y <- array(0, dim = c(numberOfSamples, maxlen, voc_len))
         for (i in 1:numberOfSamples) {
           start <- startInd[i]
           x[i, , ] <- z[start : (start + maxlen - 1), ]
           y[i, , ] <- z[(start + 1) : (start + maxlen), ]
         }
-        return(list(x, y))
       } else {
-        x <- array(0, dim = c(numberOfSamples, maxlen + 1, length(vocabulary)))
+        # target middle cnn
+        x <- array(0, dim = c(numberOfSamples, maxlen + 1, voc_len))
         for (i in 1:numberOfSamples) {
           start <- startInd[i]
           x[i, , ] <- z[start : (start + maxlen), ]
         }
         missing_val <- ceiling(maxlen/2)
         y <- z[startInd + missing_val, ]
+        #if (is.null(n_gram)) {
         x <- x[ , -(missing_val + 1), ]
-        return(list(x, y))
+        #} else {
+        #  x <- x[ , -((missing_val - n_gram):(missing_val + target_len + n_gram - 1)), ]
+        #}
       }
     } else {
       if (!wavenet_format) {
         len_input_1 <- ceiling(maxlen/2)
         len_input_2 <- floor(maxlen/2)
-        input_tensor_1 <- array(0, dim = c(numberOfSamples, len_input_1, length(vocabulary)))
-        input_tensor_2 <- array(0, dim = c(numberOfSamples, len_input_2, length(vocabulary)))
+        input_tensor_1 <- array(0, dim = c(numberOfSamples, len_input_1, voc_len))
+        input_tensor_2 <- array(0, dim = c(numberOfSamples, len_input_2, voc_len))
         for (i in 1:numberOfSamples) {
           start <- startInd[i]
           input_tensor_1[i, , ] <- z[start : (start + len_input_1 - 1), ]
           input_tensor_2[i, , ] <- z[(start + maxlen) : (start + len_input_1 + 1), ]
         }
+        if (!is.null(n_gram)) {
+          input_tensor_1 <- input_tensor_1[ , 1:(dim(input_tensor_1) - n_gram + 1), ]
+          input_tensor_2 <- input_tensor_2[ , 1:(dim(input_tensor_2) - n_gram + 1), ]
+        }
         x <- list(input_tensor_1, input_tensor_2)
         y <- z[startInd + len_input_1, ]
-        return(list(x, y))
       } else {
-
+        stop("Target middle not implemented for wavenet format.")
       }
     }
     # target_len > 1
   } else {
     if (!target_middle) {
       if (!cnn_format) {
-        x <- array(0, dim = c(numberOfSamples, maxlen - target_len + 1, length(vocabulary)))
+        # target right
+        x <- array(0, dim = c(numberOfSamples, maxlen - target_len + 1, voc_len))
         for (i in 1:numberOfSamples) {
           start <- startInd[i]
           x[i, , ] <- z[start : (start + maxlen - target_len), ]
@@ -242,9 +264,11 @@ sequenceToArray <- function(sequence, maxlen, vocabulary, startInd, wavenet_form
         for (i in 1:target_len) {
           y[[i]] <- z[startInd + maxlen - target_len + i, ]
         }
-        return(list(x, y))
+        #if (!is.null(n_gram)) x <- x[ , 1:(dim(x)[2] - n_gram + 1), ]
+
       } else {
-        x <- array(0, dim = c(numberOfSamples, maxlen + 1, length(vocabulary)))
+        # cnn format
+        x <- array(0, dim = c(numberOfSamples, maxlen + 1, voc_len))
         for (i in 1:numberOfSamples) {
           start <- startInd[i]
           x[i, , ] <- z[start : (start + maxlen), ]
@@ -254,31 +278,72 @@ sequenceToArray <- function(sequence, maxlen, vocabulary, startInd, wavenet_form
         for (i in 1:target_len) {
           y[[i]] <- z[startInd + missing_val + i - 1, ]
         }
+        #if (is.null(n_gram)) {
         x <- x[ , -((missing_val + 1):(missing_val + target_len)), ]
-        return(list(x, y))
+        #} else {
+        #  x <- x[ , -((missing_val - n_gram):(missing_val + target_len + n_gram - 1)), ]
+        #}
       }
     } else {
       if (!wavenet_format) {
+        # target middle lstm
         len_input_1 <- ceiling((maxlen - target_len + 1)/2)
         len_input_2 <- maxlen + 1 - len_input_1 - target_len
-        input_tensor_1 <- array(0, dim = c(numberOfSamples, len_input_1, length(vocabulary)))
-        input_tensor_2 <- array(0, dim = c(numberOfSamples, len_input_2, length(vocabulary)))
+        input_tensor_1 <- array(0, dim = c(numberOfSamples, len_input_1, voc_len))
+        input_tensor_2 <- array(0, dim = c(numberOfSamples, len_input_2, voc_len))
         for (i in 1:numberOfSamples) {
           start <- startInd[i]
           input_tensor_1[i, , ] <- z[start : (start + len_input_1 - 1), ]
           input_tensor_2[i, , ] <- z[(start + maxlen) : (start + maxlen - len_input_2 + 1), ]
+        }
+        if (!is.null(n_gram)) {
+          input_tensor_1 <- input_tensor_1[ , 1:(dim(input_tensor_1) - n_gram + 1), ]
+          input_tensor_2 <- input_tensor_2[ , 1:(dim(input_tensor_2) - n_gram + 1), ]
         }
         x <- list(input_tensor_1, input_tensor_2)
         y <- list()
         for (i in 1:target_len) {
           y[[i]] <- z[startInd + len_input_1 - 1 + i, ]
         }
-        return(list(x, y))
       } else {
-
+        stop("Multi target not implemented for wavenet format.")
       }
     }
   }
+  if (is.matrix(x)) {
+    x <- array(x, dim = c(1, dim(x)))
+  }
+
+  if (!is.null(n_gram)) {
+    y <- do.call(rbind, y)
+    y_list <- list()
+    for (i in 1:numberOfSamples) {
+      index <- (i-1)  + (1 + (0:(target_len-1))*numberOfSamples)
+      input_matrix <- y[index, ]
+      if (length(index) == 1) input_matrix <- matrix(input_matrix, nrow = 1)
+      n_gram_matrix <- n_gram_of_matrix(input_matrix = input_matrix, n = n_gram)
+      y_list[[i]] <- n_gram_matrix # tensorflow::tf$expand_dims(n_gram_matrix, axis = 0L)
+    }
+    y_tensor <- keras::k_stack(y_list, axis = 1L) %>% keras::k_eval()
+    y <- vector("list", dim(y_tensor)[2])
+
+    for (i in 1:dim(y_tensor)[2]) {
+      y_subset <- y_tensor[ , i, ]
+      if (numberOfSamples == 1) y_subset <- matrix(y_subset, nrow = 1)
+      y[[i]] <- y_subset
+    }
+
+    if (is.list(y) & length(y) == 1) {
+      y <- y[[1]]
+    }
+
+    if (n_gram_stride > 1 & is.list(y)) {
+      stride_index <- 0:(length(y)-1) %% n_gram_stride == 0
+      y <- y[stride_index]
+    }
+  }
+
+  return(list(x, y))
 }
 
 #' One-hot-encodes integer
@@ -297,38 +362,44 @@ sequenceToArray <- function(sequence, maxlen, vocabulary, startInd, wavenet_form
 #' @param quality_vector Vector of quality probabilities.
 #' @export
 sequenceToArrayLabel <- function(sequence, maxlen, vocabulary, startInd, ambiguous_nuc = "zero", nuc_dist = NULL,
-                                 use_quality = FALSE, quality_vector = NULL, use_coverage = FALSE, cov_vector = NULL) {
+                                 use_quality = FALSE, quality_vector = NULL, use_coverage = FALSE, max_cov = NULL,
+                                 cov_vector = NULL, n_gram = NULL) {
 
-  stopifnot(length(sequence) > (maxlen - 1))
+  voc_len <- length(vocabulary)
+  if (!is.null(n_gram)) {
+    sequence <- int_to_n_gram(int_seq = sequence, n = n_gram, voc_size = length(vocabulary))
+    maxlen <- maxlen - n_gram + 1
+    voc_len <- length(vocabulary)^n_gram
+  }
   startInd <- startInd - startInd[1] + 1
   numberOfSamples <- length(startInd)
 
   # every row in z one-hot encodes one character in sequence, oov is zero-vector
-  z  <- keras::to_categorical(sequence, num_classes = length(vocabulary) + 2)[ , -c(1, length(vocabulary) + 2)]
-  z <- matrix(z, ncol = length(vocabulary))
+  z  <- keras::to_categorical(sequence, num_classes = voc_len + 2)[ , -c(1, voc_len + 2)]
+  z <- matrix(z, ncol = voc_len)
 
   if (use_quality) {
     ones_pos <- apply(z, 1, which.max)
     is_zero_row <- apply(z == 0, 1, all)
     z <- purrr::map(1:length(quality_vector), ~create_quality_vector(pos = ones_pos[.x], prob = quality_vector[.x],
-                                                                     voc_length = length(vocabulary))) %>% unlist() %>% matrix(ncol = length(vocabulary), byrow = TRUE)
+                                                                     voc_length = voc_len)) %>% unlist() %>% matrix(ncol = voc_len, byrow = TRUE)
     z[is_zero_row, ] <- 0
   }
 
   if (ambiguous_nuc == "equal") {
-    amb_nuc_pos <- which(sequence == (length(vocabulary) + 1))
-    z[amb_nuc_pos, ] <- matrix(rep(1/length(vocabulary), ncol(z) * length(amb_nuc_pos)), ncol = ncol(z))
+    amb_nuc_pos <- which(sequence == (voc_len + 1))
+    z[amb_nuc_pos, ] <- matrix(rep(1/voc_len, ncol(z) * length(amb_nuc_pos)), ncol = ncol(z))
   }
   if (ambiguous_nuc == "empirical") {
-    amb_nuc_pos <- which(sequence == (length(vocabulary) + 1))
+    amb_nuc_pos <- which(sequence == (voc_len + 1))
     z[amb_nuc_pos, ] <- matrix(rep(nuc_dist, length(amb_nuc_pos)), nrow = length(amb_nuc_pos), byrow = TRUE)
   }
 
   if (use_coverage) {
-    z <- z * cov_vector
+    z <- z * (cov_vector/max_cov)
   }
 
-  x <- array(0, dim = c(numberOfSamples, maxlen, length(vocabulary)))
+  x <- array(0, dim = c(numberOfSamples, maxlen, voc_len))
   for (i in 1:numberOfSamples) {
     start <- startInd[i]
     x[i, , ] <- z[start : (start + maxlen - 1), ]
@@ -859,13 +930,19 @@ count_files <- function(path, format = "fasta", train_type) {
   num_files <- rep(0, length(path))
   for (i in 1:length(path)) {
     for (k in 1:length(path[[i]])) {
-      current_files <- length(list.files(path[[i]][[k]], pattern = paste0(".", format)))
+      if (endsWith(path[[i]][[k]], paste0(".", format))) {
+        current_files <- 1
+      } else {
+        current_files <- length(list.files(path[[i]][[k]], pattern = paste0(".", format)))
+      }
       num_files[i] <- num_files[i] + current_files
+
       if (current_files == 0) {
         stop(paste0(path[[i]][[k]], " is empty or no files with .", format, " ending in this directory"))
       }
     }
   }
+  # return number of files per class for "label_folder"
   if (train_type == "label_folder") {
     return(num_files)
   } else {
@@ -874,38 +951,38 @@ count_files <- function(path, format = "fasta", train_type) {
 }
 
 list_fasta_files <- function(corpus.dir, format, file_filter) {
-  if (is.list(corpus.dir)) {
-    fasta.files <- list()
-    for (i in 1:length(corpus.dir)) {
+  #if (is.list(corpus.dir)) {
+  fasta.files <- list()
+  for (i in 1:length(corpus.dir)) {
 
-      if (endsWith(corpus.dir[[i]], paste0(".", format))) {
-        fasta.files[[i]] <- corpus.dir[[i]]
+    if (endsWith(corpus.dir[[i]], paste0(".", format))) {
+      fasta.files[[i]] <- corpus.dir[[i]]
 
-      } else {
-
-        fasta.files[[i]] <- list.files(
-          path = xfun::normalize_path(corpus.dir[[i]]),
-          pattern = paste0("\\.", format, "$"),
-          full.names = TRUE)
-      }
-    }
-    fasta.files <- unlist(fasta.files)
-    num_files <- length(fasta.files)
-  } else {
-
-    # single file
-    if (endsWith(corpus.dir, paste0(".", format))) {
-      num_files <- 1
-      fasta.files <- corpus.dir
     } else {
 
-      fasta.files <- list.files(
-        path = xfun::normalize_path(corpus.dir),
+      fasta.files[[i]] <- list.files(
+        path = xfun::normalize_path(corpus.dir[[i]]),
         pattern = paste0("\\.", format, "$"),
         full.names = TRUE)
-      num_files <- length(fasta.files)
     }
   }
+  fasta.files <- unlist(fasta.files)
+  num_files <- length(fasta.files)
+  # } else {
+  #   fasta.files <- list()
+  #   # single file
+  #   if (endsWith(corpus.dir, paste0(".", format))) {
+  #     num_files <- 1
+  #     fasta.files <- corpus.dir
+  #   } else {
+  #
+  #     fasta.files <- list.files(
+  #       path = xfun::normalize_path(corpus.dir),
+  #       pattern = paste0("\\.", format, "$"),
+  #       full.names = TRUE)
+  #     num_files <- length(fasta.files)
+  #   }
+  # }
 
   if (!is.null(file_filter)) {
     fasta.files <- fasta.files[basename(fasta.files) %in% file_filter]
@@ -944,7 +1021,9 @@ get_coverage_concat <- function(fasta.file, concat_seq) {
 reshape_tensor <- function(x, y, new_batch_size,
                            samples_per_target,
                            batch.size, path, voc_len,
-                           maxlen, reshape_mode = "time_dist") {
+                           buffer_len = NULL,
+                           maxlen, reshape_mode = "time_dist",
+                           concat_maxlen = NULL) {
 
   if (reshape_mode == "time_dist") {
 
@@ -968,6 +1047,41 @@ reshape_tensor <- function(x, y, new_batch_size,
     }
     y <- y[base::seq(1, batch.size, samples_per_target), ]
     return(list(x = x_list, y = y))
+  }
+
+  if (reshape_mode == "concat") {
+
+    x_new <- array(0, dim = c(new_batch_size, concat_maxlen, voc_len))
+    y_new <- array(0, dim = c(new_batch_size, length(path)))
+    use_buffer <- !is.null(buffer_len) && buffer_len > 0
+    if (use_buffer) {
+      buffer_tensor <- array(0, dim = c(buffer_len, voc_len))
+      buffer_tensor[ , voc_len] <- 1
+    }
+
+    for (i in 1:new_batch_size) {
+      index <- (1:samples_per_target) + (i-1)*samples_per_target
+      if (!use_buffer) {
+        x_temp <- x[index, , ]
+        x_temp <- reticulate::array_reshape(x_temp, dim = c(1, dim(x_temp)[1] * dim(x_temp)[2], voc_len))
+      } else {
+        # create list of subsequences interspaced with buffer tensor
+        x_list <- vector("list", (2*samples_per_target) - 1)
+        x_list[seq(2, length(x_list), by = 2)] <- list(buffer_tensor)
+        for (k in 1:length(index)) {
+          x_list[[(2*k) - 1]] <- x[index[k], , ]
+        }
+        x_temp <- do.call(rbind, x_list)
+        # # choose random region of size concat_maxlen
+        # start_index <- sample(nrow(x_temp) - concat_maxlen + 1, 1)
+        # end_index <- start_index + concat_maxlen - 1
+        # x_temp <- x_temp[start_index : end_index,  ]
+      }
+
+      x_new[i, , ] <- x_temp
+      y_new[i, ]  <- y[index[1], ]
+    }
+    return(list(x = x_new, y = y_new))
   }
 }
 
@@ -994,4 +1108,48 @@ create_conf_mat_obj <- function(m, confMatLabels) {
   l[["dots"]] <- list()
   class(l) <- "conf_mat"
   return(l)
+}
+
+int_to_n_gram <- function(int_seq, n, voc_size = 4) {
+  encoding_len <- length(int_seq) - n + 1
+  n_gram_encoding <- vector("numeric", encoding_len)
+  oov_token <- voc_size^n + 1
+  for (i in 1:encoding_len) {
+    int_seq_subset <- int_seq[i:(i + n - 1)]
+
+    if (any(int_seq_subset > voc_size) | prod(int_seq_subset) == 0) {
+      # zero encoding for amb nuc
+      n_gram_encoding[i] <- oov_token
+    } else {
+      int_seq_subset <- int_seq_subset - 1
+      n_gram_encoding[i] <- 1 + sum(voc_size^((n-1):0) * (int_seq_subset))
+    }
+  }
+  n_gram_encoding
+}
+
+n_gram_of_matrix <- function(input_matrix, n = 3) {
+  voc_len <- ncol(input_matrix)^n
+  oov_index <- apply(input_matrix, 1, max) != 1
+  max_index <- apply(input_matrix, 1, which.max)
+  max_index[oov_index] <- voc_len + 1
+  int_enc <- int_to_n_gram(int_seq = max_index, n = n, voc_size = ncol(input_matrix))
+  if (length(int_enc) == 1) {
+    n_gram_matrix <- matrix(keras::to_categorical(int_enc, num_classes = voc_len + 2), nrow = 1)[ , -c(1, voc_len + 2)]
+  } else {
+    n_gram_matrix <- keras::to_categorical(int_enc, num_classes = voc_len + 2)[ , -c(1, voc_len + 2)]
+  }
+  n_gram_matrix <- matrix(n_gram_matrix, ncol = voc_len)
+  return(n_gram_matrix)
+}
+
+n_gram_of_3d_tensor <- function(tensor_3d, n) {
+  new_dim <- dim(tensor_3d)
+  new_dim[2] <- new_dim[2] - n + 1
+  new_dim[3] <- new_dim[3]^n
+  new_tensor <- array(0, dim = new_dim)
+  for (i in 1:dim(tensor_3d)[1]) {
+    new_tensor[i, , ] <- n_gram_of_matrix(tensor_3d[i, , ], n = n)
+  }
+  new_tensor
 }
