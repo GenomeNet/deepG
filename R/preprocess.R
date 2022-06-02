@@ -1,6 +1,6 @@
 #' Encodes integer sequence.
 #'
-#' \code{seq_to_one_hot_lm} Helper function for \code{\link{{generator_fasta_lm}}, returns one hot encoding for sequence
+#' \code{seq_encoding_lm} Helper function for \code{\link{{generator_fasta_lm}}, returns one hot encoding for sequence
 #'
 #' @param sequence Sequence of integers.
 #' @param maxlen Length of one sample
@@ -16,7 +16,7 @@
 #' @param use_quality Use quality scores.
 #' @param quality_vector Vector of quality probabilities.
 #' @export
-seq_to_one_hot_lm <- function(sequence, maxlen, vocabulary, start_ind, wavenet_format = FALSE, target_middle = FALSE,
+seq_encoding_lm <- function(sequence, maxlen, vocabulary, start_ind, wavenet_format = FALSE, target_middle = FALSE,
                               ambiguous_nuc = "zero", nuc_dist = NULL, use_quality = FALSE, quality_vector = NULL,
                               cnn_format, target_len = 1, use_coverage = FALSE, max_cov = NULL, cov_vector = NULL,
                               n_gram = NULL, n_gram_stride = 1, output_format = "target_right") {
@@ -199,7 +199,7 @@ seq_to_one_hot_lm <- function(sequence, maxlen, vocabulary, start_ind, wavenet_f
 
 #' Encodes integer sequence.
 #'
-#' \code{seq_to_one_hot_label} Helper function for \code{\link{{generator_fasta_label_header_csv}}, returns one hot encoding for sequence and returns samples from
+#' \code{seq_encoding_label} Helper function for \code{\link{{generator_fasta_label_header_csv}}, returns one hot encoding for sequence and returns samples from
 #' specified positions
 #'
 #' @param sequence Sequence of integers.
@@ -212,7 +212,7 @@ seq_to_one_hot_lm <- function(sequence, maxlen, vocabulary, start_ind, wavenet_f
 #' @param use_quality Use quality scores.
 #' @param quality_vector Vector of quality probabilities.
 #' @export
-seq_to_one_hot_label <- function(sequence, maxlen, vocabulary, start_ind, ambiguous_nuc = "zero", nuc_dist = NULL,
+seq_encoding_label <- function(sequence, maxlen, vocabulary, start_ind, ambiguous_nuc = "zero", nuc_dist = NULL,
                                  use_quality = FALSE, quality_vector = NULL, use_coverage = FALSE, max_cov = NULL,
                                  cov_vector = NULL, n_gram = NULL, n_gram_stride = 1) {
 

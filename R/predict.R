@@ -262,10 +262,10 @@ predict_model_one_seq <- function(path_model = NULL, layer_name = NULL, sequence
     }
 
     if (mode == "lm") {
-      input <- seq_to_one_hot_lm(sequence = subsetSeq, maxlen = maxlen, vocabulary = vocabulary, start_ind = subsetStartInd,
+      input <- seq_encoding_lm(sequence = subsetSeq, maxlen = maxlen, vocabulary = vocabulary, start_ind = subsetStartInd,
                                  target_middle = target_middle)[[1]]
     } else {
-      input <- seq_to_one_hot_label(sequence = subsetSeq, maxlen = maxlen, vocabulary = vocabulary, start_ind = subsetStartInd)
+      input <- seq_encoding_label(sequence = subsetSeq, maxlen = maxlen, vocabulary = vocabulary, start_ind = subsetStartInd)
     }
 
     if (target_middle) {

@@ -549,7 +549,7 @@ generator_fasta_lm <- function(path_corpus,
     if (!wavenet_format) {
 
       array_list <- purrr::map(1:length(sequence_list),
-                               ~seq_to_one_hot_lm(sequence_list[[.x]], target_middle = target_middle, nuc_dist = nuc_dist_list[[.x]],
+                               ~seq_encoding_lm(sequence_list[[.x]], target_middle = target_middle, nuc_dist = nuc_dist_list[[.x]],
                                                   maxlen = maxlen, vocabulary = vocabulary, ambiguous_nuc = ambiguous_nuc,
                                                   start_ind =  start_index_list[[.x]], use_quality = use_quality_score,
                                                   quality_vector = quality_list[[.x]], cnn_format = cnn_format, target_len = target_len,
@@ -658,7 +658,7 @@ generator_fasta_lm <- function(path_corpus,
 
       # one hot encode strings collected in sequence_list and connect arrays
       array_list <- purrr::map(1:length(sequence_list),
-                               ~seq_to_one_hot_lm(sequence_list[[.x]], ambiguous_nuc = ambiguous_nuc,
+                               ~seq_encoding_lm(sequence_list[[.x]], ambiguous_nuc = ambiguous_nuc,
                                                   maxlen = maxlen, vocabulary = vocabulary, nuc_dist = nuc_dist_list[[.x]],
                                                   start_ind =  start_index_list[[.x]], wavenet_format = TRUE, use_quality = use_quality_score,
                                                   quality_vector = quality_list[[.x]], cnn_format = FALSE, n_gram = n_gram,
@@ -687,7 +687,7 @@ generator_fasta_lm <- function(path_corpus,
                                                 added_label_by_header = added_label_by_header,
                                                 batch_size = batch_size, start_index_list = start_index_list)
         if (add_input_as_seq[i]) {
-          label_tensor_list[[i]] <- seq_to_one_hot_label(as.vector(t(label_tensor_list[[i]])), nuc_dist = NULL,
+          label_tensor_list[[i]] <- seq_encoding_label(as.vector(t(label_tensor_list[[i]])), nuc_dist = NULL,
                                                          maxlen = ncol(label_tensor_list[[i]]), vocabulary = vocabulary, ambiguous_nuc = ambiguous_nuc,
                                                          start_ind =  1 + ncol(label_tensor_list[[i]]) * (0:(nrow(label_tensor_list[[i]]) - 1)), use_quality = FALSE,
                                                          quality_vector = list())
@@ -1359,7 +1359,7 @@ generator_fasta_label_header_csv <- function(path_corpus,
     }
 
     # one hot encode strings collected in sequence_list and connect arrays
-    array_x_list <- purrr::map(1:length(sequence_list), ~seq_to_one_hot_label(sequence_list[[.x]], ambiguous_nuc = ambiguous_nuc,
+    array_x_list <- purrr::map(1:length(sequence_list), ~seq_encoding_label(sequence_list[[.x]], ambiguous_nuc = ambiguous_nuc,
                                                                               maxlen = maxlen, vocabulary = vocabulary, nuc_dist = nuc_dist_list[[.x]],
                                                                               start_ind =  start_index_list[[.x]], quality_vector = quality_list[[.x]],
                                                                               use_quality = use_quality_score, cov_vector = coverage_list[[.x]],
@@ -1391,7 +1391,7 @@ generator_fasta_label_header_csv <- function(path_corpus,
                                                 added_label_by_header = added_label_by_header,
                                                 batch_size = batch_size, start_index_list = start_index_list)
         if (add_input_as_seq[i]) {
-          label_tensor_list[[i]] <- seq_to_one_hot_label(as.vector(t(label_tensor_list[[i]])), nuc_dist = NULL,
+          label_tensor_list[[i]] <- seq_encoding_label(as.vector(t(label_tensor_list[[i]])), nuc_dist = NULL,
                                                          maxlen = ncol(label_tensor_list[[i]]), vocabulary = vocabulary, ambiguous_nuc = ambiguous_nuc,
                                                          start_ind =  1 + ncol(label_tensor_list[[i]]) * (0:(nrow(label_tensor_list[[i]]) - 1)), use_quality = FALSE,
                                                          quality_vector = list())
@@ -2094,7 +2094,7 @@ generator_fasta_label_folder <- function(path_corpus,
     }
 
     # one hot encode strings collected in sequence_list and connect arrays
-    array_x_list <- purrr::map(1:length(sequence_list), ~seq_to_one_hot_label(sequence = sequence_list[[.x]], ambiguous_nuc = ambiguous_nuc,
+    array_x_list <- purrr::map(1:length(sequence_list), ~seq_encoding_label(sequence = sequence_list[[.x]], ambiguous_nuc = ambiguous_nuc,
                                                                               maxlen = maxlen, vocabulary = vocabulary, nuc_dist = nuc_dist_list[[.x]],
                                                                               start_ind =  start_index_list[[.x]], use_quality = use_quality_score,
                                                                               quality_vector = quality_list[[.x]], cov_vector = coverage_list[[.x]],
@@ -2147,7 +2147,7 @@ generator_fasta_label_folder <- function(path_corpus,
                                                 added_label_by_header = added_label_by_header,
                                                 batch_size = batch_size, start_index_list = start_index_list)
         if (add_input_as_seq[i]) {
-          label_tensor_list[[i]] <- seq_to_one_hot_label(as.vector(t(label_tensor_list[[i]])), nuc_dist = NULL,
+          label_tensor_list[[i]] <- seq_encoding_label(as.vector(t(label_tensor_list[[i]])), nuc_dist = NULL,
                                                          maxlen = ncol(label_tensor_list[[i]]), vocabulary = vocabulary, ambiguous_nuc = ambiguous_nuc,
                                                          start_ind =  1 + ncol(label_tensor_list[[i]]) * (0:(nrow(label_tensor_list[[i]]) - 1)), use_quality = FALSE,
                                                          quality_vector = list())
@@ -3157,7 +3157,7 @@ generator_random <- function(
       nuc_vector <- keras::texts_to_sequences(tokenizer, nuc_vector)[[1]] - 1
 
       if (train_mode != "lm") {
-        one_hot_sample <- seq_to_one_hot_label(sequence = nuc_vector,
+        one_hot_sample <- seq_encoding_label(sequence = nuc_vector,
                                                maxlen = maxlen,
                                                vocabulary = vocabulary,
                                                start_ind = start_ind[[p]],
@@ -3166,7 +3166,7 @@ generator_random <- function(
                                                max_cov = NULL,
                                                cov_vector = NULL, n_gram = NULL)
       } else {
-        one_hot_sample <- seq_to_one_hot_lm(sequence = nuc_vector,
+        one_hot_sample <- seq_encoding_lm(sequence = nuc_vector,
                                             maxlen = ifelse(target_len > 1, seq_len_total - 1, maxlen),
                                             vocabulary = vocabulary,
                                             start_ind = start_ind[[p]],
