@@ -6,7 +6,7 @@ Authors@R: c(
 person(given = "Philipp",
        family = "Münch",
        role = "aut",
-       email = "pmu15@helmholtz-hzi.de"),
+       email = "philipp.muench@helmholtz-hzi.de"),
 person(given = "René",
        family = "Mreches",
        role = "aut",
@@ -18,7 +18,11 @@ person(given = "Martin",
 person(given = "Hüseyin Anil",
        family = "Gündüz",
        role = "aut",
-       email = "TODO")
+       email = "TODO"),
+person(given = "Alice",
+       family = "McHardy",
+       role = "aut",
+       email = "alice.mchardy@helmholtz-hzi.de")
 )
 Description: 'deepG' is a toolbox for training and applying deep learning models for genomic sequence data.
   Applications include data preprocessing, model fitting, model evaluation, model optimization and inference.
