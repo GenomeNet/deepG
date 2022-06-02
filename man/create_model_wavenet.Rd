@@ -15,8 +15,9 @@ create_model_wavenet(
   output_channels = 4,
   output_activation = "softmax",
   solver = "adam",
-  learning.rate = 0.001,
-  compile = TRUE
+  learning_rate = 0.001,
+  compile = TRUE,
+  verbose = TRUE
 )
 }
 \arguments{

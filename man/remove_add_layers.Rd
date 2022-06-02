@@ -7,7 +7,6 @@
 remove_add_layers(
   model = NULL,
   layer_name = NULL,
-  layer_depth = NULL,
   dense_layers = NULL,
   last_activation = list("softmax"),
   output_names = NULL,
@@ -21,14 +20,14 @@ remove_add_layers(
 )
 }
 \arguments{
-\item{model}{A keras model. If model and model_path are both not NULL, model_path will be used.}
+\item{model}{A keras model. If model and path_model are both not NULL, path_model will be used.}
 
 \item{layer_name}{Name of last layer to use from old model.}
 
-\item{dense_layers}{List of vectors specifiying number of units for each dense layer. If this is a list of length > 1, model 
+\item{dense_layers}{List of vectors specifiying number of units for each dense layer. If this is a list of length > 1, model
 has multiple output layers.}
 
-\item{last_activation}{List of activations for last entry for each list entry from \code{dense_layers}. Either "softmax" or "sigmoid".}
+\item{last_activation}{List of activations for last entry for each list entry from \code{dense_layers}. Either "softmax", "sigmoid" or "linear".}
 
 \item{output_names}{List of names for each output layer.}
 
@@ -42,7 +41,7 @@ has multiple output layers.}
 
 \item{compile}{Boolean, whether the new model is compiled or not}
 
-\item{lr}{learning rate if compile == TRUE, default -> learning rate of the old model}
+\item{lr}{learning_rate if compile == TRUE, default -> learning_rate of the old model}
 
 \item{solver}{"adam", "adagrad", "rmsprop" or "sgd" if compile == TRUE, default -> solver of the old model}
 }

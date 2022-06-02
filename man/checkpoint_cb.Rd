@@ -2,7 +2,7 @@
 % Please edit documentation in R/callbacks.R
 \name{checkpoint_cb}
 \alias{checkpoint_cb}
-\title{checkpoint callback}
+\title{Checkpoint callback}
 \usage{
 checkpoint_cb(filepath_checkpoints, save_weights_only, save_best_only)
 }
@@ -12,5 +12,5 @@ checkpoint_cb(filepath_checkpoints, save_weights_only, save_best_only)
 \item{save_best_only}{Only save model that improved on best val_loss score.}
 }
 \description{
-checkpoint callback
+Checkpoint callback
 }

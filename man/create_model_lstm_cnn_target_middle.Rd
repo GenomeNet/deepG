@@ -6,18 +6,18 @@
 \usage{
 create_model_lstm_cnn_target_middle(
   maxlen = 50,
-  dropout = 0,
-  recurrent_dropout = 0,
+  dropout_lstm = 0,
+  recurrent_dropout_lstm = 0,
   layer_lstm = 128,
   solver = "adam",
-  learning.rate = 0.001,
-  use.multiple.gpus = FALSE,
-  merge.on.cpu = TRUE,
-  gpu.num = 2,
-  vocabulary.size = 4,
+  learning_rate = 0.001,
+  use_multiple_gpus = FALSE,
+  merge_on_cpu = TRUE,
+  gpu_num = 2,
+  vocabulary_size = 4,
   bidirectional = FALSE,
   stateful = FALSE,
-  batch.size = NULL,
+  batch_size = NULL,
   padding = "same",
   compile = TRUE,
   layer_dense = NULL,
@@ -31,35 +31,38 @@ create_model_lstm_cnn_target_middle(
   label_noise_matrix = NULL,
   last_layer_activation = "softmax",
   loss_fn = "categorical_crossentropy",
-  num_output_layers = 1
+  num_output_layers = 1,
+  f1_metric = FALSE,
+  verbose = TRUE,
+  batch_norm_momentum = 0.99
 )
 }
 \arguments{
 \item{maxlen}{Length of predictor sequence.}
 
-\item{dropout}{Fraction of the units to drop for inputs.}
+\item{dropout_lstm}{Fraction of the units to drop for inputs.}
 
-\item{recurrent_dropout}{Fraction of the units to drop for recurrent state.}
+\item{recurrent_dropout_lstm}{Fraction of the units to drop for recurrent state.}
 
 \item{layer_lstm}{Number of cells per network layer. Can be a scalar or vector.}
 
 \item{solver}{Optimization method, options are "adam", "adagrad", "rmsprop" or "sgd".}
 
-\item{learning.rate}{Learning rate for optimizer.}
+\item{learning_rate}{Learning rate for optimizer.}
 
-\item{use.multiple.gpus}{If true, multi_gpu_model() will be used based on gpu_num.}
+\item{use_multiple_gpus}{If true, multi_gpu_model() will be used based on gpu_num.}
 
-\item{merge.on.cpu}{True on default, false recommend if the server supports NVlink, only relevant if use.multiple.gpu is true.}
+\item{merge_on_cpu}{True on default, false recommend if the server supports NVlink, only relevant if use.multiple.gpu is true.}
 
-\item{gpu.num}{Number of GPUs to be used, only relevant if multiple_gpu is true.}
+\item{gpu_num}{Number of GPUs to be used, only relevant if multiple_gpu is true.}
 
-\item{vocabulary.size}{Number of unique character in vocabulary.}
+\item{vocabulary_size}{Number of unique character in vocabulary.}
 
 \item{bidirectional}{Use bidirectional wrapper for lstm layers.}
 
 \item{stateful}{Boolean. Whether to use stateful LSTM layer.}
 
-\item{batch.size}{Number of samples that are used for one network update. Only used if \code{stateful = TRUE}.}
+\item{batch_size}{Number of samples that are used for one network update. Only used if \code{stateful = TRUE}.}
 
 \item{padding}{Padding of CNN layers, e.g. "same", "valid" or "causal".}
 
@@ -78,10 +81,10 @@ create_model_lstm_cnn_target_middle(
 \item{label_input}{Integer or NULL. If not NULL, adds additional input layer of \code{label_input} size.}
 }
 \description{
-Creates a network consisting of an arbitrary number of CNN, LSTM and dense layers. 
+Creates a network consisting of an arbitrary number of CNN, LSTM and dense layers.
 Last layer is a dense layer with softmax activation.
-Network tries to predict target in the middle of a sequence. If input is AACCTAAGG, input tensors should correspond to x1 = AACC, x2 = GGAA and y = T 
-(set \code{target_middle = TRUE} in \code{trainNetwork} function).  
+Network tries to predict target in the middle of a sequence. If input is AACCTAAGG, input tensors should correspond to x1 = AACC, x2 = GGAA and y = T
+(set \code{target_middle = TRUE} in \code{train_model} function).
 Function creates two sub networks consisting each of an (optional) CNN layer followed by an arbitrary number of LSTM layers. Afterwards the last LSTM layers
 get concatenated and followed by a dense layers.
 }

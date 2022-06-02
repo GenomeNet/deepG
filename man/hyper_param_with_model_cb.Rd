@@ -2,34 +2,34 @@
 % Please edit documentation in R/callbacks.R
 \name{hyper_param_with_model_cb}
 \alias{hyper_param_with_model_cb}
-\title{hyperparameter callback}
+\title{Hyperparameter callback}
 \usage{
 hyper_param_with_model_cb(
   default_arguments,
   model,
-  tensorboard.log,
-  run.name,
+  path_tensorboard,
+  run_name,
   train_type,
-  model_path,
+  path_model,
   path,
-  validation.split,
-  batch.size,
+  train_val_ratio,
+  batch_size,
   epochs,
-  max.queue.size,
-  lr.plateau.factor,
+  max_queue_size,
+  lr_plateau_factor,
   patience,
   cooldown,
-  steps.per.epoch,
+  steps_per_epoch,
   step,
-  randomFiles,
+  shuffle_file_order,
   initial_epoch,
   vocabulary,
-  learning.rate,
-  shuffleFastaEntries,
-  labelVocabulary,
+  learning_rate,
+  shuffle_input,
+  vocabulary_label,
   solver,
-  numberOfFiles,
-  reverseComplements,
+  file_limit,
+  reverse_complement,
   wavenet_format,
   cnn_format
 )
@@ -37,59 +37,62 @@ hyper_param_with_model_cb(
 \arguments{
 \item{model}{A keras model.}
 
-\item{tensorboard.log}{Path to tensorboard log directory.}
+\item{path_tensorboard}{Path to path_tensorboard directory or NULL. If NULL, training not tracked on tensorboard.}
 
-\item{run.name}{Name of the run (without file ending). Name will be used to identify output from callbacks.}
+\item{run_name}{Name of the run. Name will be used to identify output from callbacks.}
 
-\item{train_type}{Either "lm" for language model, "label_header", "label_folder", "label_csv" or "label_rds". Language model is trained to predict character in sequence.
-"label_header"/"label_folder" are trained to predict a corresponding class, given a sequence as input. If "label_header", class will be read from fasta headers.
+\item{train_type}{Either "lm", "lm_rds" for language model; "label_header", "label_folder", "label_csv", "label_rds" for classification or "dummy_gen".
+Language model is trained to predict character in sequence.
+"label_header"/"label_folder"/"label_csv" are trained to predict a corresponding class, given a sequence as input. If "label_header", class will be read from fasta headers.
 If "label_folder", class will be read from folder, i.e. all files in one folder must belong to the same class.
-If "label_csv", targets are read from a csv file. This file should have one column names "file". The targets then correspond to entries in that row (except "file"
+If "label_csv", targets are read from a csv file. This file should have one column named "file". The targets then correspond to entries in that row (except "file"
 column). Example: if we are currently working with a file called "a.fasta", there should be a row in our csv file
    file  |  label_1 | label_2
 "a.fasta"     1          8
 If "label_rds", generator will iterate over set of .rds files containing each a list of input and target tensors. Not implemented for model
 with multiple inputs. If "lm_rds", generator will iterate over set of .rds files and will split tensor according to target_len argument
-(targets are last target_len nucleotides of each sequence).}
+(targets are last target_len nucleotides of each sequence).
+If "dummy_gen", generator creates random data once and repeatedly feeds these to model.}
 
-\item{path}{Path to folder where individual or multiple FASTA or FASTQ files are located for training. If \code{train_type} is \code{label_folder}, should be a vector
-containing a path for each class. If \code{train_type} is not \code{label_folder}, can be a list of directories.}
+\item{path}{Path to folder where individual or multiple FASTA or FASTQ files are located for training. If \code{train_type} is \code{label_folder}, should be a vector or list
+where each entry corresponds to a class. If \code{train_type} is not \code{label_folder}, can be a list of directories and/or single files.}
 
-\item{validation.split}{Defines the fraction of the batches that will be used for validation (compared to size of training data), i.e. one validtion iteration
-processed \code{batch.size} x \code{steps.per.epoch} x \code{validation.split} samples.}
+\item{train_val_ratio}{For generator, defines the fraction of batches that will be used for validation (compared to size of training data), i.e. one validtion iteration
+processes \code{batch_size} x \code{steps_per_epoch} x \code{train_val_ratio} samples. If you use dataset instead of generator and \code{dataset_val} is NULL, splits \code{dataset}
+into train/validation data.}
 
-\item{batch.size}{Number of samples that are used for one network update.}
+\item{batch_size}{Number of samples used for one network update.}
 
 \item{epochs}{Number of iterations.}
 
-\item{max.queue.size}{Queue on fit_generator().}
+\item{max_queue_size}{Queue on fit_generator().}
 
-\item{lr.plateau.factor}{Factor of decreasing learning rate when plateau is reached.}
+\item{lr_plateau_factor}{Factor of decreasing learning_rate when plateau is reached.}
 
-\item{patience}{Number of epochs waiting for decrease in loss before reducing learning rate.}
+\item{patience}{Number of epochs waiting for decrease in val_loss before reducing learning_rate.}
 
-\item{cooldown}{Number of epochs without changing learning rate.}
+\item{cooldown}{Number of epochs without changing learning_rate.}
 
-\item{steps.per.epoch}{Number of batches per epoch.}
+\item{steps_per_epoch}{Number of training batches per epoch.}
 
 \item{step}{Frequency of sampling steps.}
 
-\item{randomFiles}{Boolean, whether to go through files sequentially or shuffle beforehand.}
+\item{shuffle_file_order}{Boolean, whether to go through files sequentially or shuffle beforehand.}
 
 \item{initial_epoch}{Epoch at which to start training. Note that network
 will run for (\code{epochs} - \code{initial_epochs}) rounds and not \code{epochs} rounds.}
 
 \item{vocabulary}{Vector of allowed characters. Character outside vocabulary get encoded as specified in \code{ambiguous_nuc}.}
 
-\item{shuffleFastaEntries}{Logical, shuffle entries in file.}
+\item{shuffle_input}{Boolean, shuffle entries in file.}
 
-\item{labelVocabulary}{Character vector of possible targets. Targets outside \code{labelVocabulary} will get discarded if
+\item{vocabulary_label}{Character vector of possible targets. Targets outside \code{vocabulary_label} will get discarded if
 \code{train_type = "label_header"}.}
 
-\item{numberOfFiles}{Use only specified number of files, ignored if greater than number of files in \code{path}.}
+\item{file_limit}{Use only specified number of files, ignored if greater than number of files in \code{path}.}
 
-\item{reverseComplements}{Logical, for every new file decide randomly to use original data or its reverse complement.}
+\item{reverse_complement}{Logical, for every new file decide randomly to use original data or its reverse complement.}
 }
 \description{
-hyperparameter callback
+Hyperparameter callback
 }

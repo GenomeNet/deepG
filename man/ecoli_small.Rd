@@ -3,7 +3,7 @@
 \docType{data}
 \name{ecoli_small}
 \alias{ecoli_small}
-\title{subset of the E. coli genome for evaluation 
+\title{subset of the E. coli genome for evaluation
 Can be loaded to workspace via data(ecoli_small)}
 \format{
 character
@@ -12,7 +12,7 @@ character
 ecoli_small
 }
 \description{
-subset of the E. coli genome for evaluation 
+subset of the E. coli genome for evaluation
 Can be loaded to workspace via data(ecoli_small)
 }
 \references{

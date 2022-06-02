@@ -6,19 +6,19 @@
 \usage{
 create_model_lstm_cnn(
   maxlen = 50,
-  dropout = 0,
-  recurrent_dropout = 0,
+  dropout_lstm = 0,
+  recurrent_dropout_lstm = 0,
   layer_lstm = NULL,
   layer_dense = c(4),
   solver = "adam",
-  learning.rate = 0.001,
-  use.multiple.gpus = FALSE,
-  merge.on.cpu = TRUE,
-  gpu.num = 2,
-  vocabulary.size = 4,
+  learning_rate = 0.001,
+  use_multiple_gpus = FALSE,
+  merge_on_cpu = TRUE,
+  gpu_num = 2,
+  vocabulary_size = 4,
   bidirectional = FALSE,
   stateful = FALSE,
-  batch.size = NULL,
+  batch_size = NULL,
   compile = TRUE,
   kernel_size = NULL,
   filters = NULL,
@@ -38,15 +38,19 @@ create_model_lstm_cnn(
   last_layer_activation = "softmax",
   loss_fn = "categorical_crossentropy",
   num_output_layers = 1,
-  auc_metric = FALSE
+  auc_metric = FALSE,
+  f1_metric = FALSE,
+  bal_acc = TRUE,
+  verbose = TRUE,
+  batch_norm_momentum = 0.99
 )
 }
 \arguments{
 \item{maxlen}{Length of predictor sequence.}
 
-\item{dropout}{Fraction of the units to drop for inputs.}
+\item{dropout_lstm}{Fraction of the units to drop for inputs.}
 
-\item{recurrent_dropout}{Fraction of the units to drop for recurrent state.}
+\item{recurrent_dropout_lstm}{Fraction of the units to drop for recurrent state.}
 
 \item{layer_lstm}{Number of cells per network layer. Can be a scalar or vector.}
 
@@ -54,21 +58,21 @@ create_model_lstm_cnn(
 
 \item{solver}{Optimization method, options are "adam", "adagrad", "rmsprop" or "sgd".}
 
-\item{learning.rate}{Learning rate for optimizer.}
+\item{learning_rate}{Learning rate for optimizer.}
 
-\item{use.multiple.gpus}{If true, multi_gpu_model() will be used based on gpu_num.}
+\item{use_multiple_gpus}{If true, multi_gpu_model() will be used based on gpu_num.}
 
-\item{merge.on.cpu}{True on default, false recommend if the server supports NVlink, only relevant if use.multiple.gpu is true.}
+\item{merge_on_cpu}{True on default, false recommend if the server supports NVlink, only relevant if use.multiple.gpu is true.}
 
-\item{gpu.num}{Number of GPUs to be used, only relevant if multiple_gpu is true.}
+\item{gpu_num}{Number of GPUs to be used, only relevant if multiple_gpu is true.}
 
-\item{vocabulary.size}{Number of unique character in vocabulary.}
+\item{vocabulary_size}{Number of unique character in vocabulary.}
 
 \item{bidirectional}{Use bidirectional wrapper for lstm layers.}
 
 \item{stateful}{Boolean. Whether to use stateful LSTM layer.}
 
-\item{batch.size}{Number of samples that are used for one network update. Only used if \code{stateful = TRUE}.}
+\item{batch_size}{Number of samples that are used for one network update. Only used if \code{stateful = TRUE}.}
 
 \item{compile}{Whether to compile the model.}
 
@@ -98,13 +102,13 @@ create_model_lstm_cnn(
 
 \item{zero_mask}{Boolean, whether to apply zero masking before LSTM layer. Only used if model does not use any CNN layers.}
 
-\item{label_smoothing}{Float in [0, 1]. If 0, no smoothing is applied. If > 0, loss between the predicted 
+\item{label_smoothing}{Float in [0, 1]. If 0, no smoothing is applied. If > 0, loss between the predicted
 labels and a smoothed version of the true labels, where the smoothing squeezes the labels towards 0.5.
 The closer the argument is to 1 the more the labels get smoothed.}
 
 \item{label_noise_matrix}{Matrix of label noises. Every row stands for one class and columns for percentage of labels in that class.
-If first label contains 5% wrong labels and second label no noise, then
-\code{label_noise_matrix <- matrix(c(0.95, 0.05, 0, 1), nrow = 2, by_row = TRUE )}}
+If first label contains 5 percent wrong labels and second label no noise, then
+\code{label_noise_matrix <- matrix(c(0.95, 0.05, 0, 1), nrow = 2, byrow = TRUE )}}
 
 \item{last_layer_activation}{Either "sigmoid" or "softmax".}
 
@@ -113,8 +117,14 @@ If first label contains 5% wrong labels and second label no noise, then
 \item{num_output_layers}{Number of output layers.}
 
 \item{auc_metric}{Whether to add AUC metric.}
+
+\item{f1_metric}{Whether to add F1 metric.}
+
+\item{bal_acc}{Whether to add balanced accuracy.}
+
+\item{batch_norm_momentum}{Momentum for the moving mean and the moving variance.}
 }
 \description{
-Creates a network consisting of an arbitrary number of CNN, LSTM and dense layers. 
-Last layer is a dense layer with softmax activation.
+Creates a network consisting of an arbitrary number of CNN, LSTM and dense layers.
+Last layer is a dense layer with default softmax activation.
 }

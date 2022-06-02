@@ -2,15 +2,15 @@
 % Please edit documentation in R/callbacks.R
 \name{tensorboard_cb}
 \alias{tensorboard_cb}
-\title{tensorboard callback}
+\title{Tensorboard callback}
 \usage{
-tensorboard_cb(tensorboard.log, run.name)
+tensorboard_cb(path_tensorboard, run_name)
 }
 \arguments{
-\item{tensorboard.log}{Path to tensorboard log directory.}
+\item{path_tensorboard}{Path to path_tensorboard directory or NULL. If NULL, training not tracked on tensorboard.}
 
-\item{run.name}{Name of the run (without file ending). Name will be used to identify output from callbacks.}
+\item{run_name}{Name of the run. Name will be used to identify output from callbacks.}
 }
 \description{
-tensorboard callback
+Tensorboard callback
 }

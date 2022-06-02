@@ -2,65 +2,65 @@
 % Please edit documentation in R/callbacks.R
 \name{hyper_param_model_outside_cb}
 \alias{hyper_param_model_outside_cb}
-\title{hyperparameter callback}
+\title{Hyperparameter callback}
 \usage{
 hyper_param_model_outside_cb(
-  tensorboard.log,
-  run.name,
+  path_tensorboard,
+  run_name,
   wavenet_format,
   cnn_format,
   model,
   vocabulary,
   path,
-  reverseComplements,
-  labelVocabulary,
+  reverse_complement,
+  vocabulary_label,
   maxlen,
   epochs,
-  max.queue.size,
-  lr.plateau.factor,
-  batch.size,
+  max_queue_size,
+  lr_plateau_factor,
+  batch_size,
   patience,
   cooldown,
-  steps.per.epoch,
+  steps_per_epoch,
   step,
-  randomFiles
+  shuffle_file_order
 )
 }
 \arguments{
-\item{tensorboard.log}{Path to tensorboard log directory.}
+\item{path_tensorboard}{Path to path_tensorboard directory or NULL. If NULL, training not tracked on tensorboard.}
 
-\item{run.name}{Name of the run (without file ending). Name will be used to identify output from callbacks.}
+\item{run_name}{Name of the run. Name will be used to identify output from callbacks.}
 
 \item{model}{A keras model.}
 
 \item{vocabulary}{Vector of allowed characters. Character outside vocabulary get encoded as specified in \code{ambiguous_nuc}.}
 
-\item{path}{Path to folder where individual or multiple FASTA or FASTQ files are located for training. If \code{train_type} is \code{label_folder}, should be a vector
-containing a path for each class. If \code{train_type} is not \code{label_folder}, can be a list of directories.}
+\item{path}{Path to folder where individual or multiple FASTA or FASTQ files are located for training. If \code{train_type} is \code{label_folder}, should be a vector or list
+where each entry corresponds to a class. If \code{train_type} is not \code{label_folder}, can be a list of directories and/or single files.}
 
-\item{reverseComplements}{Logical, for every new file decide randomly to use original data or its reverse complement.}
+\item{reverse_complement}{Logical, for every new file decide randomly to use original data or its reverse complement.}
 
-\item{labelVocabulary}{Character vector of possible targets. Targets outside \code{labelVocabulary} will get discarded if
+\item{vocabulary_label}{Character vector of possible targets. Targets outside \code{vocabulary_label} will get discarded if
 \code{train_type = "label_header"}.}
 
 \item{epochs}{Number of iterations.}
 
-\item{max.queue.size}{Queue on fit_generator().}
+\item{max_queue_size}{Queue on fit_generator().}
 
-\item{lr.plateau.factor}{Factor of decreasing learning rate when plateau is reached.}
+\item{lr_plateau_factor}{Factor of decreasing learning_rate when plateau is reached.}
 
-\item{batch.size}{Number of samples that are used for one network update.}
+\item{batch_size}{Number of samples used for one network update.}
 
-\item{patience}{Number of epochs waiting for decrease in loss before reducing learning rate.}
+\item{patience}{Number of epochs waiting for decrease in val_loss before reducing learning_rate.}
 
-\item{cooldown}{Number of epochs without changing learning rate.}
+\item{cooldown}{Number of epochs without changing learning_rate.}
 
-\item{steps.per.epoch}{Number of batches per epoch.}
+\item{steps_per_epoch}{Number of training batches per epoch.}
 
 \item{step}{Frequency of sampling steps.}
 
-\item{randomFiles}{Boolean, whether to go through files sequentially or shuffle beforehand.}
+\item{shuffle_file_order}{Boolean, whether to go through files sequentially or shuffle beforehand.}
 }
 \description{
-hyperparameter callback
+Hyperparameter callback
 }

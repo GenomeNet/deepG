@@ -3,7 +3,7 @@
 \docType{data}
 \name{ecoli}
 \alias{ecoli}
-\title{E. coli genome for evaluation 
+\title{E. coli genome for evaluation
 Can be loaded to workspace via data(ecoli)}
 \format{
 Large character of 4.4 Mb
@@ -12,7 +12,7 @@ Large character of 4.4 Mb
 ecoli
 }
 \description{
-E. coli genome for evaluation 
+E. coli genome for evaluation
 Can be loaded to workspace via data(ecoli)
 }
 \references{

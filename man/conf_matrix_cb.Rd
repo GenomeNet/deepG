@@ -2,10 +2,19 @@
 % Please edit documentation in R/callbacks.R
 \name{conf_matrix_cb}
 \alias{conf_matrix_cb}
-\title{confusion matrix callback}
+\title{Confusion matrix callback}
 \usage{
-conf_matrix_cb(tensorboard.log, run.name, confMatLabels, cm_dir)
+conf_matrix_cb(path_tensorboard, run_name, confMatLabels, cm_dir)
+}
+\arguments{
+\item{path_tensorboard}{Path to path_tensorboard directory or NULL. If NULL, training not tracked on tensorboard.}
+
+\item{run_name}{Name of the run. Name will be used to identify output from callbacks.}
+
+\item{confMatLabels}{Names of classes.}
+
+\item{cm_dir}{Directory that contains confusion matrix files.}
 }
 \description{
-confusion matrix callback
+Confusion matrix callback
 }

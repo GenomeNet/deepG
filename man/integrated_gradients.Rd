@@ -2,8 +2,8 @@
 % Please edit documentation in R/visualization.R
 \name{integrated_gradients}
 \alias{integrated_gradients}
-\title{Computes integrated gradients (https://www.tensorflow.org/tutorials/distribute/keras) for model and an input sequence. 
-This can be used to visiulize what part of the input is import for the models decision.}
+\title{Computes integrated gradients (https://www.tensorflow.org/tutorials/distribute/keras) for model and an input sequence.
+This can be used to visualize what part of the input is import for the models decision.}
 \usage{
 integrated_gradients(
   m_steps = 50,
@@ -26,13 +26,13 @@ integrated_gradients(
 
 \item{model}{Model to compute gradient for.}
 
-\item{pred_stepwise}{Whether to do predictions with batch size 1 rather than all at once. Can be used if
+\item{pred_stepwise}{Whether to do predictions with batch_size 1 rather than all at once. Can be used if
 input is too big to handle at once. Only supported for single input layer.}
 
-\item{num_baseline_repeats}{Number of different baseline estimations if baseline_type is "shuffle" (estimate integrated 
+\item{num_baseline_repeats}{Number of different baseline estimations if baseline_type is "shuffle" (estimate integrated
 gradient repeatedly for different shufflings). Final result is average of \code{num_baseline} single calculations.}
 }
 \description{
-Computes integrated gradients (https://www.tensorflow.org/tutorials/distribute/keras) for model and an input sequence. 
-This can be used to visiulize what part of the input is import for the models decision.
+Computes integrated gradients (https://www.tensorflow.org/tutorials/distribute/keras) for model and an input sequence.
+This can be used to visualize what part of the input is import for the models decision.
 }

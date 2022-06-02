@@ -2,10 +2,10 @@
 % Please edit documentation in R/callbacks.R
 \name{balanced_acc_wrapper}
 \alias{balanced_acc_wrapper}
-\title{Balanced  accuracy metric.}
+\title{Balanced accuracy metric.}
 \usage{
 balanced_acc_wrapper(num_targets, cm_dir)
 }
 \description{
-Balanced  accuracy metric.
+Balanced accuracy metric.
 }

@@ -9,7 +9,7 @@ heatmaps_integrated_grad(integrated_grads, input_seq)
 \arguments{
 \item{integrated_grads}{Output of \code{integrated_gradients} function}
 
-\item{input_seq}{Input sequence for model. Should be the same as \code{input_seq} input for corresponding 
+\item{input_seq}{Input sequence for model. Should be the same as \code{input_seq} input for corresponding
 \code{integrated_gradients} call that computed \code{integrated_grads} argument.}
 }
 \description{

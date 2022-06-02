@@ -5,7 +5,7 @@
 \title{Get distribution of n-grams}
 \usage{
 n_gram(
-  fasta_path,
+  path_input,
   n = 2,
   vocabulary = c("A", "C", "G", "T"),
   format = "fasta",
@@ -15,7 +15,7 @@ n_gram(
 )
 }
 \arguments{
-\item{fasta_path}{Path to folder containing fasta files or single fasta file.}
+\item{path_input}{Path to folder containing fasta files or single fasta file.}
 
 \item{n}{Size of n gram.}
 
@@ -23,7 +23,7 @@ n_gram(
 
 \item{format}{"fasta" or "fastq".}
 
-\item{file_sample}{If integer, size of random sample of files in \code{fasta_path}.}
+\item{file_sample}{If integer, size of random sample of files in \code{path_input}.}
 
 \item{step}{Frequency of samples.}
 }

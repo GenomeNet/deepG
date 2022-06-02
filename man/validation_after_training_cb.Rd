@@ -2,10 +2,10 @@
 % Please edit documentation in R/callbacks.R
 \name{validation_after_training_cb}
 \alias{validation_after_training_cb}
-\title{Do validation after training finished}
+\title{Do validation only after training finished}
 \usage{
 validation_after_training_cb(gen.val, validation_steps)
 }
 \description{
-Do validation after training finished
+Do validation only after training finished
 }

@@ -5,7 +5,7 @@
 \title{predict the next nucleotide using n-gram}
 \usage{
 predict_with_n_gram(
-  fasta_path,
+  path_input,
   distribution_matrix,
   default_pred = "random",
   vocabulary = c("A", "C", "G", "T"),
@@ -15,7 +15,7 @@ predict_with_n_gram(
 )
 }
 \arguments{
-\item{fasta_path}{Path to folder containing fasta files or single fasta file.}
+\item{path_input}{Path to folder containing fasta files or single fasta file.}
 
 \item{distribution_matrix}{Output of \code{n_gram} function.}
 
@@ -24,7 +24,7 @@ If "random" assign random prediction.}
 
 \item{vocabulary}{Vector of allowed characters, samples outside vocabulary get discarded.}
 
-\item{file_sample}{If integer, size of random sample of files in \code{fasta_path}.}
+\item{file_sample}{If integer, size of random sample of files in \code{path_input}.}
 
 \item{format}{"fasta" or "fastq".}
 
@@ -35,13 +35,13 @@ predict the next nucleotide using n-gram
 }
 \examples{
 \dontrun{
-n_gram_dist <- n_gram(fasta_path = "/net/sgi/genomenet/data/ncbi_genomes/train",
+n_gram_dist <- n_gram(path_input = "/net/sgi/genomenet/data/ncbi_genomes/train",
                       n = 2,
                       file_sample = NULL,
                       nuc_dist = TRUE)
 
 # use distribution matrix to make predictions for one file
-predictions <- predict_with_n_gram(fasta_path = "/net/sgi/genomenet/data/ncbi_genomes/test/GCF_001941465.1_ASM194146v1_genomic.fasta",
+predictions <- predict_with_n_gram(path_input = "/net/sgi/genomenet/data/ncbi_genomes/test/GCF_001941465.1_ASM194146v1_genomic.fasta",
                                    distribution_matrix = n_gram_dist)
 
 # show accuracy

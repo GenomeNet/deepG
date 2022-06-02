@@ -2,15 +2,15 @@
 % Please edit documentation in R/callbacks.R
 \name{function_args_cb}
 \alias{function_args_cb}
-\title{function arguments callback}
+\title{Function arguments callback}
 \usage{
-function_args_cb(argumentList, tensorboard.log, run.name)
+function_args_cb(argumentList, path_tensorboard, run_name)
 }
 \arguments{
-\item{tensorboard.log}{Path to tensorboard log directory.}
+\item{path_tensorboard}{Path to path_tensorboard directory or NULL. If NULL, training not tracked on tensorboard.}
 
-\item{run.name}{Name of the run (without file ending). Name will be used to identify output from callbacks.}
+\item{run_name}{Name of the run. Name will be used to identify output from callbacks.}
 }
 \description{
-function arguments callback
+Function arguments callback
 }

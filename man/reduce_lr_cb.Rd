@@ -2,17 +2,17 @@
 % Please edit documentation in R/callbacks.R
 \name{reduce_lr_cb}
 \alias{reduce_lr_cb}
-\title{learning rate callback}
+\title{Learning_rate callback}
 \usage{
-reduce_lr_cb(patience, cooldown, lr.plateau.factor, monitor = "val_acc")
+reduce_lr_cb(patience, cooldown, lr_plateau_factor, monitor = "val_acc")
 }
 \arguments{
-\item{patience}{Number of epochs waiting for decrease in loss before reducing learning rate.}
+\item{patience}{Number of epochs waiting for decrease in val_loss before reducing learning_rate.}
 
-\item{cooldown}{Number of epochs without changing learning rate.}
+\item{cooldown}{Number of epochs without changing learning_rate.}
 
-\item{lr.plateau.factor}{Factor of decreasing learning rate when plateau is reached.}
+\item{lr_plateau_factor}{Factor of decreasing learning_rate when plateau is reached.}
 }
 \description{
-learning rate callback
+Learning_rate callback
 }

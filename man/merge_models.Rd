@@ -9,7 +9,7 @@ merge_models(
   layer_names,
   layer_dense,
   solver = "adam",
-  learning.rate = 1e-04,
+  learning_rate = 1e-04,
   freeze_base_model = c(FALSE, FALSE)
 )
 }
@@ -17,6 +17,12 @@ merge_models(
 \item{models}{List of two models}
 
 \item{layer_names}{Vector of length 2 with names of layers to merge.}
+
+\item{layer_dense}{Dense layers of size layer_dense after last LSTM (or last CNN is \code{layers.lstm = 0}) layer.}
+
+\item{solver}{Optimization method, options are "adam", "adagrad", "rmsprop" or "sgd".}
+
+\item{learning_rate}{Learning rate for optimizer.}
 }
 \description{
 Merge two models

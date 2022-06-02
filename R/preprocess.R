@@ -1,143 +1,11 @@
-#' Returns the vocabulary from character string
+#' Encodes integer sequence.
 #'
-#' Use this function with a character string.
-#'
-#' @param char character string of text with the length of one
-#' @param verbose TRUE/FALSE
-#' @examples
-#' getVocabulary(data(crispr_sample))
-#' getVocabulary("abcd")
-#' @export
-getVocabulary <- function(char, verbose = F) {
-
-  stopifnot(!is.null(char))
-  stopifnot(nchar(char) > 0)
-
-  vocabulary <- sort(unique(tokenizers::tokenize_characters(
-    stringr::str_c(stringr::str_to_lower(char),collapse = "\n"), strip_non_alphanum = FALSE, simplify = TRUE)))
-
-  if (verbose)
-    message("The vocabulary:", vocabulary)
-  return(vocabulary)
-}
-
-#' Preprocess string to semi-redundant one-hot vector
-#'
-#' @description
-#' Outputs semi-redundant set of input character string.
-#' Collapse, tokenize, and vectorize the character.
-#' Use this function with a character string as input. For example,
-#' if the input text is ABCDEFGHI and the length(maxlen) is 5, the generating chunks would be:
-#' X(1): ABCDE and Y(1): F;
-#' X(2): BCDEF and Y(2): G;
-#' X(3): CDEFG and Y(3): H;
-#' X(4): DEFGH and Y(4): I
-#'
-#' @param char character input string of text with the length of one
-#' @param maxlen length of the semi-redundant sequences
-#' @param vocabulary char contains the vocabulary from the input char
-#' If no vocabulary exists, it is generated from the input char
-#' @param verbose TRUE/FALSE
-#' @export
-preprocessSemiRedundant <- function(char,
-                                    maxlen = 250,
-                                    vocabulary = c("l", "p", "a", "c", "g", "t"),
-                                    verbose = F) {
-
-  stopifnot(!is.null(char))
-  stopifnot(nchar(char) > 0)
-  stopifnot(maxlen > 0)
-
-  # Load, collapse, and tokenize text ("ACGT" -> "a" "c" "g" "t")
-  text <- tokenizers::tokenize_characters(stringr::str_c(stringr::str_to_lower(char), collapse = "\n"), strip_non_alphanum = FALSE, simplify = TRUE)
-
-  # Generating vocabulary from input char with the function getVocabulary()
-  if (missing(vocabulary)) {
-    if (verbose)
-      message("Finding the vocabulary ...")
-    vocabulary <- getVocabulary(char)
-  }
-
-  if(verbose)
-    message("Vocabulary size:", length(vocabulary))
-  # Cut the text in semi-redundant sequences of maxlen characters
-
-  if (verbose)
-    message("Generation of semi-redundant sequences ...")
-
-  dataset <- purrr::map(seq(1, length(text) - maxlen, by = 1),
-                        ~ list(sentece = text[.x:(.x + maxlen - 1)],
-                               next_char = text[.x + maxlen]))
-  dataset <- purrr::transpose(dataset)
-  x <-
-    array(0, dim = c(length(dataset$sentece), maxlen, length(vocabulary)))
-  y <- array(0, dim = c(length(dataset$sentece), length(vocabulary)))
-  # Vectorization
-
-  if (verbose)
-    message("Vectorization ...")
-  if (verbose)
-    pb <-  txtProgressBar(min = 0,
-                          max = length(dataset$sentece),
-                          style = 3)
-  for (i in 1:length(dataset$sentece)) {
-    if (verbose)
-      setTxtProgressBar(pb, i)
-    # generate one-hot encoding for one subset
-    x[i, ,] <- sapply(vocabulary, function(x) {
-      as.integer(x == dataset$sentece[[i]])
-    })
-    # target (next nucleotide in sequence)
-    y[i,] <- as.integer(vocabulary == dataset$next_char[[i]])
-  }
-
-  results <- list("X" = x, "Y" = y)
-  return(results)
-}
-
-#' Wrapper of the preprocessSemiRedundant()-function
-#'
-#' @description
-#' Is called on the genomic contents of one
-#' FASTA file. Multiple entries are combined with newline characters.
-#' @param path path to the FASTA file
-#' @param maxlen length of the semi-redundant sequences
-#' @param vocabulary char contains the vocabulary from the input char
-#' If no vocabulary exists, it is generated from the input char
-#' @param verbose TRUE/FALSE
-#' @export
-preprocessFasta <- function(path,
-                            maxlen = 250,
-                            vocabulary = c("l", "p", "a", "c", "g", "t"),
-                            verbose = F) {
-
-
-  # process corpus
-  if (endsWith(path, "fasta")) {
-    fasta.file <- microseq::readFasta(path)
-  }
-  if (endsWith(path, "fastq")) {
-    fasta.file <- microseq::readFastq(path)
-  }
-  seq <- paste(fasta.file$Sequence, collapse = "")
-
-  if(verbose)
-    message("Preprocessing the data ...")
-
-  seq.processed <-
-    preprocessSemiRedundant(char = seq, maxlen = maxlen, vocabulary = vocabulary,
-                            verbose = F)
-  return(seq.processed)
-}
-
-#' One-hot-encodes integer sequence
-#'
-#' \code{sequenceToArray} Helper function for \code{\link{{fastaFileGenerator}}, returns one hot encoding for sequence
+#' \code{seq_to_one_hot_lm} Helper function for \code{\link{{generator_fasta_lm}}, returns one hot encoding for sequence
 #'
 #' @param sequence Sequence of integers.
 #' @param maxlen Length of one sample
 #' @param vocabulary Set of characters to encode.
-#' @param startInd Start positions of samples in \code{sequence}.
+#' @param start_ind Start positions of samples in \code{sequence}.
 #' @param wavenet_format Boolean.
 #' @param cnn_format Boolean. If true, nucleotides on the left and right side of the predicted nucleotide (language model) are
 #' concatenated in the first layer, which make the structure more suitable to CNN architectures (without RNN).
@@ -148,22 +16,18 @@ preprocessFasta <- function(path,
 #' @param use_quality Use quality scores.
 #' @param quality_vector Vector of quality probabilities.
 #' @export
-sequenceToArray <- function(sequence, maxlen, vocabulary, startInd, wavenet_format = FALSE, target_middle = FALSE,
-                            ambiguous_nuc = "zero", nuc_dist = NULL, use_quality = FALSE, quality_vector = NULL,
-                            cnn_format, target_len = 1, use_coverage = FALSE, max_cov = NULL, cov_vector = NULL,
-                            n_gram = NULL, n_gram_stride = 1) {
+seq_to_one_hot_lm <- function(sequence, maxlen, vocabulary, start_ind, wavenet_format = FALSE, target_middle = FALSE,
+                              ambiguous_nuc = "zero", nuc_dist = NULL, use_quality = FALSE, quality_vector = NULL,
+                              cnn_format, target_len = 1, use_coverage = FALSE, max_cov = NULL, cov_vector = NULL,
+                              n_gram = NULL, n_gram_stride = 1, output_format = "target_right") {
 
   voc_len <- length(vocabulary)
   if (!is.null(n_gram)) {
     if (target_len < n_gram) stop("target_len needs to be at least as big as n_gram")
-    #   sequence <- int_to_n_gram(int_seq = sequence, n = n_gram, voc_size = length(vocabulary))
-    #   target_len <- target_len - n_gram + 1
-    #   maxlen <- maxlen - n_gram + 1
-    #   voc_len <- length(vocabulary)^n_gram
   }
 
-  startInd <- startInd - startInd[1] + 1
-  numberOfSamples <- length(startInd)
+  start_ind <- start_ind - start_ind[1] + 1
+  numberOfSamples <- length(start_ind)
 
   # every row in z one-hot encodes one character in sequence, oov is zero-vector
   num_classes <- voc_len + 2
@@ -193,123 +57,110 @@ sequenceToArray <- function(sequence, maxlen, vocabulary, startInd, wavenet_form
   }
 
   if (target_len == 1) {
-    if (!target_middle) {
-      if (!wavenet_format) {
-        # target right
-        x <- array(0, dim = c(numberOfSamples, maxlen, voc_len))
-        for (i in 1:numberOfSamples) {
-          start <- startInd[i]
-          x[i, , ] <- z[start : (start + maxlen - 1), ]
-        }
-        #if (!is.null(n_gram)) x <- x[ , 1:(dim(x)[2] - n_gram + 1), ]
 
-        y <- z[startInd + maxlen, ]
-      } else if (!cnn_format) {
-        # wavenet
-        if (!is.null(n_gram)) stop("Wavenet format not implemented for n_gram.")
-        x <- array(0, dim = c(numberOfSamples, maxlen, voc_len))
-        y <- array(0, dim = c(numberOfSamples, maxlen, voc_len))
-        for (i in 1:numberOfSamples) {
-          start <- startInd[i]
-          x[i, , ] <- z[start : (start + maxlen - 1), ]
-          y[i, , ] <- z[(start + 1) : (start + maxlen), ]
-        }
-      } else {
-        # target middle cnn
-        x <- array(0, dim = c(numberOfSamples, maxlen + 1, voc_len))
-        for (i in 1:numberOfSamples) {
-          start <- startInd[i]
-          x[i, , ] <- z[start : (start + maxlen), ]
-        }
-        missing_val <- ceiling(maxlen/2)
-        y <- z[startInd + missing_val, ]
-        #if (is.null(n_gram)) {
-        x <- x[ , -(missing_val + 1), ]
-        #} else {
-        #  x <- x[ , -((missing_val - n_gram):(missing_val + target_len + n_gram - 1)), ]
-        #}
+    if (output_format == "target_right") {
+      x <- array(0, dim = c(numberOfSamples, maxlen, voc_len))
+      for (i in 1:numberOfSamples) {
+        start <- start_ind[i]
+        x[i, , ] <- z[start : (start + maxlen - 1), ]
       }
-    } else {
-      if (!wavenet_format) {
-        len_input_1 <- ceiling(maxlen/2)
-        len_input_2 <- floor(maxlen/2)
-        input_tensor_1 <- array(0, dim = c(numberOfSamples, len_input_1, voc_len))
-        input_tensor_2 <- array(0, dim = c(numberOfSamples, len_input_2, voc_len))
-        for (i in 1:numberOfSamples) {
-          start <- startInd[i]
-          input_tensor_1[i, , ] <- z[start : (start + len_input_1 - 1), ]
-          input_tensor_2[i, , ] <- z[(start + maxlen) : (start + len_input_1 + 1), ]
-        }
-        if (!is.null(n_gram)) {
-          input_tensor_1 <- input_tensor_1[ , 1:(dim(input_tensor_1) - n_gram + 1), ]
-          input_tensor_2 <- input_tensor_2[ , 1:(dim(input_tensor_2) - n_gram + 1), ]
-        }
-        x <- list(input_tensor_1, input_tensor_2)
-        y <- z[startInd + len_input_1, ]
-      } else {
-        stop("Target middle not implemented for wavenet format.")
+      y <- z[start_ind + maxlen, ]
+    }
+
+    if (output_format == "wavenet") {
+      if (target_middle) stop("Target middle not implemented for wavenet format.")
+      if (!is.null(n_gram)) stop("Wavenet format not implemented for n_gram.")
+      x <- array(0, dim = c(numberOfSamples, maxlen, voc_len))
+      y <- array(0, dim = c(numberOfSamples, maxlen, voc_len))
+      for (i in 1:numberOfSamples) {
+        start <- start_ind[i]
+        x[i, , ] <- z[start : (start + maxlen - 1), ]
+        y[i, , ] <- z[(start + 1) : (start + maxlen), ]
       }
     }
-    # target_len > 1
-  } else {
-    if (!target_middle) {
-      if (!cnn_format) {
-        # target right
-        x <- array(0, dim = c(numberOfSamples, maxlen - target_len + 1, voc_len))
-        for (i in 1:numberOfSamples) {
-          start <- startInd[i]
-          x[i, , ] <- z[start : (start + maxlen - target_len), ]
-        }
-        y <- list()
-        for (i in 1:target_len) {
-          y[[i]] <- z[startInd + maxlen - target_len + i, ]
-        }
-        #if (!is.null(n_gram)) x <- x[ , 1:(dim(x)[2] - n_gram + 1), ]
 
-      } else {
-        # cnn format
-        x <- array(0, dim = c(numberOfSamples, maxlen + 1, voc_len))
-        for (i in 1:numberOfSamples) {
-          start <- startInd[i]
-          x[i, , ] <- z[start : (start + maxlen), ]
-        }
-        missing_val <- ceiling((maxlen - target_len)/2)
-        y <- list()
-        for (i in 1:target_len) {
-          y[[i]] <- z[startInd + missing_val + i - 1, ]
-        }
-        #if (is.null(n_gram)) {
-        x <- x[ , -((missing_val + 1):(missing_val + target_len)), ]
-        #} else {
-        #  x <- x[ , -((missing_val - n_gram):(missing_val + target_len + n_gram - 1)), ]
-        #}
+    if (output_format == "target_middle_cnn") {
+      x <- array(0, dim = c(numberOfSamples, maxlen + 1, voc_len))
+      for (i in 1:numberOfSamples) {
+        start <- start_ind[i]
+        x[i, , ] <- z[start : (start + maxlen), ]
       }
-    } else {
-      if (!wavenet_format) {
-        # target middle lstm
-        len_input_1 <- ceiling((maxlen - target_len + 1)/2)
-        len_input_2 <- maxlen + 1 - len_input_1 - target_len
-        input_tensor_1 <- array(0, dim = c(numberOfSamples, len_input_1, voc_len))
-        input_tensor_2 <- array(0, dim = c(numberOfSamples, len_input_2, voc_len))
-        for (i in 1:numberOfSamples) {
-          start <- startInd[i]
-          input_tensor_1[i, , ] <- z[start : (start + len_input_1 - 1), ]
-          input_tensor_2[i, , ] <- z[(start + maxlen) : (start + maxlen - len_input_2 + 1), ]
-        }
-        if (!is.null(n_gram)) {
-          input_tensor_1 <- input_tensor_1[ , 1:(dim(input_tensor_1) - n_gram + 1), ]
-          input_tensor_2 <- input_tensor_2[ , 1:(dim(input_tensor_2) - n_gram + 1), ]
-        }
-        x <- list(input_tensor_1, input_tensor_2)
-        y <- list()
-        for (i in 1:target_len) {
-          y[[i]] <- z[startInd + len_input_1 - 1 + i, ]
-        }
-      } else {
-        stop("Multi target not implemented for wavenet format.")
+      missing_val <- ceiling(maxlen/2)
+      y <- z[start_ind + missing_val, ]
+      x <- x[ , -(missing_val + 1), ]
+    }
+
+    if (output_format == "target_middle_lstm") {
+      len_input_1 <- ceiling(maxlen/2)
+      len_input_2 <- floor(maxlen/2)
+      input_tensor_1 <- array(0, dim = c(numberOfSamples, len_input_1, voc_len))
+      input_tensor_2 <- array(0, dim = c(numberOfSamples, len_input_2, voc_len))
+      for (i in 1:numberOfSamples) {
+        start <- start_ind[i]
+        input_tensor_1[i, , ] <- z[start : (start + len_input_1 - 1), ]
+        input_tensor_2[i, , ] <- z[(start + maxlen) : (start + len_input_1 + 1), ]
       }
+      if (!is.null(n_gram)) {
+        input_tensor_1 <- input_tensor_1[ , 1:(dim(input_tensor_1) - n_gram + 1), ]
+        input_tensor_2 <- input_tensor_2[ , 1:(dim(input_tensor_2) - n_gram + 1), ]
+      }
+      x <- list(input_tensor_1, input_tensor_2)
+      y <- z[start_ind + len_input_1, ]
+    }
+
+  }
+
+  if (target_len > 1) {
+
+    if (output_format == "target_right") {
+      x <- array(0, dim = c(numberOfSamples, maxlen - target_len + 1, voc_len))
+      for (i in 1:numberOfSamples) {
+        start <- start_ind[i]
+        x[i, , ] <- z[start : (start + maxlen - target_len), ]
+      }
+      y <- list()
+      for (i in 1:target_len) {
+        y[[i]] <- z[start_ind + maxlen - target_len + i, ]
+      }
+    }
+
+    if (output_format == "target_middle_cnn") {
+      x <- array(0, dim = c(numberOfSamples, maxlen + 1, voc_len))
+      for (i in 1:numberOfSamples) {
+        start <- start_ind[i]
+        x[i, , ] <- z[start : (start + maxlen), ]
+      }
+      missing_val <- ceiling((maxlen - target_len)/2)
+      y <- list()
+      for (i in 1:target_len) {
+        y[[i]] <- z[start_ind + missing_val + i - 1, ]
+      }
+      x <- x[ , -((missing_val + 1):(missing_val + target_len)), ]
+    }
+
+    if (output_format == "target_middle_lstm") {
+      len_input_1 <- ceiling((maxlen - target_len + 1)/2)
+      len_input_2 <- maxlen + 1 - len_input_1 - target_len
+      input_tensor_1 <- array(0, dim = c(numberOfSamples, len_input_1, voc_len))
+      input_tensor_2 <- array(0, dim = c(numberOfSamples, len_input_2, voc_len))
+      for (i in 1:numberOfSamples) {
+        start <- start_ind[i]
+        input_tensor_1[i, , ] <- z[start : (start + len_input_1 - 1), ]
+        input_tensor_2[i, , ] <- z[(start + maxlen) : (start + maxlen - len_input_2 + 1), ]
+      }
+
+      x <- list(input_tensor_1, input_tensor_2)
+      y <- list()
+      for (i in 1:target_len) {
+        y[[i]] <- z[start_ind + len_input_1 - 1 + i, ]
+      }
+    }
+
+    if (output_format == "wavenet") {
+      stop("Multi target not implemented for wavenet format.")
     }
   }
+
   if (is.matrix(x)) {
     x <- array(x, dim = c(1, dim(x)))
   }
@@ -346,24 +197,24 @@ sequenceToArray <- function(sequence, maxlen, vocabulary, startInd, wavenet_form
   return(list(x, y))
 }
 
-#' One-hot-encodes integer
+#' Encodes integer sequence.
 #'
-#' \code{sequenceToArrayLabel} Helper function for \code{\link{{fastaLabelGenerator}}, returns one hot encoding for sequence and returns samples from
+#' \code{seq_to_one_hot_label} Helper function for \code{\link{{generator_fasta_label_header_csv}}, returns one hot encoding for sequence and returns samples from
 #' specified positions
 #'
 #' @param sequence Sequence of integers.
 #' @param maxlen Length of predictor sequence.
 #' @param vocabulary Set of characters to encode.
-#' @param startInd Start positions of samples in \code{sequence}.
+#' @param start_ind Start positions of samples in \code{sequence}.
 #' @param ambiguous_nuc How to handle nucleotides outside vocabulary, either "zero", "discard" or "equal". If "zero", input gets encoded as zero vector;
 #' if "equal" input is 1/length(vocabulary) x length(vocabulary). If "discard" samples containing nucleotides outside vocabulary get discarded.
 #' @param nuc_dist Nucleotide distribution.
 #' @param use_quality Use quality scores.
 #' @param quality_vector Vector of quality probabilities.
 #' @export
-sequenceToArrayLabel <- function(sequence, maxlen, vocabulary, startInd, ambiguous_nuc = "zero", nuc_dist = NULL,
+seq_to_one_hot_label <- function(sequence, maxlen, vocabulary, start_ind, ambiguous_nuc = "zero", nuc_dist = NULL,
                                  use_quality = FALSE, quality_vector = NULL, use_coverage = FALSE, max_cov = NULL,
-                                 cov_vector = NULL, n_gram = NULL) {
+                                 cov_vector = NULL, n_gram = NULL, n_gram_stride = 1) {
 
   voc_len <- length(vocabulary)
   if (!is.null(n_gram)) {
@@ -371,8 +222,8 @@ sequenceToArrayLabel <- function(sequence, maxlen, vocabulary, startInd, ambiguo
     maxlen <- maxlen - n_gram + 1
     voc_len <- length(vocabulary)^n_gram
   }
-  startInd <- startInd - startInd[1] + 1
-  numberOfSamples <- length(startInd)
+  start_ind <- start_ind - start_ind[1] + 1
+  numberOfSamples <- length(start_ind)
 
   # every row in z one-hot encodes one character in sequence, oov is zero-vector
   z  <- keras::to_categorical(sequence, num_classes = voc_len + 2)[ , -c(1, voc_len + 2)]
@@ -401,15 +252,21 @@ sequenceToArrayLabel <- function(sequence, maxlen, vocabulary, startInd, ambiguo
 
   x <- array(0, dim = c(numberOfSamples, maxlen, voc_len))
   for (i in 1:numberOfSamples) {
-    start <- startInd[i]
+    start <- start_ind[i]
     x[i, , ] <- z[start : (start + maxlen - 1), ]
   }
+
+  if (!is.null(n_gram) & n_gram_stride > 1) {
+    index <- seq(1, dim(x)[2], gram_stride)
+    x <- x[ , index, ]
+  }
+
   return(x)
 }
 
 #' Computes start position of samples
 #'
-#' Helper function for \code{\link{{fastaLabelGenerator}} and \code{\link{{fastaFileGenerator}}. Computes positions in sequence where samples can be extracted
+#' Helper function for \code{\link{{generator_fasta_label_header_csv}} and \code{\link{{generator_fasta_lm}}. Computes positions in sequence where samples can be extracted
 #'
 #' @param seq_vector Vector of character sequences.
 #' @param length_vector Length of sequences in \code{seq_vector}.
@@ -417,10 +274,10 @@ sequenceToArrayLabel <- function(sequence, maxlen, vocabulary, startInd, ambiguo
 #' @param step Distance between samples from one entry in \code{seq_vector}.
 #' @param train_mode Either "lm" for language model or "label" for label classification. Language models need one character more
 #' (the target) for one sample.
-#' @param ignore_amb_nuc Discard all samples that contain characters outside vocabulary.
-#' @export
-getStartInd <- function(seq_vector, length_vector, maxlen,
-                        step, train_mode = "label", discard_amb_nuc = FALSE, vocabulary = c("A", "C", "G", "T")) {
+#' @param discard_amb_nuc Discard all samples that contain characters outside vocabulary.
+get_start_ind <- function(seq_vector, length_vector, maxlen,
+                          step, train_mode = "label", discard_amb_nuc = FALSE, vocabulary = c("A", "C", "G", "T")) {
+
   stopifnot(train_mode == "lm" | train_mode == "label")
   if (!discard_amb_nuc) {
     if (length(length_vector) > 1) {
@@ -448,14 +305,14 @@ getStartInd <- function(seq_vector, length_vector, maxlen,
       }
     }
   } else {
-    indexVector <- startIndicesIgnoreAmbNuc(seq_vector = seq_vector, length_vector = length_vector,
-                                            maxlen = maxlen, step = step, vocabulary = c(vocabulary, "0"), train_mode = train_mode)
+    indexVector <- start_ind_ignore_amb(seq_vector = seq_vector, length_vector = length_vector,
+                                        maxlen = maxlen, step = step, vocabulary = c(vocabulary, "0"), train_mode = train_mode)
   }
   return(indexVector)
 }
 
 
-#' Helper function for getStartInd, extracts the start positions of all potential samples (considering step size and vocabulary)
+#' Helper function for get_start_ind, extracts the start positions of all potential samples (considering step size and vocabulary)
 #'
 #' @param seq Sequences.
 #' @param length_vector Length of sequences in \code{seq_vector}.
@@ -463,8 +320,7 @@ getStartInd <- function(seq_vector, length_vector, maxlen,
 #' @param step How often to take a sample.
 #' @param vocabulary Vector of allowed characters in samples.
 #' @param train_mode "lm" or "label".
-#' @export
-startIndicesIgnoreAmbNucSingleSeq <- function(seq, maxlen, step, vocabulary, train_mode = "lm") {
+start_ind_ignore_amb_single_seq <- function(seq, maxlen, step, vocabulary, train_mode = "lm") {
 
   vocabulary <- stringr::str_to_lower(vocabulary)
   vocabulary <- c(vocabulary, "0")
@@ -515,7 +371,7 @@ startIndicesIgnoreAmbNucSingleSeq <- function(seq, maxlen, step, vocabulary, tra
 }
 
 
-#' Helper function for getStartInd, extracts the start positions of all potential samples (considering step size and vocabulary)
+#' Helper function for get_start_ind, extracts the start positions of all potential samples (considering step size and vocabulary)
 #'
 #' @param seq_vector Vector of character sequences.
 #' @param length_vector Length of sequences in \code{seq_vector}.
@@ -523,33 +379,30 @@ startIndicesIgnoreAmbNucSingleSeq <- function(seq, maxlen, step, vocabulary, tra
 #' @param step How often to take a sample.
 #' @param vocabulary Vector of allowed characters in samples.
 #' @param train_mode "lm" or "label".
-#' @export
-startIndicesIgnoreAmbNuc <- function(seq_vector, length_vector, maxlen, step, vocabulary, train_mode = "lm") {
-  startInd <- purrr::map(1:length(seq_vector), ~startIndicesIgnoreAmbNucSingleSeq(seq = seq_vector[.x],
-                                                                                  maxlen = maxlen,
-                                                                                  step = step,
-                                                                                  vocabulary = vocabulary,
-                                                                                  train_mode = train_mode))
+start_ind_ignore_amb <- function(seq_vector, length_vector, maxlen, step, vocabulary, train_mode = "lm") {
+  start_ind <- purrr::map(1:length(seq_vector), ~start_ind_ignore_amb_single_seq(seq = seq_vector[.x],
+                                                                                 maxlen = maxlen,
+                                                                                 step = step,
+                                                                                 vocabulary = vocabulary,
+                                                                                 train_mode = train_mode))
 
   cum_sum_length <- cumsum(length_vector)
-  if (length(startInd) > 1) {
-    for (i in 2:length(startInd)) {
-      startInd[[i]] <- startInd[[i]] + cum_sum_length[i - 1]
+  if (length(start_ind) > 1) {
+    for (i in 2:length(start_ind)) {
+      start_ind[[i]] <- start_ind[[i]] + cum_sum_length[i - 1]
     }
   }
-  startInd <- unlist(startInd)
-  startInd
+  start_ind <- unlist(start_ind)
+  start_ind
 }
 
 #' convert fastq quality score to probability
 #'
-#' @export
 quality_to_probability <- function(quality_vector) {
   Q <- utf8ToInt(quality_vector) - 33
   1 - 10^(-Q/10)
 }
 
-#' @export
 create_quality_vector <- function(pos, prob, voc_length = 4) {
   vec <- rep(0, voc_length)
   vec[pos] <- prob
@@ -557,7 +410,6 @@ create_quality_vector <- function(pos, prob, voc_length = 4) {
   vec
 }
 
-#' @export
 remove_amb_nuc_entries <- function(fasta.file, skip_amb_nuc, pattern) {
   chars_per_row <- nchar(fasta.file$Sequence)
   amb_per_row <- stringr::str_count(stringr::str_to_lower(fasta.file$Sequence), pattern)
@@ -568,13 +420,13 @@ remove_amb_nuc_entries <- function(fasta.file, skip_amb_nuc, pattern) {
 
 #' Estimate frequency of different classes
 #'
-#' @inheritParams fastaFileGenerator
-#' @inheritParams fastaLabelGenerator
+#' @inheritParams generator_fasta_lm
+#' @inheritParams generator_fasta_label_header_csv
 #' @param file_proportion Proportion of files to randomly sample for estimating class distributions.
 #' @param train_type Either "label_folder", "label_header" or "label_csv".
 #' @export
 get_class_weight <- function(path,
-                             labelVocabulary = NULL,
+                             vocabulary_label = NULL,
                              format = "fasta",
                              # estimate class distribution from subset
                              file_proportion = 1,
@@ -582,7 +434,7 @@ get_class_weight <- function(path,
                              csv_path = NULL) {
 
   classes <- count_nuc(path = path,
-                       labelVocabulary = labelVocabulary,
+                       vocabulary_label = vocabulary_label,
                        format = format,
                        file_proportion = file_proportion,
                        train_type = train_type,
@@ -590,8 +442,8 @@ get_class_weight <- function(path,
 
   zero_entry <- classes == 0
   if (sum(zero_entry) > 0) {
-    warning_message <- paste("The following classes have no samples:", paste(labelVocabulary[zero_entry]),
-                             "\n Try bigger file_proportion size or check labelVocabulary.")
+    warning_message <- paste("The following classes have no samples:", paste(vocabulary_label[zero_entry]),
+                             "\n Try bigger file_proportion size or check vocabulary_label.")
     warning(warning_message)
   }
 
@@ -621,17 +473,16 @@ get_class_weight <- function(path,
 #' Count nucleotides per class
 #'
 #' @inheritParams get_class_weight
-#' @export
 count_nuc <- function(path,
-                      labelVocabulary = NULL,
+                      vocabulary_label = NULL,
                       format = "fasta",
                       # estimate class distribution from subset
                       file_proportion = 1,
                       train_type = "label_folder",
                       csv_path = NULL) {
 
-  classes <- rep(0, length(labelVocabulary))
-  names(classes) <- labelVocabulary
+  classes <- rep(0, length(vocabulary_label))
+  names(classes) <- vocabulary_label
 
   # label by folder
   if (train_type == "label_folder") {
@@ -692,14 +543,14 @@ count_nuc <- function(path,
       stop("Can only estimate class weights if labels are mutually exclusive.")
     }
 
-    if (is.null(labelVocabulary) || missing(labelVocabulary)) {
-      labelVocabulary <-  names(label_csv)[!names(label_csv) == "file"]
+    if (is.null(vocabulary_label) || missing(vocabulary_label)) {
+      vocabulary_label <-  names(label_csv)[!names(label_csv) == "file"]
     } else {
-      label_csv <- label_csv %>% dplyr::select(c(dplyr::all_of(labelVocabulary), "file"))
+      label_csv <- label_csv %>% dplyr::select(c(dplyr::all_of(vocabulary_label), "file"))
     }
 
-    classes <- rep(0, length(labelVocabulary))
-    names(classes) <- labelVocabulary
+    classes <- rep(0, length(vocabulary_label))
+    names(classes) <- vocabulary_label
 
     path <- unlist(path)
     single_file_index <- stringr::str_detect(path, "fasta$|fastq$")
@@ -725,44 +576,10 @@ count_nuc <- function(path,
   return(classes)
 }
 
-#' Take random subset
-#'
-#' @export
-random_subset <- function(proportion_per_file, fasta.file, use_beta_dist = FALSE, use_quality_score) {
-  # take random subset
-  if (!is.null(proportion_per_file)) {
-    fasta_width <- nchar(fasta.file$Sequence)
-    sample_range <- floor(fasta_width - (proportion_per_file * fasta_width))
-    if (use_beta_dist) {
-      interval_list <- purrr::map(1:length(sample_range), ~seq(from = 0, to = 1, len = sample_range[.x])[-1])
-      beta <- rbeta(length(sample_range), shape1 = 0.95, shape2 = 0.95, ncp = 0)
-      start <- purrr::map(1:length(sample_range), ~min(which(beta[.x] < interval_list[[i]]))) %>% unlist()
-    } else {
-      start <- mapply(sample_range, FUN = sample, size = 1)
-    }
-    perc_length <- floor(fasta_width * proportion_per_file)
-    stop <- start + perc_length
-    seq_vector <- mapply(fasta.file$Sequence, FUN = substr, start = start, stop = stop)
-    if (use_quality_score) {
-      quality_scores <- mapply(fasta.file$Quality, FUN = substr, start = start, stop = stop)
-    }
-  } else {
-    seq_vector <- fasta.file$Sequence
-    if (use_quality_score) {
-      quality_scores <- fasta.file$Quality
-    }
-    if (use_quality_score) {
-      return(list(seq_vector = seq_vector, quality_scores = quality_scores))
-    } else {
-      return(seq_vector = seq_vector)
-    }
-  }
-}
 
-#' @export
-read_fasta_fastq <- function(format, skip_amb_nuc, file_index, pattern, shuffleFastaEntries,
-                             reverseComplements, fasta.files, use_coverage = FALSE, proportion_entries = NULL,
-                             labelVocabulary = NULL, filter_header = FALSE, target_from_csv = NULL) {
+read_fasta_fastq <- function(format, skip_amb_nuc, file_index, pattern, shuffle_input,
+                             reverse_complement, fasta.files, use_coverage = FALSE, proportion_entries = NULL,
+                             vocabulary_label = NULL, filter_header = FALSE, target_from_csv = NULL) {
   if (format == "fasta") {
     if (is.null(skip_amb_nuc)) {
       fasta.file <- microseq::readFasta(fasta.files[file_index])
@@ -773,7 +590,7 @@ read_fasta_fastq <- function(format, skip_amb_nuc, file_index, pattern, shuffleF
 
     if (filter_header & is.null(target_from_csv)) {
       label_vector <- trimws(stringr::str_to_lower(fasta.file$Header))
-      label_filter <- label_vector %in% labelVocabulary
+      label_filter <- label_vector %in% vocabulary_label
       fasta.file <- fasta.file[label_filter, ]
     }
 
@@ -782,11 +599,11 @@ read_fasta_fastq <- function(format, skip_amb_nuc, file_index, pattern, shuffleF
       fasta.file <- fasta.file[index, ]
     }
 
-    if (shuffleFastaEntries) {
+    if (shuffle_input) {
       fasta.file <- fasta.file[sample(nrow(fasta.file)), ]
     }
 
-    if (reverseComplements & sample(c(TRUE, FALSE), 1)) {
+    if (reverse_complement & sample(c(TRUE, FALSE), 1)) {
       fasta.file$Sequence <- microseq::reverseComplement(fasta.file$Sequence)
     }
 
@@ -801,7 +618,7 @@ read_fasta_fastq <- function(format, skip_amb_nuc, file_index, pattern, shuffleF
 
     if (filter_header & is.null(target_from_csv)) {
       label_vector <- trimws(stringr::str_to_lower(fasta.file$Header))
-      label_filter <- label_vector %in% labelVocabulary
+      label_filter <- label_vector %in% vocabulary_label
       fasta.file <- fasta.file[label_filter, ]
     }
 
@@ -810,18 +627,17 @@ read_fasta_fastq <- function(format, skip_amb_nuc, file_index, pattern, shuffleF
       fasta.file <- fasta.file[index, ]
     }
 
-    if (shuffleFastaEntries) {
+    if (shuffle_input) {
       fasta.file <- fasta.file[sample(nrow(fasta.file)), ]
     }
 
-    if (reverseComplements & sample(c(TRUE, FALSE), 1)) {
+    if (reverse_complement & sample(c(TRUE, FALSE), 1)) {
       fasta.file$Sequence <- microseq::reverseComplement(fasta.file$Sequence)
     }
   }
   return(fasta.file)
 }
 
-#' @export
 input_from_csv <- function(added_label_path) {
   .datatable.aware = TRUE
   label_csv <- read.csv2(added_label_path, header = TRUE, stringsAsFactors = FALSE)
@@ -855,17 +671,14 @@ input_from_csv <- function(added_label_path) {
     stop('names in added_label_path should contain one column named "file" ')
   }
   col_name <- ifelse(added_label_by_header, "header", "file")
-  # header_vector <- fasta.file$Header
-  # return(list(label_csv = label_csv, col_name = col_name, header_vector = header_vector))
   return(list(label_csv = label_csv, col_name = col_name))
 }
 
 #' @import data.table
-#' @export
-csv_to_tensor <- function(label_csv, added_label_vector, added_label_by_header, batch.size,
+csv_to_tensor <- function(label_csv, added_label_vector, added_label_by_header, batch_size,
                           start_index_list) {
   .datatable.aware = TRUE
-  label_tensor <- matrix(0, ncol = ncol(label_csv) - 1, nrow = batch.size, byrow = TRUE)
+  label_tensor <- matrix(0, ncol = ncol(label_csv) - 1, nrow = batch_size, byrow = TRUE)
 
   if (added_label_by_header) {
     header_unique <- unique(added_label_vector)
@@ -897,7 +710,6 @@ csv_to_tensor <- function(label_csv, added_label_vector, added_label_by_header, 
 
 #' Devide tensor to list of subsets
 #'
-#' @export
 slice_tensor <- function(tensor, target_split) {
 
   num_row <- nrow(tensor)
@@ -912,16 +724,16 @@ slice_tensor <- function(tensor, target_split) {
   return(l)
 }
 
-check_header_names <- function(target_split, labelVocabulary) {
+check_header_names <- function(target_split, vocabulary_label) {
   target_split <- unlist(target_split)
-  if (!all(target_split %in% labelVocabulary)) {
+  if (!all(target_split %in% vocabulary_label)) {
     stop_text <- paste("Your csv file has no columns named",
-                       paste(target_split[!(target_split %in% labelVocabulary)], collapse = " "))
+                       paste(target_split[!(target_split %in% vocabulary_label)], collapse = " "))
     stop(stop_text)
   }
-  if (!all(labelVocabulary %in% target_split)) {
+  if (!all(vocabulary_label %in% target_split)) {
     warning_text <- paste("target_split does not cover the following columns:",
-                          paste(labelVocabulary[!(labelVocabulary %in% target_split)], collapse = " "))
+                          paste(vocabulary_label[!(vocabulary_label %in% target_split)], collapse = " "))
     warning(warning_text)
   }
 }
@@ -950,44 +762,29 @@ count_files <- function(path, format = "fasta", train_type) {
   }
 }
 
-list_fasta_files <- function(corpus.dir, format, file_filter) {
-  #if (is.list(corpus.dir)) {
-  fasta.files <- list()
-  for (i in 1:length(corpus.dir)) {
+list_fasta_files <- function(path_corpus, format, file_filter) {
 
-    if (endsWith(corpus.dir[[i]], paste0(".", format))) {
-      fasta.files[[i]] <- corpus.dir[[i]]
+  fasta.files <- list()
+  for (i in 1:length(path_corpus)) {
+
+    if (endsWith(path_corpus[[i]], paste0(".", format))) {
+      fasta.files[[i]] <- path_corpus[[i]]
 
     } else {
 
       fasta.files[[i]] <- list.files(
-        path = xfun::normalize_path(corpus.dir[[i]]),
+        path = xfun::normalize_path(path_corpus[[i]]),
         pattern = paste0("\\.", format, "$"),
         full.names = TRUE)
     }
   }
   fasta.files <- unlist(fasta.files)
   num_files <- length(fasta.files)
-  # } else {
-  #   fasta.files <- list()
-  #   # single file
-  #   if (endsWith(corpus.dir, paste0(".", format))) {
-  #     num_files <- 1
-  #     fasta.files <- corpus.dir
-  #   } else {
-  #
-  #     fasta.files <- list.files(
-  #       path = xfun::normalize_path(corpus.dir),
-  #       pattern = paste0("\\.", format, "$"),
-  #       full.names = TRUE)
-  #     num_files <- length(fasta.files)
-  #   }
-  # }
 
   if (!is.null(file_filter)) {
     fasta.files <- fasta.files[basename(fasta.files) %in% file_filter]
     if (length(fasta.files) < 1) {
-      stop_text <- paste0("None of the files from ", unlist(corpus.dir),
+      stop_text <- paste0("None of the files from ", unlist(path_corpus),
                           " are present in train_val_split_csv table for either train or validation. \n")
       stop(stop_text)
     }
@@ -1017,10 +814,9 @@ get_coverage_concat <- function(fasta.file, concat_seq) {
   return(cov)
 }
 
-
 reshape_tensor <- function(x, y, new_batch_size,
                            samples_per_target,
-                           batch.size, path, voc_len,
+                           batch_size, path, voc_len,
                            buffer_len = NULL,
                            maxlen, reshape_mode = "time_dist",
                            concat_maxlen = NULL) {
@@ -1042,10 +838,10 @@ reshape_tensor <- function(x, y, new_batch_size,
 
     x_list <- vector("list", samples_per_target)
     for (i in 1:samples_per_target) {
-      x_index <- base::seq(i, batch.size, samples_per_target)
+      x_index <- base::seq(i, batch_size, samples_per_target)
       x_list[[i]] <- x[x_index, , ]
     }
-    y <- y[base::seq(1, batch.size, samples_per_target), ]
+    y <- y[base::seq(1, batch_size, samples_per_target), ]
     return(list(x = x_list, y = y))
   }
 
@@ -1072,10 +868,6 @@ reshape_tensor <- function(x, y, new_batch_size,
           x_list[[(2*k) - 1]] <- x[index[k], , ]
         }
         x_temp <- do.call(rbind, x_list)
-        # # choose random region of size concat_maxlen
-        # start_index <- sample(nrow(x_temp) - concat_maxlen + 1, 1)
-        # end_index <- start_index + concat_maxlen - 1
-        # x_temp <- x_temp[start_index : end_index,  ]
       }
 
       x_new[i, , ] <- x_temp
@@ -1087,7 +879,6 @@ reshape_tensor <- function(x, y, new_batch_size,
 
 #' Transform confusion matrix with total numbers to matrix with percentages.
 #'
-#' @export
 cm_perc <- function(cm, round_dig = 2) {
   col_sums <- colSums(cm)
   for (i in 1:ncol(cm)) {
@@ -1152,4 +943,74 @@ n_gram_of_3d_tensor <- function(tensor_3d, n) {
     new_tensor[i, , ] <- n_gram_of_matrix(tensor_3d[i, , ], n = n)
   }
   new_tensor
+}
+
+#' Split fasta file into smaller files.
+#'
+#' Returns smaller files with same file name and "_x" (where x is an integer). For example,
+#' assume we have input file called "abc.fasta" with 100 entries and split_n = 50. Function will
+#' create two files called "abc_1.fasta" and "abc_2.fasta" in target_path.
+#'
+#' @param path_input Fasta file to split into smaller files
+#' @param split_n Maximum number of entries to use in smaller file.
+#' @param target_path Directory for output.
+#' @param shuffle_entries Whether to shuffle fasta entries before split.
+#' @param delete_input Whether to delete the original file.
+split_fasta <- function(path_input,
+                        target_folder,
+                        split_n = 500,
+                        shuffle_entries = TRUE,
+                        delete_input = FALSE) {
+
+  fasta_file <- microseq::readFasta(path_input)
+  if (shuffle_entries) {
+    fasta_file <- fasta_file[sample(nrow(fasta_file)), ]
+  }
+  base_name <- basename(stringr::str_remove(path_input, ".fasta"))
+  new_path <- paste0(target_folder, "/", base_name)
+  count <- 1
+  start_index <- 1
+  end_index <- 1
+
+  while (end_index < nrow(fasta_file)) {
+    end_index <- min(start_index + split_n - 1, nrow(fasta_file))
+    index <- start_index : end_index
+    sub_df <- fasta_file[index, ]
+    fasta_name <- paste0(new_path, "_", count, ".fasta")
+    microseq::writeFasta(sub_df, fasta_name)
+    start_index <- start_index + split_n
+    count <- count + 1
+  }
+
+  if (delete_input) {
+    file.remove(path_input)
+  }
+}
+
+#' Add noise to tensor
+#'
+#' @param noise_type "normal" or "uniform".
+#' @param ... additional arguments for rnorm or runif call.
+add_noise_tensor <- function(x, noise_type, ...) {
+
+  stopifnot(noise_type %in% c("normal", "uniform"))
+  random_fn <- ifelse(noise_type == "normal", "rnorm", "runif")
+
+  if (is.list(x)) {
+    for (i in 1:length(x)) {
+      x_dim <- dim(x[[i]])
+      noise_tensor <- do.call(random_fn, list(n = prod(x_dim[-1]), ...))
+      noise_tensor <- array(noise_tensor, dim = x_dim)
+      x[[i]] <- x[[i]] + noise_tensor
+    }
+  } else {
+    x_dim <- dim(x)
+    stopifnot(noise_type %in% c("normal", "uniform"))
+    random_fn <- ifelse(noise_type == "normal", "rnorm", "runif")
+    noise_tensor <- do.call(random_fn, list(n = prod(x_dim[-1]), ...))
+    noise_tensor <- array(noise_tensor, dim = x_dim)
+    x <- x + noise_tensor
+  }
+
+  return(x)
 }

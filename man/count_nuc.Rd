@@ -6,7 +6,7 @@
 \usage{
 count_nuc(
   path,
-  labelVocabulary = NULL,
+  vocabulary_label = NULL,
   format = "fasta",
   file_proportion = 1,
   train_type = "label_folder",
@@ -14,9 +14,9 @@ count_nuc(
 )
 }
 \arguments{
-\item{labelVocabulary}{Character vector of possible targets. Targets outside \code{labelVocabulary} will get discarded.}
+\item{vocabulary_label}{Character vector of possible targets. Targets outside \code{vocabulary_label} will get discarded.}
 
-\item{format}{File format, either fasta or fastq.}
+\item{format}{File format, either "fasta" or "fastq".}
 
 \item{file_proportion}{Proportion of files to randomly sample for estimating class distributions.}
 
