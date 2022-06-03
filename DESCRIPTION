@@ -3,27 +3,27 @@ Title: Deep Learning for Genome Sequence Data
 Version: 0.2.1-9000
 Encoding: UTF-8
 Authors@R: c(
-person(given = "Philipp",
-       family = "Münch",
-       role = "aut",
-       email = "philipp.muench@helmholtz-hzi.de"),
-person(given = "René",
-       family = "Mreches",
-       role = "aut",
-       email = "rene.mreches@helmholtz-hzi.de"),
-person(given = "Martin",
-       family = "Binder",
-       role = c("aut", "cre"),
-       email = "developer.mb706@mb706.com"),
-person(given = "Hüseyin Anil",
-       family = "Gündüz",
-       role = "aut",
-       email = "anil.guenduez@stat.uni-muenchen.de"),
-person(given = "Alice",
-       family = "McHardy",
-       role = "aut",
-       email = "alice.mchardy@helmholtz-hzi.de")
-)
+       person(given = "Philipp",
+              family = "Münch",
+              role = "aut",
+              email = "philipp.muench@helmholtz-hzi.de"),
+       person(given = "René",
+              family = "Mreches",
+              role = "aut",
+              email = "rene.mreches@helmholtz-hzi.de"),
+       person(given = "Martin",
+              family = "Binder",
+              role = c("aut", "cre"),
+              email = "developer.mb706@mb706.com"),
+       person(given = "Hüseyin Anil",
+              family = "Gündüz",
+              role = "aut",
+              email = "anil.guenduez@stat.uni-muenchen.de"),
+       person(given = "Alice",
+              family = "McHardy",
+              role = "aut",
+              email = "alice.mchardy@helmholtz-hzi.de")
+     )
 Description: 'deepG' is a toolbox for training and applying deep learning models for genomic sequence data.
   Applications include data preprocessing, model fitting, model evaluation, model optimization and inference.
   A few genomic datasets for testing are provided, as is the possibility to extract deep representations.
