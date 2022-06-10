@@ -36,6 +36,7 @@ generator_fasta_label_header_csv(
   use_coverage = NULL,
   proportion_entries = NULL,
   sample_by_file_size = FALSE,
+  reverse_complement_encoding = FALSE,
   n_gram = NULL,
   n_gram_stride = 1,
   add_noise = NULL
