@@ -46,7 +46,7 @@ early_stopping_cb <- function(early_stopping_patience, early_stopping_time, by_t
 #' @param run_name Name of output file is run_name + ".csv".
 log_cb <- function(path_log, run_name) {
   keras::callback_csv_logger(
-    paste0(log_dir, "/", run_name, ".csv"),
+    paste0(path_log, "/", run_name, ".csv"),
     separator = ";",
     append = TRUE)
 }
