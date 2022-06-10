@@ -1985,6 +1985,9 @@ get_optimizer <- function(model) {
   return(optimizer)
 }
 
+#' Self-genoment model 
+#'
+#' @export
 create_model_genomenet <- function(
   maxlen = 300,
   learning_rate = 0.001,
@@ -2191,13 +2194,35 @@ create_model_genomenet <- function(
 
   model %>% keras::compile(loss = "categorical_crossentropy", optimizer = keras_optimizer, metrics = "acc")
 
-  args <- formals()
-  given_args <- as.list(match.call()[-1])
-  args[names(given_args)] <- given_args
-
-  args$trainable_params <- model$count_params()
-
-  model$hparam <- args
+  argg <- c(as.list(environment()))
+  argg["metrics"] <- NULL
+  argg["model"] <- NULL
+  argg["i"] <- NULL
+  argg["optimizer"] <- NULL
+  argg["number_of_cnn_layers"] <- paste(as.character(number_of_cnn_layers), collapse = " ")
+  argg["filters"] <- paste(as.character(filters), collapse = " ")
+  argg["kernel_size"] <- paste(as.character(kernel_size), collapse = " ")
+  argg["input_tensor"] <- NULL
+  argg["label_inputs"] <- NULL
+  argg["f1"] <- NULL
+  argg["multi_acc"] <- NULL
+  argg[["trainable_params"]] <- model$count_params()
+  argg["output_tensor"] <- NULL
+  argg["output_list"] <- NULL
+  argg["label_noise_matrix"] <- NULL
+  argg["smooth_loss"] <- NULL
+  argg["noisy_loss"] <- NULL
+  argg["col_sums"] <- NULL
+  argg["auc"] <- NULL
+  argg["multi_label"] <- NULL
+  argg["macro_average_cb"] <- NULL
+  argg["input_list"] <- NULL
+  argg["metrics"] <- NULL
+  argg["representation_list"] <- NULL
+  argg["same_length"] <- NULL
+  argg["y"] <- NULL
+  argg["feature_ext_model"] <- NULL
+  model$hparam <- argg
 
   model
 }
