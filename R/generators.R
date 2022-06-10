@@ -800,6 +800,7 @@ generator_fasta_label_header_csv <- function(path_corpus,
                                              use_coverage = NULL,
                                              proportion_entries = NULL,
                                              sample_by_file_size = FALSE,
+                                             reverse_complement_encoding = FALSE,
                                              n_gram = NULL,
                                              n_gram_stride = 1,
                                              add_noise = NULL) {
@@ -814,6 +815,13 @@ generator_fasta_label_header_csv <- function(path_corpus,
   if (!is.null(concat_seq) && (!all(stringr::str_split(concat_seq,"")[[1]] %in% vocabulary))) {
     stop("Characters of separating sequence should be in vocabulary")
   }
+  if (reverse_complement_encoding) {
+    test_len <- length(vocabulary) != 4
+    if (test_len || all(sort(stringr::str_to_lower(vocabulary)) != c("a", "c", "g", "t"))) {
+      stop("reverse_complement_encoding only implemented for A,C,G,T vocabulary yet")
+    }
+  }
+  
   discard_amb_nuc <- ifelse(ambiguous_nuc == "discard", TRUE, FALSE)
   vocabulary <- stringr::str_to_lower(vocabulary)
   vocabulary_label <- stringr::str_to_lower(vocabulary_label)
@@ -1464,6 +1472,12 @@ generator_fasta_label_header_csv <- function(path_corpus,
     if (!is.null(add_noise)) {
       noise_args <- c(add_noise, list(x = x))
       x <- do.call(add_noise_tensor, noise_args)
+    }
+    
+    if (reverse_complement_encoding){
+      x_1 <- x
+      x_2 <- array(x_1[ , (dim(x)[2]):1, 4:1], dim = dim(x))
+      x <- list(x_1, x_2)
     }
 
     return(list(X = x, Y = y))
