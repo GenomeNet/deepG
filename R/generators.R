@@ -2970,6 +2970,7 @@ generator_random <- function(
   output_path = NULL,
   max_iter = 10000,
   verbose = TRUE,
+  reverse_complement_encoding = FALSE,
   concat_seq = NULL) {
 
   path_len <- ifelse(train_mode != "label_folder", 1, length(path))
@@ -2979,6 +2980,13 @@ generator_random <- function(
 
   if (ambiguous_nuc == "empirical") {
     stop("Empirical option not implemented for random sampling, only 'zero', 'equal' and 'discard'")
+  }
+  
+  if (reverse_complement_encoding) {
+    test_len <- length(vocabulary) != 4
+    if (test_len || all(sort(stringr::str_to_lower(vocabulary)) != c("a", "c", "g", "t"))) {
+      stop("reverse_complement_encoding only implemented for A,C,G,T vocabulary yet")
+    }
   }
 
   if (length(batch_size) == 1 & (train_mode == "label_folder")) {
@@ -3218,6 +3226,12 @@ generator_random <- function(
       }
       y <- do.call(rbind, y_list)
     }
+    
+    if (reverse_complement_encoding){
+      x_1 <- x
+      x_2 <- array(x_1[ , (dim(x)[2]):1, 4:1], dim = dim(x))
+      x <- list(x_1, x_2)
+    }
 
     if (train_mode == "label_csv") {
       y <- do.call(rbind, target_list)
@@ -3441,6 +3455,7 @@ get_generator <- function(path,
         sample_by_file_size = sample_by_file_size,
         max_samples = max_samples,
         skip_amb_nuc = skip_amb_nuc,
+        reverse_complement_encoding = reverse_complement_encoding,
         vocabulary_label = vocabulary_label,
         shuffle = FALSE,
         as_numpy_array = FALSE
@@ -3463,6 +3478,7 @@ get_generator <- function(path,
         sample_by_file_size = sample_by_file_size,
         max_samples = max_samples,
         skip_amb_nuc = skip_amb_nuc,
+        reverse_complement_encoding = reverse_complement_encoding,
         vocabulary_label = vocabulary_label,
         shuffle = FALSE,
         verbose = FALSE,
@@ -3522,7 +3538,7 @@ get_generator <- function(path,
                                             target_from_csv = target_from_csv, target_split = target_split, file_filter = train_files,
                                             use_coverage = use_coverage, proportion_entries = proportion_entries,
                                             sample_by_file_size = sample_by_file_size, n_gram = n_gram, n_gram_stride = n_gram_stride,
-                                            add_noise = add_noise)
+                                            add_noise = add_noise, reverse_complement_encoding = reverse_complement_encoding)
 
     # generator for validation
     gen.val <- generator_fasta_label_header_csv(path_corpus = path_val, format = format, batch_size = batch_size, maxlen = maxlen,
@@ -3536,7 +3552,7 @@ get_generator <- function(path,
                                                 target_from_csv = target_from_csv, target_split = target_split, file_filter = val_files,
                                                 use_coverage = use_coverage, proportion_entries = proportion_entries,
                                                 sample_by_file_size = sample_by_file_size, n_gram = n_gram, n_gram_stride = n_gram_stride,
-                                                add_noise = add_noise)
+                                                add_noise = add_noise, reverse_complement_encoding = reverse_complement_encoding)
 
   }
 
