@@ -2222,7 +2222,7 @@ create_model_genomenet <- function(
   argg["same_length"] <- NULL
   argg["y"] <- NULL
   argg["feature_ext_model"] <- NULL
-  #model$hparam <- argg
+  model$hparam <- argg
 
   model
 }
