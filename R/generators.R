@@ -3328,7 +3328,8 @@ get_generator <- function(path,
                           samples_per_target,
                           vocabulary_label,
                           train_files,
-                          val_files) {
+                          val_files,
+                          new_batch_size) {
 
   if (random_sampling) {
     if (use_quality_score) stop("use_quality_score not implemented for random sampling")

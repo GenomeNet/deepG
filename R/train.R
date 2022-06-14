@@ -377,7 +377,8 @@ train_model <- function(train_type = "lm",
                               sample_by_file_size = sample_by_file_size, add_noise = add_noise, target_split = target_split,
                               train_files = train_files, val_files = val_files, target_from_csv = target_from_csv,
                               split_seq = split_seq, path_file_logVal = path_file_logVal, buffer_len = buffer_len,
-                              samples_per_target = samples_per_target, vocabulary_label = vocabulary_label)
+                              samples_per_target = samples_per_target, vocabulary_label = vocabulary_label,
+                              new_batch_size = new_batch_size)
     gen <- gen_list[[1]]
     gen.val <- gen_list[[2]]
 
