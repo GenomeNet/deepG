@@ -47,6 +47,7 @@
 #' @param f1_metric Whether to add F1 metric.
 #' @param bal_acc Whether to add balanced accuracy.
 #' @param batch_norm_momentum Momentum for the moving mean and the moving variance.
+#' @param model_seed Set seed for model parameters in tensorflow, if not NULL.
 #' @export
 create_model_lstm_cnn <- function(
   maxlen = 50,
@@ -86,23 +87,25 @@ create_model_lstm_cnn <- function(
   f1_metric = FALSE,
   bal_acc = TRUE,
   verbose = TRUE,
-  batch_norm_momentum = 0.99) {
-
+  batch_norm_momentum = 0.99,
+  model_seed = NULL) {
+  
+  if (!is.null(model_seed)) tensorflow::tf$random$set_seed(model_seed)
   num_targets <- layer_dense[length(layer_dense)]
   layers.lstm <- length(layer_lstm)
   use.cnn <- ifelse(!is.null(kernel_size), TRUE, FALSE)
-
+  
   if (!is.null(layer_lstm)) {
     stopifnot(length(layer_lstm) == 1 | (length(layer_lstm) ==  layers.lstm))
   }
-
+  
   if (layers.lstm == 0 & !use.cnn) {
     stop("Model does not use LSTM or CNN layers. Set use.cnn to TRUE or layers.lstm > 0.")
   }
-
+  
   if (is.null(strides)) strides <- rep(1L, length(filters))
   if (is.null(dilation_rate) & use.cnn) dilation_rate <- rep(1L, length(filters))
-
+  
   if (use.cnn) {
     same_length <- (length(kernel_size) == length(filters)) &
       (length(filters) == length(strides)) &
@@ -114,21 +117,21 @@ create_model_lstm_cnn <- function(
       stop("Padding option must be same when residual block is used.")
     }
   }
-
+  
   stopifnot(maxlen > 0)
   stopifnot(dropout_lstm <= 1 & dropout_lstm >= 0)
   stopifnot(recurrent_dropout_lstm <= 1 & recurrent_dropout_lstm >= 0)
-
+  
   if (length(layer_lstm) == 1) {
     layer_lstm <- rep(layer_lstm, layers.lstm)
   }
-
+  
   if (stateful) {
     input_tensor <- keras::layer_input(batch_shape = c(batch_size, maxlen, vocabulary_size))
   } else {
     input_tensor <- keras::layer_input(shape = c(maxlen, vocabulary_size))
   }
-
+  
   if (use.cnn) {
     for (i in 1:length(filters)) {
       if (i == 1) {
@@ -183,7 +186,7 @@ create_model_lstm_cnn <- function(
                     use_bias = use_bias
                   )
                 output_tensor <- output_tensor %>% keras::layer_batch_normalization(momentum = batch_norm_momentum)
-
+                
                 output_tensor <- output_tensor %>%
                   keras::layer_conv_1d(
                     kernel_size = kernel_size[i],
@@ -196,7 +199,7 @@ create_model_lstm_cnn <- function(
                     use_bias = use_bias
                   )
                 output_tensor <- output_tensor %>% keras::layer_batch_normalization(momentum = batch_norm_momentum)
-
+                
                 output_tensor <- output_tensor %>%
                   keras::layer_conv_1d(
                     kernel_size = 1,
@@ -209,7 +212,7 @@ create_model_lstm_cnn <- function(
                     use_bias = use_bias
                   )
                 output_tensor <- output_tensor %>% keras::layer_batch_normalization(momentum = batch_norm_momentum)
-
+                
               } else {
                 output_tensor <- output_tensor %>%
                   keras::layer_conv_1d(
@@ -240,7 +243,7 @@ create_model_lstm_cnn <- function(
               use_bias = use_bias
             )
           output_tensor <- output_tensor %>% keras::layer_batch_normalization(momentum = batch_norm_momentum)
-
+          
           output_tensor <- output_tensor %>%
             keras::layer_conv_1d(
               kernel_size = kernel_size[i],
@@ -253,7 +256,7 @@ create_model_lstm_cnn <- function(
               use_bias = use_bias
             )
           output_tensor <- output_tensor %>% keras::layer_batch_normalization(momentum = batch_norm_momentum)
-
+          
           output_tensor <- output_tensor %>%
             keras::layer_conv_1d(
               kernel_size = 1,
@@ -266,7 +269,7 @@ create_model_lstm_cnn <- function(
               use_bias = use_bias
             )
           output_tensor <- output_tensor %>% keras::layer_batch_normalization(momentum = batch_norm_momentum)
-
+          
         } else {
           output_tensor <- output_tensor %>%
             keras::layer_conv_1d(
@@ -346,7 +349,7 @@ create_model_lstm_cnn <- function(
                           recurrent_activation = "sigmoid")
     }
   }
-
+  
   if (gap) {
     if (layers.lstm != 0) {
       stop("Global average pooling not compatible with using LSTM layer")
@@ -357,7 +360,7 @@ create_model_lstm_cnn <- function(
       output_tensor <- output_tensor %>% keras::layer_flatten()
     }
   }
-
+  
   if (!is.null(label_input)) {
     input_label_list <- list()
     for (i in 1:length(label_input)) {
@@ -373,13 +376,13 @@ create_model_lstm_cnn <- function(
     )
     )
   }
-
+  
   if (length(layer_dense) > 1) {
     for (i in 1:(length(layer_dense) - 1)) {
       output_tensor <- output_tensor %>% keras::layer_dense(units = layer_dense[i], activation = "relu")
     }
   }
-
+  
   if (num_output_layers == 1) {
     output_tensor <- output_tensor %>%
       keras::layer_dense(units = num_targets, activation = last_layer_activation)
@@ -391,7 +394,7 @@ create_model_lstm_cnn <- function(
         keras::layer_dense(units = num_targets, activation = last_layer_activation, name = layer_name)
     }
   }
-
+  
   # print model layout to screen, should be done before multi_gpu_model
   if (!is.null(label_input)) {
     label_inputs <- list()
@@ -410,13 +413,13 @@ create_model_lstm_cnn <- function(
       model <- keras::keras_model(inputs = input_tensor, outputs = output_list)
     }
   }
-
+  
   if (use_multiple_gpus) {
     model <- keras::multi_gpu_model(model,
                                     gpus = gpu_num,
                                     cpu_merge = merge_on_cpu)
   }
-
+  
   # choose optimization method
   if (solver == "adam") {
     optimizer <-  keras::optimizer_adam(lr = learning_rate)
@@ -430,7 +433,7 @@ create_model_lstm_cnn <- function(
   if (solver == "sgd") {
     optimizer <- keras::optimizer_sgd(lr = learning_rate)
   }
-
+  
   #add metrics
   metrics <- c("acc")
   cm_dir <- NULL
@@ -441,27 +444,27 @@ create_model_lstm_cnn <- function(
     }
     dir.create(cm_dir)
     model$cm_dir <- cm_dir
-
+    
     if (loss_fn == "categorical_crossentropy") {
-
+      
       if (bal_acc) {
         macro_average_cb <- balanced_acc_wrapper(num_targets, cm_dir)
         metrics <- c(macro_average_cb, "acc")
       }
-
+      
       if (f1_metric) {
         f1 <- f1_wrapper(num_targets)
         metrics <- c(metrics, f1)
       }
     }
-
+    
     if (auc_metric) {
       auc <- auc_wrapper(model_output_size = layer_dense[length(layer_dense)],
                          loss = loss_fn)
       metrics <- c(model$metrics, auc)
     }
   }
-
+  
   if (label_smoothing > 0 & !is.null(label_noise_matrix)) {
     stop("Can not use label smoothing and label noise at the same time. Either set label_smoothing = 0 or label_noise_matrix = NULL")
   }
@@ -486,7 +489,7 @@ create_model_lstm_cnn <- function(
     model %>% keras::compile(loss = loss_fn,
                              optimizer = optimizer, metrics = metrics)
   }
-
+  
   argg <- c(as.list(environment()))
   argg["metrics"] <- NULL
   argg["model"] <- NULL
@@ -525,7 +528,7 @@ create_model_lstm_cnn <- function(
   argg["macro_average_cb"] <- NULL
   model$hparam <- argg
   model$cm_dir <- cm_dir
-
+  
   if (verbose) summary(model)
   return(model)
 }
@@ -537,8 +540,10 @@ create_model_lstm_cnn <- function(
 create_model_wavenet <- function(filters = 16, kernel_size = 2, residual_blocks, maxlen,
                                  input_tensor = NULL, initial_kernel_size = 32, initial_filters = 32,
                                  output_channels = 4, output_activation = "softmax", solver = "adam",
-                                 learning_rate = 0.001, compile = TRUE, verbose = TRUE) {
-
+                                 learning_rate = 0.001, compile = TRUE, verbose = TRUE, model_seed = NULL) {
+  
+  if (!is.null(model_seed)) tensorflow::tf$random$set_seed(model_seed)
+  
   model <- wavenet::wavenet(filters = filters, kernel_size = kernel_size, residual_blocks = residual_blocks,
                             input_shape = list(maxlen, output_channels), input_tensor = input_tensor, initial_kernel_size = initial_kernel_size,
                             initial_filters = initial_filters, output_channels = output_channels, output_activation = "softmax")
@@ -554,12 +559,12 @@ create_model_wavenet <- function(filters = 16, kernel_size = 2, residual_blocks,
   if (solver == "sgd") {
     optimizer <- keras::optimizer_sgd(lr = learning_rate)
   }
-
+  
   if (compile) {
     model %>% keras::compile(loss = "categorical_crossentropy",
                              optimizer = optimizer, metrics = c("acc"))
   }
-
+  
   argg <- c(as.list(environment()))
   argg["model"] <- NULL
   argg["optimizer"] <- NULL
@@ -569,8 +574,6 @@ create_model_wavenet <- function(filters = 16, kernel_size = 2, residual_blocks,
   if (verbose) summary(model)
   model
 }
-
-#######
 
 #' @title Creates LSTM/CNN network
 #'
@@ -633,32 +636,34 @@ create_model_lstm_cnn_target_middle <- function(
   num_output_layers = 1,
   f1_metric = FALSE,
   verbose = TRUE,
-  batch_norm_momentum = 0.99) {
-
+  batch_norm_momentum = 0.99,
+  model_seed = NULL) {
+  
+  if (!is.null(model_seed)) tensorflow::tf$random$set_seed(model_seed)
   use.cnn <- ifelse(!is.null(kernel_size), TRUE, FALSE)
   num_targets <- layer_dense[length(layer_dense)]
   layers.lstm <- length(layer_lstm)
-
+  
   stopifnot(length(layer_lstm) == 1 | (length(layer_lstm) ==  layers.lstm))
   stopifnot(maxlen > 0)
   stopifnot(dropout_lstm <= 1 & dropout_lstm >= 0)
   stopifnot(recurrent_dropout_lstm <= 1 & recurrent_dropout_lstm >= 0)
-
+  
   if (!is.null(layer_lstm)) {
     stopifnot(length(layer_lstm) == 1 | (length(layer_lstm) ==  layers.lstm))
   }
-
+  
   if (is.null(strides)) {
     strides <- rep(1L, length(filters))
   }
-
+  
   if (use.cnn) {
     same_length <- (length(kernel_size) == length(filters)) & (length(filters) == length(strides))
     if (!same_length) {
       stop("kernel_size, filters and strides must have the same length")
     }
   }
-
+  
   # length of split sequences
   maxlen_1 <- ceiling(maxlen/2)
   maxlen_2 <- floor(maxlen/2)
@@ -667,7 +672,7 @@ create_model_lstm_cnn_target_middle <- function(
   } else {
     input_tensor_1 <- keras::layer_input(shape = c(maxlen_1, vocabulary_size))
   }
-
+  
   if (use.cnn) {
     for (i in 1:length(filters)) {
       if (i == 1) {
@@ -706,7 +711,7 @@ create_model_lstm_cnn_target_middle <- function(
       output_tensor_1 <- input_tensor_1
     }
   }
-
+  
   # lstm layers
   if (!is.null(layers.lstm) && layers.lstm > 0) {
     if (layers.lstm > 1) {
@@ -740,7 +745,7 @@ create_model_lstm_cnn_target_middle <- function(
         }
       }
     }
-
+    
     # last LSTM layer
     if (bidirectional) {
       output_tensor_1 <- output_tensor_1 %>%
@@ -757,13 +762,13 @@ create_model_lstm_cnn_target_middle <- function(
                           recurrent_activation = "sigmoid")
     }
   }
-
+  
   if (stateful) {
     input_tensor_2 <- keras::layer_input(batch_shape = c(batch_size, maxlen_2, vocabulary_size))
   } else {
     input_tensor_2 <- keras::layer_input(shape = c(maxlen_2, vocabulary_size))
   }
-
+  
   if (use.cnn) {
     for (i in 1:length(filters)) {
       if (i == 1) {
@@ -802,8 +807,8 @@ create_model_lstm_cnn_target_middle <- function(
       output_tensor_2 <- input_tensor_2
     }
   }
-
-
+  
+  
   # lstm layers
   if (!is.null(layers.lstm) && layers.lstm > 0) {
     if (layers.lstm > 1) {
@@ -837,7 +842,7 @@ create_model_lstm_cnn_target_middle <- function(
         }
       }
     }
-
+    
     # last LSTM layer
     if (bidirectional) {
       output_tensor_2 <- output_tensor_2 %>%
@@ -854,13 +859,13 @@ create_model_lstm_cnn_target_middle <- function(
                           recurrent_activation = "sigmoid")
     }
   }
-
+  
   output_tensor <- keras::layer_concatenate(list(output_tensor_1, output_tensor_2))
-
+  
   if (layers.lstm == 0) {
     output_tensor <- output_tensor %>% keras::layer_flatten()
   }
-
+  
   if (!is.null(label_input)) {
     input_label_list <- list()
     for (i in 1:length(label_input)) {
@@ -876,13 +881,13 @@ create_model_lstm_cnn_target_middle <- function(
     )
     )
   }
-
+  
   if (length(layer_dense) > 1) {
     for (i in 1:(length(layer_dense) - 1)) {
       output_tensor <- output_tensor %>% keras::layer_dense(units = layer_dense[i], activation = "relu")
     }
   }
-
+  
   if (num_output_layers == 1) {
     output_tensor <- output_tensor %>%
       keras::layer_dense(units = num_targets, activation = last_layer_activation)
@@ -894,7 +899,7 @@ create_model_lstm_cnn_target_middle <- function(
         keras::layer_dense(units = num_targets, activation = last_layer_activation, name = layer_name)
     }
   }
-
+  
   # print model layout to screen, should be done before multi_gpu_model
   if (!is.null(label_input)) {
     label_inputs <- list()
@@ -905,13 +910,13 @@ create_model_lstm_cnn_target_middle <- function(
   } else {
     model <- keras::keras_model(inputs = list(input_tensor_1, input_tensor_2), outputs = output_tensor)
   }
-
+  
   if (use_multiple_gpus) {
     model <- keras::multi_gpu_model(model,
                                     gpus = gpu_num,
                                     cpu_merge = merge_on_cpu)
   }
-
+  
   # choose optimization method
   if (solver == "adam")
     optimizer <-
@@ -925,7 +930,7 @@ create_model_lstm_cnn_target_middle <- function(
   if (solver == "sgd")
     optimizer <-
     keras::optimizer_sgd(lr = learning_rate)
-
+  
   #add metrics
   cm_dir <- file.path(tempdir(), paste(sample(letters, 7), collapse = ""))
   while (dir.exists(cm_dir)) {
@@ -934,18 +939,18 @@ create_model_lstm_cnn_target_middle <- function(
   dir.create(cm_dir)
   model$cm_dir <- cm_dir
   metrics <- c("acc")
-
+  
   if (loss_fn == "categorical_crossentropy") {
-
+    
     macro_average_cb <- balanced_acc_wrapper(num_targets, cm_dir)
     metrics <- c(macro_average_cb, "acc")
-
+    
     if (f1_metric) {
       f1 <- f1_wrapper(num_targets)
       metrics <- c(metrics, f1)
     }
   }
-
+  
   if (label_smoothing > 0 & !is.null(label_noise_matrix)) {
     stop("Can not use label smoothing and label noise at the same time. Either set label_smoothing = 0 or label_noise_matrix = NULL")
   }
@@ -970,7 +975,7 @@ create_model_lstm_cnn_target_middle <- function(
     model %>% keras::compile(loss = "categorical_crossentropy",
                              optimizer = optimizer, metrics = metrics)
   }
-
+  
   argg <- c(as.list(environment()))
   argg["metrics"] <- NULL
   argg["i"] <- NULL
@@ -1006,7 +1011,7 @@ create_model_lstm_cnn_target_middle <- function(
   argg["macro_average_cb"] <- NULL
   model$hparam <- argg
   reticulate::py_set_attr(x = model, name = "hparam", value = model$hparam)
-
+  
   if (verbose) summary(model)
   return(model)
 }
@@ -1022,21 +1027,21 @@ get_hyper_param <- function(model) {
   use.codon.cnn <- FALSE
   learning_rate <- keras::k_eval(model$optimizer$lr)
   solver <- stringr::str_to_lower(model$optimizer$get_config()["name"])
-
+  
   layerList <- keras::get_config(model)["layers"]
   for (i in 1:length(layerList)) {
     layer_class_name <- layerList[[i]]$class_name
-
+    
     if (layer_class_name == "Conv1D") {
       use.codon.cnn <- TRUE
     }
-
+    
     if (layer_class_name == "MaxPooling1D") {
     }
-
+    
     if (layer_class_name == "BatchNormalization") {
     }
-
+    
     if (layer_class_name == "CuDNNLSTM") {
       layers.lstm <- layers.lstm + 1
       use.cudnn <- TRUE
@@ -1044,7 +1049,7 @@ get_hyper_param <- function(model) {
       recurrent_dropout_lstm <- 0
       dropout_lstm <- 0
     }
-
+    
     if (layer_class_name == "LSTM") {
       layers.lstm <- layers.lstm + 1
       lstm_layer_size <- layerList[[i]]$config$units
@@ -1066,14 +1071,14 @@ get_hyper_param <- function(model) {
         lstm_layer_size <- layerList[[i]]$config$layer$config$units
       }
     }
-
+    
     if (layer_class_name == "Dense") {
     }
-
+    
     if (layer_class_name == "Activation") {
     }
   }
-
+  
   list(dropout = dropout_lstm,
        recurrent_dropout = recurrent_dropout_lstm,
        lstm_layer_size =  lstm_layer_size,
@@ -1114,18 +1119,20 @@ remove_add_layers <- function(model = NULL,
                               freeze_base_model = FALSE,
                               compile = FALSE,
                               lr = 0.001,
-                              solver = "adam") {
-
+                              solver = "adam",
+                              model_seed = NULL) {
+  
+  if (!is.null(model_seed)) tensorflow::tf$random$set_seed(model_seed)
   if (!is.null(layer_name)) check_layer_name(model, layer_name)
-
+  
   if (!is.list(dense_layers)) {
     dense_layers <- list(dense_layers)
   }
-
+  
   if (!is.null(dropout) && !is.list(dropout)) {
     dropout <- list(dropout)
   }
-
+  
   if (is.null(losses)) {
     losses <- list()
     for (i in 1:length(last_activation)) {
@@ -1135,41 +1142,41 @@ remove_add_layers <- function(model = NULL,
       losses[[i]] <- loss
     }
   }
-
+  
   if (is.null(output_names)) {
     output_names <- vector("list", length = length(dense_layers))
   }
-
+  
   if (length(dense_layers) != length(last_activation)) {
     stop("Length of dense_layers and last_activation must be the same")
   }
-
+  
   if (length(dense_layers) != length(output_names)) {
     stop("Length of dense_layers and output_names must be the same")
   }
-
+  
   if (!is.null(dropout)) {
     for (i in 1:length(dense_layers)) {
       stopifnot(length(dropout[[i]]) == length(dense_layers[[i]]))
     }
   }
-
+  
   if (verbose) {
     print("Original model: ")
     print(model)
   }
-
+  
   is_sequential <- any(stringr::str_detect(class(model), "sequential"))
-
+  
   if (!is.null(layer_name)) {
     model_new <- tensorflow::tf$keras$Model(model$input, model$get_layer(layer_name)$output)
-
+    
     if (freeze_base_model) {
       keras::freeze_weights(model_new)
     }
-
+    
     output_list <- list()
-
+    
     if (!is.null(dense_layers[[1]])) {
       for (output_num in 1:length(dense_layers)) {
         for (i in 1:length(dense_layers[[output_num]])) {
@@ -1178,13 +1185,13 @@ remove_add_layers <- function(model = NULL,
           } else {
             activation <- "relu"
           }
-
+          
           if (i == length(dense_layers[[output_num]])) {
             layer_name <- output_names[[output_num]]
           } else {
             layer_name <- NULL
           }
-
+          
           if (is.null(dropout)) {
             if (i == 1) {
               output_list[[output_num]] <- model_new$output %>%
@@ -1213,7 +1220,7 @@ remove_add_layers <- function(model = NULL,
       model_new <- tensorflow::tf$keras$Model(model_new$input, output_list)
     }
   }
-
+  
   if (verbose) {
     print("New model: ")
     print(model_new)
@@ -1222,21 +1229,21 @@ remove_add_layers <- function(model = NULL,
       cat(layerList[[i]]$config$name , "trainable:" , layerList[[i]]$config$trainable, "\n")
     }
   }
-
+  
   if (compile) {
     if (is.null(lr)) {
       learning_rate <- keras::k_eval(model$optimizer$lr)
     } else {
       learning_rate <- lr
     }
-
+    
     if (is.null(solver)) {
       solver <- stringr::str_to_lower(model$optimizer$get_config()["name"])
     } #else {
     #   warning("You need to specify solver argument if compile is TRUE")
     #   return(NULL)
     # }
-
+    
     if (solver == "adam") {
       optimizer <-  keras::optimizer_adam(lr = learning_rate)
     }
@@ -1249,11 +1256,11 @@ remove_add_layers <- function(model = NULL,
     if (solver == "sgd") {
       optimizer <- keras::optimizer_sgd(lr = learning_rate)
     }
-
+    
     model_new %>% keras::compile(loss = losses,
                                  optimizer = optimizer, metrics = c("acc"))
   }
-
+  
   model_new
 }
 
@@ -1265,8 +1272,11 @@ remove_add_layers <- function(model = NULL,
 #' @inheritParams create_model_lstm_cnn
 #' @export
 merge_models <- function(models, layer_names, layer_dense, solver = "adam", learning_rate = 0.0001,
-                         freeze_base_model = c(FALSE, FALSE)) {
-
+                         freeze_base_model = c(FALSE, FALSE),
+                         model_seed = NULL) {
+  
+  if (!is.null(model_seed)) tensorflow::tf$random$set_seed(model_seed)
+  
   model_1 <- remove_add_layers(model = models[[1]],
                                layer_name = layer_names[1],
                                dense_layers = NULL,
@@ -1275,7 +1285,7 @@ merge_models <- function(models, layer_names, layer_dense, solver = "adam", lear
                                freeze_base_model = freeze_base_model[1],
                                compile = FALSE,
                                lr = NULL)
-
+  
   model_2 <- remove_add_layers(model = models[[2]],
                                layer_name = layer_names[2],
                                dense_layers = NULL,
@@ -1284,12 +1294,12 @@ merge_models <- function(models, layer_names, layer_dense, solver = "adam", lear
                                freeze_base_model = freeze_base_model[2],
                                compile = FALSE,
                                lr = NULL)
-
+  
   # choose optimization method
   if (solver == "adam") {
     optimizer <-  keras::optimizer_adam(lr = learning_rate)
   }
-
+  
   if (solver == "adagrad") {
     optimizer <- keras::optimizer_adagrad(lr = learning_rate)
   }
@@ -1299,19 +1309,19 @@ merge_models <- function(models, layer_names, layer_dense, solver = "adam", lear
   if (solver == "sgd") {
     optimizer <- keras::optimizer_sgd(lr = learning_rate)
   }
-
+  
   output_tensor <- keras::layer_concatenate(c(model_1$output, model_2$output))
   num_targets <- layer_dense[length(layer_dense)]
-
+  
   if (length(layer_dense) > 1) {
     for (i in 1:(length(layer_dense) - 1)) {
       output_tensor <- output_tensor %>% keras::layer_dense(units = layer_dense[i], activation = "relu")
     }
   }
-
+  
   output_tensor <- output_tensor %>%
     keras::layer_dense(units = num_targets, activation = "softmax")
-
+  
   model <- keras::keras_model(inputs = list(model_1$input, model_2$input), outputs = output_tensor)
   model %>% keras::compile(loss = "categorical_crossentropy",
                            optimizer = optimizer, metrics = c("acc"))
@@ -1371,26 +1381,28 @@ create_model_lstm_cnn_time_dist <- function(
   f1_metric = FALSE,
   samples_per_target,
   batch_norm_momentum = 0.99,
-  verbose = TRUE) {
-
+  verbose = TRUE,
+  model_seed = NULL) {
+  
+  if (!is.null(model_seed)) tensorflow::tf$random$set_seed(model_seed)
   num_output_layers <- 1
   num_input_layers <- 1
-
+  
   num_targets <- layer_dense[length(layer_dense)]
   layers.lstm <- length(layer_lstm)
   use.cnn <- ifelse(!is.null(kernel_size), TRUE, FALSE)
-
+  
   if (!is.null(layer_lstm)) {
     stopifnot(length(layer_lstm) == 1 | (length(layer_lstm) ==  layers.lstm))
   }
-
+  
   if (layers.lstm == 0 & !use.cnn) {
     stop("Model does not use LSTM or CNN layers. Set use.cnn to TRUE or layers.lstm > 0.")
   }
-
+  
   if (is.null(strides)) strides <- rep(1L, length(filters))
   if (is.null(dilation_rate) & use.cnn) dilation_rate <- rep(1L, length(filters))
-
+  
   if (use.cnn) {
     same_length <- (length(kernel_size) == length(filters)) &
       (length(filters) == length(strides)) &
@@ -1399,21 +1411,21 @@ create_model_lstm_cnn_time_dist <- function(
       stop("kernel_size, filters, dilation_rate and strides must have the same length")
     }
   }
-
+  
   stopifnot(maxlen > 0)
   stopifnot(dropout_lstm <= 1 & dropout_lstm >= 0)
   stopifnot(recurrent_dropout_lstm <= 1 & recurrent_dropout_lstm >= 0)
-
+  
   if (length(layer_lstm) == 1) {
     layer_lstm <- rep(layer_lstm, layers.lstm)
   }
-
+  
   if (stateful) {
     input_tensor <- keras::layer_input(batch_shape = c(batch_size, maxlen, vocabulary_size))
   } else {
     input_tensor <- keras::layer_input(shape = c(samples_per_target, maxlen, vocabulary_size))
   }
-
+  
   if (use.cnn) {
     for (i in 1:length(filters)) {
       if (i == 1) {
@@ -1433,7 +1445,7 @@ create_model_lstm_cnn_time_dist <- function(
         }
         output_tensor <- output_tensor %>% keras::time_distributed(keras::layer_batch_normalization(momentum = batch_norm_momentum))
       } else {
-
+        
         output_tensor <- output_tensor %>%
           keras::time_distributed(keras::layer_conv_1d(
             kernel_size = kernel_size[i],
@@ -1446,12 +1458,12 @@ create_model_lstm_cnn_time_dist <- function(
             use_bias = use_bias
           ))
         output_tensor <- output_tensor %>% keras::time_distributed(keras::layer_batch_normalization(momentum = batch_norm_momentum))
-
+        
         if (!is.null(pool_size) && pool_size[i] > 1) {
           output_tensor <- output_tensor %>% keras::time_distributed(keras::layer_max_pooling_1d(pool_size = pool_size[i]))
         }
         #output_tensor <- output_tensor %>% keras::layer_batch_normalization(momentum = batch_norm_momentum)
-
+        
       }
     }
   } else {
@@ -1510,7 +1522,7 @@ create_model_lstm_cnn_time_dist <- function(
                                                   recurrent_activation = "sigmoid"))
     }
   }
-
+  
   if (gap) {
     if (layers.lstm != 0) {
       stop("Global average pooling not compatible with using LSTM layer")
@@ -1521,18 +1533,18 @@ create_model_lstm_cnn_time_dist <- function(
       output_tensor <- output_tensor %>% keras::time_distributed(keras::layer_flatten())
     }
   }
-
+  
   #output_tensor <- output_tensor %>% keras::layer_add()
   output_tensor <- keras::layer_lambda(output_tensor, f = function(x) {
     tensorflow::tf$math$reduce_sum(x, axis=1L)
   })
-
+  
   if (length(layer_dense) > 1) {
     for (i in 1:(length(layer_dense) - 1)) {
       output_tensor <- output_tensor %>% keras::layer_dense(units = layer_dense[i], activation = "relu")
     }
   }
-
+  
   if (num_output_layers == 1) {
     output_tensor <- output_tensor %>%
       keras::layer_dense(units = num_targets, activation = last_layer_activation)
@@ -1544,24 +1556,24 @@ create_model_lstm_cnn_time_dist <- function(
         keras::layer_dense(units = num_targets, activation = last_layer_activation, name = layer_name)
     }
   }
-
+  
   if (num_output_layers == 1) {
     model <- keras::keras_model(inputs = input_tensor, outputs = output_tensor)
   } else {
     model <- keras::keras_model(inputs = input_tensor, outputs = output_list)
   }
-
+  
   if (use_multiple_gpus) {
     model <- keras::multi_gpu_model(model,
                                     gpus = gpu_num,
                                     cpu_merge = merge_on_cpu)
   }
-
+  
   # choose optimization method
   if (solver == "adam") {
     optimizer <-  keras::optimizer_adam(lr = learning_rate)
   }
-
+  
   if (solver == "adagrad") {
     optimizer <- keras::optimizer_adagrad(lr = learning_rate)
   }
@@ -1571,7 +1583,7 @@ create_model_lstm_cnn_time_dist <- function(
   if (solver == "sgd") {
     optimizer <- keras::optimizer_sgd(lr = learning_rate)
   }
-
+  
   #add metrics
   cm_dir <- file.path(tempdir(), paste(sample(letters, 7), collapse = ""))
   while (dir.exists(cm_dir)) {
@@ -1580,28 +1592,28 @@ create_model_lstm_cnn_time_dist <- function(
   dir.create(cm_dir)
   model$cm_dir <- cm_dir
   metrics <- c("acc")
-
+  
   if (loss_fn == "categorical_crossentropy") {
-
+    
     macro_average_cb <- balanced_acc_wrapper(num_targets, cm_dir)
     metrics <- c(macro_average_cb, "acc")
-
+    
     if (f1_metric) {
       f1 <- f1_wrapper(num_targets)
       metrics <- c(metrics, f1)
     }
   }
-
+  
   if (auc_metric) {
     auc <- auc_wrapper(model_output_size = layer_dense[length(layer_dense)],
                        loss = loss_fn)
     metrics <- c(model$metrics, auc)
   }
-
+  
   model %>% keras::compile(loss = loss_fn,
                            optimizer = optimizer, metrics = metrics)
-
-
+  
+  
   argg <- c(as.list(environment()))
   argg["metrics"] <- NULL
   argg["model"] <- NULL
@@ -1637,7 +1649,7 @@ create_model_lstm_cnn_time_dist <- function(
   argg["y"] <- NULL
   model$hparam <- argg
   model$cm_dir <- cm_dir
-
+  
   if (verbose) summary(model)
   return(model)
 }
@@ -1681,24 +1693,26 @@ create_model_lstm_cnn_multi_input <- function(
   f1_metric = FALSE,
   samples_per_target,
   batch_norm_momentum = 0.99,
-  verbose = TRUE) {
-
+  verbose = TRUE,
+  model_seed = NULL) {
+  
+  if (!is.null(model_seed)) tensorflow::tf$random$set_seed(model_seed)
   num_targets <- layer_dense[length(layer_dense)]
   layers.lstm <- length(layer_lstm)
   use.cnn <- ifelse(!is.null(kernel_size), TRUE, FALSE)
   num_output_layers = 1
-
+  
   if (!is.null(layer_lstm)) {
     stopifnot(length(layer_lstm) == 1 | (length(layer_lstm) ==  layers.lstm))
   }
-
+  
   if (layers.lstm == 0 & !use.cnn) {
     stop("Model does not use LSTM or CNN layers. Set use.cnn to TRUE or layers.lstm > 0.")
   }
-
+  
   if (is.null(strides)) strides <- rep(1L, length(filters))
   if (is.null(dilation_rate) & use.cnn) dilation_rate <- rep(1L, length(filters))
-
+  
   if (use.cnn) {
     same_length <- (length(kernel_size) == length(filters)) &
       (length(filters) == length(strides)) &
@@ -1707,17 +1721,17 @@ create_model_lstm_cnn_multi_input <- function(
       stop("kernel_size, filters, dilation_rate and strides must have the same length")
     }
   }
-
+  
   stopifnot(maxlen > 0)
   stopifnot(dropout_lstm <= 1 & dropout_lstm >= 0)
   stopifnot(recurrent_dropout_lstm <= 1 & recurrent_dropout_lstm >= 0)
-
+  
   if (length(layer_lstm) == 1) {
     layer_lstm <- rep(layer_lstm, layers.lstm)
   }
-
+  
   input_tensor <- keras::layer_input(shape = c(maxlen, vocabulary_size))
-
+  
   if (use.cnn) {
     for (i in 1:length(filters)) {
       if (i == 1) {
@@ -1737,7 +1751,7 @@ create_model_lstm_cnn_multi_input <- function(
         }
         output_tensor <- output_tensor %>% keras::layer_batch_normalization(momentum = batch_norm_momentum)
       } else {
-
+        
         output_tensor <- output_tensor %>%
           keras::layer_conv_1d(
             kernel_size = kernel_size[i],
@@ -1750,11 +1764,11 @@ create_model_lstm_cnn_multi_input <- function(
             use_bias = use_bias
           )
         output_tensor <- output_tensor %>% keras::layer_batch_normalization(momentum = batch_norm_momentum)
-
+        
         if (!is.null(pool_size) && pool_size[i] > 1) {
           output_tensor <- output_tensor %>% keras::layer_max_pooling_1d(pool_size = pool_size[i])
         }
-
+        
       }
     }
   } else {
@@ -1811,7 +1825,7 @@ create_model_lstm_cnn_multi_input <- function(
                           recurrent_activation = "sigmoid")
     }
   }
-
+  
   if (gap) {
     if (layers.lstm != 0) {
       stop("Global average pooling not compatible with using LSTM layer")
@@ -1822,44 +1836,44 @@ create_model_lstm_cnn_multi_input <- function(
       output_tensor <- output_tensor %>% keras::layer_flatten()
     }
   }
-
+  
   #output_tensor <- output_tensor %>% keras::layer_flatten()
-
+  
   feature_ext_model <- keras::keras_model(inputs = input_tensor, outputs = output_tensor)
-
+  
   input_list <- list()
   representation_list <- list()
   for (i in 1:samples_per_target) {
     input_list[[i]] <- keras::layer_input(shape = c(maxlen, vocabulary_size), name = paste0("input_", i))
     representation_list[[i]] <- feature_ext_model(input_list[[i]])
   }
-
+  
   y <- keras::layer_add(representation_list)
   #y <- keras::layer_average(representation_list)
-
+  
   if (length(layer_dense) > 1) {
     for (i in 1:(length(layer_dense) - 1)) {
       y <- y %>% keras::layer_dense(units = layer_dense[i], activation = "relu")
     }
   }
-
+  
   y <- y %>% keras::layer_dense(units = num_targets, activation = last_layer_activation)
-
+  
   # print model layout to screen, should be done before multi_gpu_model
-
+  
   model <- keras::keras_model(inputs = input_list, outputs = y)
-
+  
   if (use_multiple_gpus) {
     model <- keras::multi_gpu_model(model,
                                     gpus = gpu_num,
                                     cpu_merge = merge_on_cpu)
   }
-
+  
   # choose optimization method
   if (solver == "adam") {
     optimizer <-  keras::optimizer_adam(lr = learning_rate)
   }
-
+  
   if (solver == "adagrad") {
     optimizer <- keras::optimizer_adagrad(lr = learning_rate)
   }
@@ -1869,7 +1883,7 @@ create_model_lstm_cnn_multi_input <- function(
   if (solver == "sgd") {
     optimizer <- keras::optimizer_sgd(lr = learning_rate)
   }
-
+  
   #add metrics
   cm_dir <- file.path(tempdir(), paste(sample(letters, 7), collapse = ""))
   while (dir.exists(cm_dir)) {
@@ -1878,28 +1892,28 @@ create_model_lstm_cnn_multi_input <- function(
   dir.create(cm_dir)
   model$cm_dir <- cm_dir
   metrics <- c("acc")
-
+  
   if (loss_fn == "categorical_crossentropy") {
-
+    
     macro_average_cb <- balanced_acc_wrapper(num_targets, cm_dir)
     metrics <- c(macro_average_cb, "acc")
-
+    
     if (f1_metric) {
       f1 <- f1_wrapper(num_targets)
       metrics <- c(metrics, f1)
     }
   }
-
+  
   if (auc_metric) {
     auc <- auc_wrapper(model_output_size = layer_dense[length(layer_dense)],
                        loss = loss_fn)
     metrics <- c(model$metrics, auc)
   }
-
+  
   model %>% keras::compile(loss = loss_fn,
                            optimizer = optimizer, metrics = metrics)
-
-
+  
+  
   argg <- c(as.list(environment()))
   argg["metrics"] <- NULL
   argg["model"] <- NULL
@@ -1936,7 +1950,7 @@ create_model_lstm_cnn_multi_input <- function(
   argg["feature_ext_model"] <- NULL
   model$hparam <- argg
   model$cm_dir <- cm_dir
-
+  
   if (verbose) summary(model)
   return(model)
 }
@@ -1950,7 +1964,7 @@ create_model_lstm_cnn_multi_input <- function(
 #' @param input_shape The new input shape vector (without batch_size).
 #' @export
 reshape_input <- function(model, input_shape) {
-
+  
   in_layer <- layer_input(shape = input_shape)
   for (i in 2:length(model$layers)) {
     layer_name <- model$layers[[i]]$name
@@ -2015,8 +2029,10 @@ create_model_genomenet <- function(
   recurrent_bidirectional = FALSE,
   recurrent_units = 100,
   vocabulary_size = 4,
-  num_targets = 2) {
-
+  num_targets = 2,
+  model_seed = NULL) {
+  
+  if (!is.null(model_seed)) tensorflow::tf$random$set_seed(model_seed)
   stopifnot(maxlen > 0 & maxlen %% 1 == 0)
   stopifnot(learning_rate > 0)
   stopifnot(number_of_cnn_layers >= 1 & number_of_cnn_layers %% 1 == 0)
@@ -2031,25 +2047,25 @@ create_model_genomenet <- function(
   stopifnot(dense_layer_units >= 0 & dense_layer_units %% 1 == 0)
   stopifnot(0 <= dropout_lstm & dropout_lstm <= 1)
   stopifnot(0 <= batch_norm_momentum & batch_norm_momentum <= 1)
-
+  
   stopifnot(0 <= leaky_relu_alpha& leaky_relu_alpha <= 1)
   dense_activation <- match.arg(dense_activation, c("relu", "sigmoid", "tanh"))
   stopifnot(0 <= skip_block_fraction & skip_block_fraction <= 1)
-
+  
   model_type = match.arg(model_type, c("gap", "recurrent"))
-
+  
   stopifnot(isTRUE(residual_block) || isFALSE(residual_block))
   stopifnot(isTRUE(residual_block) || isFALSE(residual_block))
-
+  
   optimizer <- match.arg(optimizer, c("adam", "adagrad", "rmsprop", "sgd"))
   recurrent_type <- match.arg(recurrent_type, c("lstm", "gru"))
   stopifnot(recurrent_layers >= 1 & recurrent_layers %% 1 == 0)
   stopifnot(isTRUE(recurrent_bidirectional) || isFALSE(recurrent_bidirectional))
   stopifnot(recurrent_units >= 1 && recurrent_units %% 1 == 0)
-
+  
   stopifnot(vocabulary_size >= 2 & vocabulary_size %% 1 == 0)
   stopifnot(num_targets >= 2 & num_targets %% 1 == 0)
-
+  
   if (number_of_cnn_layers < conv_block_count){
     conv_block_size <- 1
     conv_block_count <- number_of_cnn_layers
@@ -2057,46 +2073,46 @@ create_model_genomenet <- function(
     conv_block_size <- round(number_of_cnn_layers / conv_block_count)
     number_of_cnn_layers <- conv_block_size * conv_block_count
   }
-
+  
   if (residual_block) {
     filters_exponent <- rep(seq(from = 0, to = 1, length.out = conv_block_count), each = conv_block_size)
   } else {
     filters_exponent <- seq(from = 0, to = 1, length.out = number_of_cnn_layers)
   }
-
+  
   filters <- ceiling(filters_0 * (filters_end / filters_0) ^ filters_exponent)
-
+  
   kernel_size <- ceiling(kernel_size_0 * (kernel_size_end / kernel_size_0) ^ seq(from = 0, to = 1, length.out = number_of_cnn_layers))
-
+  
   dilation_rates <- round(dilation_end ^ seq(0, 1, length.out = conv_block_size))
   dilation_rates <- rep(dilation_rates, conv_block_count)
-
+  
   max_pool_divider <- round(log2(max_pool_end) * seq(0, 1, length.out = number_of_cnn_layers + 1))
   max_pool_array <- 2 ^ diff(max_pool_divider)
-
+  
   input_tensor <- keras::layer_input(shape = c(maxlen, vocabulary_size))
   output_tensor <- input_tensor
-
+  
   output_collection <- list()
-
+  
   for (i in seq_len(number_of_cnn_layers)) {
     layer <- keras::layer_conv_1d(kernel_size = kernel_size[i],
                                   padding = "same",
                                   activation = "linear",
                                   filters = filters[i],
                                   dilation_rate = dilation_rates[i])
-
+    
     output_tensor <- output_tensor %>% layer
-
+    
     if (model_type == "gap" && i %% conv_block_size == 0) {
       output_collection[[length(output_collection) + 1]] <- keras::layer_global_average_pooling_1d(output_tensor)
     }
-
+    
     if (max_pool_array[i] > 1) {
       layer <- keras::layer_max_pooling_1d(pool_size = max_pool_array[i], padding = "same")
       output_tensor <- output_tensor %>% layer
     }
-
+    
     if (residual_block) {
       if (i > 1) {
         if (max_pool_array[i] > 1) {
@@ -2111,28 +2127,28 @@ create_model_genomenet <- function(
           )
           residual_layer <- residual_layer %>% layer
         }
-
+        
         output_tensor <- keras::layer_add(list(output_tensor, residual_layer))
       }
-
+      
       residual_layer <- output_tensor
     }
-
+    
     layer <- keras::layer_batch_normalization(momentum = batch_norm_momentum)
     output_tensor <- output_tensor %>% layer
-
+    
     layer <- keras::layer_activation_leaky_relu(alpha = leaky_relu_alpha)
-
+    
     output_tensor <- output_tensor %>% layer
   }
-
+  
   if (model_type == "gap") {
     # skip 'skip_block_fraction' of outputs we collected --> use the last (1 - skip_block_fraction) part of them
     use_blocks <- ceiling((1 - skip_block_fraction) * length(output_collection))
     use_blocks <- max(use_blocks, 1)
-
+    
     output_collection <- tail(output_collection, use_blocks)
-
+    
     # concatenate outputs from blocks (that we are using)
     if (length(output_collection) > 1) {
       output_tensor <- keras::layer_concatenate(output_collection)
@@ -2141,12 +2157,12 @@ create_model_genomenet <- function(
     }
   } else {
     # recurrent model
-
+    
     recurrent_layer_constructor = switch(recurrent_type,
                                          lstm = keras::layer_lstm,
                                          gru = keras::layer_gru
     )
-
+    
     for (i in seq_len(recurrent_layers)) {
       if (recurrent_bidirectional) {
         layer <- keras::bidirectional(
@@ -2157,26 +2173,26 @@ create_model_genomenet <- function(
       output_tensor <- output_tensor %>% layer
     }
   }
-
+  
   for (i in seq_len(dense_layer_num)) {
     layer <- keras::layer_dropout(rate = dropout_lstm)
     output_tensor <- output_tensor %>% layer
     layer <- keras::layer_dense(units = dense_layer_units, activation = dense_activation)
     output_tensor <- output_tensor %>% layer
   }
-
+  
   output_tensor <- output_tensor %>%
     keras::layer_dense(units = num_targets, activation = "softmax")
-
+  
   # define "model" as the mapping from input_tensor to output_tensor
   model <- keras::keras_model(inputs = input_tensor, outputs = output_tensor)
-
+  
   if (reverse_encoding) {
     input_tensor_reversed <- keras::layer_input(shape = c(maxlen, vocabulary_size))
-
+    
     # define "output_tensor_reversed" as what comes out of input_tensor_reversed when model() is applied to it
     output_tensor_reversed <- model(input_tensor_reversed)
-
+    
     # define a new model: model from above (with input_tensor, output_tensor), and
     model <- keras::keras_model(
       inputs = c(input_tensor, input_tensor_reversed),
@@ -2184,16 +2200,16 @@ create_model_genomenet <- function(
     )
   }
   # assign optimization method
-
+  
   keras_optimizer <- switch(optimizer,
                             adam = keras::optimizer_adam(lr = learning_rate),
                             adagrad = keras::optimizer_adagrad(lr = learning_rate),
                             rmsprop = keras::optimizer_rmsprop(lr = learning_rate),
                             sgd = keras::optimizer_sgd(lr = learning_rate)
   )
-
+  
   model %>% keras::compile(loss = "categorical_crossentropy", optimizer = keras_optimizer, metrics = "acc")
-
+  
   argg <- c(as.list(environment()))
   argg["metrics"] <- NULL
   argg["model"] <- NULL
@@ -2223,7 +2239,7 @@ create_model_genomenet <- function(
   argg["y"] <- NULL
   argg["feature_ext_model"] <- NULL
   model$hparam <- argg
-
+  
   model
 }
 
@@ -2239,24 +2255,24 @@ create_model_genomenet <- function(
 #' @export
 load_model_self_genomenet <- function(maxlen, compile = FALSE, optimizer = "adam",
                                       learning_rate = NULL) {
-
+  
   stopifnot(any(maxlen == c(150,10000)))
-
+  
   if (maxlen == 150) {
     data(model_self_genomenet_maxlen_150)
     model <- keras::unserialize_model(model_self_genomenet_maxlen_150, compile = FALSE)
   }
-
+  
   if (maxlen == 10000) {
     data(model_self_genomenet_maxlen_10k)
     model <- keras::unserialize_model(model_self_genomenet_maxlen_10k, compile = FALSE)
   }
-
+  
   if (is.null(learning_rate)) {
     if (maxlen == 150) learning_rate <- 0.00039517784549691
     if (maxlen == 10000) learning_rate <- 8.77530464905713e-05
   }
-
+  
   if (compile) {
     keras_optimizer <- switch(optimizer,
                               adam = keras::optimizer_adam(lr = learning_rate),
@@ -2264,9 +2280,9 @@ load_model_self_genomenet <- function(maxlen, compile = FALSE, optimizer = "adam
                               rmsprop = keras::optimizer_rmsprop(lr = learning_rate),
                               sgd = keras::optimizer_sgd(lr = learning_rate)
     )
-
+    
     model %>% keras::compile(loss = "categorical_crossentropy", optimizer = keras_optimizer, metrics = "acc")
   }
-
+  
   return(model)
 }

@@ -67,7 +67,6 @@
 #' "wavenet": X = "AACCGT", Y = "ACCGTA".
 #' @param reset_states Boolean, whether to reset hidden states of RNN layer at every new input file and before/after validation.
 #' @param proportion_per_seq Numerical value between 0 and 1. Proportion of possible samples to take from one file. Takes samples from random subsequence.
-#' @param read_data If true the first element of output is a list of length 2, each containing one part of paired read. Maxlen should be 2*length of one read.
 #' @param use_quality_score Whether to use fastq qualitiy scores. If TRUE input is not one-hot-encoding but corresponds to probabilities.
 #' For example (0.97, 0.01, 0.01, 0.01) instead of (1, 0, 0, 0).
 #' @param padding Whether to pad sequences too short for one sample with zeros.
@@ -402,7 +401,7 @@ train_model <- function(train_type = "lm",
                              file_limit = file_limit, reverse_complement = reverse_complement, wavenet_format = wavenet_format,  cnn_format = cnn_format,
                              create_model_function = NULL, vocabulary_size = vocabulary_size, gen_cb = gen_cb, argumentList = argumentList, output = output,
                              maxlen = maxlen, labelGen = labelGen, labelByFolder = labelByFolder, vocabulary_label_size = vocabulary_label_size, tb_images = tb_images,
-                             target_middle = target_middle, num_train_files = num_train_files, path_file_log = path_file_log, proportion_per_seq = proportion_per_seq,
+                             target_middle = target_middle, path_file_log = path_file_log, proportion_per_seq = proportion_per_seq,
                              skip_amb_nuc = skip_amb_nuc, max_samples = max_samples, proportion_entries = proportion_entries, path_log = path_log,
                              train_with_gen = train_with_gen, random_sampling = random_sampling, reduce_lr_on_plateau = reduce_lr_on_plateau,
                              save_weights_only = save_weights_only, path_checkpoint = path_checkpoint, save_best_only = save_best_only, gen.val = gen.val,

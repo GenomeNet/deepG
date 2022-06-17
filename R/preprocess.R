@@ -738,14 +738,26 @@ check_header_names <- function(target_split, vocabulary_label) {
   }
 }
 
-count_files <- function(path, format = "fasta", train_type) {
+count_files <- function(path, format = "fasta", train_type,
+                        target_from_csv = NULL, train_val_split_csv = NULL) {
+  
   num_files <- rep(0, length(path))
+  if (!is.null(target_from_csv)) {
+    target_files <- read.csv(target_from_csv)
+    target_files <- target_files$files
+  }  
+  if (!is.null(train_val_split_csv)) {
+    tvt_files <- read.csv()
+    tvt_files <- tvt_files$files
+  }  
+  
   for (i in 1:length(path)) {
     for (k in 1:length(path[[i]])) {
-      if (endsWith(path[[i]][[k]], paste0(".", format))) {
+      current_path <- path[[i]][[k]]
+      if (endsWith(current_path, paste0(".", format))) {
         current_files <- 1
       } else {
-        current_files <- length(list.files(path[[i]][[k]], pattern = paste0(".", format)))
+        current_files <- list.files(current_path, pattern = paste0(".", format, "$")) %>% length()
       }
       num_files[i] <- num_files[i] + current_files
 
@@ -754,6 +766,7 @@ count_files <- function(path, format = "fasta", train_type) {
       }
     }
   }
+  
   # return number of files per class for "label_folder"
   if (train_type == "label_folder") {
     return(num_files)

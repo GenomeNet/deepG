@@ -755,7 +755,7 @@ generator_fasta_lm <- function(path_corpus,
 #' if "equal" input is 1/length(vocabulary) x length(vocabulary). If "discard" samples containing nucleotides outside vocabulary get discarded.
 #' If "empirical" use nucleotide distribution of current file.
 #' @param proportion_per_seq Numerical value between 0 and 1. Proportion of possible samples to take from one file. Takes samples from random subsequence.
-#' @param read_data If true the first element of output is a list of length 2, each containing one part of paired read. Maxlen should be 2*length of one read.
+#' @param read_data If true the first element of input is a list of length 2, each containing one part of paired read. Maxlen should be 2*length of one read.
 #' @param use_quality_score Whether to use fastq qualitiy scores. If TRUE input is not one-hot-encoding but corresponds to probabilities.
 #' For example (0.97, 0.01, 0.01, 0.01) instead of (1, 0, 0, 0).
 #' @param padding Whether to pad sequences too short for one sample with zeros.
