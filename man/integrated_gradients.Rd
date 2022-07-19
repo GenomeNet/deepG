@@ -2,8 +2,7 @@
 % Please edit documentation in R/visualization.R
 \name{integrated_gradients}
 \alias{integrated_gradients}
-\title{Computes integrated gradients (https://www.tensorflow.org/tutorials/distribute/keras) for model and an input sequence.
-This can be used to visualize what part of the input is import for the models decision.}
+\title{Compute integrated gradients}
 \usage{
 integrated_gradients(
   m_steps = 50,
@@ -33,6 +32,17 @@ input is too big to handle at once. Only supported for single input layer.}
 gradient repeatedly for different shufflings). Final result is average of \code{num_baseline} single calculations.}
 }
 \description{
-Computes integrated gradients (https://www.tensorflow.org/tutorials/distribute/keras) for model and an input sequence.
+Computes integrated gradients scores for model and an input sequence.
 This can be used to visualize what part of the input is import for the models decision.
+Code is R implementation of python code from here: https://www.tensorflow.org/tutorials/interpretability/integrated_gradients.
+Tensorflow implementation is based on this paper: https://arxiv.org/abs/1703.01365.
+}
+\examples{
+model <- create_model_lstm_cnn(layer_lstm = 8, layer_dense = 3, maxlen = 20, verbose = FALSE)
+random_seq <- sample(0:3, 20, replace = TRUE)
+input_seq <- array(keras::to_categorical(random_seq), dim = c(1, 20, 4))
+integrated_gradients(
+  input_seq = input_seq,
+  target_class_idx = 3,
+  model = model)
 }

@@ -16,3 +16,4 @@ reduce_lr_cb(patience, cooldown, lr_plateau_factor, monitor = "val_acc")
 \description{
 Learning_rate callback
 }
+\keyword{internal}

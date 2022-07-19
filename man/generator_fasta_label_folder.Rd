@@ -2,7 +2,7 @@
 % Please edit documentation in R/generators.R
 \name{generator_fasta_label_folder}
 \alias{generator_fasta_label_folder}
-\title{Custom generator for fasta files}
+\title{Data generator for fasta/fasta files}
 \usage{
 generator_fasta_label_folder(
   path_corpus,
@@ -132,6 +132,6 @@ the predictor sequences. Second element is a matrix with dimensions (batch_size,
 \code{read_data = TRUE} first element is a list of two 3-dimensional tensor with dimensions (batch_size, maxlen, length(vocabulary)) each.
 }
 \description{
-\code{generator_fasta_label_folder} Iterates over folder containing .fasta files and produces one-hot-encoding of predictor sequences
+Iterates over folder containing fasta/fastq files and produces encoding of predictor sequences
 and target variables. Files in \code{path_corpus} should all belong to one class.
 }

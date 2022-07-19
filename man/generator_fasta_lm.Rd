@@ -2,7 +2,7 @@
 % Please edit documentation in R/generators.R
 \name{generator_fasta_lm}
 \alias{generator_fasta_lm}
-\title{Custom generator for fasta/fastq files}
+\title{Language model generator for fasta/fastq files}
 \usage{
 generator_fasta_lm(
   path_corpus,
@@ -41,7 +41,7 @@ generator_fasta_lm(
 }
 \arguments{
 \item{path_corpus}{Input directory where .fasta files are located or path to single file ending with .fasta or .fastq
-(as specified in format argument). Can also be a list of directories.}
+(as specified in format argument). Can also be a list of directories and/or files.}
 
 \item{format}{File format, either "fasta" or "fastq".}
 
@@ -122,6 +122,6 @@ optional arguments sd or mean if noise_type is "normal" (default is sd=1 and mea
 (default is min=0, max=1).}
 }
 \description{
-\code{generator_fasta_lm} iterates over folder containing .fasta/.fastq files and produces encoding of predictor sequences
-and target variables.
+Iterates over folder containing .fasta/.fastq files and produces encoding of predictor sequences
+and target variables. Will take a sequence of fixed size and use some part of sequence as input and other part as target.
 }

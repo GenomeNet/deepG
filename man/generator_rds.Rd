@@ -2,7 +2,7 @@
 % Please edit documentation in R/generators.R
 \name{generator_rds}
 \alias{generator_rds}
-\title{Read batches from rds arrays.}
+\title{Rds data generator}
 \usage{
 generator_rds(
   rds_folder,
@@ -11,6 +11,7 @@ generator_rds(
   max_samples = NULL,
   proportion_per_seq = NULL,
   target_len = NULL,
+  reverse_complement = FALSE,
   sample_by_file_size = FALSE,
   n_gram = NULL,
   n_gram_stride = 1,
@@ -19,7 +20,32 @@ generator_rds(
 }
 \arguments{
 \item{rds_folder}{Path to input files.}
+
+\item{batch_size}{Number of batches.}
+
+\item{path_file_log}{Write name of files to csv file if path is specified.}
+
+\item{max_samples}{Maximum number of samples to use from one file. If not NULL and file has more than \code{max_samples} samples, will randomly choose a
+subset of \code{max_samples} samples.}
+
+\item{proportion_per_seq}{Numerical value between 0 and 1. Proportion of possible samples to take from one file. Takes samples from random subsequence.}
+
+\item{reverse_complement}{Logical, half of batch contains sequences and other its reverse complements. Reverse complement
+is given by reversed order of sequence and switching A/T and C/G. \code{batch_size} argument has to be even, otherwise 1 will be added
+to \code{batch_size}}
+
+\item{sample_by_file_size}{Sample new file weighted by file size (possible to repeatedly sample the same file).}
+
+\item{n_gram}{Integer, encode target not nucleotide wise but combine n nucleotides at once. For example for n=2, "AA" ->  (1, 0,..., 0),
+"AC" ->  (0, 1, 0,..., 0), "TT" -> (0,..., 0, 1), where the one-hot vectors have length length(vocabulary)^n.}
+
+\item{add_noise}{NULL or list of arguments. If not NULL, list must contain the following arguments: \code{noise_type} can be "normal" or "uniform";
+optional arguments sd or mean if noise_type is "normal" (default is sd=1 and mean=0) or min, max if noise_type is "uniform"
+(default is min=0, max=1).}
 }
 \description{
-Read batches from rds arrays.
+Creates training batches from rds files. Rds files must contain a  
+list of length 2 (input/target) or of length 1 (for language model).
+If \code{target_len} is not NULL will take the last \code{target_len} entries of 
+the first list element as targets and the rest as input.
 }

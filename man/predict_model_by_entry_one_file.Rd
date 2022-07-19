@@ -17,7 +17,7 @@ predict_model_by_entry_one_file(
   verbose = TRUE,
   model = NULL,
   mode = "lm",
-  target_middle = FALSE,
+  lm_format = lm_format,
   format = "fasta",
   include_seq = TRUE,
   reverse_complement_encoding = FALSE
@@ -28,3 +28,4 @@ Removes layers (optional) from pretrained model and calculates states of fasta f
 writes separate states matrix in one .h5 file for every fasta entry.
 h5 file also contains the nucleotide sequences and positions of targets corresponding to states.
 }
+\keyword{internal}

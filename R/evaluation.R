@@ -1,4 +1,4 @@
-#' Evaluates a trained model on fasta/fastq or rds files
+#' Evaluates a trained model on fasta, fastq or rds files
 #'
 #' Returns evaluation metric like confusion matrix, loss, AUC, AUPRC, MAE, MSE (depending and output layer).
 #' Evaluates \code{batch_size} * \code{number_batches} samples.
@@ -10,18 +10,42 @@
 #' @param model A keras model.
 #' @param batch_size Number of samples per batch.
 #' @param step How often to take a sample.
-#' @param vocabulary Vector of allowed characters, character outside vocabulary get encoded as specified in ambiguous_nuc.
+#' @param vocabulary Vector of allowed characters. Character outside vocabulary get encoded as specified in ambiguous_nuc.
 #' @param vocabulary_label List of labels for targets of each output layer.
 #' @param number_batches How many batches to evaluate.
 #' @param format File format, "fasta", "fastq" or "rds".
-#' @param mode Either "lm" for language model and "label_header", "label_csv" or "label_folder" for label classification.
+#' @param mode Either "lm" for language model or "label_header", "label_csv" or "label_folder" for label classification.
 #' @param evaluate_all_files Boolean, if TRUE will iterate over all files in \code{path_input} once. \code{number_batches} will be overwritten.
-#' @param auc Whether to include AUC metric. Only possible for 2 targets if layer activation is "softmax".
-#' @param auprc Whether to include AUPRC metric. Only possible for 2 targets if layer activation is "softmax".
+#' @param auc Whether to include AUC metric. If output layer activation is "softmax", only possible for 2 targets. Computes the average if output layer has sigmoid
+#' activation and multiple targets.
+#' @param auprc Whether to include AUPRC metric. If output layer activation is "softmax", only possible for 2 targets. Computes the average if output layer has sigmoid
+#' activation and multiple targets.
+#' @param path_pred_list Path to store list of predictions (output of output layers) and corresponding true labels. 
 #' @param exact_num_samples Exact number of samples to evaluate. If you want to evaluate a number of samples not devisible by batch_size. Useful if you want
 #' to evaluate a data set exactly ones and know the number of samples already. Should be a vector if mode = "label_folder" (with same length as vocabulary_label)
 #' and else an integer.
 #' @param ... Further generator options.
+#' @examples
+#' # create dummy data
+#' path_input <- tempfile()
+#' dir.create(path_input)
+#' create_dummy_data(file_path = path_input,
+#'                   num_files = 3,
+#'                   seq_length = 11, 
+#'                   num_seq = 5,
+#'                   vocabulary = c("a", "c", "g", "t"))
+#' # create model
+#' model <- create_model_lstm_cnn(layer_lstm = 8, layer_dense = 4, maxlen = 10, verbose = FALSE)
+#' # evaluate
+#' evaluate_model(path_input = path_input,
+#'   model = model,
+#'   step = 11,
+#'   vocabulary = c("a", "c", "g", "t"),
+#'   vocabulary_label = list(c("a", "c", "g", "t")),
+#'   mode = "lm",
+#'   output_format = "target_right",
+#'   evaluate_all_files = TRUE,
+#'   verbose = FALSE)
 #' @export
 evaluate_model <- function(path_input,
                            model = NULL,
@@ -45,9 +69,10 @@ evaluate_model <- function(path_input,
                            seed = 1234,
                            auc = FALSE,
                            auprc = FALSE,
+                           path_pred_list = NULL,
                            exact_num_samples = NULL,
                            ...) {
-
+  
   set.seed(seed)
   path_model <- NULL
   stopifnot(mode %in% c("lm", "label_header", "label_folder", "label_csv", "lm_rds", "label_rds"))
@@ -59,12 +84,13 @@ evaluate_model <- function(path_input,
   }
   eval_exact_num_samples <- !is.null(exact_num_samples) | evaluate_all_files
   activations <- get_output_activations(model)
-
+  
   if (is.null(vocabulary_label)) vocabulary_label <- list(vocabulary)
+  if (!is.list(vocabulary_label)) vocabulary_label <- list(vocabulary_label)
   number_batches <- rep(ceiling(number_batches/length(path_input)), length(path_input))
   num_classes <- ifelse(mode == "label_folder", length(path_input), 1)
   num_out_layers <- length(activations)
-
+  
   # extract maxlen from model
   num_in_layers <- length(model$inputs)
   if (num_in_layers == 1) {
@@ -76,19 +102,19 @@ evaluate_model <- function(path_input,
       maxlen <- model$input[[num_in_layers - 1]]$shape[[2]] + model$input[[num_in_layers]]$shape[[2]]
     }
   }
-
+  
   if (evaluate_all_files & (format %in% c("fasta", "fastq"))) {
-
+    
     number_batches <- NULL
     num_samples <- rep(0, length(path_input))
-
+    
     for (i in 1:num_classes) {
       if (mode == "label_folder") {
         files <- list_fasta_files(path_input[[i]], format = format, file_filter = NULL)
       } else {
         files <- list_fasta_files(path_input, format = format, file_filter = NULL)
       }
-
+      
       # remove files not in csv table
       if (mode == "label_csv") {
         csv_file <- read.csv2(target_from_csv, header = TRUE, stringsAsFactors = FALSE)
@@ -98,22 +124,22 @@ evaluate_model <- function(path_input,
         index <- basename(files) %in% csv_file$file
         files <- files[index]
       }
-
+      
       for (file in files) {
         if (format == "fasta") {
           fasta_file <- microseq::readFasta(file)
         } else {
           fasta_file <- microseq::readFastq(file)
         }
-
+        
         # remove entries with wrong header
         if (mode == "label_header") {
           index <- fasta_file$Header %in% vocabulary_label
           fasta_file <- fasta_file[index, ]
         }
-
+        
         seq_vector <- fasta_file$Sequence
-
+        
         if (!is.null(proportion_per_seq)) {
           fasta_width <- nchar(seq_vector)
           sample_range <- floor(fasta_width - (proportion_per_seq * fasta_width))
@@ -122,7 +148,7 @@ evaluate_model <- function(path_input,
           stop <- start + perc_length
           seq_vector <- mapply(seq_vector, FUN = substr, start = start, stop = stop)
         }
-
+        
         if (mode == "lm") {
           if (!padding) {
             seq_vector <- seq_vector[nchar(seq_vector) >= (maxlen + 1)]
@@ -144,7 +170,7 @@ evaluate_model <- function(path_input,
             }
           }
         }
-
+        
         if (length(seq_vector) == 0) next
         new_samples <- get_start_ind(seq_vector = seq_vector,
                                      length_vector = nchar(seq_vector),
@@ -154,7 +180,7 @@ evaluate_model <- function(path_input,
                                      discard_amb_nuc = ifelse(ambiguous_nuc == "discard", TRUE, FALSE),
                                      vocabulary = vocabulary
         ) %>% length()
-
+        
         if (is.null(max_samples)) {
           num_samples[i] <- num_samples[i] + new_samples
         } else {
@@ -162,7 +188,7 @@ evaluate_model <- function(path_input,
         }
       }
       number_batches[i] <- ceiling(num_samples[i]/batch_size)
-
+      
     }
     if (mode == "label_folder") {
       message_string <- paste0("Evaluate ", num_samples, " samples for class ", vocabulary_label[[1]], ".\n")
@@ -171,7 +197,7 @@ evaluate_model <- function(path_input,
     }
     message(message_string)
   }
-
+  
   if (evaluate_all_files & format == "rds") {
     rds_files <- list_fasta_files(path_corpus = file_path,
                                   format = "rds",
@@ -185,14 +211,14 @@ evaluate_model <- function(path_input,
     message_string <- paste0("Evaluate ", num_samples, " samples.")
     message(message_string)
   }
-
+  
   if (!is.null(exact_num_samples)) {
     num_samples <- exact_num_samples
     number_batches <- ceiling(num_samples/batch_size)
   }
-
+  
   overall_num_batches <- sum(number_batches)
-
+  
   if (mode == "lm") {
     gen <- generator_fasta_lm(path_corpus = path_input,
                               format = format,
@@ -213,7 +239,7 @@ evaluate_model <- function(path_input,
                               seed = seed,
                               ...)
   }
-
+  
   if (mode == "label_header" | mode == "label_csv") {
     gen <- generator_fasta_label_header_csv(path_corpus = path_input,
                                             format = format,
@@ -234,11 +260,11 @@ evaluate_model <- function(path_input,
                                             max_samples = max_samples,
                                             seed = seed, ...)
   }
-
+  
   if (mode == "label_rds" | mode == "lm_rds") {
     gen <- generator_rds(rds_folder = path_input, batch_size = batch_size, path_file_log = NULL, ...)
   }
-
+  
   batch_index <- 1
   start_time <- Sys.time()
   ten_percent_steps <- seq(overall_num_batches/10, overall_num_batches, length.out = 10)
@@ -246,9 +272,9 @@ evaluate_model <- function(path_input,
   count <- 1
   y_conf_list <- vector("list", overall_num_batches)
   y_list <- vector("list", overall_num_batches)
-
+  
   for (k in 1:num_classes) {
-
+    
     index <- NULL
     if (mode == "label_folder") {
       gen <- generator_fasta_label_folder(path_corpus = path_input[k],
@@ -267,15 +293,15 @@ evaluate_model <- function(path_input,
                                           max_samples = max_samples,
                                           seed = seed, ...)
     }
-
+    
     for (i in 1:number_batches[k]) {
       z <- gen()
       x <- z[[1]]
       y <- z[[2]]
-
+      
       y_conf <- model(x)
       batch_index <- batch_index + 1
-
+      
       # remove double predictions
       if (eval_exact_num_samples & (i == number_batches[k])) {
         double_index <- (i * batch_size) - num_samples[k]
@@ -285,7 +311,7 @@ evaluate_model <- function(path_input,
           y <- y[index, ]
         }
       }
-
+      
       y_conf_list[[count]] <- y_conf
       if (batch_size == 1 | (!is.null(index) && length(index == 1))) {
         y_list[[count]] <- matrix(y, ncol = ncol(y_conf))
@@ -293,61 +319,70 @@ evaluate_model <- function(path_input,
         y_list[[count]] <- y
       }
       count <- count + 1
-
+      
       if (verbose & (batch_index == 10)) {
         time_passed <- as.double(difftime(Sys.time(), start_time, units = "hours"))
         time_estimation <- (overall_num_batches/10) * time_passed
         cat("Evaluation will take approximately", round(time_estimation, 3), "hours. Starting time:", format(Sys.time(), "%F %R."), " \n")
-
+        
       }
-
-      if (verbose & (batch_index > ten_percent_steps[percentage_index])) {
+      
+      if (verbose & (batch_index > ten_percent_steps[percentage_index]) & percentage_index < 10) {
         cat("Progress: ", percentage_index * 10 ,"% \n")
         time_passed <- as.double(difftime(Sys.time(), start_time, units = "hours"))
         cat("Time passed: ", round(time_passed, 3), "hours \n")
         percentage_index <- percentage_index + 1
       }
-
+      
     }
   }
-
+  
+  if (verbose) {
+    cat("Progress: 100 % \n")
+    time_passed <- as.double(difftime(Sys.time(), start_time, units = "hours"))
+    cat("Time passed: ", round(time_passed, 3), "hours \n")
+  }
+  
   y_conf_list <- reshape_y_list(y_conf_list, num_out_layers = num_out_layers, tf_format = TRUE)
   y_list <- reshape_y_list(y_list, num_out_layers = num_out_layers, tf_format = FALSE)
-
+  
+  if (!is.null(path_pred_list)) {
+    saveRDS(list(pred = y_conf_list, true = y_list), path_pred_list)
+  }
+  
   eval_list <- list()
   for (i in 1:num_out_layers) {
-
+    
     if (activations[i] == "softmax") {
       eval_list[[i]] <- evaluate_softmax(y = y_list[[i]], y_conf = y_conf_list[[i]],
                                          auc = auc, auprc = auprc,
                                          label_names = vocabulary_label[[i]])
     }
-
+    
     if (activations[i] == "sigmoid") {
       eval_list[[i]] <- evaluate_sigmoid(y = y_list[[i]], y_conf = y_conf_list[[i]],
                                          auc = auc, auprc = auprc,
                                          label_names = vocabulary_label[[i]])
     }
-
+    
     if (activations[i] == "linear") {
       eval_list[[i]] <- evaluate_linear(y = y_list[[i]], y_conf = y_conf_list[[i]], label_names = vocabulary_label[[i]])
     }
-
+    
   }
-
+  
   return(eval_list)
 }
 
 
-
 reshape_y_list <- function(y, num_out_layers, tf_format = TRUE) {
-
+  
   if (num_out_layers > 1) {
     y <- do.call(c, y)
   }
-
+  
   reshaped_list <- vector("list", num_out_layers)
-
+  
   for (i in 1:num_out_layers) {
     index <- seq(i, length(y), by = num_out_layers)
     if (tf_format) {
@@ -361,53 +396,40 @@ reshape_y_list <- function(y, num_out_layers, tf_format = TRUE) {
   return(reshaped_list)
 }
 
-
-get_output_layer_names <- function(model) {
-  out_layers <- model$get_config()$output
-  names_vec <- vector("character", length(out_layers))
-  for (i in 1:length(out_layers)) {
-    names_vec[i] <- out_layers[[i]][[1]]
-  }
-  return(names_vec)
-}
-
-get_output_activations <- function(model) {
-  out_names <- get_output_layer_names(model)
-  num_layers <- length(model$get_config()$layers)
-
-  act_vec <- vector("character", length(out_names))
-  count <- 1
-  for (i in 1:num_layers) {
-    layer_name <- model$get_config()$layers[[i]]$name
-    if (layer_name %in% out_names) {
-      act_name <- model$layers[[i]]$get_config()$activation
-      if (is.null(act_name)) act_name <- "linear"
-      act_vec[count] <- act_name
-      count <- count + 1
-    }
-  }
-  return(act_vec)
-}
-
+#' Evaluate matrices of true targets and predictions from layer with softmax activation. 
+#' 
+#' Compute confusion matrix, accuracy, categorical crossentropy and (optionally) AUC or AUPRC, given predictions and
+#' true targets. AUC and AUPRC only possible for 2 targets. 
+#' 
+#' @param y Matrix of true target.
+#' @param y_conf Matrix of predictions.
+#' @param auc Whether to include AUC metric. Only possible for 2 targets. 
+#' @param auprc Whether to include AUPRC metric. Only possible for 2 targets. 
+#' @param label_names Names of corresponding labels. Length must be equal to number of columns of \code{y}.
+#' @examples
+#' y <- matrix(c(1, 0, 0, 0, 1, 1), ncol = 2)
+#' y_conf <- matrix(c(0.3, 0.5, 0.1, 0.7, 0.5, 0.9), ncol = 2)
+#' evaluate_softmax(y, y_conf, auc = TRUE, auprc = TRUE, label_names = c("A", "B")) 
+#' @export    
 evaluate_softmax <- function(y, y_conf, auc = FALSE, auprc = FALSE, label_names = NULL) {
-
+  
   if (ncol(y) != 2 & (auc | auprc)) {
     message("Can only compute AUC or AUPRC if output layer with softmax acticvation has two neurons.")
     auc <- FALSE
     auprc <- FALSE
   }
-
+  
   y_pred <- apply(y_conf, 1, which.max)
-  y_true <- apply(y, 1, FUN = which.max)
-
+  y_true <- apply(y, 1, FUN = which.max) - 1
+  
   df_true_pred <- data.frame(
-    true = factor(y_true, levels = 1:(length(label_names)), labels = label_names),
+    true = factor(y_true + 1, levels = 1:(length(label_names)), labels = label_names),
     pred = factor(y_pred, levels = 1:(length(label_names)), labels = label_names)
   )
-
+  
   loss_per_class <- list()
   for (i in 1:ncol(y)) {
-    index <- y_true == i
+    index <- (y_true + 1) == i
     if (any(index)) {
       cce_loss_class <- tensorflow::tf$keras$losses$categorical_crossentropy(y[index, ], y_conf[index, ])
       loss_per_class[[i]] <- cce_loss_class$numpy()
@@ -415,17 +437,17 @@ evaluate_softmax <- function(y, y_conf, auc = FALSE, auprc = FALSE, label_names 
       loss_per_class[[i]] <- NA
     }
   }
-
+  
   cm <- yardstick::conf_mat(df_true_pred, true, pred)
   confMat <- cm[[1]]
-
+  
   acc <- sum(diag(confMat))/sum(confMat)
   loss <- mean(unlist(loss_per_class))
-
+  
   for (i in 1:length(loss_per_class)) {
     loss_per_class[[i]] <- mean(unlist(loss_per_class[[i]]), na.rm = TRUE)
   }
-
+  
   loss_per_class <- unlist(loss_per_class)
   m <- as.matrix(confMat)
   class_acc <- vector("numeric")
@@ -439,23 +461,23 @@ evaluate_softmax <- function(y, y_conf, auc = FALSE, auprc = FALSE, label_names 
   names(class_acc) <- label_names
   names(loss_per_class) <- label_names
   balanced_acc <- mean(class_acc)
-
+  
   if (auc) {
     auc_list <- PRROC::roc.curve(
       scores.class0 = y_conf[ , 2],
-      weights.class0 = y_true - 1)
+      weights.class0 = y_true)
   } else {
     auc_list <- NULL
   }
-
+  
   if (auprc) {
     auprc_list <- PRROC::pr.curve(
       scores.class0 = y_conf[ , 2],
-      weights.class0 = y_true - 1)
+      weights.class0 = y_true)
   } else {
     auprc_list <- NULL
   }
-
+  
   return(list(confusion_matrix = confMat,
               accuracy = acc,
               categorical_crossentropy_loss = loss,
@@ -466,21 +488,34 @@ evaluate_softmax <- function(y, y_conf, auc = FALSE, auprc = FALSE, label_names 
               AUPRC = auprc_list$auc.integral))
 }
 
-
+#' Evaluate matrices of true targets and predictions from layer with sigmoid activation. 
+#' 
+#' Compute accuracy, binary crossentropy and (optionally) AUC or AUPRC, given predictions and
+#' true targets. Outputs columnwise average.  
+#' 
+#' @inheritParams evaluate_model
+#' @inheritParams evaluate_softmax
+#' @param auc Whether to include AUC metric.
+#' @param auprc Whether to include AUPRC metric. 
+#' @examples
+#' y <- matrix(sample(c(0, 1), 12, replace = TRUE), ncol = 3)
+#' y_conf <- matrix(runif(n = 12), ncol = 3)
+#' evaluate_sigmoid(y, y_conf, auc = TRUE, auprc = TRUE)
+#' @export    
 evaluate_sigmoid <- function(y, y_conf, auc = FALSE, auprc = FALSE, label_names = NULL) {
-
+  
   y_pred <- ifelse(y_conf > 0.5, 1, 0)
-
+  
   loss_per_class <- list()
   for (i in 1:ncol(y)) {
     bce_loss_class <- tensorflow::tf$keras$losses$binary_crossentropy(y[ , i], y_conf[ , i])
     loss_per_class[[i]] <- bce_loss_class$numpy()
   }
-
+  
   loss_per_class <- unlist(loss_per_class)
   names(loss_per_class) <- label_names
   loss <- mean(unlist(loss_per_class))
-
+  
   class_acc <- vector("numeric", ncol(y))
   for (i in 1:ncol(y)) {
     num_true_pred <-  sum(y[ , i] == y_pred[ , i])
@@ -488,7 +523,7 @@ evaluate_sigmoid <- function(y, y_conf, auc = FALSE, auprc = FALSE, label_names 
   }
   names(class_acc) <- label_names
   acc <- mean(class_acc)
-
+  
   if (auc) {
     auc_list <- purrr::map(1:ncol(y_conf), ~PRROC::roc.curve(
       scores.class0 = y_conf[ , .x],
@@ -500,7 +535,7 @@ evaluate_sigmoid <- function(y, y_conf, auc = FALSE, auprc = FALSE, label_names 
   } else {
     auc_list <- NULL
   }
-
+  
   if (auprc) {
     auprc_list <- purrr::map(1:ncol(y_conf), ~PRROC::pr.curve(
       scores.class0 = y_conf[ , .x],
@@ -512,18 +547,31 @@ evaluate_sigmoid <- function(y, y_conf, auc = FALSE, auprc = FALSE, label_names 
   } else {
     auprc_list <- NULL
   }
-
+  
   return(list(accuracy = acc,
               binary_crossentropy_loss = loss,
               #loss_per_class = loss_per_class,
               #accuracy_per_class = class_acc,
               AUC = mean(auc_vector),
               AUPRC = mean(auprc_vector)))
-
+  
 }
 
+#' Evaluate matrices of true targets and predictions from layer with linear activation. 
+#' 
+#' Compute MAE and MSE, given predictions and
+#' true targets. Outputs columnwise average.  
+#' 
+#' @inheritParams evaluate_model
+#' @inheritParams evaluate_softmax
+#' @param y_true Matrix of true labels
+#' @examples 
+#' y_true <- matrix(rnorm(n = 12), ncol = 3)
+#' y_conf <- matrix(rnorm(n = 12), ncol = 3)
+#' evaluate_linear(y_true, y_conf)
+#' @export    
 evaluate_linear <- function(y_true, y_conf, label_names = NULL) {
-
+  
   loss_per_class_mse <- list()
   loss_per_class_mae <- list()
   for (i in 1:ncol(y)) {
@@ -532,8 +580,120 @@ evaluate_linear <- function(y_true, y_conf, label_names = NULL) {
     loss_per_class_mse[[i]] <- mse_loss_class$numpy()
     loss_per_class_mae[[i]] <- mae_loss_class$numpy()
   }
-
-  return(list(mse = mean(loss_per_class_mse),
-              mae = mean(loss_per_class_mae)))
-
+  
+  return(list(mse = mean(unlist(loss_per_class_mse)),
+              mae = mean(unlist(loss_per_class_mae))))
+  
 }
+
+
+#' Plot ROC
+#' 
+#' Compute ROC and AUC from target and prediction matrix and plot ROC. Target/prediction matrix should 
+#' have one column if is output of layer with sigmoid activation and two columns for softmax activation. 
+#' 
+#' @inheritParams evaluate_softmax
+#' @inheritParams evaluate_linear
+#' @param path_roc_plot Where to store ROC plot.
+#' @param return_plot Whether to return plot.
+#' @examples
+#' y_true <- matrix(c(1, 0, 0, 0, 1, 1), ncol = 1)
+#' y_conf <- matrix(runif(n = nrow(y_true)), ncol = 1)
+#' p <- plot_roc(y_true, y_conf, return_plot = TRUE)
+#' p
+#' @export    
+plot_roc <- function(y_true, y_conf, path_roc_plot = NULL,
+                     return_plot = TRUE) {
+  
+  if (!all(y_true == 0 | y_true == 1)) {
+    stop("y_true should only contain 0 and 1 entries")
+  }
+  
+  if (is.matrix(y_true) && ncol(y_true) > 2) {
+    stop("y_true can contain 1 or 2 columns")
+  }
+  
+  if (is.matrix(y_true) && ncol(y_true) == 2) {
+    y_true <- y_true[ , 1] 
+    y_conf <- y_conf[ , 2]
+  }
+  
+  if (var(y_true) == 0) {
+    stop("y_true contains just one label")
+  }
+  
+  y_true <- as.vector(y_true)
+  y_conf <- as.vector(y_conf)
+  
+  rocobj <-  pROC::roc(y_true, y_conf, quiet = TRUE)
+  auc <- round(pROC::auc(y_true, y_conf, quiet = TRUE), 4)
+  p <- pROC::ggroc(rocobj,  size = 1, color = "black")
+  p <- p + ggplot2::theme_classic() + ggplot2::theme(aspect.ratio = 1) 
+  p <- p + ggplot2::ggtitle(paste0('ROC Curve ', '(AUC = ', auc, ')'))
+  p <- p + ggplot2::geom_abline(intercept = 1, linetype = 2, color = "grey50")
+  p <- p + ggplot2::geom_vline(xintercept = 1, linetype = 2, color = "grey50")
+  p <- p + ggplot2::geom_hline(yintercept = 1,  linetype = 2, color = "grey50")
+  
+  if (!is.null(path_roc_plot)) {
+    ggplot2::ggsave(path_roc_plot, p)
+  }
+  
+  if (return_plot) {
+    return(p)
+  } else {
+    return(NULL)
+  }
+  
+}
+
+# plot_roc_auprc <- function(y_true, y_conf, path_roc_plot = NULL, path_auprc_plot = NULL,
+#                            return_plot = TRUE, layer_activation = "softmax") {
+#   
+#   if (layer_activation == "softmax") {
+#     
+#     if (!all(y_true == 0 | y_true == 1)) {
+#       stop("y_true should only contain 0 and 1 entries")
+#     }
+#     
+#     if (ncol(y_true) != 2 & (auc | auprc)) {
+#       message("Can only compute AUC or AUPRC if output layer with softmax acticvation has two neurons.")
+#     }
+#     
+#     auc_list <- PRROC::roc.curve(
+#       scores.class0 = y_conf[ , 2],
+#       weights.class0 = y_true[ , 2], curve = TRUE)
+#     
+#     
+#     auprc_list <- PRROC::pr.curve(
+#       scores.class0 = y_conf[ , 2],
+#       weights.class0 = y_true[ , 2], curve = TRUE)
+#     
+#     #auc_plot <- NULL
+#     #auprc_plot <- NULL  
+#     
+#   }
+#   
+#   if (layer_activation == "sigmoid") {
+#     
+#     auc_list <- purrr::map(1:ncol(y_conf), ~PRROC::roc.curve(
+#       scores.class0 = y_conf[ , .x],
+#       weights.class0 = y[ , .x], curve = TRUE))
+#     auc_vector <- vector("numeric", ncol(y))
+#     
+#     
+#     auprc_list <- purrr::map(1:ncol(y_conf), ~PRROC::pr.curve(
+#       scores.class0 = y_conf[ , .x],
+#       weights.class0 = y[ , .x], curve = TRUE))
+#     auprc_vector <- vector("numeric", ncol(y))
+#     
+#   }
+#   
+#   if (!is.null(path_roc_plot)) {
+#     
+#   }
+#   
+#   if (!is.null(path_auprc_plot)) {
+#     
+#   }
+#   
+# }

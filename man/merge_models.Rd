@@ -10,7 +10,8 @@ merge_models(
   layer_dense,
   solver = "adam",
   learning_rate = 1e-04,
-  freeze_base_model = c(FALSE, FALSE)
+  freeze_base_model = c(FALSE, FALSE),
+  model_seed = NULL
 )
 }
 \arguments{
@@ -23,7 +24,23 @@ merge_models(
 \item{solver}{Optimization method, options are "adam", "adagrad", "rmsprop" or "sgd".}
 
 \item{learning_rate}{Learning rate for optimizer.}
+
+\item{model_seed}{Set seed for model parameters in tensorflow, if not NULL.}
 }
 \description{
-Merge two models
+Combine two models at certain layers and add dense layers afterwards.
+}
+\examples{
+model_1 <- create_model_lstm_cnn(layer_lstm = c(64, 64), maxlen = 50, layer_dense = c(32, 4), verbose = FALSE)
+model_2 <- create_model_lstm_cnn(layer_lstm = c(32), maxlen = 40, layer_dense = c(8, 2), verbose = FALSE)
+# get name of second to last layers
+num_layers_1 <- length(model_1$get_config()$layers)
+layer_name_1 <- model_1$get_config()$layers[[num_layers_1 - 1]]$name
+num_layers_2 <- length(model_2$get_config()$layers)
+layer_name_2 <- model_2$get_config()$layers[[num_layers_2 - 1]]$name
+# merge models
+model <- merge_models(models = list(model_1, model_2),
+                      layer_names = c(layer_name_1, layer_name_2),
+                      layer_dense = c(6, 2), 
+                      freeze_base_model = c(FALSE, FALSE)) 
 }

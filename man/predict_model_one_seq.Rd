@@ -20,7 +20,7 @@ predict_model_one_seq(
   output_type = "h5",
   model = NULL,
   mode = "lm",
-  target_middle = FALSE,
+  lm_format = "target_right",
   format = "fasta",
   include_seq = TRUE,
   reverse_complement_encoding = FALSE
@@ -58,8 +58,6 @@ padding beginning of sequence with 0-vectors.}
 
 \item{mode}{Either "lm" for language model or "label" for label classification.}
 
-\item{target_middle}{Whether target to predict is in middle of sequence.}
-
 \item{format}{Either "fasta" or "fastq".}
 
 \item{include_seq}{Whether to include input sequence in h5 file.}
@@ -69,3 +67,4 @@ Removes layers (optional) from pretrained model and calculates states of fasta f
 Function combines fasta entries in file to one sequence. This means predictor sequences can contain elements from more than one fasta entry.
 h5 file also contains sequence and positions of targets corresponding to states.
 }
+\keyword{internal}

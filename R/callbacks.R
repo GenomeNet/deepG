@@ -1,29 +1,32 @@
-#' Stop training after specified time
+#' Stop training callback
+#' 
+#' Stop training after specified time.
 #'
 #' @param stop_time Time in seconds after which to stop training.
+#' @export
 early_stopping_time_cb <- function(stop_time = NULL) {
-
+  
   early_stopping_time_cb_py_class <- reticulate::PyClass("early_stopping_time_cb",
                                                          inherit = tensorflow::tf$keras$callbacks$Callback,
                                                          list(
-
+                                                           
                                                            `__init__` = function(self, stop_time) {
                                                              self$start_time <- Sys.time()
                                                              self$stop_time <- stop_time
                                                              NULL
                                                            },
-
+                                                           
                                                            on_batch_end = function(self, epoch, logs) {
                                                              time_passed <- as.double(difftime(Sys.time(), self$start_time, units = "secs"))
                                                              if (time_passed > self$stop_time) {
                                                                self$model$stop_training <- TRUE
                                                              }
                                                            }
-
+                                                           
                                                          ))
-
+  
   early_stopping_time_cb_py_class(stop_time = stop_time)
-
+  
 }
 
 #' Early stopping callback
@@ -31,8 +34,9 @@ early_stopping_time_cb <- function(stop_time = NULL) {
 #' @param early_stopping_time Time in seconds after which to stop training.
 #' @param early_stopping_patience Stop training if val_loss does not improve for \code{early_stopping_patience}.
 #' @param by_time Whether to use time or patience as metric.
+#' @keywords internal
 early_stopping_cb <- function(early_stopping_patience, early_stopping_time, by_time = TRUE) {
-
+  
   if (by_time) {
     early_stopping_time_cb(stop_time = early_stopping_time)
   } else {
@@ -44,6 +48,7 @@ early_stopping_cb <- function(early_stopping_patience, early_stopping_time, by_t
 #'
 #' @param path_log Path to output directory.
 #' @param run_name Name of output file is run_name + ".csv".
+#' @keywords internal
 log_cb <- function(path_log, run_name) {
   keras::callback_csv_logger(
     paste0(path_log, "/", run_name, ".csv"),
@@ -54,6 +59,7 @@ log_cb <- function(path_log, run_name) {
 #' Learning_rate callback
 #'
 #' @inheritParams train_model
+#' @keywords internal
 reduce_lr_cb <- function(patience,
                          cooldown,
                          lr_plateau_factor,
@@ -68,6 +74,7 @@ reduce_lr_cb <- function(patience,
 #' Checkpoint callback
 #'
 #' @inheritParams train_model
+#' @keywords internal
 checkpoint_cb <- function(filepath_checkpoints,
                           save_weights_only,
                           save_best_only) {
@@ -76,16 +83,19 @@ checkpoint_cb <- function(filepath_checkpoints,
                                    save_best_only = save_best_only,
                                    verbose = 1,
                                    monitor = "val_acc")
-
+  
 }
 
-#' Hyperparameter callback
+#' Non model hyperparameter callback
+#' 
+#' Get hyperparameters excluding model parameters.
 #'
 #' @inheritParams train_model
+#' @keywords internal
 hyper_param_model_outside_cb <- function(path_tensorboard, run_name, wavenet_format, cnn_format, model, vocabulary, path, reverse_complement,
                                          vocabulary_label, maxlen, epochs, max_queue_size, lr_plateau_factor, batch_size,
                                          patience, cooldown, steps_per_epoch, step, shuffle_file_order) {
-
+  
   train_hparams <- list(
     run_name = run_name,
     vocabulary = paste(vocabulary, collapse = ","),
@@ -107,28 +117,38 @@ hyper_param_model_outside_cb <- function(path_tensorboard, run_name, wavenet_for
   for (i in names(model$hparam)) {
     model_hparams[[i]] <- model$hparam[i]
   }
-
+  
   hparams_R <- c(train_hparams, model_hparams)
-
+  
+  keep_entry_index <- rep(TRUE, length(hparams_R))
   for (i in 1:length(hparams_R)) {
-    if (length(hparams_R[[i]]) > 1) { # length(hparams_R[[i]]) == 0 ||
+    
+    if (length(hparams_R[[i]]) == 0) { 
+      keep_entry_index[i] <- FALSE
+    }
+    
+    if (length(hparams_R[[i]]) > 1) { 
       hparams_R[[i]] <- paste(hparams_R[[i]], collapse = " ")
     }
   }
-
+  hparams_R <- hparams_R[keep_entry_index]
+  
   hparams <- reticulate::dict(hparams_R)
   hp <- reticulate::import("tensorboard.plugins.hparams.api")
   hp$KerasCallback(file.path(path_tensorboard, run_name), hparams, trial_id = run_name)
 }
 
-#' Hyperparameter callback
+#' Model hyperparameter callback
+#' 
+#' Get model hyperparameters.
 #'
 #' @inheritParams train_model
+#' @keywords internal
 hyper_param_with_model_cb <- function(default_arguments, model, path_tensorboard, run_name, train_type, path_model, path, train_val_ratio, batch_size,
                                       epochs, max_queue_size, lr_plateau_factor,
                                       patience, cooldown, steps_per_epoch, step, shuffle_file_order, initial_epoch, vocabulary, learning_rate,
                                       shuffle_input, vocabulary_label, solver, file_limit, reverse_complement, wavenet_format, cnn_format) {
-
+  
   model_hparam <- vector("list")
   model_hparam_names <- vector("list")
   for (i in 1:length(default_arguments)) {
@@ -142,7 +162,7 @@ hyper_param_with_model_cb <- function(default_arguments, model, path_tensorboard
   # hparam from train_model
   learning_rate <- keras::k_eval(model$optimizer$lr)
   solver <- stringr::str_to_lower(model$optimizer$get_config()["name"])
-
+  
   train_hparam_names <- c("train_type", "path_model", "path", "train_val_ratio", "run_name", "batch_size", "epochs", "max_queue_size", "lr_plateau_factor",
                           "patience", "cooldown", "steps_per_epoch", "step", "shuffle_file_order", "initial_epoch", "vocabulary", "learning_rate",
                           "shuffle_input", "vocabulary_label", "solver", "file_limit", "reverse_complement", "wavenet_format", "cnn_format")
@@ -172,6 +192,7 @@ hyper_param_with_model_cb <- function(default_arguments, model, path_tensorboard
 #' Tensorboard callback
 #'
 #' @inheritParams train_model
+#' @keywords internal
 tensorboard_cb <- function(path_tensorboard, run_name) {
   keras::callback_tensorboard(file.path(path_tensorboard, run_name),
                               write_graph = TRUE,
@@ -181,15 +202,17 @@ tensorboard_cb <- function(path_tensorboard, run_name) {
 }
 
 #' Function arguments callback
-#'
+#' 
+#' Print train_model call in text field of tensorboard.
+#' 
 #' @inheritParams train_model
 #' @export
 function_args_cb <- function(argumentList, path_tensorboard, run_name) {
-
+  
   argAsChar <- as.character(argumentList)
   argText <- vector("character")
   if (length(argumentList$path) > 1) {
-
+    
     argsInQuotes <- c("path_model", "path_checkpoint", "run_name", "solver", "format", "output_format",
                       "path_tensorboard", "path_file_log", "train_type", "ambiguous_nuc", "added_label_path", "added_label_names",
                       "train_val_split_csv", "target_from_csv")
@@ -221,7 +244,7 @@ function_args_cb <- function(argumentList, path_tensorboard, run_name) {
   } else {
     argText[i] <- paste0(names(argumentList)[i], " = ", argAsChar[[i]], ")")
   }
-
+  
   # write function arguments as text in tensorboard
   trainArguments <- keras::callback_lambda(
     on_train_begin = function(logs) {
@@ -237,28 +260,29 @@ function_args_cb <- function(argumentList, path_tensorboard, run_name) {
 #' Tensorboard callback wrapper
 #'
 #' @inheritParams train_model
+#' @keywords internal
 tensorboard_complete_cb <- function(default_arguments, model, path_tensorboard, run_name, train_type, path_model, path, train_val_ratio, batch_size,
                                     epochs, max_queue_size, lr_plateau_factor, patience, cooldown, steps_per_epoch, step, shuffle_file_order, initial_epoch, vocabulary, learning_rate,
                                     shuffle_input, vocabulary_label, solver, file_limit, reverse_complement, wavenet_format, cnn_format, create_model_function, vocabulary_size, gen_cb,
                                     argumentList, maxlen, labelGen, labelByFolder, vocabulary_label_size, tb_images = FALSE, stateful, target_middle, num_train_files, path_file_log,
                                     proportion_per_seq, skip_amb_nuc, max_samples, proportion_entries, train_with_gen, count_files = TRUE) {
   l <- vector("list")
-
+  
   l[[1]] <- hyper_param_model_outside_cb(path_tensorboard = path_tensorboard, run_name = run_name, wavenet_format = wavenet_format, cnn_format = cnn_format, model = model,
                                          vocabulary = vocabulary, path = path, reverse_complement = reverse_complement, vocabulary_label = vocabulary_label,
                                          maxlen = maxlen, epochs = epochs, max_queue_size = max_queue_size, lr_plateau_factor = lr_plateau_factor,
                                          batch_size = batch_size, patience = patience, cooldown = cooldown, steps_per_epoch = steps_per_epoch,
                                          step = step, shuffle_file_order = shuffle_file_order)
-
+  
   l[[2]] <- tensorboard_cb(path_tensorboard = path_tensorboard, run_name = run_name)
   l[[3]] <- function_args_cb(argumentList = argumentList, path_tensorboard = path_tensorboard, run_name = run_name)
-
+  
   if (train_with_gen & count_files) {
-
+    
     proportion_training_files_cb <- reticulate::PyClass("proportion_training_files_cb",
                                                         inherit = tensorflow::tf$keras$callbacks$Callback,
                                                         list(
-
+                                                          
                                                           `__init__` = function(self, num_train_files, path_file_log, path_tensorboard, run_name, vocabulary_label,
                                                                                 path, train_type, start_index, proportion_per_seq, max_samples, step,
                                                                                 proportion_entries) {
@@ -278,7 +302,7 @@ tensorboard_complete_cb <- function(default_arguments, model, path_tensorboard, 
                                                             self$proportion_entries <- proportion_entries
                                                             NULL
                                                           },
-
+                                                          
                                                           on_epoch_end = function(self, epoch, logs) {
                                                             if (is.null(self$proportion_entries)) self$proportion_entries <- 1
                                                             file.writer <- tensorflow::tf$summary$create_file_writer(file.path(self$path_tensorboard, self$run_name))
@@ -291,7 +315,7 @@ tensorboard_complete_cb <- function(default_arguments, model, path_tensorboard, 
                                                                   self$proportion_per_seq <- rep(self$proportion_per_seq, length(self$vocabulary_label))
                                                                 }
                                                                 if (length(max_samples) == 1) self$max_samples <- rep(max_samples, length(vocabulary_label))
-
+                                                                
                                                                 for (i in 1:length(self$vocabulary_label)) {
                                                                   if (is.null(self$max_samples)) {
                                                                     self$description[i] <- paste0("Using step size ", self$step[i], ", proportion_entries ",
@@ -308,7 +332,7 @@ tensorboard_complete_cb <- function(default_arguments, model, path_tensorboard, 
                                                                 }
                                                                 self$first_epoch <- FALSE
                                                               }
-
+                                                              
                                                               for (i in 1:length(self$vocabulary_label)) {
                                                                 files_of_class <-  sum(stringr::str_detect(
                                                                   files_used[ , 1], paste(unlist(self$path[[i]]), collapse = "|")
@@ -331,7 +355,7 @@ tensorboard_complete_cb <- function(default_arguments, model, path_tensorboard, 
                                                                                              self$proportion_per_seq) * 100, "% per sequence, maximum of ",
                                                                                       self$max_samples, " samples per file and proportion_entries ",
                                                                                       self$proportion_entries * 100, "%")
-
+                                                                
                                                               }
                                                               if (self$train_type == "label_rds") {
                                                                 description <- paste0("Using step size ",
@@ -342,13 +366,13 @@ tensorboard_complete_cb <- function(default_arguments, model, path_tensorboard, 
                                                               tensorflow::tf$summary$scalar(name = paste("training files seen (%)"), data = files_percentage, step = epoch,
                                                                                             description = description)
                                                             }
-
+                                                            
                                                             file.writer$flush()
                                                           }
-
+                                                          
                                                         ))
-
-
+    
+    
     l[[4]] <- proportion_training_files_cb(num_train_files = num_train_files, path_file_log = path_file_log, path_tensorboard = path_tensorboard, run_name = run_name,
                                            vocabulary_label = vocabulary_label, path = path, train_type = train_type, proportion_per_seq = proportion_per_seq,
                                            max_samples = max_samples, step = step, proportion_entries = proportion_entries)
@@ -359,15 +383,20 @@ tensorboard_complete_cb <- function(default_arguments, model, path_tensorboard, 
   return(l)
 }
 
-#' Reset states at start/end of validation and whenever file changes
-#'
-reset_states_cb <- function(path_file_log, path_file_logVal, num_files_old = 0, num_files_new = 0) {
-
+#' Reset states callback
+#' 
+#' Reset states at start/end of validation and whenever file changes. Can be used for stateful LSTM.
+#' 
+#' @param path_file_log Path to log of training files.
+#' @param path_file_logVal  Path to log of validation files.
+#' @export
+reset_states_cb <- function(path_file_log, path_file_logVal) {
+  
   reset_states_cb_py_class <- reticulate::PyClass("reset_states_cb",
                                                   inherit = tensorflow::tf$keras$callbacks$Callback,
                                                   list(
-
-                                                    `__init__` = function(self, path_file_log, path_file_logVal, num_files_old, num_files_new) {
+                                                    
+                                                    `__init__` = function(self, path_file_log, path_file_logVal) {
                                                       self$path_file_log <- path_file_log
                                                       self$path_file_logVal <- path_file_logVal
                                                       self$num_files_old <- 0
@@ -376,15 +405,15 @@ reset_states_cb <- function(path_file_log, path_file_logVal, num_files_old = 0, 
                                                       self$num_files_new_val <- 0
                                                       NULL
                                                     },
-
+                                                    
                                                     on_test_begin = function(self, epoch, logs) {
                                                       self$model$reset_states()
                                                     },
-
+                                                    
                                                     on_test_end = function(self, epoch, logs) {
                                                       self$model$reset_states()
                                                     },
-
+                                                    
                                                     on_train_batch_begin = function(self, batch, logs) {
                                                       files_used <- readLines(self$path_file_log)
                                                       self$num_files_new <- length(files_used)
@@ -393,7 +422,7 @@ reset_states_cb <- function(path_file_log, path_file_logVal, num_files_old = 0, 
                                                         self$num_files_old <- self$num_files_new
                                                       }
                                                     },
-
+                                                    
                                                     on_test_batch_begin = function(self, batch, logs) {
                                                       files_used <- readLines(self$path_file_logVal)
                                                       self$num_files_new_val <- length(files_used)
@@ -402,27 +431,32 @@ reset_states_cb <- function(path_file_log, path_file_logVal, num_files_old = 0, 
                                                         self$num_files_old_val <- self$num_files_new_val
                                                       }
                                                     }
-
+                                                    
                                                   ))
-
-  reset_states_cb_py_class(path_file_log = path_file_log, path_file_logVal = path_file_logVal, num_files_old = 0, num_files_new = 0)
+  
+  reset_states_cb_py_class(path_file_log = path_file_log, path_file_logVal = path_file_logVal)
 }
 
-#' Do validation only after training finished
-#'
+#' Validation after training callback
+#' 
+#' Do validation only once at end of training.
+#' 
+#' @param gen.val Validation generator
+#' @param validation_steps Number of validation steps.
+#' @export
 validation_after_training_cb <- function(gen.val, validation_steps) {
-
+  
   validation_after_training_cb_py_class <- reticulate::PyClass("validation_after_training_cb",
                                                                inherit = tensorflow::tf$keras$callbacks$Callback,
                                                                list(
-
+                                                                 
                                                                  `__init__` = function(self, gen.val, validation_steps) {
                                                                    self$gen.val <- gen.val
                                                                    self$validation_steps <- validation_steps
                                                                    NULL
                                                                  },
-
-
+                                                                 
+                                                                 
                                                                  on_train_end = function(self, logs = list()) {
                                                                    validation_eval <- keras::evaluate_generator(
                                                                      object = self$model,
@@ -435,24 +469,27 @@ validation_after_training_cb <- function(gen.val, validation_steps) {
                                                                    self$model$val_loss <- validation_eval[["loss"]]
                                                                    self$model$val_acc <- validation_eval[["acc"]]
                                                                  }
-
+                                                                 
                                                                ))
-
+  
   validation_after_training_cb_py_class(gen.val = gen.val, validation_steps = validation_steps)
-
+  
 }
 
-#' Confusion matrix callback
+#' Confusion matrix callback.
+#' 
+#' Create a confusion matrix to display under tensorboard images. 
 #'
 #' @inheritParams train_model
 #' @param confMatLabels Names of classes.
 #' @param cm_dir Directory that contains confusion matrix files.
+#' @export
 conf_matrix_cb <- function(path_tensorboard, run_name, confMatLabels, cm_dir) {
-
+  
   conf_matrix_cb_py_class <- reticulate::PyClass("conf_matrix_cb",
                                                  inherit = tensorflow::tf$keras$callbacks$Callback,
                                                  list(
-
+                                                   
                                                    `__init__` = function(self, cm_dir, path_tensorboard, run_name, confMatLabels, graphics = "png") {
                                                      self$cm_dir <- cm_dir
                                                      self$path_tensorboard <- path_tensorboard
@@ -466,18 +503,18 @@ conf_matrix_cb <- function(path_tensorboard, run_name, confMatLabels, cm_dir) {
                                                      self$graphics <- graphics
                                                      self$epoch <- 0
                                                      self$text_size <- NULL
-                                                     self$round_dig <- 4
+                                                     self$round_dig <- 3
                                                      if (length(confMatLabels) < 8) {
                                                        self$text_size <- (10 - (max(nchar(confMatLabels)) * 0.15)) * (0.95^length(confMatLabels))
                                                      }
                                                      self$cm_display_percentage <- TRUE
                                                      NULL
                                                    },
-
+                                                   
                                                    on_epoch_begin = function(self, epoch, logs) {
                                                      suppressMessages(library(yardstick))
                                                      if (epoch > 0) {
-
+                                                       
                                                        cm_train <- readRDS(file.path(self$cm_dir, paste0("cm_train_", epoch-1, ".rds")))
                                                        cm_val <- readRDS(file.path(self$cm_dir, paste0("cm_val_", epoch, ".rds")))
                                                        if (self$cm_display_percentage) {
@@ -486,8 +523,8 @@ conf_matrix_cb <- function(path_tensorboard, run_name, confMatLabels, cm_dir) {
                                                        }
                                                        cm_train <- create_conf_mat_obj(cm_train, self$confMatLabels)
                                                        cm_val <- create_conf_mat_obj(cm_val, self$confMatLabels)
-
-
+                                                       
+                                                       
                                                        suppressMessages(
                                                          cm_plot_train <- ggplot2::autoplot(cm_train, type = "heatmap") +
                                                            ggplot2::scale_fill_gradient(low="#D6EAF8", high = "#2E86C1")  +
@@ -496,7 +533,7 @@ conf_matrix_cb <- function(path_tensorboard, run_name, confMatLabels, cm_dir) {
                                                            ggplot2::theme(axis.text.y =
                                                                             ggplot2::element_text(size = self$text_size))
                                                        )
-
+                                                       
                                                        suppressMessages(
                                                          cm_plot_val <- ggplot2::autoplot(cm_val, type = "heatmap") +
                                                            ggplot2::scale_fill_gradient(low="#D6EAF8", high = "#2E86C1")  +
@@ -505,52 +542,52 @@ conf_matrix_cb <- function(path_tensorboard, run_name, confMatLabels, cm_dir) {
                                                            ggplot2::theme(axis.text.y =
                                                                             ggplot2::element_text(size = self$text_size))
                                                        )
-
+                                                       
                                                        if (length(confMatLabels) > 4) {
                                                          plot_size <- (length(confMatLabels) * 1.3) + 1
                                                        } else {
                                                          plot_size <- length(confMatLabels) * 3
                                                        }
-
+                                                       
                                                        if (self$graphics == "png") {
-
+                                                         
                                                          suppressMessages(ggplot2::ggsave(filename = self$plot_path_train, plot = cm_plot_train, device = "png",
                                                                                           width = plot_size,
                                                                                           height = plot_size,
                                                                                           units = "cm"))
                                                          p_cm_train <- png::readPNG(self$plot_path_train)
-
+                                                         
                                                          suppressMessages(ggplot2::ggsave(filename = self$plot_path_val, plot = cm_plot_val, device = "png",
                                                                                           width = plot_size,
                                                                                           height = plot_size,
                                                                                           units = "cm"))
                                                          p_cm_val <- png::readPNG(self$plot_path_val)
-
+                                                         
                                                        } else {
-
+                                                         
                                                          suppressMessages(ggplot2::ggsave(filename = self$plot_path_train, plot = cm_plot_train, device = "jpg",
                                                                                           width = plot_size,
                                                                                           height = plot_size,
                                                                                           units = "cm"))
                                                          p_cm_train <- jpeg::readJPEG(self$plot_path_train)
-
+                                                         
                                                          suppressMessages(ggplot2::ggsave(filename = self$plot_path_val, plot = cm_plot_val, device = "jpg",
                                                                                           width = plot_size,
                                                                                           height = plot_size,
                                                                                           units = "cm"))
                                                          p_cm_train <- jpeg::readJPEG(self$plot_path_val)
                                                        }
-
+                                                       
                                                        p_cm_train <- as.array(p_cm_train)
                                                        p_cm_train <- array(p_cm_train, dim = c(1, dim(p_cm_train)))
                                                        p_cm_val <- as.array(p_cm_val)
                                                        p_cm_val <- array(p_cm_val, dim = c(1, dim(p_cm_val)))
-
+                                                       
                                                        num_images <- 1
                                                        train_images <- array(0, dim = c(num_images, dim(p_cm_train)[-1]))
                                                        train_images[1, , , ] <- p_cm_train
                                                        self$train_images <- train_images
-
+                                                       
                                                        val_images <- array(0, dim = c(num_images, dim(p_cm_val)[-1]))
                                                        val_images[1, , , ] <- p_cm_val
                                                        self$val_images <- val_images
@@ -562,11 +599,11 @@ conf_matrix_cb <- function(path_tensorboard, run_name, confMatLabels, cm_dir) {
                                                        self$epoch <- epoch
                                                      }
                                                    },
-
+                                                   
                                                    on_train_end = function(self, logs) {
-
+                                                     
                                                      epoch <- self$epoch + 1
-
+                                                     
                                                      cm_train <- readRDS(file.path(self$cm_dir, paste0("cm_train_", epoch-1, ".rds")))
                                                      cm_val <- readRDS(file.path(self$cm_dir, paste0("cm_val_", epoch, ".rds")))
                                                      if (self$cm_display_percentage) {
@@ -575,8 +612,8 @@ conf_matrix_cb <- function(path_tensorboard, run_name, confMatLabels, cm_dir) {
                                                      }
                                                      cm_train <- create_conf_mat_obj(cm_train, self$confMatLabels)
                                                      cm_val <- create_conf_mat_obj(cm_val, self$confMatLabels)
-
-
+                                                     
+                                                     
                                                      suppressMessages(
                                                        cm_plot_train <- ggplot2::autoplot(cm_train, type = "heatmap") +
                                                          ggplot2::scale_fill_gradient(low="#D6EAF8", high = "#2E86C1")  +
@@ -585,7 +622,7 @@ conf_matrix_cb <- function(path_tensorboard, run_name, confMatLabels, cm_dir) {
                                                          ggplot2::theme(axis.text.y =
                                                                           ggplot2::element_text(size = self$text_size))
                                                      )
-
+                                                     
                                                      suppressMessages(
                                                        cm_plot_val <- ggplot2::autoplot(cm_val, type = "heatmap") +
                                                          ggplot2::scale_fill_gradient(low="#D6EAF8", high = "#2E86C1")  +
@@ -594,52 +631,52 @@ conf_matrix_cb <- function(path_tensorboard, run_name, confMatLabels, cm_dir) {
                                                          ggplot2::theme(axis.text.y =
                                                                           ggplot2::element_text(size = self$text_size))
                                                      )
-
+                                                     
                                                      if (length(confMatLabels) > 4) {
                                                        plot_size <- (length(confMatLabels) * 1.3) + 1
                                                      } else {
                                                        plot_size <- length(confMatLabels) * 3
                                                      }
-
+                                                     
                                                      if (self$graphics == "png") {
-
+                                                       
                                                        suppressMessages(ggplot2::ggsave(filename = self$plot_path_train, plot = cm_plot_train, device = "png",
                                                                                         width = plot_size,
                                                                                         height = plot_size,
                                                                                         units = "cm"))
                                                        p_cm_train <- png::readPNG(self$plot_path_train)
-
+                                                       
                                                        suppressMessages(ggplot2::ggsave(filename = self$plot_path_val, plot = cm_plot_val, device = "png",
                                                                                         width = plot_size,
                                                                                         height = plot_size,
                                                                                         units = "cm"))
                                                        p_cm_val <- png::readPNG(self$plot_path_val)
-
+                                                       
                                                      } else {
-
+                                                       
                                                        suppressMessages(ggplot2::ggsave(filename = self$plot_path_train, plot = cm_plot_train, device = "jpg",
                                                                                         width = plot_size,
                                                                                         height = plot_size,
                                                                                         units = "cm"))
                                                        p_cm_train <- jpeg::readJPEG(self$plot_path_train)
-
+                                                       
                                                        suppressMessages(ggplot2::ggsave(filename = self$plot_path_val, plot = cm_plot_val, device = "jpg",
                                                                                         width = plot_size,
                                                                                         height = plot_size,
                                                                                         units = "cm"))
                                                        p_cm_train <- jpeg::readJPEG(self$plot_path_val)
                                                      }
-
+                                                     
                                                      p_cm_train <- as.array(p_cm_train)
                                                      p_cm_train <- array(p_cm_train, dim = c(1, dim(p_cm_train)))
                                                      p_cm_val <- as.array(p_cm_val)
                                                      p_cm_val <- array(p_cm_val, dim = c(1, dim(p_cm_val)))
-
+                                                     
                                                      num_images <- 1
                                                      train_images <- array(0, dim = c(num_images, dim(p_cm_train)[-1]))
                                                      train_images[1, , , ] <- p_cm_train
                                                      self$train_images <- train_images
-
+                                                     
                                                      val_images <- array(0, dim = c(num_images, dim(p_cm_val)[-1]))
                                                      val_images[1, , , ] <- p_cm_val
                                                      self$val_images <- val_images
@@ -656,15 +693,15 @@ conf_matrix_cb <- function(path_tensorboard, run_name, confMatLabels, cm_dir) {
                           cm_dir = cm_dir)
 }
 
-#' Custom loss function for label noise
+#' Loss function for label noise
+#' 
+#' Implements approach from https://arxiv.org/abs/1609.03683 and code from 
+#' https://github.com/giorgiop/loss-correction/blob/15a79de3c67c31907733392085c333547c2f2b16/loss.py#L16-L21 
 #'
-#' @param inverted_noise_matrix Inverted matrix of probabilities.
-#' link: https://github.com/giorgiop/loss-correction/blob/15a79de3c67c31907733392085c333547c2f2b16/loss.py#L16-L21
+#' @param noise_matrix Matrix of noise distribution.
 #' If first label contains 5% wrong labels and second label no noise, then
-#' m <- matrix(c(0.95, 0.05, 0, 1), nrow = 2, byrow = TRUE )
-#' inverted_noise_matrix <- solve(m)
-#' noisy_loss <- noisy_loss_wrapper(inverted_noise_matrix)
-#' To use as loss, add to compile call keras::compile(loss = noisy_loss, ...)
+#' \code{noise_matrix <- matrix(c(0.95, 0.05, 0, 1), nrow = 2, byrow = TRUE)}.
+#' @export
 noisy_loss_wrapper <- function(noise_matrix) {
   inverted_noise_matrix <- solve(noise_matrix)
   inverted_noise_matrix <- tensorflow::tf$cast(inverted_noise_matrix, dtype = "float32")
@@ -677,13 +714,18 @@ noisy_loss_wrapper <- function(noise_matrix) {
   noisy_loss
 }
 
-#' Balanced accuracy metric.
+#' Balanced accuracy metric
 #'
+#' Compute balanced accuracy as additional score. Useful for imbalanced data.
+#'
+#'@param num_targets Number of targets.
+#'@param cm_dir Directory of confusion matrix used to compute balanced accuracy.
+#'@export
 balanced_acc_wrapper <- function(num_targets, cm_dir) {
   balanced_acc_stateful <- reticulate::PyClass("balanced_acc",
                                                inherit = tensorflow::tf$keras$metrics$Metric,
                                                list(
-
+                                                 
                                                  `__init__` = function(self, num_targets, cm_dir) {
                                                    super()$`__init__`(name = "balanced_acc")
                                                    self$num_targets <- num_targets
@@ -692,18 +734,18 @@ balanced_acc_wrapper <- function(num_targets, cm_dir) {
                                                    self$cm <- self$add_weight(name = "cm_matrix", shape = c(num_targets, num_targets), initializer="zeros")
                                                    NULL
                                                  },
-
+                                                 
                                                  update_state = function(self, y_true, y_pred, sample_weight = NULL) {
                                                    self$cm$assign_add(self$compute_cm(y_true, y_pred))
                                                    NULL
                                                  },
-
+                                                 
                                                  result = function(self) {
                                                    balanced_acc <- self$compute_balanced_acc()
                                                    self$store_cm()
                                                    return(balanced_acc)
                                                  },
-
+                                                 
                                                  compute_cm = function(self, y_true, y_pred) {
                                                    labels <- tensorflow::tf$math$argmax(y_true, axis = 1L)
                                                    predictions <- tensorflow::tf$math$argmax(y_pred, axis = 1L)
@@ -713,7 +755,7 @@ balanced_acc_wrapper <- function(num_targets, cm_dir) {
                                                    current_cm <- tensorflow::tf$transpose(current_cm)
                                                    return(current_cm)
                                                  },
-
+                                                 
                                                  compute_balanced_acc = function(self) {
                                                    diag <- tensorflow::tf$linalg$diag_part(self$cm)
                                                    col_sums <- tensorflow::tf$math$reduce_sum(self$cm, axis=0L)
@@ -724,13 +766,13 @@ balanced_acc_wrapper <- function(num_targets, cm_dir) {
                                                    balanced_acc <- tensorflow::tf$math$divide(acc_sum, self$num_targets)
                                                    return(balanced_acc)
                                                  },
-
+                                                 
                                                  reset_states = function(self) {
                                                    self$count <- self$count + 1
                                                    self$cm$assign_sub(self$cm)
                                                    NULL
                                                  },
-
+                                                 
                                                  store_cm = function(self) {
                                                    if (self$count %% 2 == 0) {
                                                      file_name <- file.path(self$cm_dir, paste0("cm_val_", floor(self$count/2), ".rds"))
@@ -740,18 +782,22 @@ balanced_acc_wrapper <- function(num_targets, cm_dir) {
                                                    saveRDS(keras::k_eval(self$cm), file_name)
                                                    NULL
                                                  }
-
+                                                 
                                                ))
   return(balanced_acc_stateful(num_targets = num_targets, cm_dir = cm_dir))
 }
 
 #' F1 metric
+#' 
+#' Compute F1 metric as additional score. 
 #'
+#'@param num_targets Size of model output.
+#'@export
 f1_wrapper <- function(num_targets = 2) {
   f1_stateful <- reticulate::PyClass("f1",
                                      inherit = tensorflow::tf$keras$metrics$Metric,
                                      list(
-
+                                       
                                        `__init__` = function(self, num_targets) {
                                          super()$`__init__`(name = "f1")
                                          self$num_targets <- num_targets
@@ -759,17 +805,17 @@ f1_wrapper <- function(num_targets = 2) {
                                          self$cm <- self$add_weight(name = "cm_matrix", shape = c(num_targets, num_targets), initializer="zeros")
                                          NULL
                                        },
-
+                                       
                                        update_state = function(self, y_true, y_pred, sample_weight = NULL) {
                                          self$cm$assign_add(self$compute_cm(y_true, y_pred))
                                          NULL
                                        },
-
+                                       
                                        result = function(self) {
                                          self$f1_score <- self$compute_f1()
                                          return(self$f1_score)
                                        },
-
+                                       
                                        compute_cm = function(self, y_true, y_pred) {
                                          labels <- tensorflow::tf$math$argmax(y_true, axis = 1L)
                                          predictions <- tensorflow::tf$math$argmax(y_pred, axis = 1L)
@@ -779,7 +825,7 @@ f1_wrapper <- function(num_targets = 2) {
                                          current_cm <- tensorflow::tf$transpose(current_cm)
                                          return(current_cm)
                                        },
-
+                                       
                                        compute_f1 = function(self) {
                                          diag <- tensorflow::tf$linalg$diag_part(self$cm)
                                          precision <- diag/(tensorflow::tf$reduce_sum(self$cm, 0L) + tensorflow::tf$constant(1e-15))
@@ -787,35 +833,38 @@ f1_wrapper <- function(num_targets = 2) {
                                          f1 = (2 * precision * recall)/(precision + recall + tensorflow::tf$constant(1e-15))
                                          return(f1)
                                        },
-
+                                       
                                        reset_states = function(self) {
                                          self$cm$assign_sub(self$cm)
                                          NULL
                                        }
-
+                                       
                                      ))
   return(f1_stateful(num_targets = num_targets))
 }
 
-#' Mean AUC score
+#' Mean AUC score 
 #'
-#' @param model_output_size Number of neurons in output layer of model, for which metric will be applied to.
+#' Compute AUC score as additional metric. If model has several output neurons with binary crossentroy loss, will use the average score. 
+#'
+#' @param model_output_size Number of neurons in model output layer.
 #' @param loss Loss function of model, for which metric will be applied to; must be "binary_crossentropy"
 #' or "catergorical_crossentropy".
+#' @export
 auc_wrapper <- function(model_output_size,
                         loss = "binary_crossentropy") {
-
+  
   stopifnot(loss %in% c("binary_crossentropy", "categorical_crossentropy"))
   if (loss == "categorical_crossentropy" & model_output_size != 2) {
     stop("Output size must be two, when loss is catergorical_crossentropy")
   }
   metric_name <- ifelse(loss == "binary_crossentropy" & model_output_size > 1,
                         "mean_AUC", "AUC")
-
+  
   auc_stateful <- reticulate::PyClass("AUC",
                                       inherit = tensorflow::tf$keras$metrics$Metric,
                                       list(
-
+                                        
                                         `__init__` = function(self, model_output_size, loss, metric_name) {
                                           super()$`__init__`(name = metric_name)
                                           self$model_output_size <- model_output_size
@@ -841,7 +890,7 @@ auc_wrapper <- function(model_output_size,
                                           }
                                           NULL
                                         },
-
+                                        
                                         update_state = function(self, y_true, y_pred, sample_weight = NULL) {
                                           self$compute_auc(y_true, y_pred)
                                           current_auc_list <- vector("list", length(self$auc_list))
@@ -852,14 +901,14 @@ auc_wrapper <- function(model_output_size,
                                           self$auc_scores$assign(current_auc)
                                           NULL
                                         },
-
+                                        
                                         result = function(self) {
                                           self$auc_score$assign(tensorflow::tf$math$reduce_mean(self$auc_scores))
                                           return(self$auc_score)
                                         },
-
+                                        
                                         compute_auc = function(self, y_true, y_pred) {
-
+                                          
                                           if (self$loss == "binary_crossentropy") {
                                             if (self$model_output_size > 1) {
                                               purrr::map(0:(length(self$auc_list) - 1),
@@ -867,7 +916,7 @@ auc_wrapper <- function(model_output_size,
                                             } else {
                                               self$auc_list[[0]]$update_state(y_true, y_pred)
                                             }
-
+                                            
                                           } else {
                                             y_true_temp <- y_true[ , 1]
                                             y_pred_temp <- tensorflow::tf$math$argmax(y_pred, axis = 1L)
@@ -875,16 +924,16 @@ auc_wrapper <- function(model_output_size,
                                           }
                                           NULL
                                         },
-
+                                        
                                         reset_states = function(self) {
                                           purrr::map(0:(length(self$auc_list) - 1),
                                                      ~self$auc_list[[.x]]$reset_states())
                                           self$auc_scores$assign_sub(self$auc_scores)
                                           NULL
                                         }
-
+                                        
                                       ))
-
+  
   return(auc_stateful(model_output_size = model_output_size, loss = loss, metric_name = metric_name))
 }
 
@@ -902,8 +951,8 @@ get_callbacks <- function(default_arguments , model, path_tensorboard, run_name,
                           train_with_gen, random_sampling, reduce_lr_on_plateau,
                           save_weights_only, save_best_only, reset_states, early_stopping_time,
                           validation_only_after_training, gen.val) {
-
-
+  
+  
   if (output$checkpoints) {
     # create folder for checkpoints using run_name
     # filenames contain epoch, validation loss and validation accuracy
@@ -919,16 +968,16 @@ get_callbacks <- function(default_arguments , model, path_tensorboard, run_name,
       }
     }
   }
-
+  
   # Check if path_file_log is unique
   if (!is.null(path_file_log) && dir.exists(path_file_log)) {
     stop(paste0("path_file_log entry is already present. Please give this file a unique name."))
   }
-
+  
   count_files <- !random_sampling
   callbacks <- list()
   callback_names <- NULL
-
+  
   if (reduce_lr_on_plateau) {
     if (is.list(model$outputs)) {
       monitor <- "val_loss"
@@ -940,15 +989,15 @@ get_callbacks <- function(default_arguments , model, path_tensorboard, run_name,
                                    monitor = monitor)
     callback_names <- c("reduce_lr", callback_names)
   }
-
+  
   if (!is.null(path_log)) {
     callbacks <- c(callbacks, log_cb(path_log, run_name))
     callback_names <- c("log", callback_names)
   }
-
+  
   if (!output$tensorboard) tb_images <- FALSE
   if (output$tensorboard) {
-
+    
     # add balanced acc score
     metrics <- model$metrics
     if (train_with_gen) {
@@ -960,7 +1009,7 @@ get_callbacks <- function(default_arguments , model, path_tensorboard, run_name,
     for (i in 1:length(model$metrics)) {
       if (model$metrics[[i]]$name == "balanced_acc") contains_macro_acc_metric <- TRUE
     }
-
+    
     if (!contains_macro_acc_metric) {
       if (tb_images) {
         if (!reticulate::py_has_attr(model, "cm_dir")) {
@@ -971,15 +1020,17 @@ get_callbacks <- function(default_arguments , model, path_tensorboard, run_name,
         metrics <- c(metrics, balanced_acc_wrapper(num_targets = num_targets, cm_dir = model$cm_dir))
       }
     }
-
+    
     # count files in path
     if (train_type == "label_rds" | train_type == "lm_rds") format <- "rds"
     if (train_with_gen) {
-      num_train_files <- count_files(path = path, format = format, train_type = train_type)
+      num_train_files <- count_files(path = path, format = format, train_type = train_type, 
+                                     target_from_csv = target_from_csv, 
+                                     train_val_split_csv = train_val_split_csv)
     } else {
       num_train_files <- 1
     }
-
+    
     complete_tb <- tensorboard_complete_cb(default_arguments = default_arguments, model = model, path_tensorboard = path_tensorboard, run_name = run_name, train_type = train_type,
                                            path_model = path_model, path = path, train_val_ratio = train_val_ratio, batch_size = batch_size, epochs = epochs,
                                            max_queue_size = max_queue_size, lr_plateau_factor = lr_plateau_factor, patience = patience, cooldown = cooldown,
@@ -994,7 +1045,7 @@ get_callbacks <- function(default_arguments , model, path_tensorboard, run_name,
     callbacks <- c(callbacks, complete_tb)
     callback_names <- c(callback_names, names(complete_tb))
   }
-
+  
   if (output$checkpoints) {
     if (wavenet_format) {
       # can only save weights for wavenet
@@ -1004,40 +1055,40 @@ get_callbacks <- function(default_arguments , model, path_tensorboard, run_name,
                                             save_best_only = save_best_only))
     callback_names <- c(callback_names, "checkpoint")
   }
-
+  
   if (reset_states) {
     callbacks <- c(callbacks, reset_states_cb(path_file_log = path_file_log, path_file_logVal = path_file_logVal))
     callback_names <- c(callback_names, "reset_states")
   }
-
+  
   if (!is.null(early_stopping_time)) {
     callbacks <- c(callbacks, early_stopping_cb(early_stopping_patience = early_stopping_patience,
                                                 early_stopping_time = early_stopping_time))
     callback_names <- c(callback_names, "early_stopping")
   }
-
+  
   if (validation_only_after_training) {
     if (!train_with_gen) stop("Validation after training only implemented for generator")
     callbacks <- c(callbacks, validation_after_training_cb(gen.val = gen.val, validation_steps = validation_steps))
     callback_names <- c(callback_names, "validation_after_training")
   }
-
+  
   if (tb_images) {
     if (is.list(model$output)) {
       warning("Tensorboard images (confusion matrix) not implemented for model with multiple outputs.
                  Setting tb_images to FALSE")
       tb_images <- FALSE
     }
-
+    
     if (model$loss == "binary_crossentropy") {
       warning("Tensorboard images (confusion matrix) not implemented for sigmoid activation in last layer.
                  Setting tb_images to FALSE")
       tb_images <- FALSE
     }
   }
-
+  
   if (tb_images) {
-
+    
     confMatLabels <- vocabulary_label
     if (train_with_gen & train_type == "lm") {
       if (is.null(n_gram) || n_gram == 1) {
@@ -1050,14 +1101,14 @@ get_callbacks <- function(default_arguments , model, path_tensorboard, run_name,
         confMatLabels <- expand.grid(l) %>% apply(1, paste0) %>% apply(2, paste, collapse = "") %>% sort()
       }
     }
-
+    
     model %>% keras::compile(loss = model$loss,
                              optimizer = model$optimizer, metrics = metrics)
-
+    
     if (length(confMatLabels) > 16) {
       message("Cannot display confusion matrix with more than 16 labels.")
     } else {
-
+      
       callbacks <- c(callbacks, conf_matrix_cb(path_tensorboard = path_tensorboard,
                                                run_name = run_name,
                                                confMatLabels = confMatLabels,

@@ -2,10 +2,10 @@
 % Please edit documentation in R/generators.R
 \name{generator_random}
 \alias{generator_random}
-\title{Randomly select samples from fasta files.}
+\title{Randomly select samples from fasta files}
 \usage{
 generator_random(
-  train_mode = "label_folder",
+  train_type = "label_folder",
   output_format = NULL,
   seed = 123,
   format = "fasta",
@@ -23,17 +23,31 @@ generator_random(
   max_samples = 1,
   skip_amb_nuc = NULL,
   vocabulary_label = NULL,
-  shuffle = FALSE,
-  as_numpy_array = FALSE,
   target_from_csv = NULL,
   target_split = NULL,
-  output_path = NULL,
   max_iter = 10000,
   verbose = TRUE,
+  set_learning = NULL,
+  shuffle_input = TRUE,
+  reverse_complement_encoding = FALSE,
+  proportion_entries = NULL,
   concat_seq = NULL
 )
 }
 \arguments{
+\item{train_type}{Either "lm", "lm_rds" for language model; "label_header", "label_folder", "label_csv", "label_rds" for classification or "dummy_gen".
+Language model is trained to predict character in sequence.
+"label_header"/"label_folder"/"label_csv" are trained to predict a corresponding class, given a sequence as input. If "label_header", class will be read from fasta headers.
+If "label_folder", class will be read from folder, i.e. all files in one folder must belong to the same class.
+If "label_csv", targets are read from a csv file. This file should have one column named "file". The targets then correspond to entries in that row (except "file"
+column). Example: if we are currently working with a file called "a.fasta", there should be a row in our csv file
+   file  |  label_1 | label_2
+"a.fasta"     1          8
+If "label_rds", generator will iterate over set of .rds files containing each a list of input and target tensors. Not implemented for model
+with multiple inputs. If "lm_rds", generator will iterate over set of .rds files and will split tensor according to target_len argument
+(targets are last target_len nucleotides of each sequence).
+If "dummy_gen", generator creates random data once and repeatedly feeds these to model.}
+
 \item{output_format}{Determines shape of output tensor for language model.
 Either "target_right", "target_middle_lstm", "target_middle_cnn" or "wavenet".
 Assume a sequence "AACCGTA". Output correspond as follows
@@ -47,6 +61,9 @@ Assume a sequence "AACCGTA". Output correspond as follows
 \item{format}{File format, either "fasta" or "fastq".}
 
 \item{reverse_complement}{Logical, for every new file decide randomly to use original data or its reverse complement.}
+
+\item{path}{Path to folder where individual or multiple FASTA or FASTQ files are located for training. If \code{train_type} is \code{label_folder}, should be a vector or list
+where each entry corresponds to a class. If \code{train_type} is not \code{label_folder}, can be a list of directories and/or single files.}
 
 \item{batch_size}{Number of batches.}
 
@@ -62,6 +79,9 @@ If "empirical" use nucleotide distribution of current file.}
 
 \item{n_gram}{Integer, encode target not nucleotide wise but combine n nucleotides at once. For example for n=2, "AA" ->  (1, 0,..., 0),
 "AC" ->  (0, 1, 0,..., 0), "TT" -> (0,..., 0, 1), where the one-hot vectors have length length(vocabulary)^n.}
+
+\item{n_gram_stride}{Step size for n-gram encoding. For AACCGGTT with n-gram = 4 and n_gram_stride = 2, generator encodes
+(AACC), (CCGG), (GGTT); for n_gram_stride = 4 generator encodes (AACC), (GGTT).}
 
 \item{sample_by_file_size}{Sample new file weighted by file size (possible to repeatedly sample the same file).}
 
@@ -83,9 +103,28 @@ second entry contains the column named "label_3".}
 
 \item{verbose}{Whether to show message.}
 
+\item{set_learning}{When you want to assign one label to set of samples. Only implemented for train_type = "label_folder".
+Input is a list with the following parameters
+(1) \code{samples_per_target}, how many samples to use for one target; (2) \code{maxlen} length of one sample
+(3) \code{reshape_mode} "time_dist", "multi_input" or "concat". If reshape_mode is "concat", there is an additional (4) \code{buffer_len}
+argmument. If reshape_mode is "multi_input", generator will produce samples_per_target separate inputs, each of length maxlen (model should have
+samples_per_target input layers). If reshape_mode is "time_dist", generator will produce a 4D input array. The dimensions correspond to
+(batch_size, samples_per_target, maxlen, length(vocabulary)). If reshape mode is "concat", generator will concatenate samples_per_target sequences
+of length maxlen to one long sequence; if buffer_len is an integer, the subsequences are interspaced with buffer_len rows. The input length is
+(maxlen \* samples_per_target) + buffer_len \* (samples_per_target - 1)}
+
+\item{shuffle_input}{Logical, shuffle entries in every fasta file before connecting them to sequence.}
+
+\item{reverse_complement_encoding}{Boolean, use both original sequence and reverse complement as two input sequences.}
+
+\item{proportion_entries}{Proportion of fasta entries to keep. For example, if fasta file has 50 entries and proportion_entries = 0.1,
+will randomly select 5 entries.}
+
 \item{concat_seq}{Character string or NULL. If not NULL all entries from file get concatenated to one sequence with concat_seq string between them.
 Example: If 1.entry AACC, 2. entry TTTG and concat_seq = "ZZZ" this becomes AACCZZZTTTG.}
 }
 \description{
-Randomly select samples from fasta files.
+Other generator like \code{\link{generator_fasta_lm}}, \code{\link{generator_fasta_label_header_csv}}
+or \code{\link{generator_fasta_label_folder}} will randomly choose a consecutive sequence of samples when
+a \code{max_samples} argument is supplied. \code{generator_random} will choose samples at random.
 }

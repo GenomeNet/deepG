@@ -29,3 +29,4 @@ start_ind_ignore_amb(
 \description{
 Helper function for get_start_ind, extracts the start positions of all potential samples (considering step size and vocabulary)
 }
+\keyword{internal}

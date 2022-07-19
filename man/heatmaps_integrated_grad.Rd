@@ -2,7 +2,7 @@
 % Please edit documentation in R/visualization.R
 \name{heatmaps_integrated_grad}
 \alias{heatmaps_integrated_grad}
-\title{Creates a heatmap from output of \code{integrated_gradients} function.}
+\title{Heatmap of integrated gradient scores}
 \usage{
 heatmaps_integrated_grad(integrated_grads, input_seq)
 }
@@ -10,8 +10,20 @@ heatmaps_integrated_grad(integrated_grads, input_seq)
 \item{integrated_grads}{Output of \code{integrated_gradients} function}
 
 \item{input_seq}{Input sequence for model. Should be the same as \code{input_seq} input for corresponding
-\code{integrated_gradients} call that computed \code{integrated_grads} argument.}
+\code{\link{integrated_gradients}} call that computedinput for \code{integrated_grads} argument.
+model <- create_model_lstm_cnn(layer_lstm = 8, layer_dense = 3, maxlen = 20)}
 }
 \description{
-Creates a heatmap from output of \code{integrated_gradients} function.
+Creates a heatmap from output of \code{\link{integrated_gradients}} function.
+}
+\examples{
+model <- create_model_lstm_cnn(layer_lstm = 8, layer_dense = 3, maxlen = 20, verbose = FALSE)
+random_seq <- sample(0:3, 20, replace = TRUE)
+input_seq <- array(keras::to_categorical(random_seq), dim = c(1, 20, 4))
+ig <- integrated_gradients(
+  input_seq = input_seq,
+  target_class_idx = 3,
+  model = model)
+heatmaps_integrated_grad(integrated_grads = ig,
+                         input_seq = input_seq)
 }

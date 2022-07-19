@@ -2,7 +2,7 @@
 % Please edit documentation in R/predict.R
 \name{summarize_states}
 \alias{summarize_states}
-\title{Creates summary data frame for confidence predictions over 1 or several state files.}
+\title{Create summary of predictions}
 \usage{
 summarize_states(
   states_path = NULL,
@@ -21,5 +21,18 @@ summarize_states(
 \item{df}{A states data frame. Ignores states_dir if not NULL.}
 }
 \description{
+Create summary data frame for confidence predictions over 1 or several state files or a data frame.
+Columns in file or data frame should be confidence preditions for one class,
+i.e. each rows should sum to 1 and have nonnegative entries. 
 Output data frame contains average confidence scores, max score and percentage of votes for each class.
+}
+\examples{
+\dontrun{
+df <- data.frame()
+m <- matrix(runif(20*3), ncol = 3)
+m <- m/rowSums(m)
+label_names <- paste0("class_", 1:3)
+df <- as.data.frame(m)
+summarize_states(label_names = label_names, df = df)
+}
 }

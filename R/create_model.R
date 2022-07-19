@@ -2,6 +2,7 @@
 #'
 #' @description Creates a network consisting of an arbitrary number of CNN, LSTM and dense layers.
 #' Last layer is a dense layer with default softmax activation.
+#' 
 #' @param maxlen Length of predictor sequence.
 #' @param dropout_lstm Fraction of the units to drop for inputs.
 #' @param recurrent_dropout_lstm Fraction of the units to drop for recurrent state.
@@ -48,6 +49,16 @@
 #' @param bal_acc Whether to add balanced accuracy.
 #' @param batch_norm_momentum Momentum for the moving mean and the moving variance.
 #' @param model_seed Set seed for model parameters in tensorflow, if not NULL.
+#' @examples 
+#' create_model_lstm_cnn(
+#'   maxlen = 500,
+#'   vocabulary_size = 4,
+#'   kernel_size = c(8, 8, 8),
+#'   filters = c(16, 32, 64),
+#'   pool_size = c(3, 3, 3),
+#'   layer_lstm = c(32, 64),
+#'   layer_dense = c(128, 4),
+#'   learning_rate = 0.001)
 #' @export
 create_model_lstm_cnn <- function(
   maxlen = 50,
@@ -100,7 +111,7 @@ create_model_lstm_cnn <- function(
   }
   
   if (layers.lstm == 0 & !use.cnn) {
-    stop("Model does not use LSTM or CNN layers. Set use.cnn to TRUE or layers.lstm > 0.")
+    stop("Model does not use LSTM or CNN layers.")
   }
   
   if (is.null(strides)) strides <- rep(1L, length(filters))
@@ -420,19 +431,7 @@ create_model_lstm_cnn <- function(
                                     cpu_merge = merge_on_cpu)
   }
   
-  # choose optimization method
-  if (solver == "adam") {
-    optimizer <-  keras::optimizer_adam(lr = learning_rate)
-  }
-  if (solver == "adagrad") {
-    optimizer <- keras::optimizer_adagrad(lr = learning_rate)
-  }
-  if (solver == "rmsprop") {
-    optimizer <- keras::optimizer_rmsprop(lr = learning_rate)
-  }
-  if (solver == "sgd") {
-    optimizer <- keras::optimizer_sgd(lr = learning_rate)
-  }
+  optimizer <- set_optimizer(solver, learning_rate) 
   
   #add metrics
   metrics <- c("acc")
@@ -468,6 +467,7 @@ create_model_lstm_cnn <- function(
   if (label_smoothing > 0 & !is.null(label_noise_matrix)) {
     stop("Can not use label smoothing and label noise at the same time. Either set label_smoothing = 0 or label_noise_matrix = NULL")
   }
+  
   if (label_smoothing > 0) {
     if (loss_fn == "categorical_crossentropy") {
       smooth_loss <- tensorflow::tf$losses$CategoricalCrossentropy(label_smoothing = label_smoothing, name = "smooth_loss")
@@ -528,62 +528,53 @@ create_model_lstm_cnn <- function(
   argg["macro_average_cb"] <- NULL
   model$hparam <- argg
   model$cm_dir <- cm_dir
-  
+
   if (verbose) summary(model)
-  return(model)
+  return_model <- model
 }
 
-#' create wavenet model
-#'
-#' @inheritParams wavenet::wavenet
-#' @export
-create_model_wavenet <- function(filters = 16, kernel_size = 2, residual_blocks, maxlen,
-                                 input_tensor = NULL, initial_kernel_size = 32, initial_filters = 32,
-                                 output_channels = 4, output_activation = "softmax", solver = "adam",
-                                 learning_rate = 0.001, compile = TRUE, verbose = TRUE, model_seed = NULL) {
-  
-  if (!is.null(model_seed)) tensorflow::tf$random$set_seed(model_seed)
-  
-  model <- wavenet::wavenet(filters = filters, kernel_size = kernel_size, residual_blocks = residual_blocks,
-                            input_shape = list(maxlen, output_channels), input_tensor = input_tensor, initial_kernel_size = initial_kernel_size,
-                            initial_filters = initial_filters, output_channels = output_channels, output_activation = "softmax")
-  if (solver == "adam") {
-    optimizer <- keras::optimizer_adam(lr = learning_rate)
-  }
-  if (solver == "adagrad") {
-    optimizer <- keras::optimizer_adagrad(lr = learning_rate)
-  }
-  if (solver == "rmsprop") {
-    optimizer <- keras::optimizer_rmsprop(lr = learning_rate)
-  }
-  if (solver == "sgd") {
-    optimizer <- keras::optimizer_sgd(lr = learning_rate)
-  }
-  
-  if (compile) {
-    model %>% keras::compile(loss = "categorical_crossentropy",
-                             optimizer = optimizer, metrics = c("acc"))
-  }
-  
-  argg <- c(as.list(environment()))
-  argg["model"] <- NULL
-  argg["optimizer"] <- NULL
-  argg["residual_blocks"] <- paste(as.character(residual_blocks), collapse = " ")
-  model$hparam <- argg
-  reticulate::py_set_attr(x = model, name = "hparam", value = model$hparam)
-  if (verbose) summary(model)
-  model
-}
+# #' Create wavenet model
+# #'
+# #' Create network architecture as described here: https://arxiv.org/abs/1609.03499
+# #'
+# #' @inheritParams wavenet::wavenet
+# #' @export
+# create_model_wavenet <- function(filters = 16, kernel_size = 2, residual_blocks, maxlen,
+#                                  input_tensor = NULL, initial_kernel_size = 32, initial_filters = 32,
+#                                  output_channels = 4, output_activation = "softmax", solver = "adam",
+#                                  learning_rate = 0.001, compile = TRUE, verbose = TRUE, model_seed = NULL) {
+#   
+#   if (!is.null(model_seed)) tensorflow::tf$random$set_seed(model_seed)
+#   
+#   model <- wavenet::wavenet(filters = filters, kernel_size = kernel_size, residual_blocks = residual_blocks,
+#                             input_shape = list(maxlen, output_channels), input_tensor = input_tensor, initial_kernel_size = initial_kernel_size,
+#                             initial_filters = initial_filters, output_channels = output_channels, output_activation = "softmax")
+#
+#   optimizer <- set_optimizer(solver, learning_rate) 
+#   
+#   if (compile) {
+#     model %>% keras::compile(loss = "categorical_crossentropy",
+#                              optimizer = optimizer, metrics = c("acc"))
+#   }
+#   
+#   argg <- c(as.list(environment()))
+#   argg["model"] <- NULL
+#   argg["optimizer"] <- NULL
+#   argg["residual_blocks"] <- paste(as.character(residual_blocks), collapse = " ")
+#   model$hparam <- argg
+#   reticulate::py_set_attr(x = model, name = "hparam", value = model$hparam)
+#   if (verbose) summary(model)
+#   model
+# }
 
-#' @title Creates LSTM/CNN network
+#' @title Create LSTM/CNN network to predict middle part of a sequence
 #'
 #' @description
 #' Creates a network consisting of an arbitrary number of CNN, LSTM and dense layers.
-#' Last layer is a dense layer with softmax activation.
+#' Function creates two sub networks consisting each of an (optional) CNN layer followed by an arbitrary number of LSTM layers. Afterwards the last LSTM layers
+#' get concatenated and followed by one or more dense layers. Last layer is a dense layer with softmax activation.
 #' Network tries to predict target in the middle of a sequence. If input is AACCTAAGG, input tensors should correspond to x1 = AACC, x2 = GGAA and y = T
 #' (set \code{target_middle = TRUE} in \code{train_model} function).
-#' Function creates two sub networks consisting each of an (optional) CNN layer followed by an arbitrary number of LSTM layers. Afterwards the last LSTM layers
-#' get concatenated and followed by a dense layers.
 #' @param maxlen Length of predictor sequence.
 #' @param dropout_lstm Fraction of the units to drop for inputs.
 #' @param recurrent_dropout_lstm Fraction of the units to drop for recurrent state.
@@ -605,6 +596,16 @@ create_model_wavenet <- function(filters = 16, kernel_size = 2, residual_blocks,
 #' @param pool_size Integer, size of the max pooling windows.
 #' @param strides Stide length of convolution.
 #' @param label_input Integer or NULL. If not NULL, adds additional input layer of \code{label_input} size.
+#' @examples
+#' create_model_lstm_cnn_target_middle(
+#'   maxlen = 500,
+#'   vocabulary_size = 4,
+#'   kernel_size = c(8, 8, 8),
+#'   filters = c(16, 32, 64),
+#'   pool_size = c(3, 3, 3),
+#'   layer_lstm = c(32, 64),
+#'   layer_dense = c(128, 4),
+#'   learning_rate = 0.001)
 #' @export
 create_model_lstm_cnn_target_middle <- function(
   maxlen = 50,
@@ -918,18 +919,7 @@ create_model_lstm_cnn_target_middle <- function(
   }
   
   # choose optimization method
-  if (solver == "adam")
-    optimizer <-
-    keras::optimizer_adam(lr = learning_rate)
-  if (solver == "adagrad")
-    optimizer <-
-    keras::optimizer_adagrad(lr = learning_rate)
-  if (solver == "rmsprop")
-    optimizer <-
-    keras::optimizer_rmsprop(lr = learning_rate)
-  if (solver == "sgd")
-    optimizer <-
-    keras::optimizer_sgd(lr = learning_rate)
+  optimizer <- set_optimizer(solver, learning_rate) 
   
   #add metrics
   cm_dir <- file.path(tempdir(), paste(sample(letters, 7), collapse = ""))
@@ -1013,13 +1003,13 @@ create_model_lstm_cnn_target_middle <- function(
   reticulate::py_set_attr(x = model, name = "hparam", value = model$hparam)
   
   if (verbose) summary(model)
-  return(model)
+  return_model <- model
 }
 
 #' Extract hyperparameters from model
 #'
 #' @param model A keras model.
-#' @export
+#' @keywords internal
 get_hyper_param <- function(model) {
   layers.lstm <- 0
   use.cudnn <- FALSE
@@ -1093,6 +1083,10 @@ get_hyper_param <- function(model) {
 
 
 #' Remove layers from model and add dense layers
+#' 
+#' Functions takes a model as input and removes all layers after a certain layer, specified in \code{layer_name} argument.
+#' Optional to add dense layers on top of pruned model. Model can have multiple output layers with separate loss/activation functions.
+#' You can freeze all the weights of the pruned model by setting \code{freeze_base_model = TRUE}.
 #'
 #' @param layer_name Name of last layer to use from old model.
 #' @param model A keras model. If model and path_model are both not NULL, path_model will be used.
@@ -1105,8 +1099,24 @@ get_hyper_param <- function(model) {
 #' @param dropout List of vectors with dropout rates for each new dense layer.
 #' @param freeze_base_model Whether to freeze all weights before new dense layers.
 #' @param compile Boolean, whether the new model is compiled or not
-#' @param lr learning_rate if compile == TRUE, default -> learning_rate of the old model
+#' @param learning_rate learning_rate if compile == TRUE, default -> learning_rate of the old model
 #' @param solver "adam", "adagrad", "rmsprop" or "sgd" if compile == TRUE, default -> solver of the old model
+#' @examples
+#' model_1 <- create_model_lstm_cnn(layer_lstm = c(64, 64), maxlen = 50, layer_dense = c(32, 4), verbose = FALSE)
+#' # get name of second to last layer 
+#' num_layers <- length(model_1$get_config()$layers)
+#' layer_name <- model_1$get_config()$layers[[num_layers-1]]$name
+#' # add dense layer with multi outputs and separate loss/activations functions
+#' model_2 <- remove_add_layers(model = model_1,
+#'                              layer_name = layer_name,
+#'                              dense_layers = list(c(32, 16, 1), c(8, 1), c(12, 5)),
+#'                              loss = list("binary_crossentropy", "mae", "categorical_crossentropy"),
+#'                              last_activation = list("sigmoid", "linear", "softmax"),
+#'                              freeze_base_model = TRUE,
+#'                              output_names = list("out_1_binary_classsification", 
+#'                                                  "out_2_regression", 
+#'                                                  "out_3_classification")
+#') 
 #' @export
 remove_add_layers <- function(model = NULL,
                               layer_name = NULL,
@@ -1118,7 +1128,7 @@ remove_add_layers <- function(model = NULL,
                               dropout = NULL,
                               freeze_base_model = FALSE,
                               compile = FALSE,
-                              lr = 0.001,
+                              learning_rate = 0.001,
                               solver = "adam",
                               model_seed = NULL) {
   
@@ -1231,10 +1241,10 @@ remove_add_layers <- function(model = NULL,
   }
   
   if (compile) {
-    if (is.null(lr)) {
+    if (is.null(learning_rate)) {
       learning_rate <- keras::k_eval(model$optimizer$lr)
     } else {
-      learning_rate <- lr
+      learning_rate <- learning_rate
     }
     
     if (is.null(solver)) {
@@ -1244,18 +1254,7 @@ remove_add_layers <- function(model = NULL,
     #   return(NULL)
     # }
     
-    if (solver == "adam") {
-      optimizer <-  keras::optimizer_adam(lr = learning_rate)
-    }
-    if (solver == "adagrad") {
-      optimizer <- keras::optimizer_adagrad(lr = learning_rate)
-    }
-    if (solver == "rmsprop") {
-      optimizer <- keras::optimizer_rmsprop(lr = learning_rate)
-    }
-    if (solver == "sgd") {
-      optimizer <- keras::optimizer_sgd(lr = learning_rate)
-    }
+    optimizer <- set_optimizer(solver, learning_rate) 
     
     model_new %>% keras::compile(loss = losses,
                                  optimizer = optimizer, metrics = c("acc"))
@@ -1266,10 +1265,25 @@ remove_add_layers <- function(model = NULL,
 
 
 #' Merge two models
+#' 
+#' Combine two models at certain layers and add dense layers afterwards.
 #'
 #' @param models List of two models
 #' @param layer_names Vector of length 2 with names of layers to merge.
 #' @inheritParams create_model_lstm_cnn
+#' @examples
+#' model_1 <- create_model_lstm_cnn(layer_lstm = c(64, 64), maxlen = 50, layer_dense = c(32, 4), verbose = FALSE)
+#' model_2 <- create_model_lstm_cnn(layer_lstm = c(32), maxlen = 40, layer_dense = c(8, 2), verbose = FALSE)
+#' # get name of second to last layers
+#' num_layers_1 <- length(model_1$get_config()$layers)
+#' layer_name_1 <- model_1$get_config()$layers[[num_layers_1 - 1]]$name
+#' num_layers_2 <- length(model_2$get_config()$layers)
+#' layer_name_2 <- model_2$get_config()$layers[[num_layers_2 - 1]]$name
+#' # merge models
+#' model <- merge_models(models = list(model_1, model_2),
+#'                       layer_names = c(layer_name_1, layer_name_2),
+#'                       layer_dense = c(6, 2), 
+#'                       freeze_base_model = c(FALSE, FALSE)) 
 #' @export
 merge_models <- function(models, layer_names, layer_dense, solver = "adam", learning_rate = 0.0001,
                          freeze_base_model = c(FALSE, FALSE),
@@ -1284,7 +1298,7 @@ merge_models <- function(models, layer_names, layer_dense, solver = "adam", lear
                                dropout = NULL,
                                freeze_base_model = freeze_base_model[1],
                                compile = FALSE,
-                               lr = NULL)
+                               learning_rate = NULL)
   
   model_2 <- remove_add_layers(model = models[[2]],
                                layer_name = layer_names[2],
@@ -1293,22 +1307,10 @@ merge_models <- function(models, layer_names, layer_dense, solver = "adam", lear
                                dropout = NULL,
                                freeze_base_model = freeze_base_model[2],
                                compile = FALSE,
-                               lr = NULL)
+                               learning_rate = NULL)
   
   # choose optimization method
-  if (solver == "adam") {
-    optimizer <-  keras::optimizer_adam(lr = learning_rate)
-  }
-  
-  if (solver == "adagrad") {
-    optimizer <- keras::optimizer_adagrad(lr = learning_rate)
-  }
-  if (solver == "rmsprop") {
-    optimizer <- keras::optimizer_rmsprop(lr = learning_rate)
-  }
-  if (solver == "sgd") {
-    optimizer <- keras::optimizer_sgd(lr = learning_rate)
-  }
+  optimizer <- set_optimizer(solver, learning_rate) 
   
   output_tensor <- keras::layer_concatenate(c(model_1$output, model_2$output))
   num_targets <- layer_dense[length(layer_dense)]
@@ -1329,7 +1331,8 @@ merge_models <- function(models, layer_names, layer_dense, solver = "adam", lear
 }
 
 #' Check if layer is in model
-#'
+#' 
+#' @keywords internal
 check_layer_name <- function(model, layer_name) {
   num_layers <- length(model$get_config()$layers)
   layer_names <- vector("character")
@@ -1343,10 +1346,32 @@ check_layer_name <- function(model, layer_name) {
 }
 
 
-#' @title Creates LSTM/CNN network that can multiple samples for one target
-#'
+#' @title Creates LSTM/CNN network for combining multiple sequences 
+#' 
+#' @description Creates a network consisting of an arbitrary number of CNN, LSTM and dense layers.
+#' Input is a 4D tensor, where axis correspond to:
+#' \enumerate{
+#'    \item batch size
+#'    \item number of samples in one batch
+#'    \item length of one sample
+#'    \item size of vocabulary
+#' }
+#' After LSTM/CNN part all representations get aggregated by summation.
+#' Can be used to make single prediction for combination of multiple input sequences. 
+#'     
 #' @inheritParams create_model_lstm_cnn
 #' @param samples_per_target Number of samples to combine for one target.
+#' @examples 
+#' create_model_lstm_cnn_time_dist(
+#'   maxlen = 50,
+#'   vocabulary_size = 4,
+#'   samples_per_target = 7,
+#'   kernel_size = c(10, 10),
+#'   filters = c(64, 128),
+#'   pool_size = c(2, 2),
+#'   layer_lstm = c(32),
+#'   layer_dense = c(64, 2),
+#'   learning_rate = 0.001)
 #' @export
 create_model_lstm_cnn_time_dist <- function(
   maxlen = 50,
@@ -1397,7 +1422,7 @@ create_model_lstm_cnn_time_dist <- function(
   }
   
   if (layers.lstm == 0 & !use.cnn) {
-    stop("Model does not use LSTM or CNN layers. Set use.cnn to TRUE or layers.lstm > 0.")
+    stop("Model does not use LSTM or CNN layers.")
   }
   
   if (is.null(strides)) strides <- rep(1L, length(filters))
@@ -1570,19 +1595,7 @@ create_model_lstm_cnn_time_dist <- function(
   }
   
   # choose optimization method
-  if (solver == "adam") {
-    optimizer <-  keras::optimizer_adam(lr = learning_rate)
-  }
-  
-  if (solver == "adagrad") {
-    optimizer <- keras::optimizer_adagrad(lr = learning_rate)
-  }
-  if (solver == "rmsprop") {
-    optimizer <- keras::optimizer_rmsprop(lr = learning_rate)
-  }
-  if (solver == "sgd") {
-    optimizer <- keras::optimizer_sgd(lr = learning_rate)
-  }
+  optimizer <- set_optimizer(solver, learning_rate) 
   
   #add metrics
   cm_dir <- file.path(tempdir(), paste(sample(letters, 7), collapse = ""))
@@ -1651,14 +1664,30 @@ create_model_lstm_cnn_time_dist <- function(
   model$cm_dir <- cm_dir
   
   if (verbose) summary(model)
-  return(model)
+  return_model <- model
 }
 
 
 #' @title Creates LSTM/CNN network that can process multiple samples for one target
 #'
+#' @description Creates a network consisting of an arbitrary number of CNN, LSTM and dense layers with multiple 
+#' input layers. After LSTM/CNN part all representations get aggregated by summation. 
+#' Can be used to make single prediction for combination of multiple input sequences. 
+#' Implements approach as described here: https://arxiv.org/abs/1703.06114
+#'
 #' @inheritParams create_model_lstm_cnn
 #' @param samples_per_target Number of samples to combine for one target.
+#' @examples
+#' create_model_lstm_cnn_multi_input(
+#'   maxlen = 50,
+#'   vocabulary_size = 4,
+#'   samples_per_target = 7,
+#'   kernel_size = c(10, 10),
+#'   filters = c(64, 128),
+#'   pool_size = c(2, 2),
+#'   layer_lstm = c(32),
+#'   layer_dense = c(64, 2),
+#'   learning_rate = 0.001)
 #' @export
 create_model_lstm_cnn_multi_input <- function(
   maxlen = 50,
@@ -1707,7 +1736,7 @@ create_model_lstm_cnn_multi_input <- function(
   }
   
   if (layers.lstm == 0 & !use.cnn) {
-    stop("Model does not use LSTM or CNN layers. Set use.cnn to TRUE or layers.lstm > 0.")
+    stop("Model does not use LSTM or CNN layers.")
   }
   
   if (is.null(strides)) strides <- rep(1L, length(filters))
@@ -1870,19 +1899,7 @@ create_model_lstm_cnn_multi_input <- function(
   }
   
   # choose optimization method
-  if (solver == "adam") {
-    optimizer <-  keras::optimizer_adam(lr = learning_rate)
-  }
-  
-  if (solver == "adagrad") {
-    optimizer <- keras::optimizer_adagrad(lr = learning_rate)
-  }
-  if (solver == "rmsprop") {
-    optimizer <- keras::optimizer_rmsprop(lr = learning_rate)
-  }
-  if (solver == "sgd") {
-    optimizer <- keras::optimizer_sgd(lr = learning_rate)
-  }
+  optimizer <- set_optimizer(solver, learning_rate) 
   
   #add metrics
   cm_dir <- file.path(tempdir(), paste(sample(letters, 7), collapse = ""))
@@ -1952,16 +1969,26 @@ create_model_lstm_cnn_multi_input <- function(
   model$cm_dir <- cm_dir
   
   if (verbose) summary(model)
-  return(model)
+  return_model <- model
 }
 
 #' Replace input layer
 #'
 #' Replace first layer of model with new input layer of different shape. Only works for sequential models that
-#' uses CNN and LSTM layers.
+#' use CNN and LSTM layers.
 #'
 #' @param model A keras model.
 #' @param input_shape The new input shape vector (without batch_size).
+#' @examples 
+#' model_1 <-  create_model_lstm_cnn(
+#'   maxlen = 50,
+#'   kernel_size = c(10, 10),
+#'   filters = c(64, 128),
+#'   pool_size = c(2, 2),
+#'   layer_lstm = c(32),
+#'   verbose = FALSE,
+#'   layer_dense = c(64, 2))
+#' reshape_input(model_1, input_shape = c(120, 4)) 
 #' @export
 reshape_input <- function(model, input_shape) {
   
@@ -1975,26 +2002,27 @@ reshape_input <- function(model, input_shape) {
     }
   }
   new_model <- tensorflow::tf$keras$Model(in_layer, out_layer)
-  return(new_model)
+  return_model <- new_model
 }
 
 
 #' Get solver and learning_rate from model.
 #'
+#' @keywords internal
 get_optimizer <- function(model) {
   solver <- stringr::str_to_lower(model$optimizer$get_config()["name"])
   learning_rate <- keras::k_eval(model$optimizer$lr)
   if (solver == "adam") {
-    optimizer <-  keras::optimizer_adam(lr = learning_rate)
+    optimizer <-  keras::optimizer_adam(learning_rate = learning_rate)
   }
   if (solver == "adagrad") {
-    optimizer <- keras::optimizer_adagrad(lr = learning_rate)
+    optimizer <- keras::optimizer_adagrad(learning_rate = learning_rate)
   }
   if (solver == "rmsprop") {
-    optimizer <- keras::optimizer_rmsprop(lr = learning_rate)
+    optimizer <- keras::optimizer_rmsprop(learning_rate = learning_rate)
   }
   if (solver == "sgd") {
-    optimizer <- keras::optimizer_sgd(lr = learning_rate)
+    optimizer <- keras::optimizer_sgd(learning_rate = learning_rate)
   }
   return(optimizer)
 }
@@ -2199,14 +2227,9 @@ create_model_genomenet <- function(
       outputs = keras::layer_average(c(output_tensor, output_tensor_reversed))
     )
   }
-  # assign optimization method
   
-  keras_optimizer <- switch(optimizer,
-                            adam = keras::optimizer_adam(lr = learning_rate),
-                            adagrad = keras::optimizer_adagrad(lr = learning_rate),
-                            rmsprop = keras::optimizer_rmsprop(lr = learning_rate),
-                            sgd = keras::optimizer_sgd(lr = learning_rate)
-  )
+  # assign optimization method
+  keras_optimizer <- set_optimizer(optimizer, learning_rate) 
   
   model %>% keras::compile(loss = "categorical_crossentropy", optimizer = keras_optimizer, metrics = "acc")
   
@@ -2243,7 +2266,7 @@ create_model_genomenet <- function(
   model
 }
 
-#' Load pretrained self-genomenet model
+#' Load pretrained Genomenet model
 #'
 #' Classification model with labels "bacteria", "virus-no-phage","virus-phage".
 #' TODO: add link to paper
@@ -2274,15 +2297,59 @@ load_model_self_genomenet <- function(maxlen, compile = FALSE, optimizer = "adam
   }
   
   if (compile) {
-    keras_optimizer <- switch(optimizer,
-                              adam = keras::optimizer_adam(lr = learning_rate),
-                              adagrad = keras::optimizer_adagrad(lr = learning_rate),
-                              rmsprop = keras::optimizer_rmsprop(lr = learning_rate),
-                              sgd = keras::optimizer_sgd(lr = learning_rate)
-    )
-    
+    keras_optimizer <- set_optimizer(optimizer, learning_rate)
     model %>% keras::compile(loss = "categorical_crossentropy", optimizer = keras_optimizer, metrics = "acc")
   }
   
-  return(model)
+  return_model <- model
+}
+
+set_optimizer <- function(solver = "adam", learning_rate = 0.01) {
+  
+  stopifnot(solver %in% c("adam", "adagrad", "rmsprop", "sgd"))
+  
+  # choose optimization method
+  if (solver == "adam")
+    keras_optimizer <-
+      keras::optimizer_adam(learning_rate = learning_rate)
+  if (solver == "adagrad")
+    keras_optimizer <-
+      keras::optimizer_adagrad(learning_rate = learning_rate)
+  if (solver == "rmsprop")
+    keras_optimizer <-
+      keras::optimizer_rmsprop(learning_rate = learning_rate)
+  if (solver == "sgd")
+    keras_optimizer <-
+      keras::optimizer_sgd(learning_rate = learning_rate)
+  return(keras_optimizer)
+  
+}
+
+#' Get activtion functions of output layers
+#' 
+#' @param model A keras model.
+#' @examples 
+#' model <-  create_model_lstm_cnn(
+#'   maxlen = 50,
+#'   layer_lstm = 8,
+#'   layer_dense = c(64, 2),
+#'   verbose = FALSE)
+#' get_output_activations(model)
+#' @export
+get_output_activations <- function(model) {
+  out_names <- model$output_names
+  num_layers <- length(model$get_config()$layers)
+  
+  act_vec <- vector("character", length(out_names))
+  count <- 1
+  for (i in 1:num_layers) {
+    layer_name <- model$get_config()$layers[[i]]$name
+    if (layer_name %in% out_names) {
+      act_name <- model$layers[[i]]$get_config()$activation
+      if (is.null(act_name)) act_name <- "linear"
+      act_vec[count] <- act_name
+      count <- count + 1
+    }
+  }
+  return(act_vec)
 }

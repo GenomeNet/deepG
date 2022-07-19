@@ -1,10 +1,10 @@
-#' Custom generator for fasta/fastq files
+#' Language model generator for fasta/fastq files
 #'
-#' @description \code{generator_fasta_lm} iterates over folder containing .fasta/.fastq files and produces encoding of predictor sequences
-#' and target variables.
+#' @description Iterates over folder containing .fasta/.fastq files and produces encoding of predictor sequences
+#' and target variables. Will take a sequence of fixed size and use some part of sequence as input and other part as target. 
 #'
 #' @param path_corpus Input directory where .fasta files are located or path to single file ending with .fasta or .fastq
-#' (as specified in format argument). Can also be a list of directories.
+#' (as specified in format argument). Can also be a list of directories and/or files.
 #' @param format File format, either "fasta" or "fastq".
 #' @param batch_size Number of batches.
 #' @param maxlen Length of predictor sequence.
@@ -44,7 +44,8 @@
 #' Example: If 1.entry AACC, 2. entry TTTG and concat_seq = "ZZZ" this becomes AACCZZZTTTG.
 #' @param target_len Number of nucleotides to predict at once.
 #' @param file_filter Vector of file names to use from path_corpus.
-#' @param use_coverage Integer or NULL. If not NULL, use coverage as encoding rather than one-hot encoding and normalize .
+#' @param use_coverage Integer or NULL. If not NULL, use coverage as encoding rather than one-hot encoding and normalize.
+#' Coverage information must be contained a fasta header: there must be a string "cov_n" in the header, where n is some integer.
 #' @param proportion_entries Proportion of fasta entries to keep. For example, if fasta file has 50 entries and proportion_entries = 0.1,
 #' will randomly select 5 entries.
 #' @param sample_by_file_size Sample new file weighted by file size (possible to repeatedly sample the same file).
@@ -87,11 +88,11 @@ generator_fasta_lm <- function(path_corpus,
                                n_gram = NULL,
                                n_gram_stride = 1,
                                add_noise = NULL) {
-
+  
   if (!is.null(concat_seq) && (!all(stringr::str_split(concat_seq,"")[[1]] %in% vocabulary))) {
     stop("Characters of separating sequence should be in vocabulary")
   }
-
+  
   if (is.null(use_coverage)) {
     use_coverage <- FALSE
     max_cov <- NULL
@@ -99,14 +100,14 @@ generator_fasta_lm <- function(path_corpus,
     max_cov <- use_coverage
     use_coverage <- TRUE
   }
-
+  
   stopifnot(output_format %in% c("target_right", "target_middle_lstm", "target_middle_cnn", "wavenet"))
   wavenet_format <- FALSE; target_middle <- FALSE; cnn_format <- FALSE
   if (output_format == "target_middle_lstm") target_middle <- TRUE
   if (output_format == "target_middle_cnn") cnn_format <- TRUE
   if (output_format == "wavenet") wavenet_format <- TRUE
   additional_labels <- ifelse(is.null(added_label_path), FALSE, TRUE)
-
+  
   # token for ambiguous nucleotides
   for (i in letters) {
     if (!(i %in% stringr::str_to_lower(vocabulary))) {
@@ -114,7 +115,7 @@ generator_fasta_lm <- function(path_corpus,
       break
     }
   }
-
+  
   # adjust maxlen
   original_maxlen <- maxlen
   #if (is.null(n_gram)) {
@@ -124,7 +125,7 @@ generator_fasta_lm <- function(path_corpus,
   #} else {
   #  target_len <- target_len + n_gram - 1
   #}
-
+  
   set.seed(seed)
   vocabulary <- stringr::str_to_lower(vocabulary)
   discard_amb_nuc <- ifelse(ambiguous_nuc == "discard", TRUE, FALSE)
@@ -136,44 +137,44 @@ generator_fasta_lm <- function(path_corpus,
   iter <- 1
   concat <- !is.null(concat_seq)
   seq_vector <- NULL
-
+  
   fasta.files <- list_fasta_files(path_corpus = path_corpus,
                                   format = format,
                                   file_filter = file_filter)
   num_files <- length(fasta.files)
-
+  
   if (sample_by_file_size) {
     shuffle_file_order <- FALSE
     file_prob <- file.info(fasta.files)$size/sum(file.info(fasta.files)$size)
   }
-
+  
   if (shuffle_file_order) fasta.files <- sample(fasta.files, replace = FALSE)
-
+  
   # regular expression for chars outside vocabulary
   pattern <- paste0("[^", paste0(vocabulary, collapse = ""), "]")
-
+  
   # sequence vector collects strings until one batch can be created
   sequence_list <- vector("list")
   quality_list <- vector("list")
   coverage_list <- vector("list")
-
+  
   if (!use_quality_score) {
     quality_list <- NULL
   }
   sequence_list_index <- 1
-
+  
   while (length(seq_vector) == 0) {
-
+    
     fasta.file <- read_fasta_fastq(format = format, skip_amb_nuc =  skip_amb_nuc, file_index = file_index, pattern = pattern,
                                    shuffle_input = shuffle_input, proportion_entries = proportion_entries,
                                    reverse_complement = reverse_complement, fasta.files = fasta.files)
-
+    
     if (concat) {
       cov_vector <- get_coverage_concat(fasta.file = fasta.file, concat_seq = concat_seq)
       fasta.file <- data.frame(Header = basename(fasta.files[file_index]), Sequence = paste(fasta.file$Sequence, collapse = concat_seq),
                                stringsAsFactors = FALSE)
     }
-
+    
     # skip file that can't produce one sample
     if (!padding) {
       while((nrow(fasta.file) ==0) || all(nchar(fasta.file$Sequence) < (maxlen + 1))) {
@@ -185,7 +186,7 @@ generator_fasta_lm <- function(path_corpus,
         fasta.file <- read_fasta_fastq(format = format, skip_amb_nuc =  skip_amb_nuc, file_index = file_index, pattern = pattern,
                                        shuffle_input = shuffle_input, proportion_entries = proportion_entries,
                                        reverse_complement = reverse_complement, fasta.files = fasta.files)
-
+        
         if (concat) {
           cov_vector <- get_coverage_concat(fasta.file = fasta.file, concat_seq = concat_seq)
           fasta.file <- data.frame(Header = basename(fasta.files[file_index]), Sequence = paste(fasta.file$Sequence, collapse = concat_seq),
@@ -202,7 +203,7 @@ generator_fasta_lm <- function(path_corpus,
         fasta.file <- read_fasta_fastq(format = format, skip_amb_nuc =  skip_amb_nuc, file_index = file_index, pattern = pattern,
                                        shuffle_input = shuffle_input, proportion_entries = proportion_entries,
                                        reverse_complement = reverse_complement, fasta.files = fasta.files)
-
+        
         if (concat) {
           cov_vector <- get_coverage_concat(fasta.file = fasta.file, concat_seq = concat_seq)
           fasta.file <- data.frame(Header = basename(fasta.files[file_index]), Sequence = paste(fasta.file$Sequence, collapse = concat_seq),
@@ -210,18 +211,18 @@ generator_fasta_lm <- function(path_corpus,
         }
       }
     }
-
+    
     if (use_coverage) {
       cov_vector <- get_coverage(fasta.file)
     }
-
+    
     # take random subset
     if (!is.null(proportion_per_seq)) {
       fasta_width <- nchar(fasta.file$Sequence)
-      sample_range <- floor(fasta_width - (proportion_per_seq * fasta_width))
-      start <- mapply(sample_range, FUN = sample, size = 1)
       perc_length <- floor(fasta_width * proportion_per_seq)
-      stop <- start + perc_length
+      sample_range <- fasta_width - perc_length + 1
+      start <- mapply(sample_range, FUN = sample, size = 1)
+      stop <- start + perc_length - 1
       seq_vector <- mapply(fasta.file$Sequence, FUN = substr, start = start, stop = stop)
       if (use_quality_score) {
         quality_scores <- mapply(fasta.file$Quality, FUN = substr, start = start, stop = stop)
@@ -232,11 +233,11 @@ generator_fasta_lm <- function(path_corpus,
         quality_scores <- fasta.file$Quality
       }
     }
-
+    
     seq_vector <- stringr::str_to_lower(seq_vector)
     seq_vector <- stringr::str_replace_all(string = seq_vector, pattern = pattern, amb_nuc_token)
     length_vector <- nchar(seq_vector)
-
+    
     # extra input from csv
     if (additional_labels) {
       label_list <- list()
@@ -250,7 +251,7 @@ generator_fasta_lm <- function(path_corpus,
       #added_label_by_header <- ifelse(added_label_list[[1]]$col_name == "header", TRUE, FALSE)
       added_label_by_header <- FALSE
     }
-
+    
     # pad short sequences with zeros or discard
     short_seq_index <- which(length_vector < (maxlen + 1))
     if (padding) {
@@ -276,39 +277,39 @@ generator_fasta_lm <- function(path_corpus,
         }
       }
     }
-
+    
     if (length(seq_vector) == 0) {
-
+      
       if(iter > max_iter) {
         stop('exceeded max_iter value, try reducing maxlen parameter')
         break
       }
       iter <- iter + 1
-
+      
       file_index <- file_index + 1
       start_index <- 1
-
+      
       if (file_index > length(fasta.files)) {
         if (shuffle_file_order) fasta.files <- sample(fasta.files, replace = FALSE)
         file_index <- 1
       }
     }
-
+    
   }
-
+  
   nucSeq <- paste(seq_vector, collapse = "")
   if (use_quality_score) {
     quality_vector <- paste(quality_scores, collapse = "") %>% quality_to_probability()
   } else {
     quality_vector <- NULL
   }
-
+  
   if (use_coverage) {
     cov_vector <- rep(cov_vector, times = nchar(seq_vector))
   } else {
     cov_vector <- NULL
   }
-
+  
   # vocabulary distribution
   nuc_dist_list <- vector("list")
   if (ambiguous_nuc == "empirical") {
@@ -321,40 +322,40 @@ generator_fasta_lm <- function(path_corpus,
   } else {
     nuc_dist <- 0
   }
-
+  
   # start positions of samples
   start_indices <- get_start_ind(seq_vector = seq_vector, length_vector = length_vector, maxlen = maxlen, step = step, train_mode = "lm",
                                  discard_amb_nuc = discard_amb_nuc, vocabulary = vocabulary)
-
+  
   # limit samples per file
   if (!is.null(max_samples) && length(start_indices) > max_samples) {
     max_samples_subsample <- sample(1:(length(start_indices) - max_samples + 1), 1)
     start_indices <- start_indices[max_samples_subsample:(max_samples_subsample + max_samples - 1)]
   }
-
+  
   startNewEntry <- cumsum(c(1, length_vector[-length(length_vector)]))
-
+  
   nucSeq <- stringr::str_to_lower(nucSeq)
   nucSeq <- keras::texts_to_sequences(tokenizer, nucSeq)[[1]] - 1
-
+  
   # use subset of files
   if (!is.null(file_limit) && (file_limit < length(fasta.files))) {
     fasta.files <- fasta.files[1:file_limit]
     num_files <- length(fasta.files)
   }
-
+  
   # log file
   if (!is.null(path_file_log)) {
     if (!endsWith(path_file_log, ".csv")) path_file_log <- paste0(path_file_log, ".csv")
     write.table(x = fasta.files[1], file = path_file_log, row.names = FALSE, col.names = FALSE)
   }
-
+  
   if (verbose) message("Initializing ...")
-
+  
   rngstate <- .GlobalEnv$.Random.seed
-
+  
   function() {
-
+    
     .GlobalEnv$.Random.seed <- rngstate
     on.exit(rngstate <<- .GlobalEnv$.Random.seed)
     iter <- 1
@@ -362,7 +363,7 @@ generator_fasta_lm <- function(path_corpus,
     while(num_samples < batch_size) {
       # loop through sub-sequences/files until sequence of suitable length is found
       while((start_index > length(start_indices)) | length(start_indices) == 0) {
-
+        
         # go to next file
         if (sample_by_file_size) {
           file_index <<- sample(1:num_files, size = 1, prob = file_prob)
@@ -370,26 +371,26 @@ generator_fasta_lm <- function(path_corpus,
           file_index <<- file_index + 1
         }
         start_index <<- 1
-
+        
         if (file_index > length(fasta.files)) {
           if (shuffle_file_order) fasta.files <<- sample(fasta.files, replace = FALSE)
           file_index <<- 1
         }
-
+        
         filePath <<- fasta.files[[file_index]]
-
+        
         # skip empty files
         while(TRUE) {
           fasta.file <- read_fasta_fastq(format = format, skip_amb_nuc =  skip_amb_nuc, file_index = file_index, pattern = pattern,
                                          shuffle_input = shuffle_input, proportion_entries = proportion_entries,
                                          reverse_complement = reverse_complement, fasta.files = fasta.files)
-
+          
           if (concat) {
             cov_vector <- get_coverage_concat(fasta.file = fasta.file, concat_seq = concat_seq)
             fasta.file <- data.frame(Header = basename(fasta.files[file_index]), Sequence = paste(fasta.file$Sequence, collapse = concat_seq),
                                      stringsAsFactors = FALSE)
           }
-
+          
           if(iter > max_iter) {
             stop('exceeded max_iter value, try reducing maxlen or skip_amb_nuc parameter')
             break
@@ -402,23 +403,23 @@ generator_fasta_lm <- function(path_corpus,
             file_index <<- 1
           }
         }
-
+        
         if (use_coverage) {
           cov_vector <<- get_coverage(fasta.file)
         }
-
+        
         # log file
         if (!is.null(path_file_log)) {
           write.table(x = filePath, file = path_file_log, append = TRUE, col.names = FALSE, row.names = FALSE)
         }
-
+        
         # take random subset
         if (!is.null(proportion_per_seq)) {
           fasta_width <- nchar(fasta.file$Sequence)
-          sample_range <- floor(fasta_width - (proportion_per_seq * fasta_width))
-          start <- mapply(sample_range, FUN = sample, size = 1)
           perc_length <- floor(fasta_width * proportion_per_seq)
-          stop <- start + perc_length
+          sample_range <- fasta_width - perc_length + 1
+          start <- mapply(sample_range, FUN = sample, size = 1)
+          stop <- start + perc_length - 1
           seq_vector <- mapply(fasta.file$Sequence, FUN = substr, start = start, stop = stop)
           if (use_quality_score) {
             quality_scores <- mapply(fasta.file$Quality, FUN = substr, start = start, stop = stop)
@@ -429,7 +430,7 @@ generator_fasta_lm <- function(path_corpus,
             quality_scores <- fasta.file$Quality
           }
         }
-
+        
         seq_vector <- stringr::str_to_lower(seq_vector)
         seq_vector <- stringr::str_replace_all(string = seq_vector, pattern = pattern, amb_nuc_token)
         length_vector <- nchar(seq_vector)
@@ -439,7 +440,7 @@ generator_fasta_lm <- function(path_corpus,
           }
           header_vector <<- fasta.file$Header
         }
-
+        
         # pad short sequences with zeros or discard
         short_seq_index <- which(length_vector < (maxlen + 1))
         if (padding) {
@@ -465,26 +466,26 @@ generator_fasta_lm <- function(path_corpus,
             }
           }
         }
-
+        
         # skip empty file
         if (length(seq_vector) == 0) {
           start_indices <<- NULL
           next
         }
-
+        
         nucSeq <<- paste(seq_vector, collapse = "")
         if (use_quality_score) {
           quality_vector <<- paste(quality_scores, collapse = "") %>% quality_to_probability()
         } else {
           quality_vector <<- NULL
         }
-
+        
         if (use_coverage) {
           cov_vector <<- rep(cov_vector, times = nchar(seq_vector))
         } else {
           cov_vector <<- NULL
         }
-
+        
         # vocabulary distribution
         if (ambiguous_nuc == "empirical") {
           nuc_table <<- table(stringr::str_split(nucSeq, ""))[vocabulary]
@@ -495,32 +496,32 @@ generator_fasta_lm <- function(path_corpus,
           nuc_dist_temp[is.na(nuc_dist)] <- 0
           nuc_dist <<- nuc_dist_temp
         }
-
+        
         # start positions of samples
         start_indices <<- get_start_ind(seq_vector = seq_vector, length_vector = length_vector, maxlen = maxlen, step = step, train_mode = "lm",
                                         discard_amb_nuc = discard_amb_nuc, vocabulary = vocabulary)
-
+        
         # limit samples per file
         if (!is.null(max_samples) && length(start_indices) > max_samples) {
           max_samples_subsample <- sample(1:(length(start_indices) - max_samples + 1), 1)
           start_indices <<- start_indices[max_samples_subsample:(max_samples_subsample + max_samples - 1)]
         }
-
+        
         startNewEntry <<- cumsum(c(1, length_vector[-length(length_vector)]))
         nucSeq <<- stringr::str_to_lower(nucSeq)
         nucSeq <<- keras::texts_to_sequences(tokenizer, nucSeq)[[1]] - 1
-
+        
         if(iter > max_iter) {
           stop('exceeded max_iter value, try reducing maxlen parameter')
           break
         }
         iter <- iter + 1
       }
-
+      
       # go as far as possible in sequence or stop when enough samples are collected
       remainingSamples <- batch_size - num_samples
       end_index <- min(length(start_indices), start_index + remainingSamples  - 1)
-
+      
       subsetStartIndices <- start_indices[start_index:end_index]
       sequence_list[[sequence_list_index]] <- nucSeq[subsetStartIndices[1]:(subsetStartIndices[length(subsetStartIndices)] + maxlen)]
       if (use_quality_score) {
@@ -538,25 +539,25 @@ generator_fasta_lm <- function(path_corpus,
           label_list[[sequence_list_index]] <- basename(fasta.files[file_index])
         }
       }
-
+      
       nuc_dist_list[[sequence_list_index]] <- nuc_dist
       sequence_list_index <<- sequence_list_index + 1
       num_new_samples <- end_index - start_index + 1
       num_samples <- num_samples + num_new_samples
       start_index <<- end_index + 1
     }
-
+    
     if (!wavenet_format) {
-
+      
       array_list <- purrr::map(1:length(sequence_list),
-                               ~seq_encoding_lm(sequence_list[[.x]], target_middle = target_middle, nuc_dist = nuc_dist_list[[.x]],
-                                                  maxlen = maxlen, vocabulary = vocabulary, ambiguous_nuc = ambiguous_nuc,
-                                                  start_ind =  start_index_list[[.x]], use_quality = use_quality_score,
-                                                  quality_vector = quality_list[[.x]], cnn_format = cnn_format, target_len = target_len,
-                                                  cov_vector = coverage_list[[.x]], use_coverage = use_coverage, max_cov = max_cov,
-                                                  n_gram = n_gram, n_gram_stride = n_gram_stride, output_format = output_format)
+                               ~seq_encoding_lm(sequence_list[[.x]], nuc_dist = nuc_dist_list[[.x]],
+                                                maxlen = maxlen, vocabulary = vocabulary, ambiguous_nuc = ambiguous_nuc,
+                                                start_ind =  start_index_list[[.x]], use_quality = use_quality_score,
+                                                quality_vector = quality_list[[.x]], target_len = target_len,
+                                                cov_vector = coverage_list[[.x]], use_coverage = use_coverage, max_cov = max_cov,
+                                                n_gram = n_gram, n_gram_stride = n_gram_stride, output_format = output_format)
       )
-
+      
       if (!is.list(array_list[[1]][[2]])) {
         if (!target_middle) {
           x <- array_list[[1]][[1]]
@@ -567,7 +568,7 @@ generator_fasta_lm <- function(path_corpus,
               y <- rbind(y, array_list[[i]][[2]])
             }
           }
-
+          
           # coerce y type to matrix
           if (dim(x)[1] == 1) {
             if (is.null(n_gram)) {
@@ -588,7 +589,7 @@ generator_fasta_lm <- function(path_corpus,
             }
           }
           x <- list(x_1, x_2)
-
+          
           # coerce y type to matrix
           if (dim(x_1)[1] == 1) {
             if (is.null(n_gram)) {
@@ -610,7 +611,7 @@ generator_fasta_lm <- function(path_corpus,
               }
             }
           }
-
+          
           # coerce y type to matrix
           if (dim(x)[1] == 1) {
             for (i in 1:length(y)) {
@@ -635,7 +636,7 @@ generator_fasta_lm <- function(path_corpus,
             }
           }
           x <- list(x_1, x_2)
-
+          
           # coerce y type to matrix
           if (dim(x_1)[1] == 1) {
             for (i in 1:length(y)) {
@@ -648,24 +649,24 @@ generator_fasta_lm <- function(path_corpus,
           }
         }
       }
-
+      
       # wavenet format
     } else {
-
+      
       if (target_len > 1) {
         stop("target_len must be 1 when using wavenet_format")
       }
-
+      
       # one hot encode strings collected in sequence_list and connect arrays
       array_list <- purrr::map(1:length(sequence_list),
                                ~seq_encoding_lm(sequence_list[[.x]], ambiguous_nuc = ambiguous_nuc,
-                                                  maxlen = maxlen, vocabulary = vocabulary, nuc_dist = nuc_dist_list[[.x]],
-                                                  start_ind =  start_index_list[[.x]], wavenet_format = TRUE, use_quality = use_quality_score,
-                                                  quality_vector = quality_list[[.x]], cnn_format = FALSE, n_gram = n_gram,
-                                                  cov_vector = coverage_list[[.x]], use_coverage = use_coverage, max_cov = max_cov,
-                                                  output_format = output_format)
+                                                maxlen = maxlen, vocabulary = vocabulary, nuc_dist = nuc_dist_list[[.x]],
+                                                start_ind =  start_index_list[[.x]], use_quality = use_quality_score,
+                                                quality_vector = quality_list[[.x]], n_gram = n_gram,
+                                                cov_vector = coverage_list[[.x]], use_coverage = use_coverage, max_cov = max_cov,
+                                                output_format = output_format)
       )
-
+      
       x <- array_list[[1]][[1]]
       y <- array_list[[1]][[2]]
       if (length(array_list) > 1) {
@@ -675,7 +676,7 @@ generator_fasta_lm <- function(path_corpus,
         }
       }
     }
-
+    
     if (additional_labels) {
       .datatable.aware = TRUE
       added_label_vector <- unlist(label_list) %>% stringr::str_to_lower()
@@ -688,14 +689,14 @@ generator_fasta_lm <- function(path_corpus,
                                                 batch_size = batch_size, start_index_list = start_index_list)
         if (add_input_as_seq[i]) {
           label_tensor_list[[i]] <- seq_encoding_label(as.vector(t(label_tensor_list[[i]])), nuc_dist = NULL,
-                                                         maxlen = ncol(label_tensor_list[[i]]), vocabulary = vocabulary, ambiguous_nuc = ambiguous_nuc,
-                                                         start_ind =  1 + ncol(label_tensor_list[[i]]) * (0:(nrow(label_tensor_list[[i]]) - 1)), use_quality = FALSE,
-                                                         quality_vector = list())
+                                                       maxlen = ncol(label_tensor_list[[i]]), vocabulary = vocabulary, ambiguous_nuc = ambiguous_nuc,
+                                                       start_ind =  1 + ncol(label_tensor_list[[i]]) * (0:(nrow(label_tensor_list[[i]]) - 1)), use_quality = FALSE,
+                                                       quality_vector = list())
         }
       }
     }
-
-
+    
+    
     # empty lists for next batch
     start_index_list <<- vector("list")
     sequence_list <<- vector("list")
@@ -707,7 +708,7 @@ generator_fasta_lm <- function(path_corpus,
     if (additional_labels) {
       label_list <<- vector("list")
     }
-
+    
     if (additional_labels) {
       if (length(x) == 2) {
         label_tensor_list[[length(label_tensor_list) + 1]] <- x[[1]]
@@ -718,20 +719,19 @@ generator_fasta_lm <- function(path_corpus,
         x <- label_tensor_list
       }
     }
-
+    
     if (!is.null(add_noise)) {
       noise_args <- c(add_noise, list(x = x))
       x <- do.call(add_noise_tensor, noise_args)
     }
-
+    
     return(list(X = x, Y = y))
   }
 }
 
-#' Custom generator for fasta files and label targets
+#' Data generator for fasta/fastq files and label targets
 #'
-#' @description
-#' \code{generator_fasta_label_header_csv} Iterates over folder containing fasta/fastq files and produces encoding of predictor sequences
+#' @description Iterates over folder containing fasta/fastq files and produces encoding of predictor sequences
 #' and target variables. Targets will be read from fasta headers or a separate csv file.
 #'
 #' @inheritParams generator_fasta_lm
@@ -804,7 +804,7 @@ generator_fasta_label_header_csv <- function(path_corpus,
                                              n_gram = NULL,
                                              n_gram_stride = 1,
                                              add_noise = NULL) {
-
+  
   if (is.null(use_coverage)) {
     use_coverage <- FALSE
     max_cov <- NULL
@@ -831,14 +831,18 @@ generator_fasta_label_header_csv <- function(path_corpus,
   start_index <- 1
   iter <- 1
   concat <- !is.null(concat_seq)
+  if (concat & is.null(target_from_csv)) {
+    stop("Cannot concatenate fasta sequences when reading label from header")
+  }
   additional_labels <- !is.null(added_label_path)
   seq_vector <- NULL
-
+  
   # adjust maxlen for n_gram
   if (!is.null(n_gram)) {
+    stop("n-gram encoding not implemented yet for classification")
     maxlen <- maxlen + n_gram - 1
   }
-
+  
   for (i in letters) {
     if (!(i %in% stringr::str_to_lower(vocabulary))) {
       amb_nuc_token <- i
@@ -848,20 +852,20 @@ generator_fasta_label_header_csv <- function(path_corpus,
   tokenizer_pred <- keras::fit_text_tokenizer(keras::text_tokenizer(char_level = TRUE, lower = TRUE, oov_token = "0"), c(vocabulary, amb_nuc_token))
   tokenizer_target <- keras::fit_text_tokenizer(keras::text_tokenizer(char_level = FALSE, lower = TRUE, filters = "\t\n"),
                                                 vocabulary_label)
-
+  
   fasta.files <-  list_fasta_files(path_corpus = path_corpus,
                                    format = format,
                                    file_filter = file_filter)
   num_files <- length(fasta.files)
-
+  
   if (sample_by_file_size) {
     shuffle_file_order <- FALSE
     file_prob <- file.info(fasta.files)$size/sum(file.info(fasta.files)$size)
   }
-
+  
   set.seed(seed)
   if (shuffle_file_order) fasta.files <- sample(fasta.files, replace = FALSE)
-
+  
   # target from csv
   if (!is.null(target_from_csv)) {
     .datatable.aware = TRUE
@@ -883,12 +887,12 @@ generator_fasta_label_header_csv <- function(path_corpus,
     } else {
       stop('file in target_from_csv must contain one column named "header" or "file"')
     }
-
+    
     # remove files without target label
     if (!added_label_by_header_target) {
       fasta.files <- fasta.files[basename(fasta.files) %in% output_label_csv$file]
     }
-
+    
     # if (!added_label_by_header_target) {
     #   fasta.file$Header <- rep(basename(fasta.files[file_index]), nrow(fasta.file))
     # }
@@ -900,24 +904,24 @@ generator_fasta_label_header_csv <- function(path_corpus,
       check_header_names(target_split = target_split, vocabulary_label = vocabulary_label)
     }
   }
-
+  
   # regular expression for chars outside vocabulary
   pattern <- paste0("[^", paste0(vocabulary, collapse = ""), "]")
-
+  
   while (length(seq_vector) == 0) {
-
+    
     # pre-load the first file
     fasta.file <- read_fasta_fastq(format = format, skip_amb_nuc =  skip_amb_nuc, file_index = file_index, pattern = pattern,
                                    shuffle_input = shuffle_input, proportion_entries = proportion_entries,
                                    reverse_complement = reverse_complement, fasta.files = fasta.files,
                                    vocabulary_label = vocabulary_label, filter_header = TRUE, target_from_csv = target_from_csv)
-
+    
     if (concat) {
       cov_vector <- get_coverage_concat(fasta.file = fasta.file, concat_seq = concat_seq)
       fasta.file <- data.frame(Header = basename(fasta.files[file_index]), Sequence = paste(fasta.file$Sequence, collapse = concat_seq),
                                stringsAsFactors = FALSE)
     }
-
+    
     # skip file that can't produce one sample
     if (!padding) {
       if (read_data) {
@@ -931,18 +935,18 @@ generator_fasta_label_header_csv <- function(path_corpus,
         if (file_index > length(fasta.files) || iter > max_iter) {
           stop("Can not extract enough samples, try reducing maxlen parameter")
         }
-
+        
         fasta.file <- read_fasta_fastq(format = format, skip_amb_nuc =  skip_amb_nuc, file_index = file_index, pattern = pattern,
                                        shuffle_input = shuffle_input, proportion_entries = proportion_entries,
                                        reverse_complement = reverse_complement, fasta.files = fasta.files,
                                        vocabulary_label = vocabulary_label, filter_header = TRUE, target_from_csv = target_from_csv)
-
+        
         if (concat) {
           cov_vector <- get_coverage_concat(fasta.file = fasta.file, concat_seq = concat_seq)
           fasta.file <- data.frame(Header = basename(fasta.files[file_index]), Sequence = paste(fasta.file$Sequence, collapse = concat_seq),
                                    stringsAsFactors = FALSE)
         }
-
+        
         if (read_data) {
           seq_too_short <- all(nchar(as.character(fasta.file$Sequence)) < (maxlen/2))
         } else {
@@ -960,7 +964,7 @@ generator_fasta_label_header_csv <- function(path_corpus,
                                        shuffle_input = shuffle_input, proportion_entries = proportion_entries,
                                        reverse_complement = reverse_complement, fasta.files = fasta.files,
                                        vocabulary_label = vocabulary_label, filter_header = TRUE, target_from_csv = target_from_csv)
-
+        
         if (concat) {
           cov_vector <- get_coverage_concat(fasta.file = fasta.file, concat_seq = concat_seq)
           fasta.file <- data.frame(Header = basename(fasta.files[file_index]), Sequence = paste(fasta.file$Sequence, collapse = concat_seq),
@@ -968,27 +972,27 @@ generator_fasta_label_header_csv <- function(path_corpus,
         }
       }
     }
-
+    
     if (use_coverage) {
       cov_vector <- get_coverage(fasta.file)
     }
-
+    
     # take random subset
     if (!is.null(proportion_per_seq)) {
       if (!read_data) {
         fasta_width <- nchar(fasta.file$Sequence)
-        sample_range <- floor(fasta_width - (proportion_per_seq * fasta_width))
-        start <- mapply(sample_range, FUN = sample, size = 1)
         perc_length <- floor(fasta_width * proportion_per_seq)
-        stop <- start + perc_length
+        sample_range <- fasta_width - perc_length + 1
+        start <- mapply(sample_range, FUN = sample, size = 1)
+        stop <- start + perc_length - 1
         seq_vector <- mapply(fasta.file$Sequence, FUN = substr, start = start, stop = stop)
         if (use_quality_score) {
           quality_scores <- mapply(fasta.file$Quality, FUN = substr, start = start, stop = stop)
         }
       } else {
-        sample_index <- sample(nrow(fasta.file), ceiling(proportion_per_seq * nrow(fasta.file)))
-        fasta.file <- fasta.file[sample_index,]
-        seq_vector <- fasta.file$Sequence
+        # sample_index <- sample(nrow(fasta.file), ceiling(proportion_per_seq * nrow(fasta.file)))
+        # fasta.file <- fasta.file[sample_index,]
+        # seq_vector <- fasta.file$Sequence
         if (use_quality_score) {
           quality_scores <- fasta.file$Quality
         }
@@ -999,12 +1003,12 @@ generator_fasta_label_header_csv <- function(path_corpus,
         quality_scores <- fasta.file$Quality
       }
     }
-
+    
     seq_vector <- stringr::str_to_lower(seq_vector)
     seq_vector <- stringr::str_replace_all(string = seq_vector, pattern = pattern, amb_nuc_token)
     length_vector <- nchar(seq_vector)
     label_vector <- trimws(stringr::str_to_lower(fasta.file$Header))
-
+    
     # label from csv
     if (!is.null(added_label_path)) {
       label_list <- list()
@@ -1021,7 +1025,7 @@ generator_fasta_label_header_csv <- function(path_corpus,
       #added_label_by_header <- ifelse(added_label_list[[1]]$col_name == "header", TRUE, FALSE)
       added_label_by_header <- FALSE
     }
-
+    
     # sequence vector collects strings until one batch can be created
     sequence_list <- vector("list")
     target_list <- vector("list")
@@ -1031,22 +1035,22 @@ generator_fasta_label_header_csv <- function(path_corpus,
     } else {
       quality_list <- vector("list")
     }
-
+    
     if (!use_coverage) {
       coverage_list <- NULL
     } else {
       coverage_list <- vector("list")
     }
-
+    
     if (!is.null(added_label_path)) {
       label_list <- vector("list")
     }
-
+    
     if (!is.null(target_from_csv)) {
       output_label_list <- vector("list")
     }
     sequence_list_index <- 1
-
+    
     # pad short sequences with zeros or discard
     short_seq_index <- which(length_vector < maxlen)
     if (padding) {
@@ -1070,40 +1074,40 @@ generator_fasta_label_header_csv <- function(path_corpus,
         }
       }
     }
-
+    
     nucSeq <- paste(seq_vector, collapse = "")
-
+    
     if (use_quality_score) {
       quality_vector <- paste(quality_scores, collapse = "") %>% quality_to_probability()
     } else {
       quality_vector <- NULL
     }
-
+    
     if (use_coverage) {
       cov_vector <- rep(cov_vector, times = nchar(seq_vector))
     } else {
       cov_vector <- NULL
     }
-
+    
     if (length(seq_vector) == 0) {
-
+      
       if(iter > max_iter) {
         stop('exceeded max_iter value, try reducing maxlen parameter')
         break
       }
       iter <- iter + 1
-
+      
       file_index <- file_index + 1
       start_index <- 1
-
+      
       if (file_index > length(fasta.files)) {
         if (shuffle_file_order) fasta.files <- sample(fasta.files, replace = FALSE)
         file_index <- 1
       }
     }
-
+    
   }
-
+  
   # vocabulary distribution
   nuc_dist_list <- vector("list")
   if (ambiguous_nuc == "empirical") {
@@ -1117,7 +1121,7 @@ generator_fasta_label_header_csv <- function(path_corpus,
   } else {
     nuc_dist <- 0
   }
-
+  
   startNewEntry <- cumsum(c(1, length_vector[-length(length_vector)]))
   if (!read_data) {
     start_indices <- get_start_ind(seq_vector = seq_vector, length_vector = length_vector, maxlen = maxlen, step = step,
@@ -1125,32 +1129,32 @@ generator_fasta_label_header_csv <- function(path_corpus,
   } else {
     start_indices <- startNewEntry
   }
-
+  
   # limit samples per file
   if (!is.null(max_samples) && length(start_indices) > max_samples) {
     max_samples_subsample <- sample(1:(length(start_indices) - max_samples + 1), 1)
     start_indices <- start_indices[max_samples_subsample:(max_samples_subsample + max_samples - 1)]
   }
-
+  
   nucSeq <- keras::texts_to_sequences(tokenizer_pred, nucSeq)[[1]] - 1
-
+  
   # use subset of files
   if (!is.null(file_limit) && (file_limit < length(fasta.files))) {
     fasta.files <- fasta.files[1:file_limit]
     num_files <- length(fasta.files)
   }
-
+  
   # log file
   if (!is.null(path_file_log)) {
     if (!endsWith(path_file_log, ".csv")) path_file_log <- paste0(path_file_log, ".csv")
     write.table(x = fasta.files[1], file = path_file_log, row.names = FALSE, col.names = FALSE)
   }
-
+  
   if (verbose) message("Initializing ...")
   rngstate <- .GlobalEnv$.Random.seed
-
+  
   function() {
-
+    
     .GlobalEnv$.Random.seed <- rngstate
     on.exit(rngstate <<- .GlobalEnv$.Random.seed)
     iter <- 1
@@ -1158,7 +1162,7 @@ generator_fasta_label_header_csv <- function(path_corpus,
     while(num_samples < batch_size) {
       # loop through sub-sequences/files until sequence of suitable length is found
       while((start_index > length(start_indices)) | length(start_indices) == 0) {
-
+        
         # go to next file
         if (sample_by_file_size) {
           file_index <<- sample(1:num_files, size = 1, prob = file_prob)
@@ -1166,25 +1170,25 @@ generator_fasta_label_header_csv <- function(path_corpus,
           file_index <<- file_index + 1
         }
         start_index <<- 1
-
+        
         if (file_index > length(fasta.files)) {
           if (shuffle_file_order) fasta.files <<- sample(fasta.files, replace = FALSE)
           file_index <<- 1
         }
-
+        
         # skip empty files
         while(TRUE) {
           fasta.file <- read_fasta_fastq(format = format, skip_amb_nuc =  skip_amb_nuc, file_index = file_index, pattern = pattern,
                                          shuffle_input = shuffle_input, proportion_entries = proportion_entries,
                                          reverse_complement = reverse_complement, fasta.files = fasta.files,
                                          vocabulary_label = vocabulary_label, filter_header = TRUE, target_from_csv = target_from_csv)
-
+          
           if (concat) {
             cov_vector <- get_coverage_concat(fasta.file = fasta.file, concat_seq = concat_seq)
             fasta.file <- data.frame(Header = basename(fasta.files[file_index]), Sequence = paste(fasta.file$Sequence, collapse = concat_seq),
                                      stringsAsFactors = FALSE)
           }
-
+          
           if(iter > max_iter) {
             stop('exceeded max_iter value, try reducing maxlen or skip_amb_nuc parameter')
             break
@@ -1197,27 +1201,27 @@ generator_fasta_label_header_csv <- function(path_corpus,
             file_index <<- 1
           }
         }
-
+        
         if (use_coverage) {
           cov_vector <<- get_coverage(fasta.file)
         }
-
+        
         # take random subset
         if (!is.null(proportion_per_seq)) {
           if (!read_data) {
             fasta_width <- nchar(fasta.file$Sequence)
-            sample_range <- floor(fasta_width - (proportion_per_seq * fasta_width))
-            start <- mapply(sample_range, FUN = sample, size = 1)
             perc_length <- floor(fasta_width * proportion_per_seq)
-            stop <- start + perc_length
+            sample_range <- fasta_width - perc_length + 1
+            start <- mapply(sample_range, FUN = sample, size = 1)
+            stop <- start + perc_length - 1
             seq_vector <- mapply(fasta.file$Sequence, FUN = substr, start = start, stop = stop)
             if (use_quality_score) {
               quality_scores <- mapply(fasta.file$Quality, FUN = substr, start = start, stop = stop)
             }
           } else {
-            sample_index <- sample(nrow(fasta.file), ceiling(proportion_per_seq * nrow(fasta.file)))
-            fasta.file <- fasta.file[sample_index,]
-            seq_vector <- fasta.file$Sequence
+            # sample_index <- sample(nrow(fasta.file), ceiling(proportion_per_seq * nrow(fasta.file)))
+            # fasta.file <- fasta.file[sample_index,]
+            # seq_vector <- fasta.file$Sequence
             if (use_quality_score) {
               quality_scores <- fasta.file$Quality
             }
@@ -1228,17 +1232,17 @@ generator_fasta_label_header_csv <- function(path_corpus,
             quality_scores <- fasta.file$Quality
           }
         }
-
+        
         seq_vector <- stringr::str_to_lower(seq_vector)
         seq_vector <- stringr::str_replace_all(string = seq_vector, pattern = pattern, amb_nuc_token)
         length_vector <- nchar(seq_vector)
         label_vector <- trimws(stringr::str_to_lower(fasta.file$Header))
-
+        
         # log file
         if (!is.null(path_file_log)) {
           write.table(x = fasta.files[file_index], file = path_file_log, append = TRUE, col.names = FALSE, row.names = FALSE)
         }
-
+        
         # pad short sequences with zeros or discard
         short_seq_index <<- which(length_vector < maxlen)
         if (padding) {
@@ -1262,30 +1266,30 @@ generator_fasta_label_header_csv <- function(path_corpus,
             }
           }
         }
-
+        
         label_vector <<- label_vector
         length_vector <<- length_vector
-
+        
         # skip empty file
         if (length(seq_vector) == 0) {
           start_indices <<- NULL
           next
         }
-
+        
         nucSeq <<- paste(seq_vector, collapse = "")
-
+        
         if (use_quality_score) {
           quality_vector <<- paste(quality_scores, collapse = "") %>% quality_to_probability()
         } else {
           quality_vector <<- NULL
         }
-
+        
         if (use_coverage) {
           cov_vector <<- rep(cov_vector, times = nchar(seq_vector))
         } else {
           cov_vector <<- NULL
         }
-
+        
         # vocabulary distribution
         if (ambiguous_nuc == "empirical") {
           nuc_table <<- table(stringr::str_split(nucSeq, ""))[vocabulary]
@@ -1296,7 +1300,7 @@ generator_fasta_label_header_csv <- function(path_corpus,
           nuc_dist_temp[is.na(nuc_dist)] <- 0
           nuc_dist <<- nuc_dist_temp
         }
-
+        
         startNewEntry <<- cumsum(c(1, length_vector[-length(length_vector)]))
         if (!read_data) {
           start_indices <<- get_start_ind(seq_vector = seq_vector, length_vector = length_vector, maxlen = maxlen, step = step,
@@ -1304,26 +1308,26 @@ generator_fasta_label_header_csv <- function(path_corpus,
         } else {
           start_indices <<- startNewEntry
         }
-
+        
         # limit samples per file
         if (!is.null(max_samples) && length(start_indices) > max_samples) {
           max_samples_subsample <- sample(1:(length(start_indices) - max_samples + 1), 1)
           start_indices <<- start_indices[max_samples_subsample:(max_samples_subsample + max_samples - 1)]
         }
-
+        
         nucSeq <<- keras::texts_to_sequences(tokenizer_pred, nucSeq)[[1]] - 1
-
+        
         if(iter > max_iter) {
           stop('exceeded max_iter value, try reducing maxlen parameter')
           break
         }
         iter <- iter + 1
       }
-
+      
       # go as far as possible in sequence or stop when enough samples are collected
       remainingSamples <- batch_size - num_samples
       end_index <- min(length(start_indices), start_index + remainingSamples  - 1)
-
+      
       subsetStartIndices <- start_indices[start_index:end_index]
       sequence_list[[sequence_list_index]] <- nucSeq[subsetStartIndices[1] : (subsetStartIndices[length(subsetStartIndices)] + maxlen - 1)]
       # collect targets
@@ -1332,7 +1336,7 @@ generator_fasta_label_header_csv <- function(path_corpus,
                                                                labels = label_vector, include.lowest = TRUE, right = FALSE))
       }
       nuc_dist_list[[sequence_list_index]] <- nuc_dist
-
+      
       if (!is.null(added_label_path)) {
         if (added_label_by_header) {
           label_list[[sequence_list_index]] <- as.character(cut(subsetStartIndices, breaks = c(startNewEntry, length(nucSeq)),
@@ -1341,7 +1345,7 @@ generator_fasta_label_header_csv <- function(path_corpus,
           label_list[[sequence_list_index]] <- basename(fasta.files[file_index])
         }
       }
-
+      
       if (!is.null(target_from_csv)) {
         if (added_label_by_header_target) {
           output_label_list[[sequence_list_index]] <- as.character(cut(subsetStartIndices, breaks = c(startNewEntry, length(nucSeq)),
@@ -1350,44 +1354,45 @@ generator_fasta_label_header_csv <- function(path_corpus,
           output_label_list[[sequence_list_index]] <- basename(fasta.files[file_index])
         }
       }
-
+      
       if (use_quality_score) {
         quality_list[[sequence_list_index]] <- quality_vector[subsetStartIndices[1] : (subsetStartIndices[length(subsetStartIndices)] + maxlen - 1)]
       }
-
+      
       if (use_coverage) {
         coverage_list[[sequence_list_index]] <- cov_vector[subsetStartIndices[1] : (subsetStartIndices[length(subsetStartIndices)] + maxlen - 1)]
       }
-
+      
       start_index_list[[sequence_list_index]] <- subsetStartIndices
       sequence_list_index <<- sequence_list_index + 1
       num_new_samples <- end_index - start_index + 1
       num_samples <- num_samples + num_new_samples
       start_index <<- end_index + 1
     }
-
+    
     # one hot encode strings collected in sequence_list and connect arrays
     array_x_list <- purrr::map(1:length(sequence_list), ~seq_encoding_label(sequence_list[[.x]], ambiguous_nuc = ambiguous_nuc,
-                                                                              maxlen = maxlen, vocabulary = vocabulary, nuc_dist = nuc_dist_list[[.x]],
-                                                                              start_ind =  start_index_list[[.x]], quality_vector = quality_list[[.x]],
-                                                                              use_quality = use_quality_score, cov_vector = coverage_list[[.x]],
-                                                                              use_coverage = use_coverage, max_cov = max_cov, n_gram = n_gram)
+                                                                            maxlen = maxlen, vocabulary = vocabulary, nuc_dist = nuc_dist_list[[.x]],
+                                                                            start_ind =  start_index_list[[.x]], quality_vector = quality_list[[.x]],
+                                                                            use_quality = use_quality_score, cov_vector = coverage_list[[.x]],
+                                                                            use_coverage = use_coverage, max_cov = max_cov, n_gram = n_gram, 
+                                                                            n_gram_stride = n_gram_stride)
     )
-
+    
     # one hot encode targets
     if (is.null(target_from_csv)) {
       target_int <- unlist(keras::texts_to_sequences(tokenizer_target, unlist(target_list))) - 1
       y  <- keras::to_categorical(target_int, num_classes = length(vocabulary_label))
     }
-
+    
     x <- array_x_list[[1]]
-
+    
     if (length(array_x_list) > 1) {
       for (i in 2:length(array_x_list)) {
         x <- abind::abind(x, array_x_list[[i]], along = 1)
       }
     }
-
+    
     if (additional_labels) {
       .datatable.aware = TRUE
       added_label_vector <- unlist(label_list) %>% stringr::str_to_lower()
@@ -1400,18 +1405,18 @@ generator_fasta_label_header_csv <- function(path_corpus,
                                                 batch_size = batch_size, start_index_list = start_index_list)
         if (add_input_as_seq[i]) {
           label_tensor_list[[i]] <- seq_encoding_label(as.vector(t(label_tensor_list[[i]])), nuc_dist = NULL,
-                                                         maxlen = ncol(label_tensor_list[[i]]), vocabulary = vocabulary, ambiguous_nuc = ambiguous_nuc,
-                                                         start_ind =  1 + ncol(label_tensor_list[[i]]) * (0:(nrow(label_tensor_list[[i]]) - 1)), use_quality = FALSE,
-                                                         quality_vector = list())
+                                                       maxlen = ncol(label_tensor_list[[i]]), vocabulary = vocabulary, ambiguous_nuc = ambiguous_nuc,
+                                                       start_ind =  1 + ncol(label_tensor_list[[i]]) * (0:(nrow(label_tensor_list[[i]]) - 1)), use_quality = FALSE,
+                                                       quality_vector = list())
         }
       }
     }
-
+    
     if (!is.null(target_from_csv)) {
       .datatable.aware = TRUE
       output_label_vector <- unlist(output_label_list) # %>% stringr::str_to_lower()
       target_tensor <- matrix(0, ncol = ncol(output_label_csv) - 1, nrow = batch_size, byrow = TRUE)
-
+      
       if (added_label_by_header_target) {
         header_unique <- unique(output_label_vector)
         for (i in header_unique) {
@@ -1429,7 +1434,7 @@ generator_fasta_label_header_csv <- function(path_corpus,
           output_label_from_csv <- output_label_csv[data.table(row_filter), -"file"]
           samples_per_file <- length(start_index_list[[i]])
           assign_rows <-  row_index:(row_index + samples_per_file - 1)
-
+          
           if (nrow(na.omit(output_label_from_csv)) > 0) {
             target_tensor[assign_rows, ] <- matrix(as.matrix(output_label_from_csv[1, ]),
                                                    nrow = samples_per_file, ncol = ncol(target_tensor), byrow = TRUE)
@@ -1439,12 +1444,12 @@ generator_fasta_label_header_csv <- function(path_corpus,
       }
       y <- target_tensor
     }
-
+    
     # coerce y type to matrix
     if (dim(x)[1] == 1) {
       dim(y) <- c(1, length(vocabulary_label))
     }
-
+    
     # empty sequence_list for next batch
     start_index_list <<- vector("list")
     sequence_list <<- vector("list")
@@ -1468,7 +1473,7 @@ generator_fasta_label_header_csv <- function(path_corpus,
       colnames(y) <- vocabulary_label
       y <- slice_tensor(tensor = y, target_split = target_split)
     }
-
+    
     if (!is.null(add_noise)) {
       noise_args <- c(add_noise, list(x = x))
       x <- do.call(add_noise_tensor, noise_args)
@@ -1479,16 +1484,15 @@ generator_fasta_label_header_csv <- function(path_corpus,
       x_2 <- array(x_1[ , (dim(x)[2]):1, 4:1], dim = dim(x))
       x <- list(x_1, x_2)
     }
-
+    
     return(list(X = x, Y = y))
   }
 }
 
-#' Custom generator for fasta files
+#' Data generator for fasta/fasta files
 #'
-#' @description
-#' \code{generator_fasta_label_folder} Iterates over folder containing .fasta files and produces one-hot-encoding of predictor sequences
-#' and target variables. Files in \code{path_corpus} should all belong to one class.
+#' @description Iterates over folder containing fasta/fastq files and produces encoding of predictor sequences
+#' and target variables. Files in \code{path_corpus} should all belong to one class.  
 #'
 #' @inheritParams generator_fasta_lm
 #' @param path_corpus Input directory where .fasta files are located or path to single file ending with .fasta or .fastq
@@ -1560,7 +1564,7 @@ generator_fasta_label_folder <- function(path_corpus,
                                          n_gram = NULL,
                                          n_gram_stride = 1,
                                          add_noise = NULL) {
-
+  
   n_gram <- NULL
   if (is.null(use_coverage)) {
     use_coverage <- FALSE
@@ -1586,7 +1590,7 @@ generator_fasta_label_folder <- function(path_corpus,
     stop("Using read data and skipping files at the same time not implemented yet")
   }
   additional_labels <- ifelse(is.null(added_label_path), FALSE, TRUE)
-
+  
   # need to declare variables before nameless function() corpus for indexing
   #path_corpus <- path_corpus
   batch_size <- batch_size
@@ -1600,17 +1604,18 @@ generator_fasta_label_folder <- function(path_corpus,
   reverse_complement <- reverse_complement
   ambiguous_nuc <- ambiguous_nuc
   proportion_per_seq <- proportion_per_seq
-
+  
   # adjust maxlen for n_gram
   if (!is.null(n_gram)) {
+    stop("n-gram encoding not implemented yet for classification")
     maxlen <- maxlen + n_gram - 1
   }
-
+  
   if (split_seq) {
     maxlen <- maxlen + 1
     len_input_1 <- floor(maxlen/2)
   }
-
+  
   discard_amb_nuc <- ifelse(ambiguous_nuc == "discard", TRUE, FALSE)
   vocabulary <- stringr::str_to_lower(vocabulary)
   start_index_list <- vector("list")
@@ -1620,7 +1625,7 @@ generator_fasta_label_folder <- function(path_corpus,
   iter <- 1
   concat <- !is.null(concat_seq)
   seq_vector <- NULL
-
+  
   for (i in letters) {
     if (!(i %in% stringr::str_to_lower(vocabulary))) {
       amb_nuc_token <- i
@@ -1628,41 +1633,41 @@ generator_fasta_label_folder <- function(path_corpus,
     }
   }
   tokenizer_pred <- keras::fit_text_tokenizer(keras::text_tokenizer(char_level = TRUE, lower = TRUE, oov_token = "0"), c(vocabulary, amb_nuc_token))
-
+  
   # get fasta files
   fasta.files <- list_fasta_files(path_corpus = path_corpus,
                                   format = format,
                                   file_filter = file_filter)
   num_files <- length(fasta.files)
-
+  
   if (sample_by_file_size) {
     shuffle_file_order <- FALSE
     file_prob <- file.info(fasta.files)$size/sum(file.info(fasta.files)$size)
   }
-
+  
   set.seed(seed)
   if (shuffle_file_order) fasta.files <- sample(fasta.files, replace = FALSE)
-
+  
   if (read_data) {
     contains_R1 <-  stringr::str_detect(fasta.files, "R1")
     fasta.files <- fasta.files[contains_R1]
   }
-
+  
   # regular expression for chars outside vocabulary
   pattern <- paste0("[^", paste0(vocabulary, collapse = ""), "]")
-
+  
   while (length(seq_vector) == 0) {
-
+    
     fasta.file <- read_fasta_fastq(format = format, skip_amb_nuc =  skip_amb_nuc, file_index = file_index, pattern = pattern,
                                    shuffle_input = shuffle_input, proportion_entries = proportion_entries,
                                    reverse_complement = reverse_complement, fasta.files = fasta.files)
-
+    
     if (concat) {
       cov_vector <- get_coverage_concat(fasta.file = fasta.file, concat_seq = concat_seq)
       fasta.file <- data.frame(Header = basename(fasta.files[file_index]), Sequence = paste(fasta.file$Sequence, collapse = concat_seq),
                                stringsAsFactors = FALSE)
     }
-
+    
     # skip file that can't produce one sample
     if (!padding) {
       if (read_data) {
@@ -1679,13 +1684,13 @@ generator_fasta_label_folder <- function(path_corpus,
         fasta.file <- read_fasta_fastq(format = format, skip_amb_nuc =  skip_amb_nuc, file_index = file_index, pattern = pattern,
                                        shuffle_input = shuffle_input, proportion_entries = proportion_entries,
                                        reverse_complement = reverse_complement, fasta.files = fasta.files)
-
+        
         if (concat) {
           cov_vector <- get_coverage_concat(fasta.file = fasta.file, concat_seq = concat_seq)
           fasta.file <- data.frame(Header = basename(fasta.files[file_index]), Sequence = paste(fasta.file$Sequence, collapse = concat_seq),
                                    stringsAsFactors = FALSE)
         }
-
+        
         if (read_data) {
           seq_too_short <- all(nchar(as.character(fasta.file$Sequence)) < (maxlen/2))
         } else {
@@ -1702,7 +1707,7 @@ generator_fasta_label_folder <- function(path_corpus,
         fasta.file <- read_fasta_fastq(format = format, skip_amb_nuc =  skip_amb_nuc, file_index = file_index, pattern = pattern,
                                        shuffle_input = shuffle_input, proportion_entries = proportion_entries,
                                        reverse_complement = reverse_complement, fasta.files = fasta.files)
-
+        
         if (concat) {
           cov_vector <- get_coverage_concat(fasta.file = fasta.file, concat_seq = concat_seq)
           fasta.file <- data.frame(Header = basename(fasta.files[file_index]), Sequence = paste(fasta.file$Sequence, collapse = concat_seq),
@@ -1710,11 +1715,11 @@ generator_fasta_label_folder <- function(path_corpus,
         }
       }
     }
-
+    
     if (use_coverage) {
       cov_vector <- get_coverage(fasta.file)
     }
-
+    
     # combine pairs to one string
     if (read_data) {
       second_read_path <- stringr::str_replace_all(fasta.files[file_index], pattern = "R1", replacement = "R2")
@@ -1728,23 +1733,23 @@ generator_fasta_label_folder <- function(path_corpus,
       df_2 <- as.data.frame(fasta.file_2)
       fasta.file <- data.frame(Sequence = paste0(df_1$Sequence, df_2$Sequence), Quality = paste0(df_1$Quality, df_2$Quality))
     }
-
+    
     # take random subset
     if (!is.null(proportion_per_seq)) {
       if (!read_data) {
         fasta_width <- nchar(fasta.file$Sequence)
-        sample_range <- floor(fasta_width - (proportion_per_seq * fasta_width))
-        start <- mapply(sample_range, FUN = sample, size = 1)
         perc_length <- floor(fasta_width * proportion_per_seq)
-        stop <- start + perc_length
+        sample_range <- fasta_width - perc_length + 1
+        start <- mapply(sample_range, FUN = sample, size = 1)
+        stop <- start + perc_length - 1
         seq_vector <- mapply(fasta.file$Sequence, FUN = substr, start = start, stop = stop)
         if (use_quality_score) {
           quality_scores <- mapply(fasta.file$Quality, FUN = substr, start = start, stop = stop)
         }
       } else {
-        sample_index <- sample(nrow(fasta.file), ceiling(proportion_per_seq * nrow(fasta.file)))
-        fasta.file <- fasta.file[sample_index,]
-        seq_vector <- fasta.file$Sequence
+        # sample_index <- sample(nrow(fasta.file), ceiling(proportion_per_seq * nrow(fasta.file)))
+        # fasta.file <- fasta.file[sample_index,]
+        # seq_vector <- fasta.file$Sequence
         if (use_quality_score) {
           quality_scores <- fasta.file$Quality
         }
@@ -1755,11 +1760,11 @@ generator_fasta_label_folder <- function(path_corpus,
         quality_scores <- fasta.file$Quality
       }
     }
-
+    
     seq_vector <- stringr::str_to_lower(seq_vector)
     seq_vector <- stringr::str_replace_all(string = seq_vector, pattern = pattern, amb_nuc_token)
     length_vector <- nchar(seq_vector)
-
+    
     # extra input from csv
     if (additional_labels) {
       label_list <- list()
@@ -1773,13 +1778,13 @@ generator_fasta_label_folder <- function(path_corpus,
       # added_label_by_header <- ifelse(added_label_list[[1]]$col_name == "header", TRUE, FALSE)
       added_label_by_header <- FALSE
     }
-
+    
     # sequence vector collects strings until one batch can be created
     sequence_list <- vector("list")
     target_list <- vector("list")
     quality_list <- vector("list")
     coverage_list <- vector("list")
-
+    
     if (!use_quality_score) {
       quality_list <- NULL
     }
@@ -1787,7 +1792,7 @@ generator_fasta_label_folder <- function(path_corpus,
       label_list <- vector("list")
     }
     sequence_list_index <- 1
-
+    
     # pad short sequences with zeros or discard
     short_seq_index <- which(length_vector < maxlen)
     if (padding) {
@@ -1813,40 +1818,40 @@ generator_fasta_label_folder <- function(path_corpus,
         }
       }
     }
-
+    
     if (length(seq_vector) == 0) {
-
+      
       if(iter > max_iter) {
         stop('exceeded max_iter value, try reducing maxlen parameter')
         break
       }
       iter <- iter + 1
-
+      
       file_index <- file_index + 1
       start_index <- 1
-
+      
       if (file_index > length(fasta.files)) {
         if (shuffle_file_order) fasta.files <- sample(fasta.files, replace = FALSE)
         file_index <- 1
       }
     }
-
+    
   }
-
+  
   nucSeq <- paste(seq_vector, collapse = "")
-
+  
   if (use_quality_score) {
     quality_vector <- paste(quality_scores, collapse = "") %>% quality_to_probability()
   } else {
     quality_vector <- NULL
   }
-
+  
   if (use_coverage) {
     cov_vector <- rep(cov_vector, times = nchar(seq_vector))
   } else {
     cov_vector <- NULL
   }
-
+  
   # vocabulary distribution
   nuc_dist_list <- vector("list")
   if (ambiguous_nuc == "empirical") {
@@ -1860,7 +1865,7 @@ generator_fasta_label_folder <- function(path_corpus,
   } else {
     nuc_dist <- 0
   }
-
+  
   startNewEntry <- cumsum(c(1, length_vector[-length(length_vector)]))
   if (!read_data) {
     start_indices <- get_start_ind(seq_vector = seq_vector, length_vector = length_vector, maxlen = maxlen, step = step,
@@ -1868,42 +1873,42 @@ generator_fasta_label_folder <- function(path_corpus,
   } else {
     start_indices <- startNewEntry
   }
-
+  
   # limit samples per file
   if (!is.null(max_samples) && length(start_indices) > max_samples) {
     max_samples_subsample <- sample(1:(length(start_indices) - max_samples + 1), 1)
     start_indices <- start_indices[max_samples_subsample:(max_samples_subsample + max_samples - 1)]
   }
-
+  
   nucSeq <- keras::texts_to_sequences(tokenizer_pred, nucSeq)[[1]] - 1
-
+  
   # use subset of files
   if (!is.null(file_limit) && (file_limit < length(fasta.files))) {
     fasta.files <- fasta.files[1:file_limit]
     num_files <- length(fasta.files)
   }
-
+  
   # log file
   if (!is.null(path_file_log)) {
     if (!endsWith(path_file_log, ".csv")) path_file_log <- paste0(path_file_log, ".csv")
     append <- file.exists(path_file_log)
     write.table(x = fasta.files[file_index], file = path_file_log, col.names = FALSE, row.names = FALSE, append = append)
   }
-
+  
   if (verbose) message("Initializing ...")
-
+  
   rngstate <- .GlobalEnv$.Random.seed
-
+  
   function() {
-
+    
     .GlobalEnv$.Random.seed <- rngstate
     on.exit(rngstate <<- .GlobalEnv$.Random.seed)
-
+    
     iter <- 1
-
+    
     # loop until enough samples collected
     while(num_samples < batch_size) {
-
+      
       # loop through sub-sequences/files until sequence of suitable length is found
       while((start_index > length(start_indices)) | length(start_indices) == 0) {
         # go to next file
@@ -1913,24 +1918,24 @@ generator_fasta_label_folder <- function(path_corpus,
           file_index <<- file_index + 1
         }
         start_index <<- 1
-
+        
         if (file_index > length(fasta.files)) {
           if (shuffle_file_order) fasta.files <<- sample(fasta.files, replace = FALSE)
           file_index <<- 1
         }
-
+        
         # skip empty files
         while(TRUE) {
           fasta.file <- read_fasta_fastq(format = format, skip_amb_nuc =  skip_amb_nuc, file_index = file_index, pattern = pattern,
                                          shuffle_input = shuffle_input, proportion_entries = proportion_entries,
                                          reverse_complement = reverse_complement, fasta.files = fasta.files)
-
+          
           if (concat) {
             cov_vector <- get_coverage_concat(fasta.file = fasta.file, concat_seq = concat_seq)
             fasta.file <- data.frame(Header = basename(fasta.files[file_index]), Sequence = paste(fasta.file$Sequence, collapse = concat_seq),
                                      stringsAsFactors = FALSE)
           }
-
+          
           if(iter > max_iter) {
             stop('exceeded max_iter value, try reducing maxlen or skip_amb_nuc parameter')
             break
@@ -1943,11 +1948,11 @@ generator_fasta_label_folder <- function(path_corpus,
             file_index <<- 1
           }
         }
-
+        
         if (use_coverage) {
           cov_vector <<- get_coverage(fasta.file)
         }
-
+        
         # combine pairs to one string
         if (read_data) {
           second_read_path <- stringr::str_replace_all(fasta.files[file_index], pattern = "R1", replacement = "R2")
@@ -1961,23 +1966,23 @@ generator_fasta_label_folder <- function(path_corpus,
           df_2 <- as.data.frame(fasta.file_2)
           fasta.file <- data.frame(Sequence = paste0(df_1$Sequence, df_2$Sequence), Quality = paste0(df_1$Quality, df_2$Quality))
         }
-
+        
         # take random subset
         if (!is.null(proportion_per_seq)) {
           if (!read_data) {
             fasta_width <- nchar(fasta.file$Sequence)
-            sample_range <- floor(fasta_width - (proportion_per_seq * fasta_width))
-            start <- mapply(sample_range, FUN = sample, size = 1)
             perc_length <- floor(fasta_width * proportion_per_seq)
-            stop <- start + perc_length
+            sample_range <- fasta_width - perc_length + 1
+            start <- mapply(sample_range, FUN = sample, size = 1)
+            stop <- start + perc_length - 1
             seq_vector <- mapply(fasta.file$Sequence, FUN = substr, start = start, stop = stop)
             if (use_quality_score) {
               quality_scores <- mapply(fasta.file$Quality, FUN = substr, start = start, stop = stop)
             }
           } else {
-            sample_index <- sample(nrow(fasta.file), ceiling(proportion_per_seq * nrow(fasta.file)))
-            fasta.file <- fasta.file[sample_index,]
-            seq_vector <- fasta.file$Sequence
+            # sample_index <- sample(nrow(fasta.file), ceiling(proportion_per_seq * nrow(fasta.file)))
+            # fasta.file <- fasta.file[sample_index,]
+            # seq_vector <- fasta.file$Sequence
             if (use_quality_score) {
               quality_scores <- fasta.file$Quality
             }
@@ -1988,17 +1993,17 @@ generator_fasta_label_folder <- function(path_corpus,
             quality_scores <- fasta.file$Quality
           }
         }
-
+        
         header_vector <<- fasta.file$Header
         seq_vector <- stringr::str_to_lower(seq_vector)
         seq_vector <- stringr::str_replace_all(string = seq_vector, pattern = pattern, amb_nuc_token)
         length_vector <- nchar(seq_vector)
-
+        
         # log file
         if (!is.null(path_file_log)) {
           write.table(x = fasta.files[file_index], file = path_file_log, append = TRUE, col.names = FALSE, row.names = FALSE)
         }
-
+        
         # pad short sequences with zeros or discard
         short_seq_index <<- which(length_vector < maxlen)
         if (padding) {
@@ -2025,13 +2030,13 @@ generator_fasta_label_folder <- function(path_corpus,
             }
           }
         }
-
+        
         # skip empty file
         if (length(seq_vector) == 0) {
           start_indices <<- NULL
           next
         }
-
+        
         nucSeq <<- paste(seq_vector, collapse = "")
         if (use_quality_score) {
           quality_vector <<- paste(quality_scores, collapse = "") %>% quality_to_probability()
@@ -2043,7 +2048,7 @@ generator_fasta_label_folder <- function(path_corpus,
         } else {
           cov_vector <<- NULL
         }
-
+        
         # vocabulary distribution
         if (ambiguous_nuc == "empirical") {
           nuc_table <<- table(stringr::str_split(nucSeq, ""))[vocabulary]
@@ -2054,7 +2059,7 @@ generator_fasta_label_folder <- function(path_corpus,
           nuc_dist_temp[is.na(nuc_dist)] <- 0
           nuc_dist <<- nuc_dist_temp
         }
-
+        
         startNewEntry <<- cumsum(c(1, length_vector[-length(length_vector)]))
         if (!read_data) {
           start_indices <<- get_start_ind(seq_vector = seq_vector, length_vector = length_vector, maxlen = maxlen, step = step,
@@ -2062,26 +2067,26 @@ generator_fasta_label_folder <- function(path_corpus,
         } else {
           start_indices <<- startNewEntry
         }
-
+        
         # limit samples per file
         if (!is.null(max_samples) && length(start_indices) > max_samples) {
           max_samples_subsample <- sample(1:(length(start_indices) - max_samples + 1), 1)
           start_indices <<- start_indices[max_samples_subsample:(max_samples_subsample + max_samples - 1)]
         }
-
+        
         nucSeq <<- keras::texts_to_sequences(tokenizer_pred, nucSeq)[[1]] - 1
-
+        
         if(iter > max_iter) {
           stop('exceeded max_iter value, try reducing maxlen parameter')
           break
         }
         iter <- iter + 1
       }
-
+      
       # go as far as possible in sequence or stop when enough samples are collected
       remainingSamples <- batch_size - num_samples
       end_index <- min(length(start_indices), start_index + remainingSamples  - 1)
-
+      
       subsetStartIndices <- start_indices[start_index:end_index]
       sequence_list[[sequence_list_index]] <- nucSeq[subsetStartIndices[1] : (subsetStartIndices[length(subsetStartIndices)] + maxlen - 1)]
       if (use_quality_score) {
@@ -2101,55 +2106,56 @@ generator_fasta_label_folder <- function(path_corpus,
         }
       }
       sequence_list_index <<- sequence_list_index + 1
-
+      
       num_new_samples <- end_index - start_index + 1
       num_samples <- num_samples + num_new_samples
       start_index <<- end_index + 1
     }
-
+    
     # one hot encode strings collected in sequence_list and connect arrays
     array_x_list <- purrr::map(1:length(sequence_list), ~seq_encoding_label(sequence = sequence_list[[.x]], ambiguous_nuc = ambiguous_nuc,
-                                                                              maxlen = maxlen, vocabulary = vocabulary, nuc_dist = nuc_dist_list[[.x]],
-                                                                              start_ind =  start_index_list[[.x]], use_quality = use_quality_score,
-                                                                              quality_vector = quality_list[[.x]], cov_vector = coverage_list[[.x]],
-                                                                              max_cov = max_cov, use_coverage = use_coverage, n_gram = n_gram)
+                                                                            maxlen = maxlen, vocabulary = vocabulary, nuc_dist = nuc_dist_list[[.x]],
+                                                                            start_ind =  start_index_list[[.x]], use_quality = use_quality_score,
+                                                                            quality_vector = quality_list[[.x]], cov_vector = coverage_list[[.x]],
+                                                                            max_cov = max_cov, use_coverage = use_coverage, n_gram = n_gram,
+                                                                            n_gram_stride = n_gram_stride)
     )
-
+    
     x <- array_x_list[[1]]
-
+    
     if (length(array_x_list) > 1) {
       for (i in 2:length(array_x_list)) {
         x <- abind::abind(x, array_x_list[[i]], along = 1)
       }
     }
-
+    
     # one hot encode targets
     y  <- matrix(0, ncol = num_targets, nrow = dim(x)[1])
     y[ , ones_column] <- 1
-
+    
     # coerce y type to matrix
     if (dim(x)[1] == 1) {
       dim(y) <- c(1, num_targets)
     }
-
+    
     if (reverse_complement_encoding){
       x_1 <- x
       x_2 <- array(x_1[ , (dim(x)[2]):1, 4:1], dim = dim(x))
       x <- list(x_1, x_2)
     }
-
+    
     if (split_seq) {
       x_1 <- array(x[ , 1:len_input_1, ], dim = c(batch_size, len_input_1, length(vocabulary)))
       x_2 <- array(x[ , maxlen : (len_input_1 + 2), ], dim = c(batch_size, (maxlen - len_input_1 - 1), length(vocabulary)))
     }
-
+    
     if (read_data) {
       input_dim <- dim(x)/c(1,2,1)
       x_1 <- array(x[ , 1:(maxlen/2), ], dim = input_dim)
       x_2 <- array(x[ , ((maxlen/2) + 1) : maxlen, ], dim = input_dim)
       x <- list(x_1, x_2)
     }
-
+    
     if (additional_labels) {
       .datatable.aware = TRUE
       added_label_vector <- unlist(label_list) %>% stringr::str_to_lower()
@@ -2162,13 +2168,13 @@ generator_fasta_label_folder <- function(path_corpus,
                                                 batch_size = batch_size, start_index_list = start_index_list)
         if (add_input_as_seq[i]) {
           label_tensor_list[[i]] <- seq_encoding_label(as.vector(t(label_tensor_list[[i]])), nuc_dist = NULL,
-                                                         maxlen = ncol(label_tensor_list[[i]]), vocabulary = vocabulary, ambiguous_nuc = ambiguous_nuc,
-                                                         start_ind =  1 + ncol(label_tensor_list[[i]]) * (0:(nrow(label_tensor_list[[i]]) - 1)), use_quality = FALSE,
-                                                         quality_vector = list())
+                                                       maxlen = ncol(label_tensor_list[[i]]), vocabulary = vocabulary, ambiguous_nuc = ambiguous_nuc,
+                                                       start_ind =  1 + ncol(label_tensor_list[[i]]) * (0:(nrow(label_tensor_list[[i]]) - 1)), use_quality = FALSE,
+                                                       quality_vector = list())
         }
       }
     }
-
+    
     # empty lists for next batch
     start_index_list <<- vector("list")
     sequence_list <<- vector("list")
@@ -2189,7 +2195,7 @@ generator_fasta_label_folder <- function(path_corpus,
         x <- label_tensor_list
       }
       return(list(X = x, Y = y))
-
+      
     } else {
       if (additional_labels) {
         if (length(x) == 2) {
@@ -2201,21 +2207,21 @@ generator_fasta_label_folder <- function(path_corpus,
           x <- label_tensor_list
         }
       }
-
+      
       if (!is.null(add_noise)) {
         noise_args <- c(add_noise, list(x = x))
         x <- do.call(add_noise_tensor, noise_args)
       }
-
+      
       return(list(X = x, Y = y))
     }
   }
 }
 
-#' Initializes generators defined by generator_fasta_label_folder function
+#' Initializes generators defined by \code{\link{generator_fasta_label_folder}} function
 #'
-#' \code{generator_initialize} Initializes generators defined by \code{\link{{generator_fasta_label_folder}} function. Targets get one-hot-encoded in order of directories.
-#' Number of classes is given by length of directories.
+#' \code{generator_initialize} Initializes generators defined by \code{\link{generator_fasta_label_folder}} function. Targets get encoded in order of directories.
+#' Number of classes is given by length of \code{directories}.
 #'
 #' @inheritParams generator_fasta_lm
 #' @param directories Vector of paths to folder containing fasta files. Files in one folder should belong to one class.
@@ -2282,7 +2288,7 @@ generator_initialize <- function(directories,
                                  n_gram = NULL,
                                  n_gram_stride = 1,
                                  add_noise = NULL) {
-
+  
   # adjust batch_size
   if (is.null(set_learning) & (length(batch_size) == 1) & (batch_size %% length(directories) != 0)) {
     batch_size <- ceiling(batch_size/length(directories)) * length(directories)
@@ -2290,13 +2296,45 @@ generator_initialize <- function(directories,
       message(paste("Batch size needs to be multiple of number of targets. Setting batch_size to", batch_size))
     }
   }
-
+  
   num_targets <- length(directories)
-
+  
+  if (!is.null(set_learning)) {
+    reshape_mode <- set_learning$reshape_mode
+    samples_per_target <- set_learning$samples_per_target
+    buffer_len <- set_learning$buffer_len
+    maxlen <- set_learning$maxlen
+    concat_maxlen <- NULL
+    
+    if (reshape_mode == "concat") {
+      
+      if (sum(batch_size) %% length(directories) != 0) {
+        stop_text <- paste("batch_size is", batch_size, "but needs to be multiple of number of classes (",
+                           length(directories), ") for set learning with 'concat'")
+        stop(stop_text)
+      }
+      buffer_len <- ifelse(is.null(set_learning$buffer_len), 0, set_learning$buffer_len)
+      concat_maxlen <- (maxlen * samples_per_target) + (buffer_len * (samples_per_target - 1))
+      if (any(c("z", "Z") %in% vocabulary) & !is.null(set_learning$buffer_len)) {
+        stop("'Z' is used as token for separating sequences and can not be in vocabulary.")
+      }
+      if (!is.null(set_learning$buffer_len)) {
+        vocabulary <- c(vocabulary, "Z")
+      }
+    }
+    
+    if (any(batch_size[1] != batch_size)) {
+      stop("Set learning only implemented for uniform batch_size for all classes.")
+    }
+    new_batch_size <- batch_size
+    batch_size <- samples_per_target * batch_size
+  }
+  
+  
   if (length(batch_size) == 1) {
     batch_size <- rep(batch_size/num_targets, num_targets)
   }
-
+  
   argg <- c(as.list(environment()))
   # variables with just one entry
   argg["directories"] <- NULL
@@ -2322,7 +2360,7 @@ generator_initialize <- function(directories,
   argg["n_gram"] <- NULL
   argg["n_gram_stride"] <- NULL
   argg[["add_noise"]] <- NULL
-
+  
   for (i in 1:length(argg)) {
     if (length(argg[[i]]) == 1) {
       assign(names(argg)[i], rep(argg[[i]], num_targets))
@@ -2332,7 +2370,7 @@ generator_initialize <- function(directories,
       stop(stop_message)
     }
   }
-
+  
   if (!val) {
     # create generator for every folder
     for (i in 1:length(directories)) {
@@ -2425,31 +2463,71 @@ generator_initialize <- function(directories,
 
 #' Generator wrapper
 #'
-#' Iterates over generators created by \code{\link{{generator_initialize}}
+#' Combines generators created by \code{\link{generator_initialize}} into a single generator.
 #'
+#' @inheritParams generator_fasta_label_folder
+#' @inheritParams train_model
+#' @inheritParams reshape_vector
 #' @param val Train or validation generator.
-#' @param path Path
+#' @param path Path to input files.
+#' @param new_batch_size Only applied if \code{set_learning} is not NULL
+#' @param voc_len Length of vocabulary.
 #' @export
 generator_fasta_label_folder_wrapper <- function(val, new_batch_size = NULL,
-                                                 samples_per_target = NULL, batch_size = NULL,
-                                                 path = NULL, voc_len = NULL, maxlen = NULL,
-                                                 reshape_mode = NULL,  buffer_len = NULL,
-                                                 concat_maxlen = NULL) {
-
-  if (is.null(buffer_len)) buffer_len <- 0
-  if (!is.null(samples_per_target)) {
-    if (is.null(concat_maxlen)) {
-      concat_maxlen <- (maxlen * samples_per_target) + (buffer_len * (samples_per_target - 1))
-    }
+                                                 batch_size = NULL,
+                                                 path = NULL, voc_len = NULL, 
+                                                 maxlen = NULL,
+                                                 set_learning = NULL) {
+  
+  if (is.null(set_learning)) {
+    samples_per_target <- NULL
+    new_batch_size <- NULL
+    reshape_mode <- NULL
+    buffer_len <- NULL
+  } else {
+    reshape_mode <- set_learning$reshape_mode
+    samples_per_target <- set_learning$samples_per_target
+    buffer_len <- set_learning$buffer_len
+    maxlen <- set_learning$maxlen
+    concat_maxlen <- NULL
+    
     if (reshape_mode == "concat") {
-      if (new_batch_size %% length(path) != 0) {
-        stop_text <- paste("batch_size is", new_batch_size, "but needs to be multiple of number of classes (",
+      
+      if (sum(batch_size) %% length(path) != 0) {
+        stop_text <- paste("batch_size is", batch_size, "but needs to be multiple of number of classes (",
                            length(path), ") for set learning with 'concat'")
         stop(stop_text)
       }
+      buffer_len <- ifelse(is.null(set_learning$buffer_len), 0, set_learning$buffer_len)
+      concat_maxlen <- (maxlen * samples_per_target) + (buffer_len * (samples_per_target - 1))
+      if (!is.null(set_learning$buffer_len)) {
+        vocabulary <- c(vocabulary, "Z")
+      }
+      
     }
+    
+    if (any(batch_size[1] != batch_size)) {
+      stop("Set learning only implemented for uniform batch_size for all classes.")
+    }
+    new_batch_size <- batch_size
+    batch_size <- samples_per_target * batch_size
   }
-
+  
+  
+  # if (is.null(buffer_len)) buffer_len <- 0
+  # if (!is.null(samples_per_target)) {
+  #   if (is.null(concat_maxlen)) {
+  #     concat_maxlen <- (maxlen * samples_per_target) + (buffer_len * (samples_per_target - 1))
+  #   }
+  #   if (reshape_mode == "concat") {
+  #     if (new_batch_size %% length(path) != 0) {
+  #       stop_text <- paste("batch_size is", new_batch_size, "but needs to be multiple of number of classes (",
+  #                          length(path), ") for set learning with 'concat'")
+  #       stop(stop_text)
+  #     }
+  #   }
+  # }
+  
   if (!val) {
     function() {
       directories <- path
@@ -2468,12 +2546,12 @@ generator_fasta_label_folder_wrapper <- function(val, new_batch_size = NULL,
           x_train_list[[i]] <- xTrain[[i]]
         }
       }
-
+      
       if (length(directories) > 1) {
         for (i in 2:length(directories)) {
           subBatchTrain <<- eval(parse(text = paste0("gen", as.character(i), "()")))
           yTrain <- rbind(yTrain, subBatchTrain[[2]])
-
+          
           if (num_inputs == 1) {
             xTrain <- abind::abind(xTrain, subBatchTrain[[1]], along = 1)
           } else {
@@ -2486,7 +2564,7 @@ generator_fasta_label_folder_wrapper <- function(val, new_batch_size = NULL,
       if (num_inputs > 1) {
         xTrain <- x_train_list
       }
-
+      
       if (!is.null(samples_per_target)) {
         l <- reshape_tensor(x = xTrain, y = yTrain,
                             new_batch_size = new_batch_size,
@@ -2502,7 +2580,7 @@ generator_fasta_label_folder_wrapper <- function(val, new_batch_size = NULL,
       } else {
         return(list(X = xTrain, Y = yTrain))
       }
-
+      
     }
   } else {
     function() {
@@ -2522,12 +2600,12 @@ generator_fasta_label_folder_wrapper <- function(val, new_batch_size = NULL,
           x_val_list[[i]] <- xVal[[i]]
         }
       }
-
+      
       if (length(directories) > 1) {
         for (i in 2:length(directories)) {
           subBatchVal <<- eval(parse(text = paste0("genVal", as.character(i), "()")))
           yVal <- rbind(yVal, subBatchVal[[2]])
-
+          
           if (num_inputs == 1) {
             xVal <- abind::abind(xVal, subBatchVal[[1]], along = 1)
           } else {
@@ -2559,12 +2637,14 @@ generator_fasta_label_folder_wrapper <- function(val, new_batch_size = NULL,
   }
 }
 
-#' creates random data
+#' Random data generator
+#' 
+#' Creates a random input/target list once and repeatedly returns list. 
 #'
 #' @param model A keras model.
 #' @export
-dummy_gen <- function(model, batch_size) {
-
+generator_dummy <- function(model, batch_size) {
+  
   num_input_layers <- ifelse(is.list(model$input), length(model$inputs), 1)
   x <- list()
   if (num_input_layers == 1) {
@@ -2574,7 +2654,7 @@ dummy_gen <- function(model, batch_size) {
     }
     x <- array(rnorm(n = prod(input_dim)), dim = input_dim)
   } else {
-
+    
     for (i in 1:num_input_layers) {
       input_dim <- batch_size
       input_list <- model$input_shape[[i]]
@@ -2584,7 +2664,7 @@ dummy_gen <- function(model, batch_size) {
       x[[i]] <- array(rnorm(n = prod(input_dim)), dim = input_dim)
     }
   }
-
+  
   num_output_layers <- ifelse(is.list(model$output), length(model$outputs), 1)
   y <- list()
   if (num_output_layers == 1) {
@@ -2594,8 +2674,8 @@ dummy_gen <- function(model, batch_size) {
     }
     y <- array(rnorm(n = prod(output_dim)), dim = output_dim)
   } else {
-
-
+    
+    
     for (i in 1:num_output_layers) {
       output_dim <- batch_size
       output_list <- model$output_shape[[i]]
@@ -2605,33 +2685,41 @@ dummy_gen <- function(model, batch_size) {
       y[[i]] <- array(rnorm(n = prod(output_dim)), dim = output_dim)
     }
   }
-
+  
   function() {
     return(list(x,y))
   }
 }
 
-#' Read batches from rds arrays.
-#'
+#' Rds data generator
+#' 
+#' Creates training batches from rds files. Rds files must contain a  
+#' list of length 2 (input/target) or of length 1 (for language model).
+#' If \code{target_len} is not NULL will take the last \code{target_len} entries of 
+#' the first list element as targets and the rest as input.    
+#' 
+#' @inheritParams generator_fasta_label_header_csv
 #' @param rds_folder Path to input files.
 #' @export
 generator_rds <- function(rds_folder, batch_size, path_file_log = NULL,
                           max_samples = NULL,
                           proportion_per_seq = NULL,
                           target_len = NULL,
+                          reverse_complement = FALSE,
                           sample_by_file_size = FALSE,
                           n_gram = NULL, n_gram_stride = 1,
                           add_noise = NULL) {
-
+  
+  
   is_lm <- !is.null(target_len)
-
+  
   if (!is.null(n_gram) & is_lm && (target_len < n_gram)) {
     stop("target_len needs to be at least as big as n_gram.")
   }
-
+  
   rds_files <- list_fasta_files(rds_folder, format = "rds", file_filter = NULL)
   num_files <- length(rds_files)
-
+  
   if (sample_by_file_size) {
     file_prob <- file.info(fasta.files)$size/sum(file.info(fasta.files)$size)
     file_index <- sample(1:num_files, size = 1, prob = file_prob)
@@ -2640,7 +2728,7 @@ generator_rds <- function(rds_folder, batch_size, path_file_log = NULL,
     rds_files <- sample(rds_files)
     file_index <- 1
   }
-
+  
   rds_file <- readRDS(rds_files[file_index])
   if (is.list(rds_file)) {
     x_complete <- rds_file[[1]]
@@ -2648,7 +2736,7 @@ generator_rds <- function(rds_folder, batch_size, path_file_log = NULL,
     x_complete <- rds_file
   }
   if (!is_lm) y_complete <- rds_file[[2]]
-
+  
   x_dim_start <- dim(x_complete)
   if (!is_lm) {
     y_dim_start <- dim(y_complete)
@@ -2657,24 +2745,24 @@ generator_rds <- function(rds_folder, batch_size, path_file_log = NULL,
     }
   }
   sample_index <- 1:x_dim_start[1]
-
+  
   if (!is.null(proportion_per_seq)) {
     sample_index <- sample(sample_index, min(length(sample_index), length(sample_index) * proportion_per_seq))
   }
-
+  
   if (!is.null(max_samples)) {
     sample_index <- sample(sample_index, min(length(sample_index), max_samples))
   }
-
+  
   if (!is.null(path_file_log)) {
     write.table(x = rds_files[1], file = path_file_log, row.names = FALSE, col.names = FALSE)
   }
-
+  
   x_dim <- x_dim_start
   if (!is_lm) y_dim <- y_dim_start
-
+  
   function() {
-
+    
     x_index <- 1
     x <- array(0, c(batch_size, x_dim[2:3]))
     if (is_lm) {
@@ -2682,15 +2770,15 @@ generator_rds <- function(rds_folder, batch_size, path_file_log = NULL,
     } else {
       y <- array(0, c(batch_size, y_dim[2]))
     }
-
+    
     while (x_index <= batch_size) {
-
+      
       # go to next file if sample index empty
       if (length(sample_index) == 0) {
         if (num_files == 1) {
           sample_index <<- 1:x_dim[1]
         } else {
-
+          
           if (sample_by_file_size) {
             file_index <<- sample(1:num_files, size = 1, prob = file_prob)
           } else {
@@ -2700,20 +2788,20 @@ generator_rds <- function(rds_folder, batch_size, path_file_log = NULL,
               rds_files <<- sample(rds_files)
             }
           }
-
+          
           rds_file <<- readRDS(rds_files[file_index])
           x_complete <<- rds_file[[1]]
           x_dim <<- dim(x_complete)
-
+          
           if (!is_lm) {
             y_complete <<- rds_file[[2]]
             y_dim <<- dim(y_complete)
           }
-
+          
           if (!is_lm && (x_dim[1] != y_dim[1])) {
             stop("Different number of samples for input and target")
           }
-
+          
           sample_index <<- 1:x_dim[1]
           if (!is.null(proportion_per_seq)) {
             if (length(sample_index) > 1) {
@@ -2726,13 +2814,13 @@ generator_rds <- function(rds_folder, batch_size, path_file_log = NULL,
             }
           }
         }
-
+        
         # log file
         if (!is.null(path_file_log)) {
           write.table(x = rds_files[file_index], file = path_file_log, append = TRUE, col.names = FALSE, row.names = FALSE)
         }
       }
-
+      
       if (length(sample_index) == 0) next
       if (length(sample_index) == 1) {
         index <- sample_index
@@ -2740,15 +2828,15 @@ generator_rds <- function(rds_folder, batch_size, path_file_log = NULL,
         index <- sample(sample_index, min(batch_size - x_index + 1, length(sample_index)))
       }
       x[x_index:(x_index + length(index) - 1), , ] <- x_complete[index, , ]
-
+      
       if (!is_lm) {
         y[x_index:(x_index + length(index) - 1), ] <- y_complete[index, ]
       }
-
+      
       x_index <- x_index + length(index)
       sample_index <<- setdiff(sample_index, index)
     }
-
+    
     if (is_lm) {
       for (m in 1:target_len) {
         if (batch_size == 1) {
@@ -2757,13 +2845,13 @@ generator_rds <- function(rds_folder, batch_size, path_file_log = NULL,
           y[[m]] <- x[ , x_dim[2] - target_len + m, ]
         }
       }
-
+      
       x <- x[ , 1:(x_dim[2] - target_len), ]
       if (batch_size == 1) {
         dim(x) <- c(1, dim(x))
       }
     }
-
+    
     if (!is.null(n_gram) & is_lm) {
       y <- do.call(rbind, y)
       y_list <- list()
@@ -2779,173 +2867,39 @@ generator_rds <- function(rds_folder, batch_size, path_file_log = NULL,
         if (batch_size == 1) y_subset <- matrix(y_subset, nrow = 1)
         y[[i]] <- y_subset
       }
-
+      
       if (is.list(y) & length(y) == 1) {
         y <- y[[1]]
       }
-
+      
       if (n_gram_stride > 1 & is.list(y)) {
         stride_index <- 0:(length(y)-1) %% n_gram_stride == 0
         y <- y[stride_index]
-
+        
       }
     }
-
+    
     if (!is.null(add_noise)) {
       noise_args <- c(add_noise, list(x = x))
       x <- do.call(add_noise_tensor, noise_args)
     }
-
+    
     return(list(x, y))
   }
 }
 
-## TODO: replace with generator_random
-# #' Collect samples from generator and store in rds file.
-# #'
-# #' Repeatedly take random sample from random files and combine samples. Files are sampled weighted by file size.
-# #'
-# #' @inheritParams generator_fasta_lm
-# #' @inheritParams generator_fasta_label_header_csv
-# #' @inheritParams generator_initialize
-# #' @inheritParams generator_fasta_label_folder_wrapper
-# #' @param output_path Where to store output rds file.
-# dataset_from_gen <- function(output_path,
-#                              num_samples = 1000,
-#                              train_type = "lm",
-#                              output_format = "target_right",
-#                              path,
-#                              format = "fasta",
-#                              maxlen = 250,
-#                              step = NULL,
-#                              vocabulary = c("a", "c", "g", "t"),
-#                              seed = 1234,
-#                              reverse_complement = FALSE,
-#                              ambiguous_nuc = "zeros",
-#                              use_quality_score = FALSE,
-#                              padding = FALSE,
-#                              added_label_path = NULL,
-#                              add_input_as_seq = NULL,
-#                              skip_amb_nuc = NULL,
-#                              concat_seq = NULL,
-#                              target_len = 1,
-#                              max_samples = 1,
-#                              use_coverage = FALSE,
-#                              reshape_mode = NULL,
-#                              set_learning = NULL) {
-#
-#   if (is.null(step)) step <- maxlen
-#   stopifnot(train_type %in% c("lm", "label_header", "label_folder", "label_csv"))
-#
-#   if (train_type == "lm") {
-#
-#     gen <- generator_fasta_lm(path_corpus = path,
-#                         format = format,
-#                         batch_size = num_samples,
-#                         maxlen = maxlen,
-#                         max_iter = 10000,
-#                         vocabulary = vocabulary,
-#                         verbose = FALSE,
-#                         shuffle_file_order = TRUE,
-#                         step = step,
-#                         seed = seed,
-#                         shuffle_input = TRUE,
-#                         file_limit = NULL,
-#                         path_file_log = NULL,
-#                         reverse_complement = reverse_complement,
-#                         output_format = output_format,
-#                         ambiguous_nuc = ambiguous_nuc,
-#                         use_quality_score = use_quality_score,
-#                         proportion_per_seq = NULL,
-#                         padding = padding,
-#                         added_label_path = added_label_path,
-#                         add_input_as_seq = add_input_as_seq,
-#                         skip_amb_nuc = skip_amb_nuc,
-#                         max_samples = max_samples,
-#                         concat_seq = concat_seq,
-#                         target_len = target_len,
-#                         file_filter = NULL,
-#                         use_coverage = FALSE,
-#                         proportion_entries = NULL,
-#                         sample_by_file_size = TRUE)
-#   }
-#
-#   if (train_type == "label_header" | train_type == "label_csv") {
-#
-#     gen <- generator_fasta_label_header_csv(path_corpus = path,
-#                                       format = format,
-#                                       batch_size = num_samples,
-#                                       maxlen = maxlen,
-#                                       max_iter = 10000,
-#                                       vocabulary = vocabulary,
-#                                       verbose = FALSE,
-#                                       shuffle_file_order = TRUE,
-#                                       step = step,
-#                                       seed = seed,
-#                                       shuffle_input = TRUE,
-#                                       file_limit = NULL,
-#                                       path_file_log = NULL,
-#                                       vocabulary_label = vocabulary_label,
-#                                       reverse_complement = reverse_complement,
-#                                       ambiguous_nuc = ambiguous_nuc,
-#                                       proportion_per_seq = NULL,
-#                                       read_data = FALSE,
-#                                       use_quality_score = use_quality_score,
-#                                       padding = padding,
-#                                       skip_amb_nuc = skip_amb_nuc,
-#                                       max_samples = max_samples,
-#                                       concat_seq = concat_seq,
-#                                       added_label_path = added_label_path,
-#                                       add_input_as_seq = add_input_as_seq,
-#                                       target_from_csv = target_from_csv,
-#                                       target_split = NULL,
-#                                       file_filter = NULL,
-#                                       use_coverage = use_coverage,
-#                                       proportion_entries = NULL,
-#                                       sample_by_file_size = TRUE)
-#   }
-#
-#   if (train_type == "label_folder") {
-#
-#     if (is.null(set_learning)) {
-#       samples_per_target <- NULL
-#       new_batch_size <- NULL
-#       reshape_mode <- NULL
-#     } else {
-#       reshape_mode <- set_learning$reshape_mode
-#       maxlen <- set_learning$maxlen
-#       samples_per_target <- set_learning$samples_per_target
-#       new_batch_size <- batch_size
-#       batch_size <- samples_per_target * batch_size
-#     }
-#
-#     generator_initialize(directories = path, format = format, batch_size = num_samples, maxlen = maxlen, vocabulary = vocabulary,
-#                           verbose = FALSE, shuffle_file_order = TRUE, step = step, seed = seed,
-#                           shuffle_input = TRUE, file_limit = NULL, skip_amb_nuc = skip_amb_nuc,
-#                           path_file_log = NULL, reverse_complement = reverse_complement, reverse_complement_encoding = FALSE,
-#                           val = FALSE, ambiguous_nuc = ambiguous_nuc,
-#                           proportion_per_seq = NULL, read_data = FALSE, use_quality_score = use_quality_score,
-#                           padding = padding, max_samples = max_samples, split_seq = FALSE, concat_seq = concat_seq,
-#                           added_label_path = added_label_path, add_input_as_seq = add_input_as_seq, use_coverage = use_coverage,
-#                           set_learning = set_learning, proportion_entries = NULL, sample_by_file_size = TRUE)
-#
-#     gen <- generator_fasta_label_folder_wrapper(val = FALSE, path = path, new_batch_size = new_batch_size,
-#                                           samples_per_target = samples_per_target,
-#                                           batch_size = batch_size, voc_len = length(vocabulary),
-#                                           maxlen = maxlen, reshape_mode = reshape_mode)
-#   }
-#
-#   tensor_list <- gen()
-#   saveRDS(tensor_list, file = output_path)
-# }
-
-#' Randomly select samples from fasta files.
+#' Randomly select samples from fasta files
+#' 
+#' Other generator like \code{\link{generator_fasta_lm}}, \code{\link{generator_fasta_label_header_csv}}
+#' or \code{\link{generator_fasta_label_folder}} will randomly choose a consecutive sequence of samples when
+#' a \code{max_samples} argument is supplied. \code{generator_random} will choose samples at random.
 #'
 #' @inheritParams generator_fasta_lm
 #' @inheritParams generator_fasta_label_header_csv
+#' @inheritParams train_model
 #' @export
 generator_random <- function(
-  train_mode = "label_folder",
+  train_type = "label_folder",
   output_format = NULL,
   seed = 123,
   format = "fasta",
@@ -2956,28 +2910,29 @@ generator_random <- function(
   ambiguous_nuc = "equal",
   padding = FALSE,
   vocabulary = c("a", "c", "g", "t"),
-  number_target_nt = NULL,
+  number_target_nt = 1,
   n_gram = NULL,
   n_gram_stride = NULL,
   sample_by_file_size = TRUE,
   max_samples = 1,
   skip_amb_nuc = NULL,
   vocabulary_label = NULL,
-  shuffle = FALSE,
-  as_numpy_array = FALSE,
   target_from_csv = NULL,
   target_split = NULL,
-  output_path = NULL,
   max_iter = 10000,
   verbose = TRUE,
+  set_learning = NULL,
+  shuffle_input = TRUE,
   reverse_complement_encoding = FALSE,
+  proportion_entries = NULL,
   concat_seq = NULL) {
-
-  path_len <- ifelse(train_mode != "label_folder", 1, length(path))
-
-  label_from_header <- ifelse(train_mode == "label_header", TRUE, FALSE)
-  label_from_csv <- ifelse(train_mode == "label_csv", TRUE, FALSE)
-
+  
+  path_len <- ifelse(train_type != "label_folder", 1, length(path))
+  vocabulary <- stringr::str_to_lower(vocabulary)
+  vocabulary_label <- stringr::str_to_lower(vocabulary_label)
+  label_from_header <- ifelse(train_type == "label_header", TRUE, FALSE)
+  label_from_csv <- ifelse(train_type == "label_csv", TRUE, FALSE)
+  
   if (ambiguous_nuc == "empirical") {
     stop("Empirical option not implemented for random sampling, only 'zero', 'equal' and 'discard'")
   }
@@ -2988,8 +2943,8 @@ generator_random <- function(
       stop("reverse_complement_encoding only implemented for A,C,G,T vocabulary yet")
     }
   }
-
-  if (length(batch_size) == 1 & (train_mode == "label_folder")) {
+  
+  if (length(batch_size) == 1 & (train_type == "label_folder")) {
     if ((batch_size %% path_len != 0)) {
       batch_size <- ceiling(batch_size/path_len) * path_len
       if (verbose) {
@@ -2998,32 +2953,74 @@ generator_random <- function(
     }
     batch_size <- rep(batch_size/path_len, path_len)
   }
-
+  
+  # if (length(batch_size) == 1) {
+  #   batch_size <- rep(batch_size/num_targets, path_len)
+  # }
+  
+  # set learning
+  if (is.null(set_learning)) {
+    samples_per_target <- NULL
+    new_batch_size <- NULL
+    reshape_mode <- NULL
+    buffer_len <- NULL
+  } else {
+    if (train_type != "label_folder") {
+      stop("train_type must be 'label_folder' when using set learning")
+    }
+    reshape_mode <- set_learning$reshape_mode
+    samples_per_target <- set_learning$samples_per_target
+    buffer_len <- set_learning$buffer_len
+    maxlen <- set_learning$maxlen
+    concat_maxlen <- NULL
+    
+    if (reshape_mode == "concat") {
+      if (sum(batch_size) %% length(path) != 0) {
+        stop_text <- paste("batch_size is", batch_size, "but needs to be multiple of number of classes (",
+                           length(path), ") for set learning with 'concat'")
+        stop(stop_text)
+      }
+      buffer_len <- ifelse(is.null(set_learning$buffer_len), 0, set_learning$buffer_len)
+      concat_maxlen <- (maxlen * samples_per_target) + (buffer_len * (samples_per_target - 1))
+      if (any(c("z", "Z") %in% vocabulary) & !is.null(set_learning$buffer_len)) {
+        stop("'Z' is used as token for separating sequences and can not be in vocabulary.")
+      }
+      if (!is.null(set_learning$buffer_len)) {
+        vocabulary <- c(vocabulary, "Z")
+      }
+      
+    }
+    
+    if (any(batch_size[1] != batch_size)) {
+      stop("Set learning only implemented for uniform batch_size for all classes.")
+    }
+    
+    new_batch_size <- batch_size
+    batch_size <- samples_per_target * batch_size
+  }
+  
   if (is.null(max_samples)) {
     stop("Please specify a max_samples argument when using random sampling")
   }
-
-  if (length(max_samples) == 1 & (train_mode == "label_folder")) {
+  
+  if (length(max_samples) == 1 & (train_type == "label_folder")) {
     max_samples <- rep(max_samples, path_len)
   }
-
-  # if (any(max_samples > batch_size)) {
-  #   message(paste("max_samples should not be bigger than batch_size when using random sampling, since generator opens a new file every batch"))
-  # }
-
+  
+  if (any(max_samples > batch_size)) {
+    message(paste("max_samples should not be bigger than batch_size when using random sampling, since generator opens a new file every batch"))
+  }
+  
   set.seed(seed)
+  if (train_type == "label_folder") stopifnot(length(vocabulary_label) == path_len)
   target_len <- number_target_nt
-  if (train_mode != "lm") {
+  if (train_type != "lm") {
+    number_target_nt <- NULL
+    if (!is.null(n_gram)) stop("n-gram encoding not implemented yet for classification")
     seq_len_total <- maxlen
-    stopifnot(length(vocabulary_label) == path_len)
   } else {
     stopifnot(output_format %in% c("target_right", "target_middle_lstm", "target_middle_cnn", "wavenet"))
-    wavenet_format <- FALSE; target_middle <- FALSE; cnn_format <- FALSE
-    if (output_format == "target_middle_lstm") target_middle <- TRUE
-    if (output_format == "target_middle_cnn") cnn_format <- TRUE
-    if (output_format == "wavenet") wavenet_format <- TRUE
-
-    if (train_mode == "lm") stopifnot(length(batch_size) == 1)
+    if (train_type == "lm") stopifnot(length(batch_size) == 1)
     if (is.null(n_gram_stride)) n_gram_stride <- 1
     stopifnot(number_target_nt %% n_gram_stride == 0)
     seq_len_total <- maxlen + number_target_nt
@@ -3037,15 +3034,11 @@ generator_random <- function(
       target_list[[k]] <- list()
     }
   }
-
+  
   count <- 1
   batch_number <- 1
   stop_gen <- FALSE
-  if (!is.null(output_path)) {
-    stopifnot(dir.exists(output_path))
-    store_format <- ifelse(as_numpy_array, "pickle", "rds")
-  }
-
+  
   # token for ambiguous nucleotides
   for (i in letters) {
     if (!(i %in% stringr::str_to_lower(vocabulary))) {
@@ -3059,13 +3052,33 @@ generator_random <- function(
     tokenizer_target <- keras::fit_text_tokenizer(keras::text_tokenizer(char_level = FALSE, lower = TRUE, filters = "\t\n"),
                                                   vocabulary_label)
   }
-  seq_list <- vector("list", sum(batch_size))
-
+  #seq_list <- vector("list", sum(batch_size))
+  seq_list <- vector("list", path_len)
+  
   fasta_files <- list()
   num_files <- list()
   file_prob <- list()
   start_ind <- list()
-
+  
+  for (i in 1:path_len) {
+    if (train_type == "label_folder") {
+      fasta_files[[i]] <- list_fasta_files(path[[i]], format, file_filter = NULL)
+    } else {
+      fasta_files[[i]] <- list_fasta_files(path, format, file_filter = NULL)
+    }
+    num_files[[i]] <- length(fasta_files[[i]])
+    start_ind[[i]] <- (0:(batch_size[[i]] - 1) * seq_len_total) + 1
+    if (sample_by_file_size) {
+      file_prob[[i]] <- file.info(fasta_files[[i]])$size/sum(file.info(fasta_files[[i]])$size)
+    } else {
+      file_prob <- NULL
+    }
+  }
+  
+  if (!sample_by_file_size & any(unlist(num_files) > 1)) {
+    message("It is adviced to use sample_by_file_size when using random sampling strategy.")
+  }
+  
   # target from csv
   if (label_from_csv) {
     .datatable.aware = TRUE
@@ -3076,46 +3089,40 @@ generator_random <- function(
     output_label_csv <- data.table::as.data.table(output_label_csv)
     stopifnot("file" %in% names(output_label_csv))
     data.table::setkey(output_label_csv, file)
-
+    
     # remove files without target label
-    fasta_files <- fasta.files[basename(fasta_files) %in% output_label_csv$file]
-
+    fasta_files[[1]] <- fasta_files[[1]][basename(fasta_files[[1]]) %in% output_label_csv$file]
+    
     vocabulary_label <- names(output_label_csv)
     vocabulary_label <- vocabulary_label[vocabulary_label != "header" & vocabulary_label != "file"]
     if (!is.null(target_split)) {
       check_header_names(target_split = target_split, vocabulary_label = vocabulary_label)
     }
   }
-
-
-  for (i in 1:path_len) {
-    fasta_files[[i]] <- list_fasta_files(path[[i]], format, file_filter = NULL)
-    num_files[[i]] <- length(fasta_files[[i]])
-    start_ind[[i]] <- (0:(batch_size[[i]] - 1) * seq_len_total) + 1
-    if (sample_by_file_size) {
-      file_prob[[i]] <- file.info(fasta_files[[i]])$size/sum(file.info(fasta_files[[i]])$size)
-    } else {
-      file_prob <- NULL
-    }
-  }
-
+  
   function() {
     for (p in 1:path_len) {
       remaining_samples <- batch_size[p]
       nuc_vector <- vector("character", remaining_samples)
       target_list <- list()
       target_count <- 1
-
+      
       while (remaining_samples > 0) {
-
+        
         nuc_seq <- ""
         length_vector <- 0
         iter <- 1
         while (all(length_vector < seq_len_total)) {
           file_index <- sample(1:num_files[[p]], size = 1, prob = file_prob[[p]])
           fasta_file <- read_fasta_fastq(format = format, skip_amb_nuc =  skip_amb_nuc, file_index = file_index, pattern = pattern,
-                                         shuffle_input = TRUE, proportion_entries = NULL,
+                                         shuffle_input = shuffle_input, proportion_entries = proportion_entries, vocabulary_label = vocabulary_label,
+                                         filter_header = ifelse(train_type == "label_header", TRUE, FALSE),
                                          reverse_complement = reverse_complement, fasta.files = fasta_files[[p]])
+          if (nrow(fasta_file) == 0) next
+          if (!is.null(concat_seq)) {
+            fasta_file <- data.frame(Header = "header", Sequence = paste(fasta_file$Sequence, collapse = stringr::str_to_lower(concat_seq)),
+                                     stringsAsFactors = FALSE)
+          }
           length_vector <- nchar(fasta_file$Sequence)
           if (!padding) {
             fasta_file <- fasta_file[length_vector >= seq_len_total, ]
@@ -3137,7 +3144,7 @@ generator_random <- function(
           }
           iter <- iter + 1
         }
-
+        
         sample_start <- get_start_ind(seq_vector = nuc_seq,
                                       length_vector = length_vector,
                                       maxlen = seq_len_total,
@@ -3145,63 +3152,63 @@ generator_random <- function(
                                       train_mode = "label",
                                       discard_amb_nuc = ifelse(ambiguous_nuc == "discard", TRUE, FALSE),
                                       vocabulary = vocabulary)
+        if (length(sample_start) == 0) next
         nuc_seq <- paste(nuc_seq, collapse = "")
         sample_start <- sample(sample_start, size = min(remaining_samples, max_samples[p], length(sample_start)))
         sample_end <- sample_start + seq_len_total - 1
         nuc_sample <- vector("list", length(sample_start))
         nuc_vector_start_index <- (batch_size[p] - remaining_samples + 1)
         nuc_vector_end_index <- nuc_vector_start_index + length(sample_start) - 1
-        nuc_vector[nuc_vector_start_index : nuc_vector_end_index] <- unlist(purrr::map(1:length(sample_start), ~substr(nuc_seq, sample_start[.x], sample_end[.x])))
+        nuc_vector[nuc_vector_start_index : nuc_vector_end_index] <- unlist(purrr::map(1:length(sample_start),
+                                                                                       ~substr(nuc_seq, sample_start[.x], sample_end[.x])))
         remaining_samples <- remaining_samples - length(sample_start)
-
-        if (target_from_csv) {
+        
+        if (label_from_csv) {
           file_row_name <- fasta_files[[p]][file_index] %>% basename
-          label_row <- output_label_csv[[.(file_row_name)]][ , -"file"]
+          label_row <- output_label_csv[.(file_row_name)][ , -"file"]
           label_matrix <- t(replicate(length(sample_start), label_row, simplify = TRUE))
           target_list[[target_count]] <- label_matrix
           target_count <- target_count + 1
         }
-
-        if (target_from_header) {
+        
+        if (label_from_header) {
           start_new_entry <- c(1, cumsum(length_vector))
           start_new_entry <- start_new_entry[-length(start_new_entry)]
-          as.character(cut(sample_start, breaks = c(start_new_entry, sum(length_vector)),
-                           labels = fasta_file$Header, include.lowest = TRUE, right = FALSE))
-          target_list[[target_count]] <- label_row[ , -"file"]
+          label_row <- as.character(cut(sample_start, breaks = c(start_new_entry, sum(length_vector)),
+                                        labels = fasta_file$Header, include.lowest = TRUE, right = FALSE))
+          target_list[[target_count]] <- label_row
           target_count <- target_count + 1
         }
-
+        
       }
-
+      
       nuc_vector <- paste(nuc_vector, collapse = "")
       nuc_vector <- stringr::str_to_lower(nuc_vector)
       nuc_vector <- stringr::str_replace_all(string = nuc_vector, pattern = pattern, amb_nuc_token)
       nuc_vector <- keras::texts_to_sequences(tokenizer, nuc_vector)[[1]] - 1
-
-      if (train_mode != "lm") {
+      
+      if (train_type != "lm") {
         one_hot_sample <- seq_encoding_label(sequence = nuc_vector,
-                                               maxlen = maxlen,
-                                               vocabulary = vocabulary,
-                                               start_ind = start_ind[[p]],
-                                               ambiguous_nuc = ambiguous_nuc, nuc_dist = NULL,
-                                               use_quality = FALSE, quality_vector = NULL, use_coverage = FALSE,
-                                               max_cov = NULL,
-                                               cov_vector = NULL, n_gram = NULL)
+                                             maxlen = maxlen,
+                                             vocabulary = vocabulary,
+                                             start_ind = start_ind[[p]],
+                                             ambiguous_nuc = ambiguous_nuc, nuc_dist = NULL,
+                                             use_quality = FALSE, quality_vector = NULL, use_coverage = FALSE,
+                                             max_cov = NULL, n_gram_stride = n_gram_stride,
+                                             cov_vector = NULL, n_gram = n_gram)
       } else {
         one_hot_sample <- seq_encoding_lm(sequence = nuc_vector,
-                                            maxlen = ifelse(target_len > 1, seq_len_total - 1, maxlen),
-                                            vocabulary = vocabulary,
-                                            start_ind = start_ind[[p]],
-                                            ambiguous_nuc = ambiguous_nuc,
-                                            cnn_format = cnn_format,
-                                            target_middle = target_middle,
-                                            wavenet_format = wavenet_format,
-                                            target_len = target_len,
-                                            n_gram = n_gram,
-                                            n_gram_stride = n_gram_stride)
+                                          maxlen = ifelse(target_len > 1, seq_len_total - 1, maxlen),
+                                          vocabulary = vocabulary,
+                                          start_ind = start_ind[[p]],
+                                          ambiguous_nuc = ambiguous_nuc,
+                                          target_len = target_len,
+                                          n_gram = n_gram,
+                                          n_gram_stride = n_gram_stride,
+                                          output_format = output_format)
       }
-
-      if (train_mode != "lm") {
+      
+      if (train_type != "lm") {
         seq_list[[p]] <- one_hot_sample
       } else {
         x <- one_hot_sample[[1]]
@@ -3215,8 +3222,8 @@ generator_random <- function(
         }
       }
     }
-
-    if (train_mode == "label_folder") {
+    
+    if (train_type == "label_folder") {
       x <- abind::abind(seq_list, along = 1)
       y_list <- list()
       for (i in 1:length(batch_size)) {
@@ -3232,303 +3239,227 @@ generator_random <- function(
       x_2 <- array(x_1[ , (dim(x)[2]):1, 4:1], dim = dim(x))
       x <- list(x_1, x_2)
     }
-
-    if (train_mode == "label_csv") {
-      y <- do.call(rbind, target_list)
+    
+    if (train_type == "label_csv") {
+      x <- one_hot_sample
+      y <- data.table::rbindlist(target_list) %>% as.matrix()
+      colnames(y) <- NULL
     }
-
-    if (train_mode == "label_header") {
+    
+    if (train_type == "label_header") {
+      x <- one_hot_sample
       target_int <- unlist(keras::texts_to_sequences(tokenizer_target, unlist(target_list))) - 1
       y  <- keras::to_categorical(target_int, num_classes = length(vocabulary_label))
     }
-
-    if (shuffle) {
-      shuffle_index <- sample(dim(x)[1])
-      x <- x[shuffle_index, , ]
-      if (!is.list(y)) {
-        y <- y[shuffle_index, ]
-        y <- reticulate::r_to_py(y)
-      } else {
-        for (i in 1:length(y)) {
-          y[[i]] <- reticulate::r_to_py(y[[i]][shuffle_index, ])
-        }
-      }
-    }
-
-    if (as_numpy_array) {
-      x <- reticulate::r_to_py(x)
-      if (!is.list(y)) {
-        y <- reticulate::r_to_py(y)
-      } else {
-        for (i in 1:length(y)) {
-          y[[i]] <- reticulate::r_to_py(y[[i]])
-        }
-      }
-    }
-
-    if (!is.null(output_path)) {
-      filename <- paste0(output_path, "/batch_", batch_number, ".", store_format)
-      if (store_format == "pickle") {
-        reticulate::py_save_object(object = list(x,y), filename = filename)
-      }
-      if (store_format == "rds") {
-        saveRDS(list(x,y), file = filename)
-      }
-    }
-
+    
     batch_number <<- batch_number + 1
-
-    return(list(x,y))
+    
+    if (!is.null(set_learning)) {
+      l <- reshape_tensor(x = x, y = y,
+                          new_batch_size = sum(new_batch_size),
+                          samples_per_target = samples_per_target,
+                          batch_size = sum(batch_size),
+                          path = path,
+                          voc_len = length(vocabulary),
+                          maxlen = maxlen,
+                          concat_maxlen = concat_maxlen,
+                          buffer_len = buffer_len,
+                          reshape_mode = reshape_mode)
+      return(l)
+    } else {
+      return(list(X = x, Y = y))
+    }
   }
 }
 
 
-get_generator <- function(path,
-                          path_val,
-                          batch_size,
-                          maxlen,
-                          step,
-                          shuffle_file_order,
-                          vocabulary,
-                          seed,
-                          proportion_entries,
-                          shuffle_input,
-                          format,
-                          path_file_log,
-                          reverse_complement,
-                          n_gram_stride,
-                          output_format,
-                          ambiguous_nuc,
-                          proportion_per_seq,
-                          skip_amb_nuc,
-                          use_quality_score,
-                          padding,
-                          n_gram,
-                          added_label_path,
-                          target_from_csv,
-                          add_input_as_seq,
-                          max_samples,
-                          concat_seq,
-                          target_len,
-                          file_filter,
-                          use_coverage,
-                          sample_by_file_size,
-                          add_noise,
-                          random_sampling,
+#' Wrapper for generator functions.
+#' 
+#' Will choose one of the generators from \code{\link{generator_fasta_lm}}, 
+#' \code{\link{generator_fasta_label_folder}}, \code{\link{generator_fasta_label_header_csv}}, 
+#' \code{\link{generator_rds}}, \code{\link{generator_random}} or 
+#' \code{\link{generator_fasta_lm}} according to the \code{train_type} and \code{random_samplings}
+#' arguments.
+#'
+#' @inheritParams generator_fasta_lm
+#' @inheritParams generator_fasta_label_folder
+#' @inheritParams generator_fasta_label_header_csv
+#' @inheritParams generator_rds
+#' @inheritParams generator_random
+#' @inheritParams generator_initialize
+#' @export
+get_generator <- function(path = NULL,
                           train_type,
-                          set_learning,
-                          file_limit,
-                          reverse_complement_encoding,
-                          read_data,
-                          split_seq,
-                          target_split,
-                          path_file_logVal,
-                          buffer_len,
-                          reshape_mode,
-                          samples_per_target,
-                          vocabulary_label,
-                          train_files,
-                          val_files,
-                          new_batch_size) {
-
+                          batch_size,
+                          maxlen = NULL,
+                          step = NULL,
+                          shuffle_file_order = FALSE,
+                          vocabulary = c("A", "C", "G", "T"),
+                          seed = 1,
+                          proportion_entries = NULL,
+                          shuffle_input = FALSE,
+                          format = "fasta",
+                          path_file_log = NULL,
+                          reverse_complement = FALSE,
+                          n_gram = NULL,
+                          n_gram_stride = NULL,
+                          output_format = "target_right",
+                          ambiguous_nuc = "zero",
+                          proportion_per_seq = NULL,
+                          skip_amb_nuc = NULL,
+                          use_quality_score = FALSE,
+                          padding = FALSE,
+                          added_label_path = NULL,
+                          target_from_csv = NULL,
+                          add_input_as_seq = NULL,
+                          max_samples = NULL,
+                          concat_seq = NULL,
+                          target_len = 1,
+                          file_filter = NULL,
+                          use_coverage = NULL,
+                          sample_by_file_size = FALSE,
+                          add_noise = NULL,
+                          random_sampling = FALSE,
+                          set_learning = NULL,
+                          file_limit = NULL,
+                          reverse_complement_encoding = FALSE,
+                          read_data = FALSE,
+                          split_seq = FALSE,
+                          target_split = NULL,
+                          path_file_logVal = NULL,
+                          # buffer_len = NULL,
+                          # reshape_mode = NULL,
+                          # samples_per_target = NULL,
+                          model = NULL,
+                          vocabulary_label = NULL,
+                          train_files = NULL,
+                          val_files = NULL,
+                          new_batch_size = NULL,
+                          val = FALSE) {
+  
   if (random_sampling) {
     if (use_quality_score) stop("use_quality_score not implemented for random sampling")
     if (read_data) stop("read_data not implemented for random sampling")
     if (!is.null(use_coverage)) stop("use_coverage not implemented for random sampling")
     if (!is.null(add_noise)) stop("add_noise not implemented for random sampling")
-    if (!is.null(set_learning)) stop("set_learning not implemented for random sampling")
-    # if (train_type != "lm" & train_type != "label_folder") {
-    #   stop("random_sampling only implemented for train_type 'lm' or 'label_folder'")
-    # }
   }
-
+  
+  # adjust batch size
+  if ((length(batch_size) == 1) & (batch_size %% length(path) != 0) & train_type == "label_folder") {
+    batch_size <- ceiling(batch_size/length(path)) * length(path)
+    if (!val) {
+      message(paste("Batch size needs to be multiple of number of targets. Setting batch_size to", batch_size))
+    }
+  }
+  
+  if (is.null(step)) step <- maxlen
+  
   if (train_type == "dummy_gen") {
-    gen <- dummy_gen(model, ifelse(is.null(set_learning), batch_size, new_batch_size))
-    gen.val <- dummy_gen(model, ifelse(is.null(set_learning), batch_size, new_batch_size))
+    gen <- generator_dummy(model, ifelse(is.null(set_learning), batch_size, new_batch_size))
     removeLog <- FALSE
   }
-
+  
   if (!is.null(added_label_path) & is.null(add_input_as_seq)) {
     add_input_as_seq <- rep(FALSE, length(added_label_path))
   }
-
-  if (train_type == "lm") {
-
-    if (random_sampling) {
-
-      gen <- generator_random(
-        train_mode = "lm",
-        output_format = output_format,
-        seed = seed[1],
-        format = format,
-        reverse_complement = TRUE,
-        path = path,
-        batch_size = batch_size,
-        maxlen = maxlen,
-        ambiguous_nuc = ambiguous_nuc,
-        padding = padding,
-        vocabulary = vocabulary,
-        number_target_nt = target_len,
-        target_split = target_split,
-        target_from_csv = target_from_csv,
-        n_gram = n_gram,
-        n_gram_stride = n_gram_stride,
-        sample_by_file_size = sample_by_file_size,
-        max_samples = max_samples,
-        skip_amb_nuc = skip_amb_nuc,
-        vocabulary_label = vocabulary_label,
-        shuffle = FALSE,
-        as_numpy_array = FALSE
-      )
-
-      gen.val <- generator_random(
-        train_mode = "lm",
-        output_format = output_format,
-        seed = seed[2],
-        format = format,
-        reverse_complement = TRUE,
-        path = path_val,
-        batch_size = batch_size,
-        maxlen = maxlen,
-        ambiguous_nuc = ambiguous_nuc,
-        padding = padding,
-        vocabulary = vocabulary,
-        number_target_nt = target_len,
-        target_split = target_split,
-        target_from_csv = target_from_csv,
-        n_gram = n_gram,
-        n_gram_stride = n_gram_stride,
-        sample_by_file_size = sample_by_file_size,
-        max_samples = max_samples,
-        skip_amb_nuc = skip_amb_nuc,
-        vocabulary_label = vocabulary_label,
-        shuffle = FALSE,
-        verbose = FALSE,
-        as_numpy_array = FALSE
-      )
-    } else {
-      # generator for training
-      gen <- generator_fasta_lm(path_corpus = path, batch_size = batch_size,
-                                maxlen = maxlen, step = step, shuffle_file_order = shuffle_file_order,
-                                vocabulary = vocabulary, seed = seed[1], proportion_entries = proportion_entries,
-                                shuffle_input = shuffle_input, format = format,
-                                path_file_log = path_file_log, reverse_complement = reverse_complement, n_gram_stride = n_gram_stride,
-                                output_format = output_format, ambiguous_nuc = ambiguous_nuc,
-                                proportion_per_seq = proportion_per_seq, skip_amb_nuc = skip_amb_nuc,
-                                use_quality_score = use_quality_score, padding = padding, n_gram = n_gram,
-                                added_label_path = added_label_path, add_input_as_seq = add_input_as_seq,
-                                max_samples = max_samples, concat_seq = concat_seq, target_len = target_len,
-                                file_filter = train_files, use_coverage = use_coverage,
-                                sample_by_file_size = sample_by_file_size, add_noise = add_noise)
-
-      # generator for validation
-      gen.val <- generator_fasta_lm(path_corpus = path_val, batch_size = batch_size,
-                                    maxlen = maxlen, step = step, shuffle_file_order = shuffle_file_order, n_gram_stride = n_gram_stride,
-                                    vocabulary = vocabulary, seed = seed[2], proportion_entries = proportion_entries,
-                                    shuffle_input = shuffle_input, format = format, n_gram = n_gram,
-                                    path_file_log = path_file_logVal, reverse_complement = reverse_complement, sample_by_file_size = sample_by_file_size,
-                                    output_format = output_format, skip_amb_nuc = skip_amb_nuc,
-                                    ambiguous_nuc = ambiguous_nuc, proportion_per_seq = proportion_per_seq,
-                                    use_quality_score = use_quality_score, padding = padding,
-                                    added_label_path = added_label_path, add_input_as_seq = add_input_as_seq,
-                                    max_samples = max_samples, concat_seq = concat_seq, target_len = target_len,
-                                    file_filter = val_files, use_coverage = use_coverage, add_noise = add_noise)
-    }
+  
+  # language model
+  if (train_type == "lm" & random_sampling) {
+    
+    gen <- generator_random(
+      train_type = "lm",
+      output_format = output_format,
+      seed = seed[1],
+      format = format,
+      reverse_complement = reverse_complement,
+      path = path,
+      batch_size = batch_size,
+      maxlen = maxlen,
+      ambiguous_nuc = ambiguous_nuc,
+      padding = padding,
+      vocabulary = vocabulary,
+      number_target_nt = target_len,
+      target_split = target_split,
+      target_from_csv = target_from_csv,
+      n_gram = n_gram,
+      n_gram_stride = n_gram_stride,
+      sample_by_file_size = sample_by_file_size,
+      max_samples = max_samples,
+      skip_amb_nuc = skip_amb_nuc,
+      vocabulary_label = vocabulary_label,
+      shuffle_input = shuffle_input,
+      proportion_entries = proportion_entries,
+      concat_seq = concat_seq)
+  } 
+  
+  if (train_type == "lm" & !random_sampling) {
+    
+    gen <- generator_fasta_lm(path_corpus = path, batch_size = batch_size,
+                              maxlen = maxlen, step = step, shuffle_file_order = shuffle_file_order,
+                              vocabulary = vocabulary, seed = seed[1], proportion_entries = proportion_entries,
+                              shuffle_input = shuffle_input, format = format, n_gram_stride = n_gram_stride,
+                              path_file_log = path_file_log, reverse_complement = reverse_complement, 
+                              output_format = output_format, ambiguous_nuc = ambiguous_nuc,
+                              proportion_per_seq = proportion_per_seq, skip_amb_nuc = skip_amb_nuc,
+                              use_quality_score = use_quality_score, padding = padding, n_gram = n_gram,
+                              added_label_path = added_label_path, add_input_as_seq = add_input_as_seq,
+                              max_samples = max_samples, concat_seq = concat_seq, target_len = target_len,
+                              file_filter = train_files, use_coverage = use_coverage,
+                              sample_by_file_size = sample_by_file_size, add_noise = add_noise)
   }
-
+  
   # label by folder
-  if (train_type == "label_folder") {
-
-    if (random_sampling) {
-      gen <- generator_random(
-        train_mode = "label_folder",
-        seed = seed[1],
-        format = format,
-        reverse_complement = TRUE,
-        path = path,
-        batch_size = batch_size,
-        maxlen = maxlen,
-        ambiguous_nuc = ambiguous_nuc,
-        padding = padding,
-        vocabulary = vocabulary,
-        number_target_nt = target_len,
-        n_gram = n_gram,
-        n_gram_stride = n_gram_stride,
-        sample_by_file_size = sample_by_file_size,
-        max_samples = max_samples,
-        skip_amb_nuc = skip_amb_nuc,
-        reverse_complement_encoding = reverse_complement_encoding,
-        vocabulary_label = vocabulary_label,
-        shuffle = FALSE,
-        as_numpy_array = FALSE
-      )
-
-      gen.val <- generator_random(
-        train_mode = "label_folder",
-        seed = seed[2],
-        format = format,
-        reverse_complement = TRUE,
-        path = path_val,
-        batch_size = batch_size,
-        maxlen = maxlen,
-        ambiguous_nuc = ambiguous_nuc,
-        padding = padding,
-        vocabulary = vocabulary,
-        number_target_nt = target_len,
-        n_gram = n_gram,
-        n_gram_stride = n_gram_stride,
-        sample_by_file_size = sample_by_file_size,
-        max_samples = max_samples,
-        skip_amb_nuc = skip_amb_nuc,
-        reverse_complement_encoding = reverse_complement_encoding,
-        vocabulary_label = vocabulary_label,
-        shuffle = FALSE,
-        verbose = FALSE,
-        as_numpy_array = FALSE
-      )
-    } else {
-      # initialize training generators
-      generator_initialize(directories = path, format = format, batch_size = batch_size, maxlen = maxlen, vocabulary = vocabulary,
-                           verbose = FALSE, shuffle_file_order = shuffle_file_order, step = step, seed = seed[1],
-                           shuffle_input = shuffle_input, file_limit = file_limit, skip_amb_nuc = skip_amb_nuc,
-                           path_file_log = path_file_log, reverse_complement = reverse_complement, reverse_complement_encoding = reverse_complement_encoding,
-                           ambiguous_nuc = ambiguous_nuc, proportion_per_seq = proportion_per_seq,
-                           read_data = read_data, use_quality_score = use_quality_score, val = FALSE,
-                           padding = padding, max_samples = max_samples, split_seq = split_seq, concat_seq = concat_seq,
-                           added_label_path = added_label_path, add_input_as_seq = add_input_as_seq, use_coverage = use_coverage,
-                           set_learning = set_learning, proportion_entries = proportion_entries,
-                           sample_by_file_size = sample_by_file_size, n_gram = n_gram, n_gram_stride = n_gram_stride,
-                           add_noise = add_noise)
-
-      # initialize validation generators
-      generator_initialize(directories = path_val, format = format, batch_size = batch_size, maxlen = maxlen,
-                           vocabulary = vocabulary, verbose = FALSE, shuffle_file_order = shuffle_file_order, step = step,
-                           seed = seed[2], shuffle_input = shuffle_input, skip_amb_nuc = skip_amb_nuc,
-                           file_limit = NULL, path_file_log = path_file_logVal, reverse_complement = reverse_complement,
-                           reverse_complement_encoding = reverse_complement_encoding, val = TRUE,
-                           ambiguous_nuc = ambiguous_nuc, proportion_per_seq = proportion_per_seq, read_data = read_data,
-                           use_quality_score = use_quality_score, padding = padding, max_samples = max_samples,
-                           split_seq = split_seq, concat_seq = concat_seq, added_label_path = added_label_path,
-                           add_input_as_seq = add_input_as_seq, use_coverage = use_coverage, set_learning = set_learning,
-                           proportion_entries = proportion_entries, sample_by_file_size = sample_by_file_size,
-                           n_gram = n_gram, n_gram_stride = n_gram_stride, add_noise = add_noise)
-
-      gen <- generator_fasta_label_folder_wrapper(val = FALSE, path = path,  new_batch_size = new_batch_size,
-                                                  samples_per_target = samples_per_target,
-                                                  batch_size = batch_size, voc_len = length(vocabulary),
-                                                  maxlen = maxlen, reshape_mode = reshape_mode,
-                                                  buffer_len = buffer_len)
-      gen.val <- generator_fasta_label_folder_wrapper(val = TRUE, path = path_val, new_batch_size = new_batch_size,
-                                                      samples_per_target = samples_per_target,
-                                                      batch_size = batch_size, voc_len = length(vocabulary),
-                                                      maxlen = maxlen, reshape_mode = reshape_mode,
-                                                      buffer_len = buffer_len)
-    }
+  if (train_type == "label_folder" & random_sampling) {
+    
+    gen <- generator_random(
+      train_type = "label_folder",
+      seed = seed[1],
+      format = format,
+      reverse_complement = reverse_complement,
+      path = path,
+      batch_size = batch_size,
+      maxlen = maxlen,
+      ambiguous_nuc = ambiguous_nuc,
+      padding = padding,
+      vocabulary = vocabulary,
+      number_target_nt = NULL,
+      n_gram = n_gram,
+      n_gram_stride = n_gram_stride,
+      sample_by_file_size = sample_by_file_size,
+      max_samples = max_samples,
+      skip_amb_nuc = skip_amb_nuc,
+      shuffle_input = shuffle_input,
+      set_learning = set_learning,
+      reverse_complement_encoding = reverse_complement_encoding,
+      vocabulary_label = vocabulary_label,
+      proportion_entries = proportion_entries,
+      concat_seq = concat_seq)
+  } 
+  
+  if (train_type == "label_folder" & !random_sampling) {
+    
+    generator_initialize(directories = path, format = format, batch_size = batch_size, maxlen = maxlen, vocabulary = vocabulary,
+                         verbose = FALSE, shuffle_file_order = shuffle_file_order, step = step, seed = seed[1],
+                         shuffle_input = shuffle_input, file_limit = file_limit, skip_amb_nuc = skip_amb_nuc,
+                         path_file_log = path_file_log, reverse_complement = reverse_complement,
+                         reverse_complement_encoding = reverse_complement_encoding,
+                         ambiguous_nuc = ambiguous_nuc, proportion_per_seq = proportion_per_seq,
+                         read_data = read_data, use_quality_score = use_quality_score, val = val,
+                         padding = padding, max_samples = max_samples, split_seq = split_seq, concat_seq = concat_seq,
+                         added_label_path = added_label_path, add_input_as_seq = add_input_as_seq, use_coverage = use_coverage,
+                         set_learning = set_learning, proportion_entries = proportion_entries,
+                         sample_by_file_size = sample_by_file_size, n_gram = n_gram, n_gram_stride = n_gram_stride,
+                         add_noise = add_noise)
+    
+    gen <- generator_fasta_label_folder_wrapper(val = val, path = path,  new_batch_size = new_batch_size,
+                                                batch_size = batch_size, voc_len = length(vocabulary),
+                                                maxlen = maxlen, set_learning = set_learning)
+    
   }
-
-  if (train_type == "label_csv" | train_type == "label_header") {
-
-    # generator for training
+  
+  
+  if ((train_type == "label_csv" | train_type == "label_header") & !random_sampling) {
+    
     gen <- generator_fasta_label_header_csv(path_corpus = path, format = format, batch_size = batch_size, maxlen = maxlen,
                                             vocabulary = vocabulary, verbose = FALSE, shuffle_file_order = shuffle_file_order, step = step,
                                             seed = seed[1], shuffle_input = shuffle_input,
@@ -3541,23 +3472,37 @@ get_generator <- function(path,
                                             use_coverage = use_coverage, proportion_entries = proportion_entries,
                                             sample_by_file_size = sample_by_file_size, n_gram = n_gram, n_gram_stride = n_gram_stride,
                                             add_noise = add_noise, reverse_complement_encoding = reverse_complement_encoding)
-
-    # generator for validation
-    gen.val <- generator_fasta_label_header_csv(path_corpus = path_val, format = format, batch_size = batch_size, maxlen = maxlen,
-                                                vocabulary = vocabulary, verbose = FALSE, shuffle_file_order = shuffle_file_order, step = step,
-                                                seed = seed[2], shuffle_input = shuffle_input,
-                                                path_file_log = path_file_logVal, vocabulary_label = vocabulary_label, reverse_complement = reverse_complement,
-                                                ambiguous_nuc = ambiguous_nuc, proportion_per_seq = proportion_per_seq,
-                                                added_label_path = added_label_path, add_input_as_seq = add_input_as_seq,
-                                                read_data = read_data, use_quality_score = use_quality_score, padding = padding,
-                                                skip_amb_nuc = skip_amb_nuc, max_samples = max_samples, concat_seq = concat_seq,
-                                                target_from_csv = target_from_csv, target_split = target_split, file_filter = val_files,
-                                                use_coverage = use_coverage, proportion_entries = proportion_entries,
-                                                sample_by_file_size = sample_by_file_size, n_gram = n_gram, n_gram_stride = n_gram_stride,
-                                                add_noise = add_noise, reverse_complement_encoding = reverse_complement_encoding)
-
   }
-
+  
+  if ((train_type == "label_csv" | train_type == "label_header") & random_sampling) {
+    
+    gen <- generator_random(
+      train_type = train_type, 
+      output_format = output_format,
+      seed = seed[1],
+      format = format,
+      reverse_complement = reverse_complement,
+      path = path,
+      batch_size = batch_size,
+      maxlen = maxlen,
+      ambiguous_nuc = ambiguous_nuc,
+      padding = padding,
+      vocabulary = vocabulary,
+      number_target_nt = NULL,
+      n_gram = n_gram,
+      n_gram_stride = n_gram_stride,
+      sample_by_file_size = sample_by_file_size,
+      max_samples = max_samples,
+      skip_amb_nuc = skip_amb_nuc,
+      vocabulary_label = vocabulary_label,
+      target_from_csv = target_from_csv,
+      target_split = target_split,
+      verbose = verbose,
+      shuffle_input = shuffle_input,
+      proportion_entries = proportion_entries,
+      concat_seq = concat_seq)
+  }
+  
   if (train_type %in% c("label_rds", "lm_rds")) {
     reverse_complement <- FALSE
     step <- 1
@@ -3566,12 +3511,98 @@ get_generator <- function(path,
                          max_samples = max_samples, proportion_per_seq = proportion_per_seq,
                          sample_by_file_size = sample_by_file_size, add_noise = add_noise,
                          target_len = target_len, n_gram = n_gram, n_gram_stride = n_gram_stride)
-    gen.val <- generator_rds(rds_folder = path_val, batch_size = batch_size,
-                             max_samples = max_samples, proportion_per_seq = proportion_per_seq,
-                             sample_by_file_size = sample_by_file_size, add_noise = add_noise,
-                             target_len = target_len, n_gram = n_gram, n_gram_stride = n_gram_stride)
-
+    
   }
+  
+  return(gen)
+  
+}
 
-  return(list(gen, gen.val))
+
+#' Collect samples from generator and store in rds or pickle file.
+#'
+#' Repeatedly generate samples with data generator and store output. Creates a separate rds or pickle file in \code{output_path} for each 
+#' batch.
+#'
+#' @inheritParams generator_fasta_lm
+#' @inheritParams generator_fasta_label_header_csv
+#' @inheritParams generator_initialize
+#' @inheritParams generator_fasta_label_folder_wrapper
+#' @param output_path Output directory. Output files will be named output_path + "batch_x" + ".rds" or ".pickle", where x is an index (from 1 to 
+#' \code{iterations}) and file ending depends on \code{as_numpy_array} argument.
+#' @param as_numpy_array Store output as list of numpy arrays if TRUE (otherwise as R array). 
+#' @param shuffle Whether to shuffle samples within each batch.
+#' @param ... further generator options.
+dataset_from_gen <- function(output_path,
+                             iterations = 1000,
+                             train_type = "lm",
+                             output_format = "target_right",
+                             path_corpus, 
+                             batch_size = 32,
+                             maxlen = 250,
+                             step = NULL,
+                             vocabulary = c("a", "c", "g", "t"),
+                             as_numpy_array = FALSE,
+                             shuffle = FALSE,
+                             set_learning = NULL,
+                             seed = NULL,
+                             random_sampling,
+                             ...) {
+  
+  stopifnot(train_type %in% c("lm", "label_header", "label_folder", "label_csv"))
+  store_format <- ifelse(as_numpy_array, "pickle", "rds")
+  
+  if (is.null(step)) step <- maxlen
+  if (is.null(seed)) seed <- sample(1:100000, 1)
+  
+  gen <- get_generator(path = path_corpus,
+                       val = FALSE,
+                       path_val = NULL,
+                       batch_size = batch_size,
+                       maxlen = maxlen,
+                       step = step,
+                       vocabulary = vocabulary,
+                       path_file_log = NULL,
+                       file_filter = NULL,
+                       train_type = train_type,
+                       set_learning = set_learning,
+                       path_file_logVal = NULL,
+                       train_files = NULL,
+                       val_files = NULL,
+                       ...)
+  
+  for (batch_number in 1:iterations) {
+    
+    z <- gen()
+    x <- z[[1]]
+    y <- z[[2]]
+    
+    if (shuffle) {
+      shuffle_index <- sample(dim(x)[1])
+      if (!is.list(y)) {
+        x <- x[shuffle_index, , ]
+      } else {
+        for (i in 1:length(x)) {
+          x[[i]] <- x[[i]][shuffle_index, , ]
+        }
+      }
+      if (!is.list(y)) {
+        y <- y[shuffle_index, ]
+      } else {
+        for (i in 1:length(y)) {
+          y[[i]] <- y[[i]][shuffle_index, ]
+        }
+      }
+    }
+    
+    filename <- paste0(output_path, "/batch_", batch_number, ".", store_format)
+    if (store_format == "pickle") {
+      reticulate::py_save_object(object = reticulate::r_to_py(list(x, y)), filename = filename)
+    }
+    if (store_format == "rds") {
+      saveRDS(list(x,y), file = filename)
+    }
+    
+  }  
+  
 }

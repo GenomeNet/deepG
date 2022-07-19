@@ -2,19 +2,16 @@
 % Please edit documentation in R/callbacks.R
 \name{noisy_loss_wrapper}
 \alias{noisy_loss_wrapper}
-\title{Custom loss function for label noise}
+\title{Loss function for label noise}
 \usage{
 noisy_loss_wrapper(noise_matrix)
 }
 \arguments{
-\item{inverted_noise_matrix}{Inverted matrix of probabilities.
-link: https://github.com/giorgiop/loss-correction/blob/15a79de3c67c31907733392085c333547c2f2b16/loss.py#L16-L21
+\item{noise_matrix}{Matrix of noise distribution.
 If first label contains 5% wrong labels and second label no noise, then
-m <- matrix(c(0.95, 0.05, 0, 1), nrow = 2, byrow = TRUE )
-inverted_noise_matrix <- solve(m)
-noisy_loss <- noisy_loss_wrapper(inverted_noise_matrix)
-To use as loss, add to compile call keras::compile(loss = noisy_loss, ...)}
+\code{noise_matrix <- matrix(c(0.95, 0.05, 0, 1), nrow = 2, byrow = TRUE)}.}
 }
 \description{
-Custom loss function for label noise
+Implements approach from https://arxiv.org/abs/1609.03683 and code from 
+https://github.com/giorgiop/loss-correction/blob/15a79de3c67c31907733392085c333547c2f2b16/loss.py#L16-L21
 }

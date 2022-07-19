@@ -16,3 +16,4 @@ early_stopping_cb(early_stopping_patience, early_stopping_time, by_time = TRUE)
 \description{
 Early stopping callback
 }
+\keyword{internal}

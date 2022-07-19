@@ -21,7 +21,7 @@ predict_model(
   output_type = "h5",
   path_model = NULL,
   mode = "lm",
-  target_middle = FALSE,
+  lm_format = "target_right",
   output_dir = NULL,
   format = "fasta",
   include_seq = TRUE,
@@ -68,8 +68,6 @@ padding beginning of sequence with 0-vectors.}
 \item{path_model}{Path to a pretrained model.}
 
 \item{mode}{Either "lm" for language model or "label" for label classification.}
-
-\item{target_middle}{Whether target to predict is in middle of sequence.}
 
 \item{output_dir}{Path to folder, where to write output.}
 

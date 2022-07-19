@@ -7,21 +7,36 @@
 generator_fasta_label_folder_wrapper(
   val,
   new_batch_size = NULL,
-  samples_per_target = NULL,
   batch_size = NULL,
   path = NULL,
   voc_len = NULL,
   maxlen = NULL,
-  reshape_mode = NULL,
-  buffer_len = NULL,
-  concat_maxlen = NULL
+  set_learning = NULL
 )
 }
 \arguments{
 \item{val}{Train or validation generator.}
 
-\item{path}{Path}
+\item{new_batch_size}{Only applied if \code{set_learning} is not NULL}
+
+\item{batch_size}{Number of batches.}
+
+\item{path}{Path to input files.}
+
+\item{voc_len}{Length of vocabulary.}
+
+\item{maxlen}{Length of predictor sequence.}
+
+\item{set_learning}{When you want to assign one label to set of samples. Only implemented for train_type = "label_folder".
+Input is a list with the following parameters
+(1) \code{samples_per_target}, how many samples to use for one target; (2) \code{maxlen} length of one sample
+(3) \code{reshape_mode} "time_dist", "multi_input" or "concat". If reshape_mode is "concat", there is an additional (4) \code{buffer_len}
+argmument. If reshape_mode is "multi_input", generator will produce samples_per_target separate inputs, each of length maxlen (model should have
+samples_per_target input layers). If reshape_mode is "time_dist", generator will produce a 4D input array. The dimensions correspond to
+(batch_size, samples_per_target, maxlen, length(vocabulary)). If reshape mode is "concat", generator will concatenate samples_per_target sequences
+of length maxlen to one long sequence; if buffer_len is an integer, the subsequences are interspaced with buffer_len rows. The input length is
+(maxlen \* samples_per_target) + buffer_len \* (samples_per_target - 1)}
 }
 \description{
-
+Combines generators created by \code{\link{generator_initialize}} into a single generator.
 }

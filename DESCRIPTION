@@ -28,7 +28,8 @@ Description: 'deepG' is a toolbox for training and applying deep learning models
   Applications include data preprocessing, model fitting, model evaluation, model optimization and inference.
   A few genomic datasets for testing are provided, as is the possibility to extract deep representations.
 License: AGPL-3 + file LICENSE
-URL: https://github.com/GenomeNet/deepG
+URL: https://github.com/GenomeNet/deepG,
+    https://genomenet.github.io/deepG/
 BugReports: https://github.com/GenomeNet/deepG/issues
 Depends:
     R (>= 3.5.0)
@@ -58,6 +59,6 @@ Imports:
     microseq
 Remotes: r-tensorflow/wavenet
 NeedsCompilation: yes
-RoxygenNote: 7.1.1
+RoxygenNote: 7.2.0
 Suggests: 
     testthat

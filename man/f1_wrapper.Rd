@@ -6,6 +6,9 @@
 \usage{
 f1_wrapper(num_targets = 2)
 }
+\arguments{
+\item{num_targets}{Size of model output.}
+}
 \description{
-F1 metric
+Compute F1 metric as additional score.
 }

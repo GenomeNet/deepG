@@ -2,7 +2,7 @@
 % Please edit documentation in R/generators.R
 \name{generator_initialize}
 \alias{generator_initialize}
-\title{Initializes generators defined by generator_fasta_label_folder function}
+\title{Initializes generators defined by \code{\link{generator_fasta_label_folder}} function}
 \usage{
 generator_initialize(
   directories,
@@ -125,5 +125,6 @@ optional arguments sd or mean if noise_type is "normal" (default is sd=1 and mea
 (default is min=0, max=1).}
 }
 \description{
-
+\code{generator_initialize} Initializes generators defined by \code{\link{generator_fasta_label_folder}} function. Targets get encoded in order of directories.
+Number of classes is given by length of \code{directories}.
 }

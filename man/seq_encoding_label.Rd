@@ -2,7 +2,7 @@
 % Please edit documentation in R/preprocess.R
 \name{seq_encoding_label}
 \alias{seq_encoding_label}
-\title{Encodes integer sequence.}
+\title{Encodes integer sequence for label classification.}
 \usage{
 seq_encoding_label(
   sequence,
@@ -39,5 +39,5 @@ if "equal" input is 1/length(vocabulary) x length(vocabulary). If "discard" samp
 \item{quality_vector}{Vector of quality probabilities.}
 }
 \description{
-
+Helper function for \code{\link{generator_fasta_label_header_csv}}, returns encoding for integer sequence.
 }

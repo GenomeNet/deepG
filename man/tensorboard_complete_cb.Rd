@@ -58,7 +58,8 @@ tensorboard_complete_cb(
 
 \item{path_tensorboard}{Path to path_tensorboard directory or NULL. If NULL, training not tracked on tensorboard.}
 
-\item{run_name}{Name of the run. Name will be used to identify output from callbacks.}
+\item{run_name}{Name of the run. Name will be used to identify output from callbacks. If NULL, will use date as run name. If name already present, will add "_2" to name
+or "_{x + 1}" if name ends with integer x.}
 
 \item{train_type}{Either "lm", "lm_rds" for language model; "label_header", "label_folder", "label_csv", "label_rds" for classification or "dummy_gen".
 Language model is trained to predict character in sequence.
@@ -129,3 +130,4 @@ will randomly select 5 entries.}
 \description{
 Tensorboard callback wrapper
 }
+\keyword{internal}

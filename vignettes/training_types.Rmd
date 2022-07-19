@@ -1,0 +1,284 @@
+---
+title: "Training Types"
+output:
+  html_document:
+    toc: true
+    toc_depth: 3
+---
+
+```{r, eval=FALSE, message=FALSE}
+devtools::install_github("GenomeNet/deepG")
+library(deepG)
+library(magrittr)
+```
+
+```{r, echo=FALSE, warning=FALSE, message=FALSE}
+devtools::load_all(path = "~/deepGdev")
+library(deepG)
+library(magrittr)
+```
+
+# Introduction
+
+The deepG library offers several options to extract input/target pairs from our data. We can differentiate between to main 
+approach: 
+* **Language model:** predict a character or several characters in a sequence.
+* **Label Classification:** map a label to a sequence.
+
+# Language model
+
+With language model, we mean a model that predicts a character in a sequence.
+The target can be at the end of the sequence, for example
+
+\texttt{ACGTCA}\texttt{\color{blue}G}
+
+or in the middle
+
+\texttt{ACG}\texttt{\color{blue}T}\texttt{CAG}
+
+We have several options to determine the output format of the data generator using the `output_format` argument 
+
+Assume a sequence \texttt{AACCGTA} and `maxlen = 6`. Output correspond as follows
+
+"target_right": X = \texttt{AACCGT}, Y = \texttt{A}
+
+"target_middle_lstm": X = (X_1 = \texttt{AAC}, X_2 = \texttt{ATG}), Y = \texttt{C} (note reversed order of X_2)
+
+"target_middle_cnn": X = \texttt{AACGTA}, Y = \texttt{C} 
+
+"wavenet": X = \texttt{AACCGT}, Y = \texttt{ACCGTA}
+
+
+## Create dummy data
+
+To test the different language model options, we create a simple dummy data set consisting of a repetition of the sequence "AAACCCGGGTTTAAACCC...". 
+
+```{r warning = FALSE}
+vocabulary <- c("A", "C", "G", "T")
+base_seq <- "AAACCCGGGTTT"
+full_seq <- rep(base_seq, 50) %>% paste(collapse = "")
+df <- data.frame(Header = "header", Sequence = full_seq)
+
+# create training fasta file
+train_dir <- tempfile()
+dir.create(train_dir)
+microseq::writeFasta(df, file.path(train_dir, "train_1.fasta"))
+# create validation fasta file (use same data as training)
+val_dir <- tempfile()
+dir.create(val_dir)
+microseq::writeFasta(df, file.path(val_dir, "val_1.fasta"))
+```
+
+
+## Predict next character
+
+Say we want to predict the next character in a sequence given the last 5 characters and our text consists of the letters \texttt{A,C,G,T}. First we have to create a model. We may use a model with 1 LSTM and 1 dense layer for predictions.   
+
+```{r warning = FALSE}
+model <- create_model_lstm_cnn(
+  maxlen = 5,
+  layer_lstm = c(8),
+  layer_dense = c(4),
+  learning_rate = 0.1,
+  vocabulary_size = 4 # text consists of A,C,G,T
+)
+```
+
+Next we have to specify the location of our training and validation data and the output format of the data generator    
+
+```{r warning = FALSE, message = FALSE}
+hist <- train_model(train_type = "lm", # running a language model 
+                    model = model,
+                    path = train_dir,
+                    path_val = val_dir,
+                    steps_per_epoch = 5, # use 5 batches per epoch
+                    train_val_ratio = 0.2, # use 20% of samples for validation compared to train
+                    batch_size = 16,
+                    epochs = 4, 
+                    output_format = "target_right" # predict target at end of sequence 
+)
+plot(hist)
+```
+
+## Predict character in middle of sequence 
+
+If we want to predict a character in the middle of a sequence and use LSTM layers, we should split our input into two layers. One layer handles the sequence 
+before and one the input after the target. If, for example 
+
+sequence: \texttt{ACCG}\texttt{\color{blue}{T}}\texttt{GGAA} 
+
+then first input corresponds to \texttt{ACCG} and second to \texttt{AAGG}. We may create a model with two input layers using the `create_model_cnn_lstm_target_middle`
+
+```{r warning = FALSE}
+model <- create_model_lstm_cnn_target_middle(
+  maxlen = 5,
+  layer_lstm = c(8),
+  layer_dense = c(4),
+  learning_rate = 0.1,
+  vocabulary_size = 4 # text consists of A,C,G,T
+)
+```
+
+The `train_model` call is identical to the previous model, except we have to change the output format of the generator by setting `output_format = "target_middle_lstm"`. This reverses the order of the sequence after the target.  
+
+```{r warning = FALSE, message = FALSE}
+hist <- train_model(train_type = "lm", # running a language model 
+                    model = model,
+                    path = train_dir,
+                    path_val = val_dir,
+                    steps_per_epoch = 5, # use 5 batches per epoch
+                    train_val_ratio = 0.2, # use 20% of samples for validation compared to train
+                    batch_size = 16,
+                    epochs = 4, 
+                    output_format = "target_middle_lstm" # predict target at end of sequence 
+)
+plot(hist)
+```
+
+
+# Label classification
+
+With label classification, we describe the task of mapping a label to a sequence. 
+For example: given the sequence \texttt{ACGACCG}, does the sequence belong to a viral or bacterial genome?
+
+deepG offers three options to map a label to a sequence 
+
+1. the label gets read from the fasta header
+
+2. files from every class are in seperate folders
+
+3. get label from csv file
+
+
+## Create dummy data
+
+To test label clasification, we create a simple dummy data set. One class consists of random sequences using just "A" and "C" and second class
+uses just "G" and "T".
+
+```{r warning = FALSE}
+# create training fasta files
+train_dir_1 <- tempfile()
+train_dir_2 <- tempfile()
+dir.create(train_dir_1)
+dir.create(train_dir_2)
+train_dir <- list(train_dir_1, train_dir_2)
+
+for (i in 1:2) {
+  if (i == 1) {
+    vocabulary <- c("A", "C")
+    header <- "label_1"
+    fasta_name_start <- "label_1_train_file"
+  } else {
+    vocabulary <- c("G", "T")
+    header <- "label_2"
+    fasta_name_start <- "label_1_train_file"
+  }
+  create_dummy_data(file_path = train_dir[[i]],
+                    num_files = 3,
+                    seq_length = 20, 
+                    num_seq = 5,
+                    header = header,
+                    fasta_name_start = fasta_name_start,
+                    vocabulary = vocabulary)
+}  
+
+# create validation fasta files
+val_dir_1 <- tempfile()
+val_dir_2 <- tempfile()
+dir.create(val_dir_1)
+dir.create(val_dir_2)
+val_dir <- list(val_dir_1, val_dir_2)
+for (i in 1:2) {
+  if (i == 1) {
+    vocabulary <- c("A", "C")
+    header <- "label_1"
+    fasta_name_start <- "label_1_val_file"
+  } else {
+    vocabulary <- c("G", "T")
+    header <- "label_2"
+    fasta_name_start <- "label_1_val_file"
+  }
+  create_dummy_data(file_path = val_dir[[i]],
+                    num_files = 3,
+                    seq_length = 20, 
+                    num_seq = 5,
+                    header = header,
+                    fasta_name_start = fasta_name_start,
+                    vocabulary = vocabulary)
+}  
+```
+
+### Label by folder
+
+In this appraoch, we put all data from one class into a separate folder. Say we want to classify if a sequence belongs to viral or bacterial genomen. Then
+we have to put all virus/bacteria files into their own folder. In this case the `path` and `path_val` arguments should be vectors, where each entry is the path to one class.    
+
+First we have to create a model. We may use a model with 1 LSTM and 1 dense layer for predictions. An input sequence has length 5.     
+
+```{r warning = FALSE}
+model <- create_model_lstm_cnn(
+  maxlen = 5,
+  layer_lstm = c(8),
+  learning_rate = 0.1,
+  layer_dense = c(2), # binary classification
+  vocabulary_size = 4 # text consists of A,C,G,T
+)
+```
+
+
+```{r warning = FALSE, message = FALSE}
+train_model(train_type = "label_folder", # reading label from folder  
+            model = model,
+            path = c(train_dir_1, # note that path has two entries 
+                     train_dir_2),
+            path_val = c(val_dir_1,
+                         val_dir_2),
+            steps_per_epoch = 5, # use 5 batches per epoch
+            train_val_ratio = 0.2, # use 20% of samples for validation compared to training 
+            batch_size = 8,
+            epochs = 2,
+            vocabulary_label = c("label_1", "label_2") # names of classes
+)
+```
+
+
+## Label by fasta header 
+
+The fasta headers in our dummy data have the names "label_1" or "label_2"
+
+```{r warning = FALSE, message = FALSE}
+files <- list.files(train_dir_1, full.names = TRUE)
+fasta_file <- microseq::readFasta(files[1])
+head(fasta_file)
+```
+
+```{r warning = FALSE, message = FALSE}
+train_model(train_type = "label_header", # reading label from fasta header  
+            model = model,
+            path = train_dir,
+            path_val = val_dir,
+            steps_per_epoch = 5, 
+            train_val_ratio = 0.2, 
+            batch_size = 8,
+            epochs = 2,
+            vocabulary_label = c("label_1", "label_2") # names of labels
+)
+```
+
+
+### Label from csv file
+
+
+```{r warning = FALSE, message = FALSE}
+## TODO
+# train_model(train_type = "label_csv", # reading label from fasta header  
+#             model = model,
+#             path = train_dir,
+#             path_val = val_dir,
+#             steps_per_epoch = 5, 
+#             train_val_ratio = 0.2, 
+#             batch_size = 8,
+#             epochs = 2,
+#             vocabulary_label = c("label_1", "label_2") # names of labels
+# )
+```

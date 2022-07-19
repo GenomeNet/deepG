@@ -16,3 +16,4 @@ interpolate_seq(m_steps = 50, baseline_type = "shuffle", input_seq)
 \description{
 Interpolation between baseline and prediction
 }
+\keyword{internal}

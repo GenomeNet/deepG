@@ -2,7 +2,7 @@
 % Please edit documentation in R/generators.R
 \name{generator_fasta_label_header_csv}
 \alias{generator_fasta_label_header_csv}
-\title{Custom generator for fasta files and label targets}
+\title{Data generator for fasta/fastq files and label targets}
 \usage{
 generator_fasta_label_header_csv(
   path_corpus,
@@ -44,7 +44,7 @@ generator_fasta_label_header_csv(
 }
 \arguments{
 \item{path_corpus}{Input directory where .fasta files are located or path to single file ending with .fasta or .fastq
-(as specified in format argument). Can also be a list of directories.}
+(as specified in format argument). Can also be a list of directories and/or files.}
 
 \item{format}{File format, either fasta or fastq.}
 
@@ -82,7 +82,7 @@ If "empirical" use nucleotide distribution of current file.}
 
 \item{proportion_per_seq}{Numerical value between 0 and 1. Proportion of possible samples to take from one file. Takes samples from random subsequence.}
 
-\item{read_data}{If true the first element of output is a list of length 2, each containing one part of paired read. Maxlen should be 2*length of one read.}
+\item{read_data}{If true the first element of input is a list of length 2, each containing one part of paired read. Maxlen should be 2*length of one read.}
 
 \item{use_quality_score}{Whether to use fastq qualitiy scores. If TRUE input is not one-hot-encoding but corresponds to probabilities.
 For example (0.97, 0.01, 0.01, 0.01) instead of (1, 0, 0, 0).}
@@ -132,6 +132,6 @@ A list of length 2. First element is a 3-dimensional tensor with dimensions (bat
 the predictor sequences. Second element is a matrix with dimensions (batch_size, length(vocabulary_label)), encoding the targets.
 }
 \description{
-\code{generator_fasta_label_header_csv} Iterates over folder containing fasta/fastq files and produces encoding of predictor sequences
+Iterates over folder containing fasta/fastq files and produces encoding of predictor sequences
 and target variables. Targets will be read from fasta headers or a separate csv file.
 }

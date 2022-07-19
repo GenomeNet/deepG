@@ -18,7 +18,7 @@ predict_model_by_entry(
   output_type = "h5",
   model = NULL,
   mode = "lm",
-  target_middle = FALSE,
+  lm_format = "target_right",
   format = "fasta",
   reverse_complement_encoding = FALSE,
   verbose = FALSE,
@@ -35,3 +35,4 @@ Removes layers (optional) from pretrained model and calculates states of fasta f
 h5 file for every fasta entry in fasta file. h5 files also contain the nucleotide sequence and positions of targets corresponding to states.
 Names of output files are: file_path + "Nr" + i + filename + output_type, where i is the number of the fasta entry.
 }
+\keyword{internal}

@@ -22,5 +22,6 @@ load_prediction(
 \item{get_seq}{Return nucleotide sequence if TRUE.}
 }
 \description{
-
+Reads rows from h5 file created by  \code{\link{predict_model}} function,
+rows correspond to position in sequence and columns to neurons.
 }

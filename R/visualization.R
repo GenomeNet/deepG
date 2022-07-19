@@ -3,6 +3,7 @@
 #' @param baseline_type Baseline sequence, either "zero" for all zeros or "shuffle" for random permutation of input_seq.
 #' @param m_steps Number of steps between baseline and original input.
 #' @param input_seq Input tensor.
+#' @keywords internal
 interpolate_seq <- function(m_steps = 50,
                             baseline_type = "shuffle",
                             input_seq) {
@@ -51,6 +52,7 @@ interpolate_seq <- function(m_steps = 50,
 #' @param model Model to compute gradient for.
 #' @param pred_stepwise Whether to do predictions with batch_size 1 rather than all at once. Can be used if
 #' input is too big to handle at once.
+#' @keywords internal
 compute_gradients <- function(input_tensor, target_class_idx, model, input_idx = NULL, pred_stepwise = FALSE) {
 
   # if (is.list(input_tensor)) {
@@ -94,8 +96,13 @@ integral_approximation <- function(gradients) {
   return(py$integrated_gradients)
 }
 
-#' Computes integrated gradients (https://www.tensorflow.org/tutorials/distribute/keras) for model and an input sequence.
+#' Compute integrated gradients 
+#' 
+#' Computes integrated gradients scores for model and an input sequence.
 #' This can be used to visualize what part of the input is import for the models decision.
+#' Code is R implementation of python code from here: https://www.tensorflow.org/tutorials/interpretability/integrated_gradients.
+#' Tensorflow implementation is based on this paper: https://arxiv.org/abs/1703.01365.
+#' 
 #' @param baseline_type Baseline sequence, either "zero" for all zeros or "shuffle" for random permutation of input_seq.
 #' @param m_steps Number of steps between baseline and original input.
 #' @param input_seq Input tensor.
@@ -105,6 +112,14 @@ integral_approximation <- function(gradients) {
 #' input is too big to handle at once. Only supported for single input layer.
 #' @param num_baseline_repeats Number of different baseline estimations if baseline_type is "shuffle" (estimate integrated
 #' gradient repeatedly for different shufflings). Final result is average of \code{num_baseline} single calculations.
+#' @examples 
+#' model <- create_model_lstm_cnn(layer_lstm = 8, layer_dense = 3, maxlen = 20, verbose = FALSE)
+#' random_seq <- sample(0:3, 20, replace = TRUE)
+#' input_seq <- array(keras::to_categorical(random_seq), dim = c(1, 20, 4))
+#' integrated_gradients(
+#'   input_seq = input_seq,
+#'   target_class_idx = 3,
+#'   model = model)
 #' @export
 integrated_gradients <- function(m_steps = 50,
                                  baseline_type = "zero",
@@ -198,6 +213,7 @@ integrated_gradients <- function(m_steps = 50,
 
 #' Compute gradients stepwise (one batch at a time)
 #'
+#' @keywords internal
 gradients_stepwise <- function(model = model, baseline_seq, target_class_idx,
                                input_idx = NULL) {
 
@@ -254,11 +270,24 @@ gradients_stepwise <- function(model = model, baseline_seq, target_class_idx,
 }
 
 
-#' Creates a heatmap from output of \code{integrated_gradients} function.
+#' Heatmap of integrated gradient scores
+#' 
+#' Creates a heatmap from output of \code{\link{integrated_gradients}} function.
 #'
 #' @param integrated_grads Output of \code{integrated_gradients} function
 #' @param input_seq Input sequence for model. Should be the same as \code{input_seq} input for corresponding
-#' \code{integrated_gradients} call that computed \code{integrated_grads} argument.
+#' \code{\link{integrated_gradients}} call that computedinput for \code{integrated_grads} argument.
+#' model <- create_model_lstm_cnn(layer_lstm = 8, layer_dense = 3, maxlen = 20)
+#' @examples 
+#' model <- create_model_lstm_cnn(layer_lstm = 8, layer_dense = 3, maxlen = 20, verbose = FALSE)
+#' random_seq <- sample(0:3, 20, replace = TRUE)
+#' input_seq <- array(keras::to_categorical(random_seq), dim = c(1, 20, 4))
+#' ig <- integrated_gradients(
+#'   input_seq = input_seq,
+#'   target_class_idx = 3,
+#'   model = model)
+#' heatmaps_integrated_grad(integrated_grads = ig,
+#'                          input_seq = input_seq)
 #' @export
 heatmaps_integrated_grad <- function(integrated_grads,
                                      input_seq) {

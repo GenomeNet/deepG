@@ -2,7 +2,7 @@
 % Please edit documentation in R/create_model.R
 \name{load_model_self_genomenet}
 \alias{load_model_self_genomenet}
-\title{Load pretrained self-genomenet model}
+\title{Load pretrained Genomenet model}
 \usage{
 load_model_self_genomenet(
   maxlen,

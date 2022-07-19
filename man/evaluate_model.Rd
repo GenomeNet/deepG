@@ -2,7 +2,7 @@
 % Please edit documentation in R/evaluation.R
 \name{evaluate_model}
 \alias{evaluate_model}
-\title{Evaluates a trained model on fasta/fastq or rds files}
+\title{Evaluates a trained model on fasta, fastq or rds files}
 \usage{
 evaluate_model(
   path_input,
@@ -27,6 +27,7 @@ evaluate_model(
   seed = 1234,
   auc = FALSE,
   auprc = FALSE,
+  path_pred_list = NULL,
   exact_num_samples = NULL,
   ...
 )
@@ -42,7 +43,7 @@ evaluate_model(
 
 \item{padding}{Whether to pad sequences too short for one sample with zeros.}
 
-\item{vocabulary}{Vector of allowed characters, character outside vocabulary get encoded as specified in ambiguous_nuc.}
+\item{vocabulary}{Vector of allowed characters. Character outside vocabulary get encoded as specified in ambiguous_nuc.}
 
 \item{vocabulary_label}{List of labels for targets of each output layer.}
 
@@ -50,7 +51,7 @@ evaluate_model(
 
 \item{format}{File format, "fasta", "fastq" or "rds".}
 
-\item{mode}{Either "lm" for language model and "label_header", "label_csv" or "label_folder" for label classification.}
+\item{mode}{Either "lm" for language model or "label_header", "label_csv" or "label_folder" for label classification.}
 
 \item{output_format}{Determines shape of output tensor for language model.
 Either "target_right", "target_middle_lstm", "target_middle_cnn" or "wavenet".
@@ -79,9 +80,13 @@ subset of \code{max_samples} samples.}
 
 \item{seed}{Sets seed for set.seed function, for reproducible results when using \code{shuffle_file_order} or \code{shuffle_input}}
 
-\item{auc}{Whether to include AUC metric. Only possible for 2 targets if layer activation is "softmax".}
+\item{auc}{Whether to include AUC metric. If output layer activation is "softmax", only possible for 2 targets. Computes the average if output layer has sigmoid
+activation and multiple targets.}
 
-\item{auprc}{Whether to include AUPRC metric. Only possible for 2 targets if layer activation is "softmax".}
+\item{auprc}{Whether to include AUPRC metric. If output layer activation is "softmax", only possible for 2 targets. Computes the average if output layer has sigmoid
+activation and multiple targets.}
+
+\item{path_pred_list}{Path to store list of predictions (output of output layers) and corresponding true labels.}
 
 \item{exact_num_samples}{Exact number of samples to evaluate. If you want to evaluate a number of samples not devisible by batch_size. Useful if you want
 to evaluate a data set exactly ones and know the number of samples already. Should be a vector if mode = "label_folder" (with same length as vocabulary_label)
@@ -92,4 +97,26 @@ and else an integer.}
 \description{
 Returns evaluation metric like confusion matrix, loss, AUC, AUPRC, MAE, MSE (depending and output layer).
 Evaluates \code{batch_size} * \code{number_batches} samples.
+}
+\examples{
+# create dummy data
+path_input <- tempfile()
+dir.create(path_input)
+create_dummy_data(file_path = path_input,
+                  num_files = 3,
+                  seq_length = 11, 
+                  num_seq = 5,
+                  vocabulary = c("a", "c", "g", "t"))
+# create model
+model <- create_model_lstm_cnn(layer_lstm = 8, layer_dense = 4, maxlen = 10, verbose = FALSE)
+# evaluate
+evaluate_model(path_input = path_input,
+  model = model,
+  step = 11,
+  vocabulary = c("a", "c", "g", "t"),
+  vocabulary_label = list(c("a", "c", "g", "t")),
+  mode = "lm",
+  output_format = "target_right",
+  evaluate_all_files = TRUE,
+  verbose = FALSE)
 }

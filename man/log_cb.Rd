@@ -14,3 +14,4 @@ log_cb(path_log, run_name)
 \description{
 Log callback
 }
+\keyword{internal}

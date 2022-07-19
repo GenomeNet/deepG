@@ -13,5 +13,16 @@ reshape_input(model, input_shape)
 }
 \description{
 Replace first layer of model with new input layer of different shape. Only works for sequential models that
-uses CNN and LSTM layers.
+use CNN and LSTM layers.
+}
+\examples{
+model_1 <-  create_model_lstm_cnn(
+  maxlen = 50,
+  kernel_size = c(10, 10),
+  filters = c(64, 128),
+  pool_size = c(2, 2),
+  layer_lstm = c(32),
+  verbose = FALSE,
+  layer_dense = c(64, 2))
+reshape_input(model_1, input_shape = c(120, 4)) 
 }

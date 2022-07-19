@@ -2,20 +2,17 @@
 % Please edit documentation in R/preprocess.R
 \name{seq_encoding_lm}
 \alias{seq_encoding_lm}
-\title{Encodes integer sequence.}
+\title{Encodes integer sequence for language model}
 \usage{
 seq_encoding_lm(
   sequence,
   maxlen,
   vocabulary,
   start_ind,
-  wavenet_format = FALSE,
-  target_middle = FALSE,
   ambiguous_nuc = "zero",
   nuc_dist = NULL,
   use_quality = FALSE,
   quality_vector = NULL,
-  cnn_format,
   target_len = 1,
   use_coverage = FALSE,
   max_cov = NULL,
@@ -34,10 +31,6 @@ seq_encoding_lm(
 
 \item{start_ind}{Start positions of samples in \code{sequence}.}
 
-\item{wavenet_format}{Boolean.}
-
-\item{target_middle}{Boolean, target is in middle of sequence.}
-
 \item{ambiguous_nuc}{How to handle nucleotides outside vocabulary, either "zero", "discard" or "equal". If "zero", input gets encoded as zero vector;
 if "equal" input is 1/length(vocabulary) x length(vocabulary). If "discard" samples containing nucleotides outside vocabulary get discarded.}
 
@@ -46,10 +39,8 @@ if "equal" input is 1/length(vocabulary) x length(vocabulary). If "discard" samp
 \item{use_quality}{Use quality scores.}
 
 \item{quality_vector}{Vector of quality probabilities.}
-
-\item{cnn_format}{Boolean. If true, nucleotides on the left and right side of the predicted nucleotide (language model) are
-concatenated in the first layer, which make the structure more suitable to CNN architectures (without RNN).}
 }
 \description{
-
+\code{seq_encoding_lm} Helper function for \code{\link{generator_fasta_lm}}. 
+Encodes integer sequence to input/target list according to \code{output_format} argument.
 }

@@ -8,6 +8,7 @@ get_run_name(
   run_name = NULL,
   path_tensorboard,
   path_checkpoint,
+  path_log,
   auto_extend = FALSE
 )
 }
@@ -17,3 +18,4 @@ get_run_name(
 \description{
 Generate run_name if none is given or is already present.
 }
+\keyword{internal}

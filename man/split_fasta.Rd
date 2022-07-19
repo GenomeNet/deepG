@@ -15,13 +15,13 @@ split_fasta(
 \arguments{
 \item{path_input}{Fasta file to split into smaller files}
 
+\item{target_folder}{Directory for output.}
+
 \item{split_n}{Maximum number of entries to use in smaller file.}
 
 \item{shuffle_entries}{Whether to shuffle fasta entries before split.}
 
 \item{delete_input}{Whether to delete the original file.}
-
-\item{target_path}{Directory for output.}
 }
 \description{
 Returns smaller files with same file name and "_x" (where x is an integer). For example,

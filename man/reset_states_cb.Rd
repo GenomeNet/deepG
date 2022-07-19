@@ -2,15 +2,15 @@
 % Please edit documentation in R/callbacks.R
 \name{reset_states_cb}
 \alias{reset_states_cb}
-\title{Reset states at start/end of validation and whenever file changes}
+\title{Reset states callback}
 \usage{
-reset_states_cb(
-  path_file_log,
-  path_file_logVal,
-  num_files_old = 0,
-  num_files_new = 0
-)
+reset_states_cb(path_file_log, path_file_logVal)
+}
+\arguments{
+\item{path_file_log}{Path to log of training files.}
+
+\item{path_file_logVal}{Path to log of validation files.}
 }
 \description{
-Reset states at start/end of validation and whenever file changes
+Reset states at start/end of validation and whenever file changes. Can be used for stateful LSTM.
 }

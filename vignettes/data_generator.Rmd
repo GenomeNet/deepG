@@ -1,0 +1,950 @@
+---
+title: "Data Generator"
+output:
+  rmarkdown::html_vignette:
+    toc: true
+    toc_depth: 3
+---
+
+```{r, eval=FALSE, message=FALSE}
+devtools::install_github("GenomeNet/deepG")
+library(deepG)
+library(magrittr)
+```
+
+```{r, echo=FALSE, warning=FALSE, message=FALSE}
+devtools::load_all(path = "~/deepGdev")
+library(deepG)
+library(magrittr)
+```
+
+```{css, echo=FALSE}
+mark.in {
+  background-color: CornflowerBlue;
+}
+
+mark.out {
+  background-color: IndianRed;
+}
+
+```
+
+## Introduction
+
+The most common use case for the deepG data generator is to extact samples from a collection of 
+fasta (or fastq) files.
+The generator will always return a list of length 2. The first element is the input $X$ and the second the target $Y$.
+We can differentiate between 
+
++ **Language model**: Part of a sequence is the input and other part the target.
+    + Example: Predict the next nucleotide given the previous 100 nuleotides. 
++ **Label classification**: Assign a label to a sequence.  
+    + Example: Assign a label "virus" or "bacteria" to a sequence of length 100.
+
+Suppose we are given 2 fasta files called "a.fasta" and "b.fasta" that look as follows:
+
+<div style="float: left;margin-right:10px">
+  <table>
+    <tr>
+      <td>
+      **a.fasta** <br>
+      <tt> 
+        >header_a1 <br>
+        AACCAAGG <br>
+        >header_a2 <br>
+        TTTGGG <br>
+        >header_a3 <br>
+        ACGTACGT <br>
+      </tt>
+      </td> 
+    </tr>
+  </table>
+</div>
+<div style="float: left">
+  <table>
+    <tr>
+      <td>
+            **b.fasta** <br>
+            <tt> 
+              >header_b1 <br>
+              GTGTGT <br>
+              >header_b2 <br>
+              AAGG <br>
+              </tt>
+      </td>
+    </tr>
+  </table>
+</div>
+<br><br><br><br><br><br><br><br><br>
+
+If we want to extact sequences of length 4 from these files, there would be 17 possible samples 
+(5 from <tt>AACCAAGG</tt>, 3 from <tt>TTTGGG</tt>, ...). 
+A naive approach would be to go sequentially through all possible samples: 
+
+*1. sample*: 
+
+<div style="float: left;margin-right:10px">
+  <table>
+    <tr>
+      <td>
+      **a.fasta** <br>
+      <tt> 
+        >header_a1 <br>
+        <mark class="in">AACC</mark>AAGG <br>
+        >header_a2 <br>
+        TTTGGG <br>
+        >header_a3 <br>
+        ACGTACGT <br>
+      </tt>
+      </td> 
+    </tr>
+  </table>
+</div>
+<div style="float: left">
+  <table>
+    <tr>
+      <td>
+            **b.fasta** <br>
+            <tt> 
+              >header_b1 <br>
+              GTGTGT <br>
+              >header_b2 <br>
+              AAGG <br>
+              </tt>
+      </td>
+    </tr>
+  </table>
+</div>
+<br><br><br><br><br><br><br><br><br>
+
+*2. sample*: 
+
+<div style="float: left;margin-right:10px">
+  <table>
+    <tr>
+      <td>
+      **a.fasta** <br>
+      <tt> 
+        >header_a1 <br>
+        A<mark class="in">ACCA</mark>AGG <br>
+        >header_a2 <br>
+        TTTGGG <br>
+        >header_a3 <br>
+        ACGTACGT <br>
+      </tt>
+      </td> 
+    </tr>
+  </table>
+</div>
+<div style="float: left">
+  <table>
+    <tr>
+      <td>
+            **b.fasta** <br>
+            <tt> 
+              >header_b1 <br>
+              GTGTGT <br>
+              >header_b2 <br>
+              AAGG <br>
+              </tt>
+      </td>
+    </tr>
+  </table>
+</div>
+<br><br><br><br><br><br><br><br><br>
+
+... 
+
+*17. sample*: 
+
+<div style="float: left;margin-right:10px">
+  <table>
+    <tr>
+      <td>
+      **a.fasta** <br>
+      <tt> 
+        >header_a1 <br>
+        AACCAAGG <br>
+        >header_a2 <br>
+        TTTGGG <br>
+        >header_a3 <br>
+        ACGTACGT <br>
+      </tt>
+      </td> 
+    </tr>
+  </table>
+</div>
+<div style="float: left">
+  <table>
+    <tr>
+      <td>
+            **b.fasta** <br>
+            <tt> 
+              >header_b1 <br>
+              GTGTGT <br>
+              >header_b2 <br>
+              <mark class="in">AAGG</mark> <br>
+              </tt>
+      </td>
+    </tr>
+  </table>
+</div>
+<br><br><br><br><br><br><br><br><br>
+
+*18. sample*: 
+
+<div style="float: left;margin-right:10px">
+  <table>
+    <tr>
+      <td>
+      **a.fasta** <br>
+      <tt> 
+        >header_a1 <br>
+        <mark class="in">AACC</mark>AAGG <br>
+        >header_a2 <br>
+        TTTGGG <br>
+        >header_a3 <br>
+        ACGTACGT <br>
+      </tt>
+      </td> 
+    </tr>
+  </table>
+</div>
+<div style="float: left">
+  <table>
+    <tr>
+      <td>
+            **b.fasta** <br>
+            <tt> 
+              >header_b1 <br>
+              GTGTGT <br>
+              >header_b2 <br>
+              AAGG <br>
+              </tt>
+      </td>
+    </tr>
+  </table>
+</div>
+<br><br><br><br><br><br><br><br><br>
+
+For longer sequences this is not a desirable strategy since the data is very redundant (often just one nucleotide difference) and 
+the model would often see long stretches of data from the same source.
+Choosing the samples completely at random can also be problematic since we would constantly have to open new fasta files.
+The deepG generators offers several option to navigate the data sampling strategy to achieve a good balance between the two approaches.   
+
+## Data generator options
+
+In the following code examples, we will mostly use the sequence <tt> **abcdefghiiii** </tt> to demonstrate some of the 
+deepG data generator options.  
+
+```{r warning = FALSE, message = FALSE}
+sequence <- paste0("a", "b", "c", "d", "e", "f", "g", "h", "i", "i", "i", "i")
+vocabulary <- c("a", "b", "c", "d", "e", "f", "g", "h", "i")  
+```
+
+We may store this sequence in a fasta file
+
+```{r warning = FALSE, message = FALSE}
+dir_path <- file.path(getwd(), "dummy_data")
+df <- data.frame(Sequence = sequence, Header = "seq_1", stringsAsFactors = FALSE)
+file_path <- file.path(dir_path, "a.fasta")
+# sequence as fasta file
+microseq::writeFasta(fdta = dplyr::as_tibble(df), out.file = file_path)
+```
+
+### train_type
+
+The generator will always return a list of length 2. The first element is the input $X$ and the second the target $Y$.
+The `train_type` argument determines how $X$ and $Y$ get extracted. 
+Possible arguments for <u> *language model* </u> are:
+
++ **"lm"** or **"lm_rds"**: Given some sequence $s$, we take some subset of that sequence as input and the rest as target. How to split $s$ 
+  can be specified in `output_format` argument.
+
+Besides the language model approach, we can use <u> *label classification* </u>. This means we map some label to a sequence. For example, the target for some 
+nuleotide sequence could be one of the labels "bacteria" or "virus". We have to specify how to extract a label corresponding to a sequence. 
+Possible arguments are:
+
++ **"label_header"**: get label from fasta headers.
++ **"label_folder"**: get label from folder, i.e. all files in one folder must belong to the same class.
++ **"label_csv"**: get label from csv file. Csv file should have one column named "file". The targets then correspond to entries in that row (except "file"
+column). Example: if we are currently working with a file called "a.fasta", there should be a row in our csv file <br>
+
+<center>
+<span>
+file  &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;  | label_1 | label_2 <br>
+"a.fasta" &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;
+1     &nbsp; &nbsp; &nbsp;  &nbsp; &nbsp; &nbsp;      0 <br>
+</span>
+</center>
+
++ **"label_rds"**: rds file contains preprocessed list of input and target tensors.
+
+Another option is **"dummy_gen"**: generator creates random data once and repeatedly returns them.
+
+### output_format
+
+The `output_format` determines the shape of the output for a language model, i.e. part of a sequence is the input $X$ and another the
+target $Y$. Assume a sequence <tt>abcdefg</tt> and `maxlen = 6`. Output correspond as follows
+
+**"target_right"**: $X=$  <tt>abcdef</tt>, $Y=$  <tt>g</tt> 
+
+**"target_middle_lstm"**: $X =$ ($X_1 =$ <tt>abc</tt>, $X_2 =$ <tt>gfe</tt>), $Y=$ <tt>d</tt> (note reversed order of $X_2$)
+
+**"target_middel_cnn"**: $X =$ <tt>abcefg</tt>, $Y =$ <tt>d</tt> 
+
+**"wavenet"**: $X =$ <tt>abcdef</tt>, $Y =$ <tt>bcdefg</tt>
+
+```{r warning = FALSE, message = FALSE}
+# target_right
+gen <-  get_generator(path = file_path,
+                      train_type = "lm",
+                      batch_size = 1,
+                      maxlen = 6,
+                      vocabulary = vocabulary,
+                      output_format = "target_right")
+z <- gen()
+x <- z[[1]][1,,] 
+y <- z[[2]] 
+colnames(x) <- vocabulary
+colnames(y) <- vocabulary
+x # abcdef
+y # g 
+```
+
+```{r warning = FALSE, message = FALSE}
+# target_middle_lstm
+gen <-  get_generator(path = file_path,
+                      train_type = "lm",
+                      batch_size = 1,
+                      maxlen = 6,
+                      vocabulary = vocabulary,
+                      output_format = "target_middle_lstm")
+z <- gen()
+x_1 <- z[[1]][[1]][1,,] 
+x_2 <- z[[1]][[2]][1,,] 
+y <- z[[2]] 
+colnames(x_1) <- vocabulary
+colnames(x_2) <- vocabulary
+colnames(y) <- vocabulary
+x_1 # abc
+x_2 # gfe
+y # d 
+```
+
+```{r warning = FALSE, message = FALSE}
+# target_middle_cnn
+gen <-  get_generator(path = file_path,
+                      train_type = "lm",
+                      batch_size = 1,
+                      maxlen = 6,
+                      vocabulary = vocabulary,
+                      output_format = "target_middle_cnn")
+z <- gen()
+x <- z[[1]][1,,]
+y <- z[[2]]
+colnames(x) <- vocabulary
+colnames(y) <- vocabulary
+x # abcefg
+y # d
+```
+
+```{r warning = FALSE, message = FALSE}
+# wavenet
+gen <-  get_generator(path = file_path,
+                      train_type = "lm",
+                      batch_size = 1,
+                      maxlen = 6,
+                      vocabulary = vocabulary,
+                      output_format = "wavenet")
+z <- gen()
+x <- z[[1]][1,,] 
+y <- z[[2]][1,,]
+colnames(x) <- vocabulary
+colnames(y) <- vocabulary
+x # abcdef
+y # bcdefg
+```
+
+### maxlen 
+
+The length of the input sequence.
+
+### batch_size 
+
+Number of samples in one batch.
+
+```{r warning = FALSE, message = FALSE}
+# target_right
+gen <-  get_generator(path = file_path,
+                      train_type = "lm",
+                      batch_size = 7,
+                      maxlen = 6,
+                      vocabulary = vocabulary,
+                      output_format = "target_right")
+z <- gen()
+x <- z[[1]]
+y <- z[[2]] 
+dim(x)
+dim(y)
+```
+
+### step
+
+We may determine how frequently we want to take a sample. If `step = 1` we take a sample at every possible step. For the example, if `maxlen = 3, step = 1`. 
+Let's assume we want to predict the next character, i.e. part of the sequence is the <mark class="in">input</mark> and next character the 
+<mark class="out">target</mark>.  
+
+1. sample: <tt><mark class="in">abc</mark><mark class="out">d</mark>efghiiii</tt> 
+
+2. sample: <tt>a<mark class="in">bcd</mark><mark class="out">e</mark>fghiiii</tt> 
+
+3. sample: <tt>ab<mark class="in">cde</mark><mark class="out">f</mark>ghiiii</tt> 
+
+if `step = 3`  
+
+1. sample: <tt><mark class="in">abc</mark><mark class="out">d</mark>efghiiii</tt> 
+
+2. sample: <tt>abc<mark class="in">def</mark><mark class="out">g</mark>hiiii</tt> 
+
+3. sample: <tt>abcdef<mark class="in">ghi</mark><mark class="out">i</mark>ii</tt> 
+
+The generator one-hot-encodes the samples
+
+```{r warning = FALSE, message = FALSE}
+gen <- get_generator(path = file_path,
+                     train_type = "lm",
+                     batch_size = 1,
+                     maxlen = 3,
+                     vocabulary = vocabulary,
+                     step = 3, 
+                     output_format = "target_right")
+z <- gen()
+x <- z[[1]][1,,] #encodes abc
+y <- z[[2]] # encodes d
+colnames(x) <- vocabulary
+colnames(y) <- vocabulary
+x
+y
+# go 3 steps forward
+z <- gen()
+x <- z[[1]][1,,] #encodes def
+y <- z[[2]] # encodes g
+colnames(x) <- vocabulary
+colnames(y) <- vocabulary
+x
+y
+```
+
+
+
+### padding
+
+If the sequence is too short to create a single sample, we can pad the sequence with zero-vectors. If `padding = FALSE` the generator will go to next file/ fasta entry until it finds a sequence long enough for a sample.
+
+```{r warning = FALSE, message = FALSE}
+gen <-  get_generator(path = file_path,
+                      train_type = "lm",
+                      batch_size = 1,
+                      maxlen = 15, # maxlen is longer than sequence
+                      vocabulary = vocabulary,
+                      step = 3,
+                      padding = TRUE,
+                      output_format = "target_right")
+z <- gen()
+x <- z[[1]][1,,] 
+y <- z[[2]] 
+colnames(x) <- vocabulary
+colnames(y) <- vocabulary
+x # first 4 entries are zero-vectors
+y
+```
+
+### ambiguous_nuc
+
+A sequence might contain a character that does not lie inside our desired vocabulary. For example, let's assume we discard <tt>e</tt> from our vocabulary.
+We have 4 options to handle this situation 
+
+(1) encode as zero vector
+
+```{r warning = FALSE, message = FALSE}
+vocabulary <- c("a", "b", "c", "d", "f", "g", "h", "i") # exclude "e" from vocabulary
+
+# zero
+gen <-  get_generator(path = file_path,
+                      train_type = "lm",
+                      batch_size = 1,
+                      maxlen = 6,
+                      vocabulary = vocabulary,
+                      output_format = "target_right",
+                      ambiguous_nuc = "zeros" # encode "x" as zero vector
+) 
+z <- gen()
+x <- z[[1]][1,,] 
+colnames(x) <- vocabulary
+x # fifth row is zero vector 
+```
+
+(2) equal probability
+
+```{r warning = FALSE, message = FALSE}
+# equal
+gen <-  get_generator(path = file_path,
+                      train_type = "lm",
+                      batch_size = 1,
+                      maxlen = 6,
+                      vocabulary = vocabulary,
+                      output_format = "target_right",
+                      ambiguous_nuc = "equal" 
+) 
+z <- gen()
+x <- z[[1]][1,,]
+colnames(x) <- vocabulary
+x # fifth row is 1/8 for every entry 
+```
+
+(3) use distribution of current file
+
+```{r warning = FALSE, message = FALSE}
+# empirical
+gen <-  get_generator(path = file_path,
+                      train_type = "lm",
+                      batch_size = 1,
+                      maxlen = 6,
+                      vocabulary = vocabulary,
+                      output_format = "target_right",
+                      ambiguous_nuc = "empirical" 
+) 
+z <- gen()
+x <- z[[1]][1,,] 
+colnames(x) <- vocabulary
+x # fifth row is distribuation of file
+```
+
+(4) discard 
+
+```{r warning = FALSE, message = FALSE}
+# discard
+gen <-  get_generator(path = file_path,
+                      train_type = "lm",
+                      batch_size = 1,
+                      maxlen = 6,
+                      vocabulary = vocabulary,
+                      output_format = "target_right",
+                      ambiguous_nuc = "discard" 
+) 
+z <- gen()
+x <- z[[1]][1,,]
+colnames(x) <- vocabulary
+x # first sample with only characters from vocabulary is fghiii|i
+```
+
+### proportion_per_seq
+
+The `proportion_per_seq` argument gives the option to use a random subset instead of the full sequence. 
+
+```{r warning = FALSE, message = FALSE}
+vocabulary <- c("a", "b", "c", "d", "e", "f", "g", "h", "i")
+cat("sequence is ", nchar(sequence), "characters long \n")
+gen <-  get_generator(path = file_path,
+                      train_type = "lm",
+                      batch_size = 1,
+                      maxlen = 5,
+                      seed = 1,
+                      vocabulary = vocabulary,
+                      output_format = "target_right",
+                      # take random subsequence using 50% of sequence 
+                      proportion_per_seq = 0.5 
+)
+z <- gen()
+x <- z[[1]][1, , ]
+y <- z[[2]]
+colnames(x) <- vocabulary
+colnames(y) <- vocabulary
+x # defgh
+y # i
+```
+
+### max_samples
+
+Only use fixed number of samples per file. Randomly choose which samples to use. (If `random_sampling = FALSE`, samples are consecutive.)
+
+```{r warning = FALSE, message = FALSE}
+gen <-  get_generator(path = file_path,
+                      train_type = "lm",
+                      batch_size = 2,
+                      maxlen = 5,
+                      step = 1,
+                      seed = 3,
+                      vocabulary = vocabulary,
+                      output_format = "target_right",
+                      max_samples = 2
+)
+z <- gen()
+x1 <- z[[1]][1, , ]
+x2 <- z[[1]][2, , ]
+colnames(x1) <- vocabulary
+colnames(x2) <- vocabulary
+x1 # bcdef
+x2 # cdefg
+```
+
+### random_sampling
+
+If you use `max_samples`, generator will randomly choose subset from all possible sampels, but those samples are consecutive. With `random_sampling = TRUE`,
+samples are completely random.
+
+```{r warning = FALSE, message = FALSE}
+gen <-  get_generator(path = file_path,
+                      train_type = "lm",
+                      batch_size = 2,
+                      maxlen = 5,
+                      seed = 66,
+                      random_sampling = TRUE,
+                      vocabulary = vocabulary,
+                      output_format = "target_right",
+                      max_samples = 2
+)
+z <- gen()
+x1 <- z[[1]][1, , ]
+x2 <- z[[1]][2, , ]
+colnames(x1) <- vocabulary
+colnames(x2) <- vocabulary
+x1 # efghi
+x2 # defgh
+```
+
+### target_len 
+
+Target length for language model. Default is 1; if > 1 the target part of the generator output is a list of length `target_len`.
+
+```{r warning = FALSE, message = FALSE}
+gen <-  get_generator(path = file_path,
+                      train_type = "lm",
+                      batch_size = 1,
+                      target_len = 3, 
+                      maxlen = 5,
+                      vocabulary = vocabulary,
+                      output_format = "target_right"
+)
+z <- gen()
+x <- z[[1]][1, , ]
+y1 <- z[[2]][[1]]
+y2 <- z[[2]][[2]]
+y3 <- z[[2]][[3]]
+colnames(x) <- vocabulary
+colnames(y1) <- vocabulary
+colnames(y2) <- vocabulary
+colnames(y3) <- vocabulary
+x # abcde
+y1 # f
+y2 # g
+y3 # h
+```
+
+### n_gram / n_gram_stride                       
+
+Encode target in language model not character wise but combine n characters to one target. `n_gram_stride` determines the frequency of 
+the n-gram encoding. 
+
+```{r warning = FALSE, message = FALSE}
+gen <-  get_generator(path = file_path,
+                      train_type = "lm",
+                      batch_size = 1,
+                      target_len = 8, 
+                      n_gram = 3,
+                      n_gram_stride = 2,
+                      maxlen = 4,
+                      vocabulary = vocabulary,
+                      output_format = "target_right"
+)
+z <- gen()
+x <- z[[1]][1, , ]
+y1 <- z[[2]][[1]]
+y2 <- z[[2]][[2]]
+y3 <- z[[2]][[3]]
+
+
+colnames(x) <- vocabulary
+x # abcd
+ncol(y1) # = 3^length(vocabulary)
+# y1 # efg as 3-gram
+# y2 # ghi as 3-gram
+# y3 # iii as 3-gram
+```
+
+### add_noise
+
+Add noise to input. Must be a list that specifies noise distribution or NULL (no noise).
+List contains arguments \code{noise_type}: either "normal" or "uniform" and
+optional arguments sd or mean if noise_type is "normal" (default is sd=1 and mean=0) or min, max if noise_type is "uniform"
+(default is min=0, max=1).  
+
+```{r warning = FALSE, message = FALSE}
+gen <-  get_generator(path = file_path,
+                      train_type = "lm",
+                      batch_size = 1,
+                      add_noise = list(noise_type = "normal", mean = 0, sd = 0.01),
+                      maxlen = 5,
+                      vocabulary = vocabulary,
+                      output_format = "target_right"
+)
+z <- gen()
+x <- z[[1]][1, , ]
+y <- z[[2]]
+
+colnames(x) <- vocabulary
+colnames(y) <- vocabulary
+round(x, 3) # abcde + noise
+y # f
+```
+
+### proportion_entries
+
+If a fasta file has multiple entries, you can randomly choose a subset.
+For example, if the file has 6 entries and `proportion_entries = 0.5` 
+the generator will randomly use 3 of the entries.
+
+### shuffle_file_order 
+
+Shuffle file order before iterating through files. Order gets reshuffles after every iteration.
+
+### shuffle_input 
+
+Whether to shuffle fasta entries if fasta file has multiple entries.
+
+### reverse_complement
+
+If TRUE, randomly decide for every batch to use original sequence or its reverse complement.
+
+### sample_by_file_size 
+
+Randomly choose new file by sampling according to file size (bigger files more likely).
+
+### concat_seq                     
+
+Character string or NULL. If not NULL all entries from file get concatenated to one sequence with concat_seq string between them.
+
+```{r warning = FALSE, message = FALSE}
+df <- data.frame(Sequence = c("AC", "AG", "AT"), Header = paste0("header", 1:3))
+fasta_path <- tempfile(fileext = ".fasta")
+fasta_file <- microseq::writeFasta(df, fasta_path)
+gen <-  get_generator(path = fasta_path,
+                      train_type = "lm",
+                      batch_size = 1,
+                      maxlen = 9,
+                      vocabulary = c("A", "C", "G", "T", "Z"),
+                      concat_seq = "ZZ",
+                      output_format = "target_right"
+)
+z <- gen()
+x <- z[[1]][1, , ]
+y <- z[[2]]
+
+colnames(x) <- c("A", "C", "G", "T", "Z")
+colnames(y) <- c("A", "C", "G", "T", "Z")
+x # ACZZAGZZA
+y # T
+```
+
+### set_learning
+
+When you want to assign one label to set of samples. Only implemented for `train_type = "label_folder"`.
+Input is a list with the following parameters
+
++  `samples_per_target` how many samples to use for one target
++  `maxlen` length of one sample
++  `reshape_mode`: `"time_dist", "multi_input"` or `"concat"`. 
+     + If `reshape_mode` is "multi_input", generator will produce `samples_per_target` separate inputs, each of length maxlen. 
+     + If `reshape_mode` is "time_dist", generator will produce a 4D input array. The dimensions correspond to
+       (batch_size, samples_per_target, maxlen, length(vocabulary)).   
+     +  If `reshape_mode` is "concat", generator will concatenate `samples_per_target` sequences
+        of length `maxlen` to one long sequence;  
++   If `reshape_mode = "concat"`, there is an additional `buffer_len` argmument: add new token between 
+   concatenated samples
+    + If `buffer_len` is an integer, the subsequences are interspaced with `buffer_len` rows. The input length is
+      (maxlen \* samples_per_target) + buffer_len \* (samples_per_target - 1)   
+
+```{r warning = FALSE, message = FALSE}
+# create data for second label
+df <- data.frame(Sequence = "AABAACAADAAE", Header = "header_1")
+file_path_2 <- tempfile(fileext = ".fasta")
+fasta_file <- microseq::writeFasta(df, file_path_2)
+
+# multi_input 
+set_learning <- list(reshape_mode = "multi_input",
+                     maxlen = 4,
+                     samples_per_target = 3)
+
+gen <- get_generator(path = c(file_path, file_path_2), # path has length 2 => 2 classes
+                     train_type = "label_folder",
+                     batch_size = 2,
+                     maxlen = 4,
+                     step = 1, 
+                     vocabulary = vocabulary,
+                     set_learning = set_learning)
+
+z <- gen()
+x <- z[[1]]
+y <- z[[2]]
+length(x) # 3 samples per target
+x_1_1 <- x[[1]][1, , ]
+x_1_1 # abcd
+x_1_2 <- x[[2]][1, , ]
+x_1_2 # bcde
+x_1_3 <- x[[3]][1, , ]
+x_1_3 # cdef
+
+x_2_1 <- x[[1]][2, , ]
+x_2_1 # aaba
+x_2_2 <- x[[2]][2, , ]
+x_2_2 # abaa
+x_2_3 <- x[[3]][2, , ]
+x_2_3 # baac
+
+colnames(y) <- c("label_1", "label_2")
+y 
+```
+
+```{r warning = FALSE, message = FALSE}
+# concat 
+set_learning <- list(reshape_mode = "concat",
+                     maxlen = 4,
+                     samples_per_target = 3)
+
+gen <- get_generator(path = c(file_path, file_path_2), # path has length 2 => 2 classes
+                     train_type = "label_folder",
+                     batch_size = 2,
+                     maxlen = 4,
+                     step = 2, 
+                     vocabulary = vocabulary,
+                     set_learning = set_learning)
+
+z <- gen()
+x <- z[[1]]
+y <- z[[2]]
+dim(x) 
+x_1 <- x[1, , ]
+colnames(x_1) <- vocabulary
+x_1 # abcd | cdef | efgh
+x_2 <- x[2, , ]
+colnames(x_2) <- vocabulary
+x_2 # aaba | baac | acaa
+
+colnames(y) <- c("label_1", "label_2")
+y 
+```
+
+
+### use_quality_score
+
+If TRUE, instead of one-hot encoding use quality score of fastq file.
+
+```{r warning = FALSE, message = FALSE}
+df <- data.frame(Sequence = "ACAGAT", Header = "header_1", Quality = "!#*=?I")
+fastq_path <- tempfile(fileext = ".fastq")
+fastq_file <- microseq::writeFastq(df, fastq_path)
+gen <-  get_generator(path = fastq_path,
+                      train_type = "lm",
+                      batch_size = 1,
+                      maxlen = 5,
+                      format = "fastq",
+                      vocabulary = c("A", "C", "G", "T"),
+                      use_quality_score = TRUE,
+                      output_format = "target_right"
+)
+z <- gen()
+x <- z[[1]][1, , ]
+y <- z[[2]]
+
+colnames(x) <- c("A", "C", "G", "T")
+colnames(y) <- c("A", "C", "G", "T")
+x # ACAGA
+y # T
+```
+
+
+### use_coverage 
+
+Integer or NULL. If not NULL, use coverage as encoding rather than one-hot encoding.
+Coverage information must be contained in fasta header: there must be a string "cov_n" in the header, where 
+n is some integer.
+
+```{r warning = FALSE, message = FALSE}
+df <- data.frame(Sequence = "ACAGAT", Header = "header_1_cov_8")
+fasta_path <- tempfile(fileext = ".fasta")
+fasta_file <- microseq::writeFasta(df, fasta_path)
+gen <-  get_generator(path = fasta_path,
+                      train_type = "lm",
+                      batch_size = 1,
+                      maxlen = 5,
+                      vocabulary = c("A", "C", "G", "T"),
+                      use_coverage = 25,
+                      output_format = "target_right"
+)
+z <- gen()
+x <- z[[1]][1, , ]
+y <- z[[2]]
+
+colnames(x) <- c("A", "C", "G", "T")
+colnames(y) <- c("A", "C", "G", "T")
+x # ACAGA; 0.32 = 8/25
+y # T
+```
+
+### added_label_path
+
+It is possible to feed a network additional information associated to a sequence. This information needs to be in a csv file. If all sequences in one file share the same label, the csv file should have one column named "file". 
+
+We may add some additional input to our dummy data
+
+```{r warning = FALSE, message = FALSE}
+dummy_files <- list.files(file.path(dir_path, "train_files_1"))
+dummy_files
+
+df <- data.frame(file = dummy_files,
+                 label_1 = c(0, 1), label_2 = c(1, 0), label_3 = c(1, 0))
+df
+write.csv(x = df, file = file.path(dir_path, "add_input.csv"), row.names = FALSE)
+```
+
+If we add the path to the csv file, the generator will map additional input to sequences: 
+
+```{r warning = FALSE, message = FALSE}
+gen <-  get_generator(path = file.path(dir_path, "train_files_1"),
+                      train_type = "lm", 
+                      batch_size = 1,
+                      maxlen = 5,
+                      output_format = "target_right",
+                      added_label_path = file.path(dir_path, "add_input.csv"),
+                      add_input_as_seq = FALSE # don't treat input as sequence
+)
+z <- gen()
+added_label_input <- z[[1]][[1]]
+added_label_input
+sequence_input <- z[[1]][[2]]
+sequence_input[1, , ]
+target <- z[[2]] 
+target
+```
+
+If we want to train a network with additional labels, we have to add an additional input layer.
+
+```{r warning = FALSE, message = FALSE}
+model <- create_model_lstm_cnn(
+  maxlen = 5,
+  layer_lstm = c(8, 8),
+  layer_dense = c(4),
+  label_input = 3 # additional input vector has length 3
+)
+
+# train_model(train_type = "lm", 
+#             model = model,
+#             path = file.path(dir_path, "train_files_1"),
+#             path_val = file.path(dir_path, "validation_files_1"),
+#             added_label_path = file.path(dir_path, "add_input.csv"),
+#             steps_per_epoch = 5,
+#             batch_size = 8,
+#             epochs = 2
+# )
+```

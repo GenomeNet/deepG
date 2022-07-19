@@ -9,3 +9,4 @@ get_optimizer(model)
 \description{
 Get solver and learning_rate from model.
 }
+\keyword{internal}

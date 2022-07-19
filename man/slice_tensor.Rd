@@ -9,3 +9,4 @@ slice_tensor(tensor, target_split)
 \description{
 Devide tensor to list of subsets
 }
+\keyword{internal}

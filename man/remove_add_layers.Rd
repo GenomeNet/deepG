@@ -15,8 +15,9 @@ remove_add_layers(
   dropout = NULL,
   freeze_base_model = FALSE,
   compile = FALSE,
-  lr = 0.001,
-  solver = "adam"
+  learning_rate = 0.001,
+  solver = "adam",
+  model_seed = NULL
 )
 }
 \arguments{
@@ -41,10 +42,29 @@ has multiple output layers.}
 
 \item{compile}{Boolean, whether the new model is compiled or not}
 
-\item{lr}{learning_rate if compile == TRUE, default -> learning_rate of the old model}
+\item{learning_rate}{learning_rate if compile == TRUE, default -> learning_rate of the old model}
 
 \item{solver}{"adam", "adagrad", "rmsprop" or "sgd" if compile == TRUE, default -> solver of the old model}
 }
 \description{
-Remove layers from model and add dense layers
+Functions takes a model as input and removes all layers after a certain layer, specified in \code{layer_name} argument.
+Optional to add dense layers on top of pruned model. Model can have multiple output layers with separate loss/activation functions.
+You can freeze all the weights of the pruned model by setting \code{freeze_base_model = TRUE}.
+}
+\examples{
+model_1 <- create_model_lstm_cnn(layer_lstm = c(64, 64), maxlen = 50, layer_dense = c(32, 4), verbose = FALSE)
+# get name of second to last layer 
+num_layers <- length(model_1$get_config()$layers)
+layer_name <- model_1$get_config()$layers[[num_layers-1]]$name
+# add dense layer with multi outputs and separate loss/activations functions
+model_2 <- remove_add_layers(model = model_1,
+                             layer_name = layer_name,
+                             dense_layers = list(c(32, 16, 1), c(8, 1), c(12, 5)),
+                             loss = list("binary_crossentropy", "mae", "categorical_crossentropy"),
+                             last_activation = list("sigmoid", "linear", "softmax"),
+                             freeze_base_model = TRUE,
+                             output_names = list("out_1_binary_classsification", 
+                                                 "out_2_regression", 
+                                                 "out_3_classification")
+) 
 }

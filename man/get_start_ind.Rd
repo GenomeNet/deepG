@@ -29,5 +29,6 @@ get_start_ind(
 \item{discard_amb_nuc}{Discard all samples that contain characters outside vocabulary.}
 }
 \description{
-
+Helper function for data generators. 
+Computes start positions in sequence where samples can be extracted, given maxlen, step size and ambiguous nucleotide constraints.
 }

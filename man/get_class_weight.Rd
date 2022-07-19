@@ -23,5 +23,6 @@ get_class_weight(
 \item{train_type}{Either "label_folder", "label_header" or "label_csv".}
 }
 \description{
-Estimate frequency of different classes
+Count number of nucleotides for each class and use as estimation for relation of class distribution.
+Outputs list of class relations. Can be used as input for \code{class_weigth} in \code{\link{train_model}} function.
 }

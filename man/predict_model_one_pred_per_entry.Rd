@@ -49,3 +49,4 @@ predict_model_one_pred_per_entry(
 Computes output at specified model layer. Forces every fasta entry to have length maxlen by either padding sequences shorter than maxlen or taking random subsequence for
 longer sequences.
 }
+\keyword{internal}
