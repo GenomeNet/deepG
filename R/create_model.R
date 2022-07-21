@@ -1102,7 +1102,10 @@ get_hyper_param <- function(model) {
 #' @param learning_rate learning_rate if compile == TRUE, default -> learning_rate of the old model
 #' @param solver "adam", "adagrad", "rmsprop" or "sgd" if compile == TRUE, default -> solver of the old model
 #' @examples
-#' model_1 <- create_model_lstm_cnn(layer_lstm = c(64, 64), maxlen = 50, layer_dense = c(32, 4), verbose = FALSE)
+#' model_1 <- create_model_lstm_cnn(layer_lstm = c(64, 64),
+#'                                  maxlen = 50,
+#'                                  layer_dense = c(32, 4), 
+#'                                  verbose = FALSE)
 #' # get name of second to last layer 
 #' num_layers <- length(model_1$get_config()$layers)
 #' layer_name <- model_1$get_config()$layers[[num_layers-1]]$name
@@ -2027,7 +2030,9 @@ get_optimizer <- function(model) {
   return(optimizer)
 }
 
-#' Self-genomenet model 
+#' Genomenet model 
+#'
+#' TODO: add link to paper
 #'
 #' @export
 create_model_genomenet <- function(
@@ -2308,19 +2313,22 @@ set_optimizer <- function(solver = "adam", learning_rate = 0.01) {
   
   stopifnot(solver %in% c("adam", "adagrad", "rmsprop", "sgd"))
   
-  # choose optimization method
+  named_lr <- "lr" %in% names(formals(keras::optimizer_adam))
+  if (named_lr) {
+    arg_list <- list(lr = learning_rate)
+  } else {
+    arg_list <- list(learning_rate = learning_rate)
+  }
+
   if (solver == "adam")
-    keras_optimizer <-
-      keras::optimizer_adam(learning_rate = learning_rate)
+    keras_optimizer <- do.call(keras::optimizer_adam, arg_list)
   if (solver == "adagrad")
-    keras_optimizer <-
-      keras::optimizer_adagrad(learning_rate = learning_rate)
+    keras_optimizer <- do.call(keras::optimizer_adagrad, arg_list)
   if (solver == "rmsprop")
-    keras_optimizer <-
-      keras::optimizer_rmsprop(learning_rate = learning_rate)
+    keras_optimizer <- do.call(keras::optimizer_rmsprop, arg_list)
   if (solver == "sgd")
-    keras_optimizer <-
-      keras::optimizer_sgd(learning_rate = learning_rate)
+    keras_optimizer <- do.call(keras::optimizer_sgd, arg_list)
+  
   return(keras_optimizer)
   
 }
