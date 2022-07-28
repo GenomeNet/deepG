@@ -574,7 +574,7 @@ evaluate_linear <- function(y_true, y_conf, label_names = NULL) {
   
   loss_per_class_mse <- list()
   loss_per_class_mae <- list()
-  for (i in 1:ncol(y)) {
+  for (i in 1:ncol(y_true)) {
     mse_loss_class <- tensorflow::tf$keras$losses$mean_squared_error(y_true[ ,i], y_conf[ , i])
     mae_loss_class <- tensorflow::tf$keras$losses$mean_absolute_error(y_true[ ,i], y_conf[ , i])
     loss_per_class_mse[[i]] <- mse_loss_class$numpy()

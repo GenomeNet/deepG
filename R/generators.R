@@ -48,7 +48,7 @@
 #' Coverage information must be contained a fasta header: there must be a string "cov_n" in the header, where n is some integer.
 #' @param proportion_entries Proportion of fasta entries to keep. For example, if fasta file has 50 entries and proportion_entries = 0.1,
 #' will randomly select 5 entries.
-#' @param sample_by_file_size Sample new file weighted by file size (possible to repeatedly sample the same file).
+#' @param sample_by_file_size Sample new file weighted by file size (bigger files more likely).
 #' @param n_gram Integer, encode target not nucleotide wise but combine n nucleotides at once. For example for n=2, "AA" ->  (1, 0,..., 0),
 #' "AC" ->  (0, 1, 0,..., 0), "TT" -> (0,..., 0, 1), where the one-hot vectors have length length(vocabulary)^n.
 #' @param add_noise NULL or list of arguments. If not NULL, list must contain the following arguments: \code{noise_type} can be "normal" or "uniform";
@@ -3557,7 +3557,6 @@ dataset_from_gen <- function(output_path,
   
   gen <- get_generator(path = path_corpus,
                        val = FALSE,
-                       path_val = NULL,
                        batch_size = batch_size,
                        maxlen = maxlen,
                        step = step,

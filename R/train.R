@@ -128,7 +128,6 @@
 #'                     steps_per_epoch = 6,
 #'                     step = 5,
 #'                     format = "fasta",
-#'                     path_file_log = NULL,
 #'                     vocabulary_label = c("label_1", "label_2"))
 #' }                     
 #' @export
