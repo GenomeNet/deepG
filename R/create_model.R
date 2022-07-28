@@ -528,7 +528,7 @@ create_model_lstm_cnn <- function(
   argg["macro_average_cb"] <- NULL
   model$hparam <- argg
   model$cm_dir <- cm_dir
-
+  
   if (verbose) summary(model)
   return_model <- model
 }
@@ -2319,7 +2319,7 @@ set_optimizer <- function(solver = "adam", learning_rate = 0.01) {
   } else {
     arg_list <- list(learning_rate = learning_rate)
   }
-
+  
   if (solver == "adam")
     keras_optimizer <- do.call(keras::optimizer_adam, arg_list)
   if (solver == "adagrad")
@@ -2345,19 +2345,16 @@ set_optimizer <- function(solver = "adam", learning_rate = 0.01) {
 #' get_output_activations(model)
 #' @export
 get_output_activations <- function(model) {
-  out_names <- model$output_names
-  num_layers <- length(model$get_config()$layers)
   
+  out_names <- model$output_names
   act_vec <- vector("character", length(out_names))
   count <- 1
-  for (i in 1:num_layers) {
-    layer_name <- model$get_config()$layers[[i]]$name
-    if (layer_name %in% out_names) {
-      act_name <- model$layers[[i]]$get_config()$activation
-      if (is.null(act_name)) act_name <- "linear"
-      act_vec[count] <- act_name
-      count <- count + 1
-    }
+  
+  for (layer_name in out_names) {
+    act_name <- model$get_layer(layer_name)$get_config()$activation
+    if (is.null(act_name)) act_name <- "linear"
+    act_vec[count] <- act_name
+    count <- count + 1
   }
   return(act_vec)
 }

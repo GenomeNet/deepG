@@ -128,7 +128,6 @@
 #'                     steps_per_epoch = 6,
 #'                     step = 5,
 #'                     format = "fasta",
-#'                     path_file_log = NULL,
 #'                     vocabulary_label = c("label_1", "label_2"))
 #' }                     
 #' @export
@@ -329,8 +328,7 @@ train_model <- function(train_type = "lm",
   if (is.null(step)) step <- maxlen
   vocabulary_label_size <- length(vocabulary_label)
   vocabulary_size <- length(vocabulary)
-  optimizer <- get_optimizer(model)
-  
+
   if (is.null(dataset) && labelByFolder) {
     if (length(path) == 1) warning("Training with just one label")
   }

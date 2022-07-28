@@ -34,6 +34,7 @@ BugReports: https://github.com/GenomeNet/deepG/issues
 Depends:
     R (>= 3.5.0)
 Imports:
+    hdf5r,
     tensorflow,
     reticulate,
     keras,
@@ -48,7 +49,6 @@ Imports:
     magrittr,
     dplyr,
     remotes,
-    hdf5r,
     xfun,
     Rtsne,
     plyr,

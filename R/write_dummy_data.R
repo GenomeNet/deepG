@@ -1,7 +1,6 @@
 #' Write random sequences to fasta file
 #' 
 #' Create random sequences from predefined vocabulary and write to fasta file.
-#' Ouput files are names fasta_name_start + "_i.fasta", where i is an integer.
 #' 
 #' @param file_path Output directory or path to output file (only possible if \code{write_to_file_path = TRUE} and 
 #' \code{num_files = 1}).
@@ -9,7 +8,10 @@
 #' @param header Fasta header name. 
 #' @param seq_length Length of one sequence.
 #' @param num_seq Number of sequences per file.
-#' @param write_to_file_path Whether to write 
+#' @param fasta_name_start Beginning string of file name. Output files are named fasta_name_start + _i.fasta where i is an integer index.
+#' @param write_to_file_path Whether to write output directly to \code{file_path}, i.e. file_path is not a directory.
+#' @param prob Probabiltiy of each character in the \code{vocabulary} to be sampled. If NULL each character has same probability.
+#' @param vocabulary Set of characters to sample sequences from. 
 #' @examples
 #' path_input <- tempfile()
 #' dir.create(path_input)
@@ -26,7 +28,12 @@ create_dummy_data <- function(file_path,
                               num_seq,
                               fasta_name_start = "file",
                               write_to_file_path = FALSE,
+                              prob = NULL,
                               vocabulary = c("a", "c", "g", "t")) {
+  if (!is.null(prob)) {
+    stopifnot(length(prob) == length(vocabulary))
+    stopifnot(sum(prob) == 1)
+  }
   
   if (write_to_file_path) {
     stopifnot(num_files == 1)
@@ -39,7 +46,7 @@ create_dummy_data <- function(file_path,
   for (i in 1:num_files){
     df <- data.frame(Header = NULL, Sequence = NULL)
     for (j in 1:num_seq) {
-      nuc_seq <- sample(vocabulary, seq_length, replace = TRUE) %>% paste(collapse = "")
+      nuc_seq <- sample(vocabulary, seq_length, replace = TRUE, prob = prob) %>% paste(collapse = "")
       new_row <- data.frame(Header = header, Sequence = nuc_seq)
       df <- rbind(df, new_row)
     }

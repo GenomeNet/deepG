@@ -12,11 +12,70 @@
 #' @param nuc_dist Nucleotide distribution.
 #' @param use_quality Use quality scores.
 #' @param quality_vector Vector of quality probabilities.
+#' @param char_sequence A character string.
+#' @examples 
+#' # use integer sequence as input 
+#' 
+#' z <- seq_encoding_lm(sequence = c(1,0,5,1,3,4,3,1,4,1,2),
+#' maxlen = 5,
+#' vocabulary = c("a", "c", "g", "t"),
+#' start_ind = c(1,3),
+#' ambiguous_nuc = "equal",
+#' target_len = 1,
+#' output_format = "target_right")
+#' 
+#' x <- z[[1]]
+#' y <- z[[2]]
+#' 
+#' x[1,,] # 1,0,5,1,3
+#' y[1,] # 4
+#' 
+#' x[2,,] # 5,1,3,4,
+#' y[2,] # 1
+#' 
+#' # use character string as input
+#' z <- seq_encoding_lm(sequence = NULL,
+#' maxlen = 5,
+#' vocabulary = c("a", "c", "g", "t"),
+#' start_ind = c(1,3),
+#' ambiguous_nuc = "zero",
+#' target_len = 1,
+#' output_format = "target_right",
+#' char_sequence = "ACTaaTNTNaZ")
+#' 
+#' 
+#' x <- z[[1]]
+#' y <- z[[2]]
+#' 
+#' x[1,,] # actaa
+#' y[1,] # t
+#' 
+#' x[2,,] # taatn
+#' y[2,] # t
 #' @export
-seq_encoding_lm <- function(sequence, maxlen, vocabulary, start_ind, ambiguous_nuc = "zero",
+seq_encoding_lm <- function(sequence = NULL, maxlen, vocabulary, start_ind, ambiguous_nuc = "zero",
                             nuc_dist = NULL, use_quality = FALSE, quality_vector = NULL,
                             target_len = 1, use_coverage = FALSE, max_cov = NULL, cov_vector = NULL,
-                            n_gram = NULL, n_gram_stride = 1, output_format = "target_right") {
+                            n_gram = NULL, n_gram_stride = 1, output_format = "target_right",
+                            char_sequence = NULL) {
+  
+  if (!is.null(char_sequence)) {
+    
+    vocabulary <- stringr::str_to_lower(vocabulary)
+    pattern <- paste0("[^", paste0(vocabulary, collapse = ""), "]")
+    
+    # token for ambiguous nucleotides
+    for (i in letters) {
+      if (!(i %in% stringr::str_to_lower(vocabulary))) {
+        amb_nuc_token <- i
+        break
+      }
+    }
+    tokenizer <- keras::fit_text_tokenizer(keras::text_tokenizer(char_level = TRUE, lower = TRUE, oov_token = "0"), c(vocabulary, amb_nuc_token))
+    sequence <- stringr::str_to_lower(char_sequence)
+    sequence <- stringr::str_replace_all(string = sequence, pattern = pattern, amb_nuc_token)
+    sequence <- keras::texts_to_sequences(tokenizer, sequence)[[1]] - 1
+  }
   
   voc_len <- length(vocabulary)
   if (target_len == 1) {
@@ -209,10 +268,50 @@ seq_encoding_lm <- function(sequence, maxlen, vocabulary, start_ind, ambiguous_n
 #' @param nuc_dist Nucleotide distribution.
 #' @param use_quality Use quality scores.
 #' @param quality_vector Vector of quality probabilities.
+#' @examples 
+#' # use integer sequence as input
+#' x <- seq_encoding_label(sequence = c(1,0,5,1,3,4,3,1,4,1,2),
+#'                         maxlen = 5,
+#'                         vocabulary = c("a", "c", "g", "t"),
+#'                         start_ind = c(1,3),
+#'                         ambiguous_nuc = "equal")
+#' 
+#' x[1,,] # 1,0,5,1,3
+#' 
+#' x[2,,] # 5,1,3,4,
+#' 
+#' # use character string as input
+#' x <- seq_encoding_label(maxlen = 5,
+#'                         vocabulary = c("a", "c", "g", "t"),
+#'                         start_ind = c(1,3),
+#'                         ambiguous_nuc = "equal",
+#'                         char_sequence = "ACTaaTNTNaZ")
+#' 
+#' x[1,,] # actaa
+#' 
+#' x[2,,] # taatn
 #' @export
-seq_encoding_label <- function(sequence, maxlen, vocabulary, start_ind, ambiguous_nuc = "zero", nuc_dist = NULL,
+seq_encoding_label <- function(sequence = NULL, maxlen, vocabulary, start_ind, ambiguous_nuc = "zero", nuc_dist = NULL,
                                use_quality = FALSE, quality_vector = NULL, use_coverage = FALSE, max_cov = NULL,
-                               cov_vector = NULL, n_gram = NULL, n_gram_stride = 1) {
+                               cov_vector = NULL, n_gram = NULL, n_gram_stride = 1, char_sequence = NULL) {
+  
+  if (!is.null(char_sequence)) {
+    
+    vocabulary <- stringr::str_to_lower(vocabulary)
+    pattern <- paste0("[^", paste0(vocabulary, collapse = ""), "]")
+    
+    # token for ambiguous nucleotides
+    for (i in letters) {
+      if (!(i %in% stringr::str_to_lower(vocabulary))) {
+        amb_nuc_token <- i
+        break
+      }
+    }
+    tokenizer <- keras::fit_text_tokenizer(keras::text_tokenizer(char_level = TRUE, lower = TRUE, oov_token = "0"), c(vocabulary, amb_nuc_token))
+    sequence <- stringr::str_to_lower(char_sequence)
+    sequence <- stringr::str_replace_all(string = sequence, pattern = pattern, amb_nuc_token)
+    sequence <- keras::texts_to_sequences(tokenizer, sequence)[[1]] - 1
+  }
   
   if (is.null(n_gram_stride)) n_gram_stride <- 1
   voc_len <- length(vocabulary)

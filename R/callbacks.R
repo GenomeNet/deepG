@@ -699,7 +699,7 @@ conf_matrix_cb <- function(path_tensorboard, run_name, confMatLabels, cm_dir) {
 #' https://github.com/giorgiop/loss-correction/blob/15a79de3c67c31907733392085c333547c2f2b16/loss.py#L16-L21 
 #'
 #' @param noise_matrix Matrix of noise distribution.
-#' If first label contains 5% wrong labels and second label no noise, then
+#' If first label contains 5\% wrong labels and second label no noise, then
 #' \code{noise_matrix <- matrix(c(0.95, 0.05, 0, 1), nrow = 2, byrow = TRUE)}.
 #' @export
 noisy_loss_wrapper <- function(noise_matrix) {

@@ -2,8 +2,6 @@
 #'
 #' @description Removes layers (optional) from pretrained model and calculates states of fasta/fastq file or nucleotide sequence.
 #' Writes states to h5/csv file. To acces the content of h5 output use \code{load_predictions} function.
-#'
-#' @param output_format Either "one_seq", "by_entry", "by_entry_one_file", "one_pred_per_entry".
 #' If "one_seq" computes prediction for sequence argument or fasta/fastq file.
 #' Combines fasta entries in file to one sequence. This means predictor sequences can contain elements from more than one fasta entry.
 #' If "by_entry" will output a separate file for each fasta/fastq entry.
@@ -11,31 +9,33 @@
 #' If "by_entry_one_file", will store prediction for all fasta entry in one h5 file.
 #' If "one_pred_per_entry" will make one prediction for each entry by either picking random sample for long sequences
 #' or pad sequence for short sequences.
+#'
+#' @param output_format Either "one_seq", "by_entry", "by_entry_one_file", "one_pred_per_entry".
 #' @param output_type "h5" or "csv". If output_format is "by_entries_one_file", "one_pred_per_entry" can only be "h5".
 #' @param return_states Return predictions as data frame. Only supported for output_format "one_seq".
 #' @inheritParams predict_model_one_seq
 #' @inheritParams predict_model_by_entry
 #' @inheritParams predict_model_by_entry_one_file
 #' @inheritParams predict_model_one_pred_per_entry
-#' @examples 
-#' make prediction for single sequence and write to h5 file
+#' @examples
+#' # make prediction for single sequence and write to h5 file
 #' model <- create_model_lstm_cnn(maxlen = 20, layer_lstm = 8, layer_dense = 2, verbose = FALSE)
 #' vocabulary <- c("a", "c", "g", "t")
-#' sequence <- sample(vocabulary, 200, replace = TRUE) %>% paste(collapse = "")
+#' sequence <- paste(sample(vocabulary, 200, replace = TRUE), collapse = "")
 #' output_file <- tempfile(fileext = ".h5")
 #' predict_model(output_format = "one_seq", model = model, step = 10,
-#'               sequence = sequence, filename = output_file, mode = "label")
+#'              sequence = sequence, filename = output_file, mode = "label")
 #' 
 #' # make prediction for fasta file with multiple entries, write output to separate h5 files
 #' fasta_path <- tempfile(fileext = ".fasta")
 #' create_dummy_data(file_path = fasta_path, num_files = 1,
-#'                   num_seq = 5, seq_length = 100,
-#'                   write_to_file_path = TRUE)
+#'                  num_seq = 5, seq_length = 100,
+#'                  write_to_file_path = TRUE)
 #' model <- create_model_lstm_cnn(maxlen = 20, layer_lstm = 8, layer_dense = 2, verbose = FALSE)
 #' output_dir <- tempfile()
 #' dir.create(output_dir)
 #' predict_model(output_format = "by_entry", model = model, step = 10, verbose = FALSE,
-#'               output_dir = output_dir, mode = "label", path_input = fasta_path)
+#'                output_dir = output_dir, mode = "label", path_input = fasta_path)
 #' list.files(output_dir)
 #' @export
 predict_model <- function(output_format = "one_seq", model = NULL, layer_name = NULL, sequence = NULL, path_input = NULL,
@@ -710,14 +710,16 @@ predict_model_one_pred_per_entry <- function(model = NULL, layer_name = NULL, pa
 #' @param get_target_positions Return position of corresponding targets if TRUE.
 #' @param get_seq Return nucleotide sequence if TRUE.
 #' @examples
-#' # make prediction for single sequence and write to h5 file
-#' model <- create_model_lstm_cnn(maxlen = 20, layer_lstm = 8, layer_dense = 2, verbose = FALSE)
-#' vocabulary <- c("a", "c", "g", "t")
-#' sequence <- sample(vocabulary, 200, replace = TRUE) %>% paste(collapse = "")
-#' output_file <- tempfile(fileext = ".h5")
-#' predict_model(output_format = "one_seq", model = model, step = 10,
-#'               sequence = sequence, filename = output_file, mode = "label")
-#' load_prediction(h5_path = output_file)
+#' \dontrun{
+#' ## make prediction for single sequence and write to h5 file
+#' #model <- create_model_lstm_cnn(maxlen = 20, layer_lstm = 8, layer_dense = 2, verbose = FALSE)
+#' #vocabulary <- c("a", "c", "g", "t")
+#' #sequence <- paste(sample(vocabulary, 200, replace = TRUE), collapse = "")
+#' #output_file <- tempfile(fileext = ".h5")
+#' #predict_model(output_format = "one_seq", model = model, step = 10,
+#' #               sequence = sequence, filename = output_file, mode = "label")
+#' #load_prediction(h5_path = output_file)
+#' } 
 #' @export
 load_prediction <- function(h5_path, rows = NULL, verbose = TRUE,
                             get_target_positions = FALSE, get_seq = FALSE) {
