@@ -112,12 +112,12 @@ seq_encoding_lm <- function(sequence = NULL, maxlen, vocabulary, start_ind, ambi
     z[amb_nuc_pos, ] <- matrix(rep(nuc_dist, length(amb_nuc_pos)), nrow = length(amb_nuc_pos), byrow = TRUE)
   }
   
-  if (ambiguous_nuc == "discard") {
-    amb_nuc_pos <- which(sequence == (voc_len + 1))
-    if (length(amb_nuc_pos) > 0) {
-      stop("sequence contains ambiguous nucleotides")
-    }
-  }
+  # if (ambiguous_nuc == "discard") {
+  #   amb_nuc_pos <- which(sequence == (voc_len + 1))
+  #   if (length(amb_nuc_pos) > 0) {
+  #     stop("sequence contains ambiguous nucleotides")
+  #   }
+  # }
   
   if (use_coverage) {
     z <- z * (cov_vector/max_cov)
@@ -353,12 +353,12 @@ seq_encoding_label <- function(sequence = NULL, maxlen, vocabulary, start_ind, a
     z[amb_nuc_pos, ] <- matrix(rep(nuc_dist, length(amb_nuc_pos)), nrow = length(amb_nuc_pos), byrow = TRUE)
   }
   
-  if (ambiguous_nuc == "discard") {
-    amb_nuc_pos <- which(sequence == (voc_len + 1))
-    if (length(amb_nuc_pos) > 0) {
-      stop("sequence contains ambiguous nucleotides")
-    }
-  }
+  # if (ambiguous_nuc == "discard") {
+  #   amb_nuc_pos <- which(sequence == (voc_len + 1))
+  #   if (length(amb_nuc_pos) > 0) {
+  #     stop("sequence contains ambiguous nucleotides")
+  #   }
+  # }
   
   if (use_coverage) {
     z <- z * (cov_vector/max_cov)
