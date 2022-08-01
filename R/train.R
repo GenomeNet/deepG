@@ -411,13 +411,15 @@ train_model <- function(train_type = "lm",
                              steps_per_epoch = steps_per_epoch, step = step, shuffle_file_order = shuffle_file_order, initial_epoch = initial_epoch, vocabulary = vocabulary,
                              learning_rate = learning_rate, shuffle_input = shuffle_input, vocabulary_label = vocabulary_label, solver = solver,
                              file_limit = file_limit, reverse_complement = reverse_complement, wavenet_format = wavenet_format,  cnn_format = cnn_format,
+                             train_val_split_csv = train_val_split_csv,
                              create_model_function = NULL, vocabulary_size = vocabulary_size, gen_cb = gen_cb, argumentList = argumentList, output = output,
                              maxlen = maxlen, labelGen = labelGen, labelByFolder = labelByFolder, vocabulary_label_size = vocabulary_label_size, tb_images = tb_images,
                              target_middle = target_middle, path_file_log = path_file_log, proportion_per_seq = proportion_per_seq,
                              skip_amb_nuc = skip_amb_nuc, max_samples = max_samples, proportion_entries = proportion_entries, path_log = path_log,
                              train_with_gen = train_with_gen, random_sampling = random_sampling, reduce_lr_on_plateau = reduce_lr_on_plateau,
                              save_weights_only = save_weights_only, path_checkpoint = path_checkpoint, save_best_only = save_best_only, gen.val = gen.val,
-                             reset_states = reset_states, early_stopping_time = early_stopping_time, validation_only_after_training = validation_only_after_training)
+                             target_from_csv = target_from_csv, reset_states = reset_states, early_stopping_time = early_stopping_time,
+                             validation_only_after_training = validation_only_after_training)
   
   # training
   #message("Start training ...")
@@ -477,6 +479,9 @@ train_model <- function(train_type = "lm",
 }
 
 #' Generate run_name if none is given or is already present.
+#' 
+#' If no run name is given, will use date as run name. If run name is already present will add _2 to name or 
+#' _x+1 if name ends with _x and x is integer. 
 #'
 #' @param auto_extend If run_name is already present, add "_2" to name. If name already ends with "_x" replace x with x+1.
 #' @keywords internal

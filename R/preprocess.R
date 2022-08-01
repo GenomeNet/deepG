@@ -105,10 +105,18 @@ seq_encoding_lm <- function(sequence = NULL, maxlen, vocabulary, start_ind, ambi
     amb_nuc_pos <- which(sequence == (voc_len + 1))
     z[amb_nuc_pos, ] <- matrix(rep(1/voc_len, ncol(z) * length(amb_nuc_pos)), ncol = ncol(z))
   }
+  
   if (ambiguous_nuc == "empirical") {
     if (!is.null(n_gram)) stop("Can only use equal, zero or discard option for ambiguous_nuc when using n_gram encoding")
     amb_nuc_pos <- which(sequence == (voc_len + 1))
     z[amb_nuc_pos, ] <- matrix(rep(nuc_dist, length(amb_nuc_pos)), nrow = length(amb_nuc_pos), byrow = TRUE)
+  }
+  
+  if (ambiguous_nuc == "discard") {
+    amb_nuc_pos <- which(sequence == (voc_len + 1))
+    if (length(amb_nuc_pos) > 0) {
+      stop("sequence contains ambiguous nucleotides")
+    }
   }
   
   if (use_coverage) {
@@ -339,9 +347,17 @@ seq_encoding_label <- function(sequence = NULL, maxlen, vocabulary, start_ind, a
     amb_nuc_pos <- which(sequence == (voc_len + 1))
     z[amb_nuc_pos, ] <- matrix(rep(1/voc_len, ncol(z) * length(amb_nuc_pos)), ncol = ncol(z))
   }
+  
   if (ambiguous_nuc == "empirical") {
     amb_nuc_pos <- which(sequence == (voc_len + 1))
     z[amb_nuc_pos, ] <- matrix(rep(nuc_dist, length(amb_nuc_pos)), nrow = length(amb_nuc_pos), byrow = TRUE)
+  }
+  
+  if (ambiguous_nuc == "discard") {
+    amb_nuc_pos <- which(sequence == (voc_len + 1))
+    if (length(amb_nuc_pos) > 0) {
+      stop("sequence contains ambiguous nucleotides")
+    }
   }
   
   if (use_coverage) {

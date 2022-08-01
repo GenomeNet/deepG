@@ -947,10 +947,11 @@ get_callbacks <- function(default_arguments , model, path_tensorboard, run_name,
                           create_model_function = NULL, vocabulary_size, gen_cb, argumentList,
                           maxlen, labelGen, labelByFolder, vocabulary_label_size, tb_images,
                           target_middle, path_file_log, proportion_per_seq,
+                          train_val_split_csv,
                           skip_amb_nuc, max_samples, proportion_entries, path_log, output,
                           train_with_gen, random_sampling, reduce_lr_on_plateau,
                           save_weights_only, save_best_only, reset_states, early_stopping_time,
-                          validation_only_after_training, gen.val) {
+                          validation_only_after_training, gen.val, target_from_csv) {
   
   
   if (output$checkpoints) {
