@@ -427,8 +427,8 @@ train_model <- function(train_type = "lm",
     
     model <- keras::set_weights(model, model_weights)
     history <-
-      model %>% keras::fit_generator(
-        generator = gen,
+      model %>% keras::fit(
+        x = gen,
         validation_data = validation_data,
         validation_steps = validation_steps,
         steps_per_epoch = steps_per_epoch,
