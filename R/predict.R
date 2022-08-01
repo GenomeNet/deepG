@@ -710,16 +710,14 @@ predict_model_one_pred_per_entry <- function(model = NULL, layer_name = NULL, pa
 #' @param get_target_positions Return position of corresponding targets if TRUE.
 #' @param get_seq Return nucleotide sequence if TRUE.
 #' @examples
-#' \dontrun{
-#' ## make prediction for single sequence and write to h5 file
-#' #model <- create_model_lstm_cnn(maxlen = 20, layer_lstm = 8, layer_dense = 2, verbose = FALSE)
-#' #vocabulary <- c("a", "c", "g", "t")
-#' #sequence <- paste(sample(vocabulary, 200, replace = TRUE), collapse = "")
-#' #output_file <- tempfile(fileext = ".h5")
-#' #predict_model(output_format = "one_seq", model = model, step = 10,
-#' #               sequence = sequence, filename = output_file, mode = "label")
-#' #load_prediction(h5_path = output_file)
-#' } 
+#' # make prediction for single sequence and write to h5 file
+#' model <- create_model_lstm_cnn(maxlen = 20, layer_lstm = 8, layer_dense = 2, verbose = FALSE)
+#' vocabulary <- c("a", "c", "g", "t")
+#' sequence <- paste(sample(vocabulary, 200, replace = TRUE), collapse = "")
+#' output_file <- tempfile(fileext = ".h5")
+#' predict_model(output_format = "one_seq", model = model, step = 10,
+#'               sequence = sequence, filename = output_file, mode = "label")
+#' load_prediction(h5_path = output_file)
 #' @export
 load_prediction <- function(h5_path, rows = NULL, verbose = TRUE,
                             get_target_positions = FALSE, get_seq = FALSE) {
