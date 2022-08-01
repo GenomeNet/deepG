@@ -417,7 +417,8 @@ train_model <- function(train_type = "lm",
                              skip_amb_nuc = skip_amb_nuc, max_samples = max_samples, proportion_entries = proportion_entries, path_log = path_log,
                              train_with_gen = train_with_gen, random_sampling = random_sampling, reduce_lr_on_plateau = reduce_lr_on_plateau,
                              save_weights_only = save_weights_only, path_checkpoint = path_checkpoint, save_best_only = save_best_only, gen.val = gen.val,
-                             reset_states = reset_states, early_stopping_time = early_stopping_time, validation_only_after_training = validation_only_after_training)
+                             target_from_csv = target_from_csv, reset_states = reset_states, early_stopping_time = early_stopping_time,
+                             validation_only_after_training = validation_only_after_training)
   
   # training
   #message("Start training ...")

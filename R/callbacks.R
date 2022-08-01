@@ -950,7 +950,7 @@ get_callbacks <- function(default_arguments , model, path_tensorboard, run_name,
                           skip_amb_nuc, max_samples, proportion_entries, path_log, output,
                           train_with_gen, random_sampling, reduce_lr_on_plateau,
                           save_weights_only, save_best_only, reset_states, early_stopping_time,
-                          validation_only_after_training, gen.val) {
+                          validation_only_after_training, gen.val, target_from_csv) {
   
   
   if (output$checkpoints) {
