@@ -57,7 +57,7 @@ seq_encoding_lm <- function(sequence = NULL, maxlen, vocabulary, start_ind, ambi
                             nuc_dist = NULL, use_quality = FALSE, quality_vector = NULL,
                             target_len = 1, use_coverage = FALSE, max_cov = NULL, cov_vector = NULL,
                             n_gram = NULL, n_gram_stride = 1, output_format = "target_right",
-                            char_sequence = NULL) {
+                            char_sequence = NULL, adjust_start_ind = TRUE) {
   
   if (!is.null(char_sequence)) {
     
@@ -85,7 +85,7 @@ seq_encoding_lm <- function(sequence = NULL, maxlen, vocabulary, start_ind, ambi
     if (target_len < n_gram) stop("target_len needs to be at least as big as n_gram")
   }
   
-  start_ind <- start_ind - start_ind[1] + 1
+  if (adjust_start_ind) start_ind <- start_ind - start_ind[1] + 1
   numberOfSamples <- length(start_ind)
   
   # every row in z one-hot encodes one character in sequence, oov is zero-vector
@@ -301,6 +301,7 @@ seq_encoding_lm <- function(sequence = NULL, maxlen, vocabulary, start_ind, ambi
 #' @export
 seq_encoding_label <- function(sequence = NULL, maxlen, vocabulary, start_ind, ambiguous_nuc = "zero", nuc_dist = NULL,
                                use_quality = FALSE, quality_vector = NULL, use_coverage = FALSE, max_cov = NULL,
+                               adjust_start_ind = TRUE,
                                cov_vector = NULL, n_gram = NULL, n_gram_stride = 1, char_sequence = NULL) {
   
   if (!is.null(char_sequence)) {
@@ -328,7 +329,8 @@ seq_encoding_label <- function(sequence = NULL, maxlen, vocabulary, start_ind, a
     maxlen <- maxlen - n_gram + 1
     voc_len <- length(vocabulary)^n_gram
   }
-  start_ind <- start_ind - start_ind[1] + 1
+    
+  if (adjust_start_ind) start_ind <- start_ind - start_ind[1] + 1
   numberOfSamples <- length(start_ind)
   
   # every row in z one-hot encodes one character in sequence, oov is zero-vector
