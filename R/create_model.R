@@ -101,6 +101,7 @@ create_model_lstm_cnn <- function(
   batch_norm_momentum = 0.99,
   model_seed = NULL) {
   
+  layer_dense <- as.integer(layer_dense)
   if (!is.null(model_seed)) tensorflow::tf$random$set_seed(model_seed)
   num_targets <- layer_dense[length(layer_dense)]
   layers.lstm <- length(layer_lstm)
@@ -491,7 +492,7 @@ create_model_lstm_cnn <- function(
   }
   
   argg <- c(as.list(environment()))
-  argg["metrics"] <- NULL
+  #argg["metrics"] <- NULL
   argg["model"] <- NULL
   argg["i"] <- NULL
   argg["optimizer"] <- NULL
@@ -640,6 +641,7 @@ create_model_lstm_cnn_target_middle <- function(
   batch_norm_momentum = 0.99,
   model_seed = NULL) {
   
+  layer_dense <- as.integer(layer_dense)
   if (!is.null(model_seed)) tensorflow::tf$random$set_seed(model_seed)
   use.cnn <- ifelse(!is.null(kernel_size), TRUE, FALSE)
   num_targets <- layer_dense[length(layer_dense)]
@@ -1412,6 +1414,7 @@ create_model_lstm_cnn_time_dist <- function(
   verbose = TRUE,
   model_seed = NULL) {
   
+  layer_dense <- as.integer(layer_dense)
   if (!is.null(model_seed)) tensorflow::tf$random$set_seed(model_seed)
   num_output_layers <- 1
   num_input_layers <- 1
@@ -1728,6 +1731,7 @@ create_model_lstm_cnn_multi_input <- function(
   verbose = TRUE,
   model_seed = NULL) {
   
+  layer_dense <- as.integer(layer_dense)
   if (!is.null(model_seed)) tensorflow::tf$random$set_seed(model_seed)
   num_targets <- layer_dense[length(layer_dense)]
   layers.lstm <- length(layer_lstm)

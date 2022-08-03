@@ -277,7 +277,7 @@ evaluate_model <- function(path_input,
     
     index <- NULL
     if (mode == "label_folder") {
-      gen <- generator_fasta_label_folder(path_corpus = path_input[k],
+      gen <- generator_fasta_label_folder(path_corpus = path_input[[k]],
                                           format = format,
                                           batch_size = batch_size,
                                           maxlen = maxlen,

@@ -753,7 +753,6 @@ balanced_acc_wrapper <- function(num_targets, cm_dir) {
                                                      labels = labels, predictions = predictions,
                                                      dtype = "float32", num_classes = self$num_targets)
                                                    current_cm <- tensorflow::tf$transpose(current_cm)
-                                                   print(current_cm)
                                                    return(current_cm)
                                                  },
                                                  
@@ -939,7 +938,7 @@ auc_wrapper <- function(model_output_size,
 }
 
 
-get_callbacks <- function(default_arguments, path_tensorboard, run_name, train_type,
+get_callbacks <- function(default_arguments , model, path_tensorboard, run_name, train_type,
                           path_model, path, train_val_ratio, batch_size, epochs, format,
                           max_queue_size, lr_plateau_factor, patience, cooldown, path_checkpoint,
                           steps_per_epoch, step, shuffle_file_order, initial_epoch, vocabulary,
@@ -948,7 +947,7 @@ get_callbacks <- function(default_arguments, path_tensorboard, run_name, train_t
                           create_model_function = NULL, vocabulary_size, gen_cb, argumentList,
                           maxlen, labelGen, labelByFolder, vocabulary_label_size, tb_images,
                           target_middle, path_file_log, proportion_per_seq,
-                          train_val_split_csv, model = NULL,
+                          train_val_split_csv,
                           skip_amb_nuc, max_samples, proportion_entries, path_log, output,
                           train_with_gen, random_sampling, reduce_lr_on_plateau,
                           save_weights_only, save_best_only, reset_states, early_stopping_time,
@@ -979,7 +978,7 @@ get_callbacks <- function(default_arguments, path_tensorboard, run_name, train_t
   count_files <- !random_sampling
   callbacks <- list()
   callback_names <- NULL
-
+  
   if (reduce_lr_on_plateau) {
     if (is.list(model$outputs)) {
       monitor <- "val_loss"
@@ -1008,20 +1007,20 @@ get_callbacks <- function(default_arguments, path_tensorboard, run_name, train_t
       num_targets <- dim(dataset$Y)[2]
     }
     contains_macro_acc_metric <- FALSE
-    for (i in 1:length(model$metrics)) {
-      if (model$metrics[[i]]$name == "balanced_acc") contains_macro_acc_metric <- TRUE
-    }
-    
-    if (!contains_macro_acc_metric) {
-      if (tb_images) {
-        if (!reticulate::py_has_attr(model, "cm_dir")) {
-          cm_dir <- file.path(tempdir(), paste(sample(letters, 7), collapse = ""))
-          dir.create(cm_dir)
-          model$cm_dir <- cm_dir
-        }
-        metrics <- c(metrics, balanced_acc_wrapper(num_targets = num_targets, cm_dir = model$cm_dir))
-      }
-    }
+    # for (i in 1:length(model$metrics)) {
+    #   if (model$metrics[[i]]$name == "balanced_acc") contains_macro_acc_metric <- TRUE
+    # }
+    # 
+    # if (!contains_macro_acc_metric) {
+    #   if (tb_images) {
+    #     if (!reticulate::py_has_attr(model, "cm_dir")) {
+    #       cm_dir <- file.path(tempdir(), paste(sample(letters, 7), collapse = ""))
+    #       dir.create(cm_dir)
+    #       model$cm_dir <- cm_dir
+    #     }
+    #     metrics <- c(metrics, balanced_acc_wrapper(num_targets = num_targets, cm_dir = model$cm_dir))
+    #   }
+    # }
     
     # count files in path
     if (train_type == "label_rds" | train_type == "lm_rds") format <- "rds"
@@ -1103,9 +1102,19 @@ get_callbacks <- function(default_arguments, path_tensorboard, run_name, train_t
         confMatLabels <- expand.grid(l) %>% apply(1, paste0) %>% apply(2, paste, collapse = "") %>% sort()
       }
     }
-    
-    model %>% keras::compile(loss = model$loss,
-                             optimizer = model$optimizer, metrics = metrics)
+   
+    # model %>% keras::compile(loss = model$loss,
+    #                          optimizer = model$optimizer, metrics = metrics[-1])
+    # 
+    # ## initialize metrics
+    # dummy_gen <- generator_dummy(model,batch_size = 1)
+    # z <- dummy_gen()
+    # model$evaluate(z[[1]], z[[2]])
+    # print(metrics)
+    # print(model$metrics)
+    # for (i in 1:length(model$metrics)) {
+    #   print(model$metrics[[i]]$name)
+    # }
     
     if (length(confMatLabels) > 16) {
       message("Cannot display confusion matrix with more than 16 labels.")
