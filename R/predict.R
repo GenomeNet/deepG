@@ -855,7 +855,7 @@ load_prediction <- function(h5_path, rows = NULL, verbose = TRUE,
 #'
 #' Create summary data frame for confidence predictions over 1 or several state files or a data frame.
 #' Columns in file or data frame should be confidence preditions for one class,
-#' i.e. each rows should sum to 1 and have nonnegative entries. 
+#' i.e. each row should sum to 1 and have nonnegative entries. 
 #' Output data frame contains average confidence scores, max score and percentage of votes for each class.
 #'
 #' @param states_path Folder containing state files or a single file with same ending as file_type.
