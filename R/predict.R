@@ -669,7 +669,7 @@ predict_model_one_pred_per_entry <- function(model = NULL, layer_name = NULL, pa
   }
   
   gen <- generator_fasta_label_folder(path_corpus = temp_file,
-                                      format = "fasta",
+                                      format = format,
                                       batch_size = batch_size,
                                       maxlen = maxlen,
                                       vocabulary = vocabulary,
