@@ -516,7 +516,7 @@ conf_matrix_cb <- function(path_tensorboard, run_name, confMatLabels, cm_dir) {
                                                      if (epoch > 0) {
                                                        
                                                        cm_train <- readRDS(file.path(self$cm_dir, paste0("cm_train_", epoch-1, ".rds")))
-                                                       cm_val <- readRDS(file.path(self$cm_dir, paste0("cm_val_", epoch, ".rds")))
+                                                       cm_val <- readRDS(file.path(self$cm_dir, paste0("cm_val_", epoch+1, ".rds")))
                                                        if (self$cm_display_percentage) {
                                                          cm_train <- cm_perc(cm_train, self$round_dig)
                                                          cm_val <- cm_perc(cm_val, self$round_dig)
@@ -603,9 +603,17 @@ conf_matrix_cb <- function(path_tensorboard, run_name, confMatLabels, cm_dir) {
                                                    on_train_end = function(self, logs) {
                                                      
                                                      epoch <- self$epoch + 1
-                                                     
                                                      cm_train <- readRDS(file.path(self$cm_dir, paste0("cm_train_", epoch-1, ".rds")))
                                                      cm_val <- readRDS(file.path(self$cm_dir, paste0("cm_val_", epoch, ".rds")))
+                                                     # # extract last val confusion metric from custom metric
+                                                     # for (i in 1:length(model$metrics)) {
+                                                     #   if (model$metrics[[i]]$name == "balanced_acc") {
+                                                     #     bal_acc_index <- i
+                                                     #     break
+                                                     #   }
+                                                     # }
+                                                     # cm_val <- as.array(model$metrics[[bal_acc_index]]$cm)
+                                                     
                                                      if (self$cm_display_percentage) {
                                                        cm_train <- cm_perc(cm_train, self$round_dig)
                                                        cm_val <- cm_perc(cm_val, self$round_dig)
@@ -720,6 +728,8 @@ noisy_loss_wrapper <- function(noise_matrix) {
 #'
 #'@param num_targets Number of targets.
 #'@param cm_dir Directory of confusion matrix used to compute balanced accuracy.
+#'@examples 
+#'
 #'@export
 balanced_acc_wrapper <- function(num_targets, cm_dir) {
   balanced_acc_stateful <- reticulate::PyClass("balanced_acc",
@@ -742,7 +752,7 @@ balanced_acc_wrapper <- function(num_targets, cm_dir) {
                                                  
                                                  result = function(self) {
                                                    balanced_acc <- self$compute_balanced_acc()
-                                                   self$store_cm()
+                                                   #self$store_cm()
                                                    return(balanced_acc)
                                                  },
                                                  
@@ -768,6 +778,7 @@ balanced_acc_wrapper <- function(num_targets, cm_dir) {
                                                  },
                                                  
                                                  reset_states = function(self) {
+                                                   self$store_cm()
                                                    self$count <- self$count + 1
                                                    self$cm$assign_sub(self$cm)
                                                    NULL
