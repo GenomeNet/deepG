@@ -148,11 +148,8 @@ predict_model_one_seq <- function(path_model = NULL, layer_name = NULL, sequence
   }
   
   if (is.null(layer_name)) {
-    num_layers <- length(model$get_config()$layers)
-    layer_name <- model$get_config()$layers[[num_layers]]$name
-    if (verbose) {
-      message(paste("layer_name not specified. Using layer", layer_name))
-    }
+    layer_name <- model$output_names
+    message(paste("layer_name not specified. Using layer", layer_name))
   }
   
   if (!is.null(sequence) && (!missing(sequence) & sequence != "")) {
@@ -188,6 +185,10 @@ predict_model_one_seq <- function(path_model = NULL, layer_name = NULL, sequence
   
   if (padding) {
     seq <- paste0(paste(rep("0", maxlen), collapse = ""), seq)
+  }
+  
+  if (nchar(seq) < maxlen) {
+    stop("Input sequence is shorter than maxlen. Set padding = TRUE to pad sequence to bigger size.")
   }
   
   # start of samples
@@ -574,6 +575,7 @@ predict_model_by_entry_one_file <- function(path_model, path_input, round_digits
 #'
 #' @inheritParams predict_model_one_seq
 #' @keywords internal
+
 predict_model_one_pred_per_entry <- function(model = NULL, layer_name = NULL, path_input, round_digits = 2, format = "fasta",
                                              filename = "states.h5", vocabulary = c("a", "c", "g", "t"), batch_size = 256, verbose = TRUE,
                                              return_states = FALSE, path_model = NULL, reverse_complement_encoding = FALSE, include_seq = FALSE) {
@@ -581,14 +583,18 @@ predict_model_one_pred_per_entry <- function(model = NULL, layer_name = NULL, pa
   file_type <- "h5"
   stopifnot(batch_size > 0)
   stopifnot(!file.exists(paste0(filename, ".", file_type)) & !file.exists(filename))
+  # token for ambiguous nucleotides
+  for (i in letters) {
+    if (!(i %in% stringr::str_to_lower(vocabulary))) {
+      amb_nuc_token <- i
+      break
+    }
+  }
   tokenizer <- keras::fit_text_tokenizer(keras::text_tokenizer(char_level = TRUE, lower = TRUE, oov_token = "N"), vocabulary)
   
   if (is.null(layer_name)) {
-    num_layers <- length(model$get_config()$layers)
-    layer_name <- model$get_config()$layers[[num_layers]]$name
-    if (verbose) {
-      message(paste("layer_name not specified. Using layer", layer_name))
-    }
+    layer_name <- model$output_names
+    message(paste("layer_name not specified. Using layer", layer_name))
   }
   
   # load model and sequence/file
@@ -609,9 +615,12 @@ predict_model_one_pred_per_entry <- function(model = NULL, layer_name = NULL, pa
   if (format == "fastq") {
     fasta.file <- microseq::readFastq(path_input)
   }
+  
+  num_samples <- nrow(fasta.file)
+  
   nucSeq <- as.character(fasta.file$Sequence)
   seq_length <- nchar(fasta.file$Sequence)
-  # TODO: check if loop is slow
+  
   for (i in 1:length(nucSeq)) {
     # take random subsequence
     if (seq_length[i] > maxlen) {
@@ -623,7 +632,6 @@ predict_model_one_pred_per_entry <- function(model = NULL, layer_name = NULL, pa
       nucSeq[i] <- paste0(paste(rep("N", maxlen - seq_length[i]), collapse = ""), nucSeq[i])
     }
   }
-  seq <- paste(nucSeq, collapse = "") %>% stringr::str_to_lower()
   
   model <- tensorflow::tf$keras$Model(model$input, model$get_layer(layer_name)$output)
   cat("Computing output for model at layer", layer_name,  "\n")
@@ -639,10 +647,6 @@ predict_model_one_pred_per_entry <- function(model = NULL, layer_name = NULL, pa
     layer.size <- model$output$shape[[2]]
   }
   
-  # tokenize sequence
-  tokSeq <- stringr::str_to_lower(seq)
-  tokSeq <- keras::texts_to_sequences(tokenizer, seq)[[1]] - 1
-  
   if (file_type == "h5") {
     # create h5 file to store states
     h5_file <- hdf5r::H5File$new(filename, mode = "w")
@@ -655,45 +659,52 @@ predict_model_one_pred_per_entry <- function(model = NULL, layer_name = NULL, pa
     writer <- h5_file[["states"]]
   }
   
-  # create temporary fasta file for generator
-  temp_file <- tempfile(pattern = "", fileext = paste0(".", format))
-  fasta.file <- fasta.file[1, ]
-  fasta.file$Sequence <- seq
-  fasta.file$Header <- "one_seq"
-  
-  if (format == "fasta") {
-    microseq::writeFasta(fdta = fasta.file, out.file = temp_file)
-  }
-  if (format == "fastq") {
-    microseq::writeFastq(fdta = fasta.file, out.file = temp_file)
-  }
-  
-  gen <- generator_fasta_label_folder(path_corpus = temp_file,
-                                      format = format,
-                                      batch_size = batch_size,
-                                      maxlen = maxlen,
-                                      vocabulary = vocabulary,
-                                      step = maxlen,
-                                      num_targets = 1,
-                                      ones_column = 1,
-                                      reverse_complement = FALSE,
-                                      reverse_complement_encoding = reverse_complement_encoding)
-  
-  number_batches <- ceiling(length(nucSeq)/batch_size)
-  
+  rm(fasta.file)
+  #nucSeq <- paste(nucSeq, collapse = "") %>% stringr::str_to_lower()
+  number_batches <- ceiling(num_samples/batch_size)
+  if (verbose) cat("Evaluating", number_batches, ifelse(number_batches > 1, "batches", "batch"), "\n")
   row <- 1
+  string_start_index <- 1 
+  ten_percent_steps <- seq(number_batches/10, number_batches, length.out = 10)
+  percentage_index <- 1
+  
   if (number_batches > 1) {
     for (i in 1:(number_batches - 1)) {
-      activations <- keras::predict_generator(model, generator = gen, steps = 1)
+      string_end_index <-string_start_index + batch_size - 1 
+      char_seq <- nucSeq[string_start_index : string_end_index] %>% paste(collapse = "") 
+      if (i == 1) start_ind <- seq(1, nchar(char_seq), maxlen)
+      one_hot_batch <- seq_encoding_label(sequence = NULL, maxlen = maxlen, vocabulary = vocabulary,
+                                          start_ind = start_ind, ambiguous_nuc = "zero", nuc_dist = NULL,
+                                          use_quality = FALSE, quality_vector = NULL, use_coverage = FALSE, max_cov = NULL,
+                                          cov_vector = NULL, n_gram = NULL, n_gram_stride = 1, char_sequence = char_seq,
+                                          tokenizer = tokenizer) 
+      if (reverse_complement_encoding) one_hot_batch <- list(one_hot_batch, reverse_complement_tensor(one_hot_batch))
+      activations <- keras::predict_on_batch(model, one_hot_batch)
       writer[row : (row + batch_size - 1), ] <- activations
       row <- row + batch_size
+      string_start_index <- string_end_index + 1
+      
+      if (verbose & (i > ten_percent_steps[percentage_index]) & percentage_index < 10) {
+        cat("Progress: ", percentage_index * 10 ,"% \n")
+        percentage_index <- percentage_index + 1
+      }
+      
     }
   }
-  # last batch might be shorter
-  activations <- keras::predict_generator(model, generator = gen, steps = 1)
-  writer[row : length(nucSeq), ] <- activations[1 : length(row:length(nucSeq)), ]
   
-  file.remove(temp_file)
+  # last batch might be shorter
+  char_seq <- nucSeq[string_start_index : length(nucSeq)] %>% paste(collapse = "") 
+  one_hot_batch <- seq_encoding_label(sequence = NULL, maxlen = maxlen, vocabulary = vocabulary,
+                                      start_ind = seq(1, nchar(char_seq), maxlen), ambiguous_nuc = "zero", nuc_dist = NULL,
+                                      use_quality = FALSE, quality_vector = NULL, use_coverage = FALSE, max_cov = NULL,
+                                      cov_vector = NULL, n_gram = NULL, n_gram_stride = 1, char_sequence = char_seq,
+                                      tokenizer = tokenizer) 
+  if (reverse_complement_encoding) one_hot_batch <- list(one_hot_batch, reverse_complement_tensor(one_hot_batch))
+  activations <- keras::predict_on_batch(model, one_hot_batch)
+  writer[row : num_samples, ] <- activations[1 : length(row:num_samples), ]
+  
+  if (verbose) cat("Progress: 100 % \n")
+  
   if (return_states & (file_type == "h5")) states <- writer[ , ]
   if (file_type == "h5") h5_file$close_all()
   if (return_states) return(states)
