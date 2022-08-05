@@ -55,6 +55,7 @@
 #' optional arguments sd or mean if noise_type is "normal" (default is sd=1 and mean=0) or min, max if noise_type is "uniform"
 #' (default is min=0, max=1).
 #' @import data.table
+#' @importFrom magrittr %>%
 #' @export
 generator_fasta_lm <- function(path_corpus,
                                format = "fasta",
