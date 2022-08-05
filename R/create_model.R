@@ -2020,16 +2020,16 @@ get_optimizer <- function(model) {
   solver <- stringr::str_to_lower(model$optimizer$get_config()["name"])
   learning_rate <- keras::k_eval(model$optimizer$lr)
   if (solver == "adam") {
-    optimizer <-  keras::optimizer_adam(learning_rate = learning_rate)
+    optimizer <-  keras::optimizer_adam(learning_rate)
   }
   if (solver == "adagrad") {
-    optimizer <- keras::optimizer_adagrad(learning_rate = learning_rate)
+    optimizer <- keras::optimizer_adagrad(learning_rate)
   }
   if (solver == "rmsprop") {
-    optimizer <- keras::optimizer_rmsprop(learning_rate = learning_rate)
+    optimizer <- keras::optimizer_rmsprop(learning_rate)
   }
   if (solver == "sgd") {
-    optimizer <- keras::optimizer_sgd(learning_rate = learning_rate)
+    optimizer <- keras::optimizer_sgd(learning_rate)
   }
   return(optimizer)
 }
