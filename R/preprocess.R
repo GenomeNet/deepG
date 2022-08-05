@@ -57,12 +57,13 @@ seq_encoding_lm <- function(sequence = NULL, maxlen, vocabulary, start_ind, ambi
                             nuc_dist = NULL, use_quality = FALSE, quality_vector = NULL,
                             target_len = 1, use_coverage = FALSE, max_cov = NULL, cov_vector = NULL,
                             n_gram = NULL, n_gram_stride = 1, output_format = "target_right",
-                            char_sequence = NULL) {
+                            char_sequence = NULL, tokenizer = NULL, adjust_start_ind = TRUE) {
   
   if (!is.null(char_sequence)) {
     
     vocabulary <- stringr::str_to_lower(vocabulary)
     pattern <- paste0("[^", paste0(vocabulary, collapse = ""), "]")
+    
     
     # token for ambiguous nucleotides
     for (i in letters) {
@@ -71,7 +72,11 @@ seq_encoding_lm <- function(sequence = NULL, maxlen, vocabulary, start_ind, ambi
         break
       }
     }
-    tokenizer <- keras::fit_text_tokenizer(keras::text_tokenizer(char_level = TRUE, lower = TRUE, oov_token = "0"), c(vocabulary, amb_nuc_token))
+    
+    if (is.null(tokenizer)) {
+      tokenizer <- keras::fit_text_tokenizer(keras::text_tokenizer(char_level = TRUE, lower = TRUE, oov_token = "0"), c(vocabulary, amb_nuc_token))
+    }
+    
     sequence <- stringr::str_to_lower(char_sequence)
     sequence <- stringr::str_replace_all(string = sequence, pattern = pattern, amb_nuc_token)
     sequence <- keras::texts_to_sequences(tokenizer, sequence)[[1]] - 1
@@ -85,7 +90,7 @@ seq_encoding_lm <- function(sequence = NULL, maxlen, vocabulary, start_ind, ambi
     if (target_len < n_gram) stop("target_len needs to be at least as big as n_gram")
   }
   
-  start_ind <- start_ind - start_ind[1] + 1
+  if (adjust_start_ind) start_ind <- start_ind - start_ind[1] + 1
   numberOfSamples <- length(start_ind)
   
   # every row in z one-hot encodes one character in sequence, oov is zero-vector
@@ -301,7 +306,8 @@ seq_encoding_lm <- function(sequence = NULL, maxlen, vocabulary, start_ind, ambi
 #' @export
 seq_encoding_label <- function(sequence = NULL, maxlen, vocabulary, start_ind, ambiguous_nuc = "zero", nuc_dist = NULL,
                                use_quality = FALSE, quality_vector = NULL, use_coverage = FALSE, max_cov = NULL,
-                               cov_vector = NULL, n_gram = NULL, n_gram_stride = 1, char_sequence = NULL) {
+                               cov_vector = NULL, n_gram = NULL, n_gram_stride = 1, char_sequence = NULL,
+                               tokenizer = NULL, adjust_start_ind = TRUE) {
   
   if (!is.null(char_sequence)) {
     
@@ -315,7 +321,11 @@ seq_encoding_label <- function(sequence = NULL, maxlen, vocabulary, start_ind, a
         break
       }
     }
-    tokenizer <- keras::fit_text_tokenizer(keras::text_tokenizer(char_level = TRUE, lower = TRUE, oov_token = "0"), c(vocabulary, amb_nuc_token))
+    
+    if (is.null(tokenizer)) {
+      tokenizer <- keras::fit_text_tokenizer(keras::text_tokenizer(char_level = TRUE, lower = TRUE, oov_token = "0"), c(vocabulary, amb_nuc_token))
+    }
+    
     sequence <- stringr::str_to_lower(char_sequence)
     sequence <- stringr::str_replace_all(string = sequence, pattern = pattern, amb_nuc_token)
     sequence <- keras::texts_to_sequences(tokenizer, sequence)[[1]] - 1
@@ -328,7 +338,7 @@ seq_encoding_label <- function(sequence = NULL, maxlen, vocabulary, start_ind, a
     maxlen <- maxlen - n_gram + 1
     voc_len <- length(vocabulary)^n_gram
   }
-  start_ind <- start_ind - start_ind[1] + 1
+  if (adjust_start_ind) start_ind <- start_ind - start_ind[1] + 1
   numberOfSamples <- length(start_ind)
   
   # every row in z one-hot encodes one character in sequence, oov is zero-vector
@@ -871,7 +881,7 @@ count_files <- function(path, format = "fasta", train_type,
   num_files <- rep(0, length(path))
   if (!is.null(target_from_csv)) {
     target_files <- read.csv(target_from_csv)
-    target_files <- target_files$files
+    target_files <- target_files$file
   }  
   if (!is.null(train_val_split_csv)) {
     tvt_files <- read.csv()
@@ -1223,3 +1233,17 @@ add_noise_tensor <- function(x, noise_type, ...) {
   
   return(x)
 }
+
+reverse_complement_tensor <- function(x) {
+  stopifnot(dim(x)[3] == 4)
+  x_rev_comp <- x[ , , 4:1]
+  x_rev_comp <- x_rev_comp[ , dim(x)[2]:1, ]
+  x_rev_comp
+}
+
+
+x <- seq_encoding_label(maxlen = 5, vocabulary = c("a", "c", "g", "t"),
+                        start_ind = c(1,2,5), ambiguous_nuc = "zero",
+                        char_sequence = c("TAGGACTACGACTGGAACC"))
+x[1,,]
+x[2,,]
