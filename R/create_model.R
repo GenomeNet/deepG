@@ -435,7 +435,7 @@ create_model_lstm_cnn <- function(
   optimizer <- set_optimizer(solver, learning_rate) 
   
   #add metrics
-  metrics <- c("acc")
+  model_metrics <- c("acc")
   cm_dir <- NULL
   if (num_output_layers == 1) {
     cm_dir <- file.path(tempdir(), paste(sample(letters, 7), collapse = ""))
@@ -449,19 +449,19 @@ create_model_lstm_cnn <- function(
       
       if (bal_acc) {
         macro_average_cb <- balanced_acc_wrapper(num_targets, cm_dir)
-        metrics <- c(macro_average_cb, "acc")
+        model_metrics <- c(macro_average_cb, "acc")
       }
       
       if (f1_metric) {
         f1 <- f1_wrapper(num_targets)
-        metrics <- c(metrics, f1)
+        model_metrics <- c(model_metrics, f1)
       }
     }
     
     if (auc_metric) {
       auc <- auc_wrapper(model_output_size = layer_dense[length(layer_dense)],
                          loss = loss_fn)
-      metrics <- c(model$metrics, auc)
+      model_metrics <- c(model_metrics, auc)
     }
   }
   
@@ -477,7 +477,7 @@ create_model_lstm_cnn <- function(
       smooth_loss <- tensorflow::tf$losses$BinaryCrossentropy(label_smoothing = label_smoothing, name = "smooth_loss")
     }
     model %>% keras::compile(loss = smooth_loss,
-                             optimizer = optimizer, metrics = metrics)
+                             optimizer = optimizer, metrics = model_metrics)
   } else if (!is.null(label_noise_matrix)) {
     row_sums <- rowSums(label_noise_matrix)
     if (!all(row_sums == 1)) {
@@ -485,14 +485,14 @@ create_model_lstm_cnn <- function(
     }
     noisy_loss <- noisy_loss_wrapper(solve(label_noise_matrix))
     model %>% keras::compile(loss =  noisy_loss,
-                             optimizer = optimizer, metrics = metrics)
+                             optimizer = optimizer, metrics = model_metrics)
   } else {
     model %>% keras::compile(loss = loss_fn,
-                             optimizer = optimizer, metrics = metrics)
+                             optimizer = optimizer, metrics = model_metrics)
   }
   
   argg <- c(as.list(environment()))
-  #argg["metrics"] <- NULL
+  argg["model_metrics"] <- NULL
   argg["model"] <- NULL
   argg["i"] <- NULL
   argg["optimizer"] <- NULL
@@ -930,16 +930,16 @@ create_model_lstm_cnn_target_middle <- function(
   }
   dir.create(cm_dir)
   model$cm_dir <- cm_dir
-  metrics <- c("acc")
+  model_metrics <- c("acc")
   
   if (loss_fn == "categorical_crossentropy") {
     
     macro_average_cb <- balanced_acc_wrapper(num_targets, cm_dir)
-    metrics <- c(macro_average_cb, "acc")
+    model_metrics <- c(macro_average_cb, "acc")
     
     if (f1_metric) {
       f1 <- f1_wrapper(num_targets)
-      metrics <- c(metrics, f1)
+      model_metrics <- c(model_metrics, f1)
     }
   }
   
@@ -954,7 +954,7 @@ create_model_lstm_cnn_target_middle <- function(
       smooth_loss <- tensorflow::tf$losses$BinaryCrossentropy(label_smoothing = label_smoothing, name = "smooth_loss")
     }
     model %>% keras::compile(loss = smooth_loss,
-                             optimizer = optimizer, metrics = metrics)
+                             optimizer = optimizer, metrics = model_metrics)
   } else if (!is.null(label_noise_matrix)) {
     row_sums <- rowSums(label_noise_matrix)
     if (!all(row_sums == 1)) {
@@ -962,14 +962,14 @@ create_model_lstm_cnn_target_middle <- function(
     }
     noisy_loss <- noisy_loss_wrapper(solve(label_noise_matrix))
     model %>% keras::compile(loss =  noisy_loss,
-                             optimizer = optimizer, metrics = metrics)
+                             optimizer = optimizer, metrics = model_metrics)
   } else {
     model %>% keras::compile(loss = "categorical_crossentropy",
-                             optimizer = optimizer, metrics = metrics)
+                             optimizer = optimizer, metrics = model_metrics)
   }
   
   argg <- c(as.list(environment()))
-  argg["metrics"] <- NULL
+  argg["model_metrics"] <- NULL
   argg["i"] <- NULL
   argg["optimizer"] <- NULL
   argg["model"] <- NULL
@@ -1610,31 +1610,31 @@ create_model_lstm_cnn_time_dist <- function(
   }
   dir.create(cm_dir)
   model$cm_dir <- cm_dir
-  metrics <- c("acc")
+  model_metrics <- c("acc")
   
   if (loss_fn == "categorical_crossentropy") {
     
     macro_average_cb <- balanced_acc_wrapper(num_targets, cm_dir)
-    metrics <- c(macro_average_cb, "acc")
+    model_metrics <- c(macro_average_cb, "acc")
     
     if (f1_metric) {
       f1 <- f1_wrapper(num_targets)
-      metrics <- c(metrics, f1)
+      model_metrics <- c(model_metrics, f1)
     }
   }
   
   if (auc_metric) {
     auc <- auc_wrapper(model_output_size = layer_dense[length(layer_dense)],
                        loss = loss_fn)
-    metrics <- c(model$metrics, auc)
+    model_metrics <- c(model_metrics, auc)
   }
   
   model %>% keras::compile(loss = loss_fn,
-                           optimizer = optimizer, metrics = metrics)
+                           optimizer = optimizer, metrics = model_metrics)
   
   
   argg <- c(as.list(environment()))
-  argg["metrics"] <- NULL
+  argg["model_metrics"] <- NULL
   argg["model"] <- NULL
   argg["i"] <- NULL
   argg["optimizer"] <- NULL
@@ -1662,7 +1662,7 @@ create_model_lstm_cnn_time_dist <- function(
   argg["multi_label"] <- NULL
   argg["macro_average_cb"] <- NULL
   argg["input_list"] <- NULL
-  argg["metrics"] <- NULL
+  argg["model_metrics"] <- NULL
   argg["representation_list"] <- NULL
   argg["same_length"] <- NULL
   argg["y"] <- NULL
@@ -1915,31 +1915,31 @@ create_model_lstm_cnn_multi_input <- function(
   }
   dir.create(cm_dir)
   model$cm_dir <- cm_dir
-  metrics <- c("acc")
+  model_metrics <- c("acc")
   
   if (loss_fn == "categorical_crossentropy") {
     
     macro_average_cb <- balanced_acc_wrapper(num_targets, cm_dir)
-    metrics <- c(macro_average_cb, "acc")
+    model_metrics <- c(macro_average_cb, "acc")
     
     if (f1_metric) {
       f1 <- f1_wrapper(num_targets)
-      metrics <- c(metrics, f1)
+      model_metrics <- c(model_metrics, f1)
     }
   }
   
   if (auc_metric) {
     auc <- auc_wrapper(model_output_size = layer_dense[length(layer_dense)],
                        loss = loss_fn)
-    metrics <- c(model$metrics, auc)
+    model_metrics <- c(model_metrics, auc)
   }
   
   model %>% keras::compile(loss = loss_fn,
-                           optimizer = optimizer, metrics = metrics)
+                           optimizer = optimizer, metrics = model_metrics)
   
   
   argg <- c(as.list(environment()))
-  argg["metrics"] <- NULL
+  argg["model_metrics"] <- NULL
   argg["model"] <- NULL
   argg["i"] <- NULL
   argg["optimizer"] <- NULL
@@ -1967,7 +1967,7 @@ create_model_lstm_cnn_multi_input <- function(
   argg["multi_label"] <- NULL
   argg["macro_average_cb"] <- NULL
   argg["input_list"] <- NULL
-  argg["metrics"] <- NULL
+  argg["model_metrics"] <- NULL
   argg["representation_list"] <- NULL
   argg["same_length"] <- NULL
   argg["y"] <- NULL
@@ -2243,7 +2243,7 @@ create_model_genomenet <- function(
   model %>% keras::compile(loss = "categorical_crossentropy", optimizer = keras_optimizer, metrics = "acc")
   
   argg <- c(as.list(environment()))
-  argg["metrics"] <- NULL
+  argg["model_metrics"] <- NULL
   argg["model"] <- NULL
   argg["i"] <- NULL
   argg["optimizer"] <- NULL
@@ -2265,7 +2265,7 @@ create_model_genomenet <- function(
   argg["multi_label"] <- NULL
   argg["macro_average_cb"] <- NULL
   argg["input_list"] <- NULL
-  argg["metrics"] <- NULL
+  argg["model_metrics"] <- NULL
   argg["representation_list"] <- NULL
   argg["same_length"] <- NULL
   argg["y"] <- NULL
@@ -2361,4 +2361,38 @@ get_output_activations <- function(model) {
     count <- count + 1
   }
   return(act_vec)
+}
+
+# temporary fix for metric bugs
+manage_metrics <- function(model) {
+  
+  
+  dummy_gen <- generator_dummy(model,batch_size = 1)
+  z <- dummy_gen()
+  suppressMessages(
+    pred <- model$evaluate(z[[1]], z[[2]], verbose = 0L)
+  )
+  
+  # model$metrics
+  # metric_names <- vector("character", length(model$metrics))
+  # for (i in 1:length(model$metrics)) {
+  #   metric_names[i] <-  model$metrics[[i]]$name
+  # }
+  # metric_names
+  # duplicated_index <- duplicated(metric_names)
+  # duplicated_index
+  # loss_index <- stringr::str_detect(metric_names, "loss")
+  # loss_index
+  # index <- duplicated_index | loss_index
+  # index
+  # 
+  # # remove double metrics
+  # 
+  # model <-  model %>% keras::compile(loss = model$loss,
+  #                                    optimizer = model$optimizer,
+  #                                    metrics = model$metrics[!index])
+  # eval <- model$evaluate(z[[1]], z[[2]])
+  
+  model
+  
 }

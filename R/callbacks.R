@@ -277,7 +277,7 @@ tensorboard_complete_cb <- function(default_arguments, model, path_tensorboard, 
   l[[2]] <- tensorboard_cb(path_tensorboard = path_tensorboard, run_name = run_name)
   l[[3]] <- function_args_cb(argumentList = argumentList, path_tensorboard = path_tensorboard, run_name = run_name)
   
-  if (train_with_gen & count_files) {
+  if (train_with_gen & count_files & train_type != "dummy_gen") {
     
     proportion_training_files_cb <- reticulate::PyClass("proportion_training_files_cb",
                                                         inherit = tensorflow::tf$keras$callbacks$Callback,
@@ -484,13 +484,13 @@ validation_after_training_cb <- function(gen.val, validation_steps) {
 #' @param confMatLabels Names of classes.
 #' @param cm_dir Directory that contains confusion matrix files.
 #' @export
-conf_matrix_cb <- function(path_tensorboard, run_name, confMatLabels, cm_dir) {
+conf_matrix_cb <- function(path_tensorboard, run_name, confMatLabels, cm_dir, total_epochs) {
   
   conf_matrix_cb_py_class <- reticulate::PyClass("conf_matrix_cb",
                                                  inherit = tensorflow::tf$keras$callbacks$Callback,
                                                  list(
                                                    
-                                                   `__init__` = function(self, cm_dir, path_tensorboard, run_name, confMatLabels, graphics = "png") {
+                                                   `__init__` = function(self, cm_dir, path_tensorboard, run_name, confMatLabels, graphics = "png", total_epochs) {
                                                      self$cm_dir <- cm_dir
                                                      self$path_tensorboard <- path_tensorboard
                                                      self$run_name <- run_name
@@ -498,10 +498,10 @@ conf_matrix_cb <- function(path_tensorboard, run_name, confMatLabels, cm_dir) {
                                                      self$plot_path_val <- tempfile(pattern = "", fileext = paste0(".", graphics))
                                                      self$confMatLabels <- confMatLabels
                                                      self$epoch <- 0
+                                                     self$total_epochs <- total_epochs
                                                      self$train_images <- NULL
                                                      self$val_images <- NULL
                                                      self$graphics <- graphics
-                                                     self$epoch <- 0
                                                      self$text_size <- NULL
                                                      self$round_dig <- 3
                                                      if (length(confMatLabels) < 8) {
@@ -513,10 +513,10 @@ conf_matrix_cb <- function(path_tensorboard, run_name, confMatLabels, cm_dir) {
                                                    
                                                    on_epoch_begin = function(self, epoch, logs) {
                                                      suppressMessages(library(yardstick))
-                                                     if (epoch > 0) {
+                                                     if (epoch > 0 & epoch < self$total_epochs) {
                                                        
                                                        cm_train <- readRDS(file.path(self$cm_dir, paste0("cm_train_", epoch-1, ".rds")))
-                                                       cm_val <- readRDS(file.path(self$cm_dir, paste0("cm_val_", epoch+1, ".rds")))
+                                                       cm_val <- readRDS(file.path(self$cm_dir, paste0("cm_val_", epoch, ".rds")))
                                                        if (self$cm_display_percentage) {
                                                          cm_train <- cm_perc(cm_train, self$round_dig)
                                                          cm_val <- cm_perc(cm_val, self$round_dig)
@@ -604,15 +604,15 @@ conf_matrix_cb <- function(path_tensorboard, run_name, confMatLabels, cm_dir) {
                                                      
                                                      epoch <- self$epoch + 1
                                                      cm_train <- readRDS(file.path(self$cm_dir, paste0("cm_train_", epoch-1, ".rds")))
-                                                     cm_val <- readRDS(file.path(self$cm_dir, paste0("cm_val_", epoch, ".rds")))
-                                                     # # extract last val confusion metric from custom metric
-                                                     # for (i in 1:length(model$metrics)) {
-                                                     #   if (model$metrics[[i]]$name == "balanced_acc") {
-                                                     #     bal_acc_index <- i
-                                                     #     break
-                                                     #   }
-                                                     # }
-                                                     # cm_val <- as.array(model$metrics[[bal_acc_index]]$cm)
+                                                     #cm_val <- readRDS(file.path(self$cm_dir, paste0("cm_val_", epoch, ".rds")))
+                                                     # extract last val confusion metric from custom metric
+                                                     for (i in 1:length(model$metrics)) {
+                                                       if (model$metrics[[i]]$name == "balanced_acc") {
+                                                         bal_acc_index <- i
+                                                         break
+                                                       }
+                                                     }
+                                                     cm_val <- as.array(model$metrics[[bal_acc_index]]$cm)
                                                      
                                                      if (self$cm_display_percentage) {
                                                        cm_train <- cm_perc(cm_train, self$round_dig)
@@ -698,7 +698,8 @@ conf_matrix_cb <- function(path_tensorboard, run_name, confMatLabels, cm_dir) {
   conf_matrix_cb_py_class(path_tensorboard = path_tensorboard,
                           run_name = run_name,
                           confMatLabels = confMatLabels,
-                          cm_dir = cm_dir)
+                          cm_dir = cm_dir,
+                          total_epochs = total_epochs)
 }
 
 #' Loss function for label noise
@@ -777,7 +778,7 @@ balanced_acc_wrapper <- function(num_targets, cm_dir) {
                                                    return(balanced_acc)
                                                  },
                                                  
-                                                 reset_states = function(self) {
+                                                 reset_state = function(self) {
                                                    self$store_cm()
                                                    self$count <- self$count + 1
                                                    self$cm$assign_sub(self$cm)
@@ -785,13 +786,15 @@ balanced_acc_wrapper <- function(num_targets, cm_dir) {
                                                  },
                                                  
                                                  store_cm = function(self) {
-                                                   if (self$count %% 2 == 0) {
-                                                     file_name <- file.path(self$cm_dir, paste0("cm_val_", floor(self$count/2), ".rds"))
-                                                   } else {
-                                                     file_name <- file.path(self$cm_dir, paste0("cm_train_", floor(self$count/2), ".rds"))
+                                                   if (self$count > 0) {
+                                                     if (self$count %% 2 == 0) {
+                                                       file_name <- file.path(self$cm_dir, paste0("cm_val_", floor(self$count/2), ".rds"))
+                                                     } else {
+                                                       file_name <- file.path(self$cm_dir, paste0("cm_train_", floor(self$count/2), ".rds"))
+                                                     }
+                                                     saveRDS(keras::k_eval(self$cm), file_name)
+                                                     NULL
                                                    }
-                                                   saveRDS(keras::k_eval(self$cm), file_name)
-                                                   NULL
                                                  }
                                                  
                                                ))
@@ -845,7 +848,7 @@ f1_wrapper <- function(num_targets = 2) {
                                          return(f1)
                                        },
                                        
-                                       reset_states = function(self) {
+                                       reset_state = function(self) {
                                          self$cm$assign_sub(self$cm)
                                          NULL
                                        }
@@ -936,7 +939,7 @@ auc_wrapper <- function(model_output_size,
                                           NULL
                                         },
                                         
-                                        reset_states = function(self) {
+                                        reset_state = function(self) {
                                           purrr::map(0:(length(self$auc_list) - 1),
                                                      ~self$auc_list[[.x]]$reset_states())
                                           self$auc_scores$assign_sub(self$auc_scores)
@@ -1011,6 +1014,9 @@ get_callbacks <- function(default_arguments, path_tensorboard, run_name, train_t
   if (output$tensorboard) {
     
     # add balanced acc score
+    
+    # initialize metrics, temporary fix
+    model <- manage_metrics(model)
     metrics <- model$metrics
     if (train_with_gen) {
       num_targets <- ifelse(train_type == "lm", length(vocabulary), length(vocabulary_label))
@@ -1018,20 +1024,20 @@ get_callbacks <- function(default_arguments, path_tensorboard, run_name, train_t
       num_targets <- dim(dataset$Y)[2]
     }
     contains_macro_acc_metric <- FALSE
-    # for (i in 1:length(model$metrics)) {
-    #   if (model$metrics[[i]]$name == "balanced_acc") contains_macro_acc_metric <- TRUE
-    # }
-    # 
-    # if (!contains_macro_acc_metric) {
-    #   if (tb_images) {
-    #     if (!reticulate::py_has_attr(model, "cm_dir")) {
-    #       cm_dir <- file.path(tempdir(), paste(sample(letters, 7), collapse = ""))
-    #       dir.create(cm_dir)
-    #       model$cm_dir <- cm_dir
-    #     }
-    #     metrics <- c(metrics, balanced_acc_wrapper(num_targets = num_targets, cm_dir = model$cm_dir))
-    #   }
-    # }
+    for (i in 1:length(model$metrics)) {
+      if (model$metrics[[i]]$name == "balanced_acc") contains_macro_acc_metric <- TRUE
+    }
+
+    if (!contains_macro_acc_metric) {
+      if (tb_images) {
+        if (!reticulate::py_has_attr(model, "cm_dir")) {
+          cm_dir <- file.path(tempdir(), paste(sample(letters, 7), collapse = ""))
+          dir.create(cm_dir)
+          model$cm_dir <- cm_dir
+        }
+        metrics <- c(metrics, balanced_acc_wrapper(num_targets = as.integer(num_targets), cm_dir = model$cm_dir))
+      }
+    }
     
     # count files in path
     if (train_type == "label_rds" | train_type == "lm_rds") format <- "rds"
@@ -1113,19 +1119,10 @@ get_callbacks <- function(default_arguments, path_tensorboard, run_name, train_t
         confMatLabels <- expand.grid(l) %>% apply(1, paste0) %>% apply(2, paste, collapse = "") %>% sort()
       }
     }
-   
-    # model %>% keras::compile(loss = model$loss,
-    #                          optimizer = model$optimizer, metrics = metrics[-1])
-    # 
-    # ## initialize metrics
-    # dummy_gen <- generator_dummy(model,batch_size = 1)
-    # z <- dummy_gen()
-    # model$evaluate(z[[1]], z[[2]])
-    # print(metrics)
-    # print(model$metrics)
-    # for (i in 1:length(model$metrics)) {
-    #   print(model$metrics[[i]]$name)
-    # }
+    
+    model %>% keras::compile(loss = model$loss,
+                             optimizer = model$optimizer, metrics = metrics[-1])
+    model <- manage_metrics(model)
     
     if (length(confMatLabels) > 16) {
       message("Cannot display confusion matrix with more than 16 labels.")
@@ -1134,7 +1131,8 @@ get_callbacks <- function(default_arguments, path_tensorboard, run_name, train_t
       callbacks <- c(callbacks, conf_matrix_cb(path_tensorboard = path_tensorboard,
                                                run_name = run_name,
                                                confMatLabels = confMatLabels,
-                                               cm_dir = model$cm_dir))
+                                               cm_dir = model$cm_dir,
+                                               total_epochs = epochs))
       callback_names <- c(callback_names, "conf_matrix")
     }
   }

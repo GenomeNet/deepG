@@ -195,15 +195,9 @@ train_model <- function(train_type = "lm",
                         random_sampling = FALSE,
                         add_noise = NULL) {
   
-  ## initialize metrics, temporary fix
-  dummy_gen <- generator_dummy(model,batch_size = 1)
-  z <- dummy_gen()
-  model$evaluate(z[[1]], z[[2]])
-  # print(model$metrics)
-  # for (i in 1:length(model$metrics)) {
-  #   print(model$metrics[[i]]$name)
-  # }
-  
+  # initialize metrics, temporary fix
+  model <- manage_metrics(model)
+
   run_name <- get_run_name(run_name, path_tensorboard, path_checkpoint, path_log, auto_extend = TRUE)
   train_with_gen <- is.null(dataset)
   output <- list(tensorboard = FALSE, checkpoints = FALSE)
@@ -446,8 +440,7 @@ train_model <- function(train_type = "lm",
         initial_epoch = initial_epoch,
         callbacks = callbacks,
         class_weight = class_weight,
-        verbose = print_scores
-      )
+        verbose = print_scores)
     
     if (validation_only_after_training) {
       history$val_loss <- model$val_loss
