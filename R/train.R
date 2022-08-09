@@ -245,7 +245,7 @@ train_model <- function(train_type = "lm",
     
     if (!is.null(concat_seq)) {
       if (!is.null(use_coverage)) stop("Coverage encoding not implemented for concat_seq")
-      if (train_type == "lm") stop("Concatenation not implemented for language model")
+      #if (train_type == "lm") stop("Concatenation not implemented for language model")
     }
     
     # train train_val_ratio via csv file

@@ -97,6 +97,9 @@ generator_fasta_lm <- function(path_corpus,
     use_coverage <- FALSE
     max_cov <- NULL
   } else {
+    if (!is.null(concat_seq)) {
+      stop("Coverage encoding and concat are not implemented together.")
+    }
     max_cov <- use_coverage
     use_coverage <- TRUE
   }
