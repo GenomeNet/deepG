@@ -8,7 +8,7 @@
 #' @param step Frequency of samples.
 #' @return Returns a matrix with distributions of nucleotides given the previous n nucleotides.
 #' @export
-n_gram <- function(path_input,
+n_gram_dist <- function(path_input,
                    n = 2,
                    vocabulary = c("A", "C", "G", "T"),
                    format = "fasta",
@@ -98,7 +98,7 @@ n_gram <- function(path_input,
   dist_matrix
 }
 
-#' Helper function for \code{n_gram}
+#' Helper function for \code{n_gram_dist}
 #'
 #' @export
 df_to_distribution_matrix <- function(freq_df, vocabulary = c("A", "C", "G", "T")) {
@@ -132,7 +132,7 @@ df_to_distribution_matrix <- function(freq_df, vocabulary = c("A", "C", "G", "T"
 #' predict the next nucleotide using n-gram
 #'
 #' @param path_input Path to folder containing fasta files or single fasta file.
-#' @param distribution_matrix Output of \code{n_gram} function.
+#' @param distribution_matrix Output of \code{n_gram_dist} function.
 #' @param default_pred Either character from vocabulary or "random". Will be used as prediction if certain n-gram did not appear before.
 #' If "random" assign random prediction.
 #' @param vocabulary Vector of allowed characters, samples outside vocabulary get discarded.
@@ -142,14 +142,14 @@ df_to_distribution_matrix <- function(freq_df, vocabulary = c("A", "C", "G", "T"
 #'
 #' @examples
 #' \dontrun{
-#' n_gram_dist <- n_gram(path_input = "/net/sgi/genomenet/data/ncbi_genomes/train",
-#'                       n = 2,
-#'                       file_sample = NULL,
-#'                       nuc_dist = TRUE)
+#' n_gram_eval <- n_gram_dist(path_input = "/input/dir/path",
+#'                            n = 2,
+#'                            file_sample = NULL,
+#'                            nuc_dist = TRUE)
 #'
 #' # use distribution matrix to make predictions for one file
-#' predictions <- predict_with_n_gram(path_input = "/net/sgi/genomenet/data/ncbi_genomes/test/GCF_001941465.1_ASM194146v1_genomic.fasta",
-#'                                    distribution_matrix = n_gram_dist)
+#' predictions <- predict_with_n_gram(path_input = "/fasta/file"
+#'                                    distribution_matrix = n_gram_eval)
 #'
 #' # show accuracy
 #' predictions$accuracy
