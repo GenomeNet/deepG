@@ -195,6 +195,9 @@ train_model <- function(train_type = "lm",
                         random_sampling = FALSE,
                         add_noise = NULL) {
   
+  # initialize metrics, temporary fix
+  model <- manage_metrics(model)
+
   run_name <- get_run_name(run_name, path_tensorboard, path_checkpoint, path_log, auto_extend = TRUE)
   train_with_gen <- is.null(dataset)
   output <- list(tensorboard = FALSE, checkpoints = FALSE)
@@ -420,15 +423,15 @@ train_model <- function(train_type = "lm",
                              save_weights_only = save_weights_only, path_checkpoint = path_checkpoint, save_best_only = save_best_only, gen.val = gen.val,
                              target_from_csv = target_from_csv, reset_states = reset_states, early_stopping_time = early_stopping_time,
                              validation_only_after_training = validation_only_after_training)
-  
+
   # training
   #message("Start training ...")
   if (train_with_gen) {
     
     model <- keras::set_weights(model, model_weights)
     history <-
-      model %>% keras::fit_generator(
-        generator = gen,
+      model %>% keras::fit(
+        x = gen,
         validation_data = validation_data,
         validation_steps = validation_steps,
         steps_per_epoch = steps_per_epoch,
@@ -437,8 +440,7 @@ train_model <- function(train_type = "lm",
         initial_epoch = initial_epoch,
         callbacks = callbacks,
         class_weight = class_weight,
-        verbose = print_scores
-      )
+        verbose = print_scores)
     
     if (validation_only_after_training) {
       history$val_loss <- model$val_loss
