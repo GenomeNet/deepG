@@ -57,7 +57,7 @@ seq_encoding_lm <- function(sequence = NULL, maxlen, vocabulary, start_ind, ambi
                             nuc_dist = NULL, use_quality = FALSE, quality_vector = NULL,
                             target_len = 1, use_coverage = FALSE, max_cov = NULL, cov_vector = NULL,
                             n_gram = NULL, n_gram_stride = 1, output_format = "target_right",
-                            char_sequence = NULL, tokenizer = NULL, adjust_start_ind = TRUE) {
+                            char_sequence = NULL, tokenizer = NULL, adjust_start_ind = FALSE) {
   
   if (!is.null(char_sequence)) {
     
@@ -307,7 +307,7 @@ seq_encoding_lm <- function(sequence = NULL, maxlen, vocabulary, start_ind, ambi
 seq_encoding_label <- function(sequence = NULL, maxlen, vocabulary, start_ind, ambiguous_nuc = "zero", nuc_dist = NULL,
                                use_quality = FALSE, quality_vector = NULL, use_coverage = FALSE, max_cov = NULL,
                                cov_vector = NULL, n_gram = NULL, n_gram_stride = 1, char_sequence = NULL,
-                               tokenizer = NULL, adjust_start_ind = TRUE) {
+                               tokenizer = NULL, adjust_start_ind = FALSE) {
   
   if (!is.null(char_sequence)) {
     
@@ -1240,10 +1240,3 @@ reverse_complement_tensor <- function(x) {
   x_rev_comp <- x_rev_comp[ , dim(x)[2]:1, ]
   x_rev_comp
 }
-
-
-x <- seq_encoding_label(maxlen = 5, vocabulary = c("a", "c", "g", "t"),
-                        start_ind = c(1,2,5), ambiguous_nuc = "zero",
-                        char_sequence = c("TAGGACTACGACTGGAACC"))
-x[1,,]
-x[2,,]
