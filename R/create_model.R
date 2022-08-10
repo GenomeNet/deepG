@@ -2365,7 +2365,7 @@ get_output_activations <- function(model) {
 
 # temporary fix for metric bugs
 manage_metrics <- function(model) {
-  
+
   dummy_gen <- generator_dummy(model,batch_size = 1)
   z <- dummy_gen()
   suppressMessages(

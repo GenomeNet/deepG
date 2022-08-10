@@ -57,13 +57,15 @@ seq_encoding_lm <- function(sequence = NULL, maxlen, vocabulary, start_ind, ambi
                             nuc_dist = NULL, use_quality = FALSE, quality_vector = NULL,
                             target_len = 1, use_coverage = FALSE, max_cov = NULL, cov_vector = NULL,
                             n_gram = NULL, n_gram_stride = 1, output_format = "target_right",
-                            discard_amb_nt = FALSE, char_sequence = NULL, adjust_start_ind = TRUE) {
-  
+                            discard_amb_nt = FALSE, char_sequence = NULL, adjust_start_ind = FALSE,
+                            tokenizer = NULL) {
+
   ## TODO: add discard_amb_nt
   if (!is.null(char_sequence)) {
     
     vocabulary <- stringr::str_to_lower(vocabulary)
     pattern <- paste0("[^", paste0(vocabulary, collapse = ""), "]")
+    
     
     # token for ambiguous nucleotides
     for (i in letters) {
@@ -72,7 +74,11 @@ seq_encoding_lm <- function(sequence = NULL, maxlen, vocabulary, start_ind, ambi
         break
       }
     }
-    tokenizer <- keras::fit_text_tokenizer(keras::text_tokenizer(char_level = TRUE, lower = TRUE, oov_token = "0"), c(vocabulary, amb_nuc_token))
+    
+    if (is.null(tokenizer)) {
+      tokenizer <- keras::fit_text_tokenizer(keras::text_tokenizer(char_level = TRUE, lower = TRUE, oov_token = "0"), c(vocabulary, amb_nuc_token))
+    }
+    
     sequence <- stringr::str_to_lower(char_sequence)
     sequence <- stringr::str_replace_all(string = sequence, pattern = pattern, amb_nuc_token)
     sequence <- keras::texts_to_sequences(tokenizer, sequence)[[1]] - 1
@@ -302,9 +308,9 @@ seq_encoding_lm <- function(sequence = NULL, maxlen, vocabulary, start_ind, ambi
 #' @export
 seq_encoding_label <- function(sequence = NULL, maxlen, vocabulary, start_ind, ambiguous_nuc = "zero", nuc_dist = NULL,
                                use_quality = FALSE, quality_vector = NULL, use_coverage = FALSE, max_cov = NULL,
-                               adjust_start_ind = TRUE, discard_amb_nt = FALSE,
-                               cov_vector = NULL, n_gram = NULL, n_gram_stride = 1, char_sequence = NULL) {
-  
+                               discard_amb_nt = FALSE, cov_vector = NULL, n_gram = NULL, n_gram_stride = 1,
+                               char_sequence = NULL, tokenizer = NULL, adjust_start_ind = FALSE) {
+
   ## TODO: add discard_amb_nt
   if (!is.null(char_sequence)) {
     
@@ -318,7 +324,11 @@ seq_encoding_label <- function(sequence = NULL, maxlen, vocabulary, start_ind, a
         break
       }
     }
-    tokenizer <- keras::fit_text_tokenizer(keras::text_tokenizer(char_level = TRUE, lower = TRUE, oov_token = "0"), c(vocabulary, amb_nuc_token))
+    
+    if (is.null(tokenizer)) {
+      tokenizer <- keras::fit_text_tokenizer(keras::text_tokenizer(char_level = TRUE, lower = TRUE, oov_token = "0"), c(vocabulary, amb_nuc_token))
+    }
+    
     sequence <- stringr::str_to_lower(char_sequence)
     sequence <- stringr::str_replace_all(string = sequence, pattern = pattern, amb_nuc_token)
     sequence <- keras::texts_to_sequences(tokenizer, sequence)[[1]] - 1
@@ -331,7 +341,7 @@ seq_encoding_label <- function(sequence = NULL, maxlen, vocabulary, start_ind, a
     maxlen <- maxlen - n_gram + 1
     voc_len <- length(vocabulary)^n_gram
   }
-    
+
   if (adjust_start_ind) start_ind <- start_ind - start_ind[1] + 1
   numberOfSamples <- length(start_ind)
   
@@ -1226,4 +1236,11 @@ add_noise_tensor <- function(x, noise_type, ...) {
   }
   
   return(x)
+}
+
+reverse_complement_tensor <- function(x) {
+  stopifnot(dim(x)[3] == 4)
+  x_rev_comp <- x[ , , 4:1]
+  x_rev_comp <- x_rev_comp[ , dim(x)[2]:1, ]
+  x_rev_comp
 }
