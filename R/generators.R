@@ -96,6 +96,7 @@ generator_fasta_lm <- function(path_corpus,
   
   if (is.null(use_coverage)) {
     use_coverage <- FALSE
+    cov_vector <- NULL
     max_cov <- NULL
   } else {
     max_cov <- use_coverage
@@ -171,7 +172,9 @@ generator_fasta_lm <- function(path_corpus,
                                    reverse_complement = reverse_complement, fasta.files = fasta.files)
     
     if (concat) {
-      cov_vector <- get_coverage_concat(fasta.file = fasta.file, concat_seq = concat_seq)
+      if (use_coverage) {
+        cov_vector <- get_coverage_concat(fasta.file = fasta.file, concat_seq = concat_seq)
+      } 
       fasta.file <- data.frame(Header = basename(fasta.files[file_index]), Sequence = paste(fasta.file$Sequence, collapse = concat_seq),
                                stringsAsFactors = FALSE)
     }
@@ -189,7 +192,9 @@ generator_fasta_lm <- function(path_corpus,
                                        reverse_complement = reverse_complement, fasta.files = fasta.files)
         
         if (concat) {
-          cov_vector <- get_coverage_concat(fasta.file = fasta.file, concat_seq = concat_seq)
+          if (use_coverage) {
+            cov_vector <- get_coverage_concat(fasta.file = fasta.file, concat_seq = concat_seq)
+          } 
           fasta.file <- data.frame(Header = basename(fasta.files[file_index]), Sequence = paste(fasta.file$Sequence, collapse = concat_seq),
                                    stringsAsFactors = FALSE)
         }
@@ -206,7 +211,9 @@ generator_fasta_lm <- function(path_corpus,
                                        reverse_complement = reverse_complement, fasta.files = fasta.files)
         
         if (concat) {
-          cov_vector <- get_coverage_concat(fasta.file = fasta.file, concat_seq = concat_seq)
+          if (use_coverage) {
+            cov_vector <- get_coverage_concat(fasta.file = fasta.file, concat_seq = concat_seq)
+          } 
           fasta.file <- data.frame(Header = basename(fasta.files[file_index]), Sequence = paste(fasta.file$Sequence, collapse = concat_seq),
                                    stringsAsFactors = FALSE)
         }
@@ -387,7 +394,9 @@ generator_fasta_lm <- function(path_corpus,
                                          reverse_complement = reverse_complement, fasta.files = fasta.files)
           
           if (concat) {
-            cov_vector <- get_coverage_concat(fasta.file = fasta.file, concat_seq = concat_seq)
+            if (use_coverage) {
+              cov_vector <- get_coverage_concat(fasta.file = fasta.file, concat_seq = concat_seq)
+            } 
             fasta.file <- data.frame(Header = basename(fasta.files[file_index]), Sequence = paste(fasta.file$Sequence, collapse = concat_seq),
                                      stringsAsFactors = FALSE)
           }
@@ -808,6 +817,7 @@ generator_fasta_label_header_csv <- function(path_corpus,
   
   if (is.null(use_coverage)) {
     use_coverage <- FALSE
+    cov_vector <- NULL
     max_cov <- NULL
   } else {
     max_cov <- use_coverage
@@ -921,7 +931,9 @@ generator_fasta_label_header_csv <- function(path_corpus,
                                    vocabulary_label = vocabulary_label, filter_header = TRUE, target_from_csv = target_from_csv)
     
     if (concat) {
-      cov_vector <- get_coverage_concat(fasta.file = fasta.file, concat_seq = concat_seq)
+      if (use_coverage) {
+        cov_vector <- get_coverage_concat(fasta.file = fasta.file, concat_seq = concat_seq)
+      } 
       fasta.file <- data.frame(Header = basename(fasta.files[file_index]), Sequence = paste(fasta.file$Sequence, collapse = concat_seq),
                                stringsAsFactors = FALSE)
     }
@@ -946,7 +958,9 @@ generator_fasta_label_header_csv <- function(path_corpus,
                                        vocabulary_label = vocabulary_label, filter_header = TRUE, target_from_csv = target_from_csv)
         
         if (concat) {
-          cov_vector <- get_coverage_concat(fasta.file = fasta.file, concat_seq = concat_seq)
+          if (use_coverage) {
+            cov_vector <- get_coverage_concat(fasta.file = fasta.file, concat_seq = concat_seq)
+          } 
           fasta.file <- data.frame(Header = basename(fasta.files[file_index]), Sequence = paste(fasta.file$Sequence, collapse = concat_seq),
                                    stringsAsFactors = FALSE)
         }
@@ -970,7 +984,9 @@ generator_fasta_label_header_csv <- function(path_corpus,
                                        vocabulary_label = vocabulary_label, filter_header = TRUE, target_from_csv = target_from_csv)
         
         if (concat) {
-          cov_vector <- get_coverage_concat(fasta.file = fasta.file, concat_seq = concat_seq)
+          if (use_coverage) {
+            cov_vector <- get_coverage_concat(fasta.file = fasta.file, concat_seq = concat_seq)
+          } 
           fasta.file <- data.frame(Header = basename(fasta.files[file_index]), Sequence = paste(fasta.file$Sequence, collapse = concat_seq),
                                    stringsAsFactors = FALSE)
         }
@@ -1188,7 +1204,9 @@ generator_fasta_label_header_csv <- function(path_corpus,
                                          vocabulary_label = vocabulary_label, filter_header = TRUE, target_from_csv = target_from_csv)
           
           if (concat) {
-            cov_vector <- get_coverage_concat(fasta.file = fasta.file, concat_seq = concat_seq)
+            if (use_coverage) {
+              cov_vector <- get_coverage_concat(fasta.file = fasta.file, concat_seq = concat_seq)
+            } 
             fasta.file <- data.frame(Header = basename(fasta.files[file_index]), Sequence = paste(fasta.file$Sequence, collapse = concat_seq),
                                      stringsAsFactors = FALSE)
           }
@@ -1572,6 +1590,7 @@ generator_fasta_label_folder <- function(path_corpus,
   n_gram <- NULL
   if (is.null(use_coverage)) {
     use_coverage <- FALSE
+    cov_vector <- NULL
     max_cov <- NULL
   } else {
     max_cov <- use_coverage
@@ -1667,7 +1686,9 @@ generator_fasta_label_folder <- function(path_corpus,
                                    reverse_complement = reverse_complement, fasta.files = fasta.files)
     
     if (concat) {
-      cov_vector <- get_coverage_concat(fasta.file = fasta.file, concat_seq = concat_seq)
+      if (use_coverage) {
+        cov_vector <- get_coverage_concat(fasta.file = fasta.file, concat_seq = concat_seq)
+      } 
       fasta.file <- data.frame(Header = basename(fasta.files[file_index]), Sequence = paste(fasta.file$Sequence, collapse = concat_seq),
                                stringsAsFactors = FALSE)
     }
@@ -1690,7 +1711,9 @@ generator_fasta_label_folder <- function(path_corpus,
                                        reverse_complement = reverse_complement, fasta.files = fasta.files)
         
         if (concat) {
-          cov_vector <- get_coverage_concat(fasta.file = fasta.file, concat_seq = concat_seq)
+          if (use_coverage) {
+            cov_vector <- get_coverage_concat(fasta.file = fasta.file, concat_seq = concat_seq)
+          } 
           fasta.file <- data.frame(Header = basename(fasta.files[file_index]), Sequence = paste(fasta.file$Sequence, collapse = concat_seq),
                                    stringsAsFactors = FALSE)
         }
@@ -1713,7 +1736,9 @@ generator_fasta_label_folder <- function(path_corpus,
                                        reverse_complement = reverse_complement, fasta.files = fasta.files)
         
         if (concat) {
-          cov_vector <- get_coverage_concat(fasta.file = fasta.file, concat_seq = concat_seq)
+          if (use_coverage) {
+            cov_vector <- get_coverage_concat(fasta.file = fasta.file, concat_seq = concat_seq)
+          } 
           fasta.file <- data.frame(Header = basename(fasta.files[file_index]), Sequence = paste(fasta.file$Sequence, collapse = concat_seq),
                                    stringsAsFactors = FALSE)
         }
@@ -1935,7 +1960,9 @@ generator_fasta_label_folder <- function(path_corpus,
                                          reverse_complement = reverse_complement, fasta.files = fasta.files)
           
           if (concat) {
-            cov_vector <- get_coverage_concat(fasta.file = fasta.file, concat_seq = concat_seq)
+            if (use_coverage) {
+              cov_vector <- get_coverage_concat(fasta.file = fasta.file, concat_seq = concat_seq)
+            } 
             fasta.file <- data.frame(Header = basename(fasta.files[file_index]), Sequence = paste(fasta.file$Sequence, collapse = concat_seq),
                                      stringsAsFactors = FALSE)
           }
