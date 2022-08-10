@@ -57,8 +57,9 @@ seq_encoding_lm <- function(sequence = NULL, maxlen, vocabulary, start_ind, ambi
                             nuc_dist = NULL, use_quality = FALSE, quality_vector = NULL,
                             target_len = 1, use_coverage = FALSE, max_cov = NULL, cov_vector = NULL,
                             n_gram = NULL, n_gram_stride = 1, output_format = "target_right",
-                            char_sequence = NULL, adjust_start_ind = TRUE) {
+                            discard_amb_nt = FALSE, char_sequence = NULL, adjust_start_ind = TRUE) {
   
+  ## TODO: add discard_amb_nt
   if (!is.null(char_sequence)) {
     
     vocabulary <- stringr::str_to_lower(vocabulary)
@@ -301,9 +302,10 @@ seq_encoding_lm <- function(sequence = NULL, maxlen, vocabulary, start_ind, ambi
 #' @export
 seq_encoding_label <- function(sequence = NULL, maxlen, vocabulary, start_ind, ambiguous_nuc = "zero", nuc_dist = NULL,
                                use_quality = FALSE, quality_vector = NULL, use_coverage = FALSE, max_cov = NULL,
-                               adjust_start_ind = TRUE,
+                               adjust_start_ind = TRUE, discard_amb_nt = FALSE,
                                cov_vector = NULL, n_gram = NULL, n_gram_stride = 1, char_sequence = NULL) {
   
+  ## TODO: add discard_amb_nt
   if (!is.null(char_sequence)) {
     
     vocabulary <- stringr::str_to_lower(vocabulary)
