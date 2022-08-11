@@ -757,14 +757,14 @@ balanced_acc_wrapper <- function(num_targets, cm_dir) {
                                                  },
                                                  
                                                  compute_balanced_acc = function(self) {
-                                                   diag <- tensorflow::tf$linalg$diag_part(self$cm)
-                                                   col_sums <- tensorflow::tf$math$reduce_sum(self$cm, axis=0L)
-                                                   average_per_class <- tensorflow::tf$math$divide(diag, col_sums)
-                                                   nan_index <- tensorflow::tf$math$logical_not(tensorflow::tf$math$is_nan(average_per_class))
-                                                   average_per_class <- tensorflow::tf$boolean_mask(average_per_class, nan_index)
-                                                   acc_sum <- tensorflow::tf$math$reduce_sum(average_per_class)
-                                                   balanced_acc <- tensorflow::tf$math$divide(acc_sum, tensorflow::tf$math$count_nonzero(col_sums, dtype= "float64"))
-                                                   return(balanced_acc)
+                                                     diag <- tensorflow::tf$linalg$diag_part(self$cm)
+                                                     col_sums <- tensorflow::tf$math$reduce_sum(self$cm, axis=0L)
+                                                     average_per_class <- tensorflow::tf$math$divide(diag, col_sums)
+                                                     nan_index <- tensorflow::tf$math$logical_not(tensorflow::tf$math$is_nan(average_per_class))
+                                                     average_per_class <- tensorflow::tf$boolean_mask(average_per_class, nan_index)
+                                                     acc_sum <- tensorflow::tf$math$reduce_sum(average_per_class)
+                                                     balanced_acc <- tensorflow::tf$math$divide(acc_sum, tensorflow::tf$math$count_nonzero(col_sums, dtype= "float32"))
+                                                     return(balanced_acc)
                                                  },
                                                  
                                                  reset_states = function(self) {
