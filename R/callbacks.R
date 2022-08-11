@@ -774,7 +774,7 @@ balanced_acc_wrapper <- function(num_targets, cm_dir) {
                                                    nan_index <- tensorflow::tf$math$logical_not(tensorflow::tf$math$is_nan(average_per_class))
                                                    average_per_class <- tensorflow::tf$boolean_mask(average_per_class, nan_index)
                                                    acc_sum <- tensorflow::tf$math$reduce_sum(average_per_class)
-                                                   balanced_acc <- tensorflow::tf$math$divide(acc_sum, self$num_targets)
+                                                   balanced_acc <- tensorflow::tf$math$divide(acc_sum, tensorflow::tf$math$count_nonzero(col_sums, dtype= "float64"))
                                                    return(balanced_acc)
                                                  },
                                                  
