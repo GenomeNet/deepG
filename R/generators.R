@@ -2321,7 +2321,7 @@ generator_initialize <- function(directories,
                                  add_noise = NULL) {
   
   # adjust batch_size
-  if (is.null(set_learning) & (length(batch_size) == 1) & (batch_size %% length(directories) != 0)) {
+  if (is.null(set_learning) && (length(batch_size) == 1) && (batch_size %% length(directories) != 0)) {
     batch_size <- ceiling(batch_size/length(directories)) * length(directories)
     if (!val) {
       message(paste("Batch size needs to be multiple of number of targets. Setting batch_size to", batch_size))
@@ -3378,7 +3378,7 @@ get_generator <- function(path = NULL,
   }
   
   # adjust batch size
-  if ((length(batch_size) == 1) & (batch_size %% length(path) != 0) & train_type == "label_folder") {
+  if ((length(batch_size) == 1) && (batch_size %% length(path) != 0) & train_type == "label_folder") {
     batch_size <- ceiling(batch_size/length(path)) * length(path)
     if (!val) {
       message(paste("Batch size needs to be multiple of number of targets. Setting batch_size to", batch_size))
