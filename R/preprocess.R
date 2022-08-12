@@ -878,9 +878,9 @@ count_files <- function(path, format = "fasta", train_type,
     target_files <- target_files$file
   }  
   if (!is.null(train_val_split_csv)) {
-    tvt_files <- read.csv()
-    tvt_files <- tvt_files$files
+    tvt_files <- read.csv(train_val_split_csv)
     train_index <- tvt_files$type == "train"
+    tvt_files <- tvt_files$file
     target_files <- target_files[train_index]
   }  
   
