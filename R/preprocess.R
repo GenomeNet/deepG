@@ -881,16 +881,15 @@ check_header_names <- function(target_split, vocabulary_label) {
 count_files <- function(path, format = "fasta", train_type,
                         target_from_csv = NULL, train_val_split_csv = NULL) {
   
-  
   num_files <- rep(0, length(path))
   if (!is.null(target_from_csv)) {
     target_files <- read.csv(target_from_csv)
     target_files <- target_files$file
   }  
   if (!is.null(train_val_split_csv)) {
-    tvt_files <- read.csv()
-    tvt_files <- tvt_files$files
+    tvt_files <- read.csv(train_val_split_csv)
     train_index <- tvt_files$type == "train"
+    tvt_files <- tvt_files$file
     target_files <- target_files[train_index]
   }  
   

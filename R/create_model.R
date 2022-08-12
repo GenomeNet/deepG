@@ -476,8 +476,8 @@ create_model_lstm_cnn <- function(
     if (loss_fn == "binary_crossentropy") {
       smooth_loss <- tensorflow::tf$losses$BinaryCrossentropy(label_smoothing = label_smoothing, name = "smooth_loss")
     }
-    model %>% keras::compile(loss = smooth_loss,
-                             optimizer = optimizer, metrics = model_metrics)
+      model %>% keras::compile(loss = smooth_loss,
+                               optimizer = optimizer, metrics = model_metrics)
   } else if (!is.null(label_noise_matrix)) {
     row_sums <- rowSums(label_noise_matrix)
     if (!all(row_sums == 1)) {

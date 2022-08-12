@@ -729,7 +729,6 @@ noisy_loss_wrapper <- function(noise_matrix) {
 #'
 #'@param num_targets Number of targets.
 #'@param cm_dir Directory of confusion matrix used to compute balanced accuracy.
-#'@examples 
 #'
 #'@export
 balanced_acc_wrapper <- function(num_targets, cm_dir) {
