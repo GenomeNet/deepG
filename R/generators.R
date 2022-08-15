@@ -2321,7 +2321,7 @@ generator_initialize <- function(directories,
                                  add_noise = NULL) {
   
   # adjust batch_size
-  if (is.null(set_learning) & (length(batch_size) == 1) & (batch_size %% length(directories) != 0)) {
+  if (is.null(set_learning) && (length(batch_size) == 1) && (batch_size %% length(directories) != 0)) {
     batch_size <- ceiling(batch_size/length(directories)) * length(directories)
     if (!val) {
       message(paste("Batch size needs to be multiple of number of targets. Setting batch_size to", batch_size))
@@ -2751,16 +2751,44 @@ generator_rds <- function(rds_folder, batch_size, path_file_log = NULL,
   rds_files <- list_fasta_files(rds_folder, format = "rds", file_filter = NULL)
   num_files <- length(rds_files)
   
-  if (sample_by_file_size) {
-    file_prob <- file.info(fasta.files)$size/sum(file.info(fasta.files)$size)
-    file_index <- sample(1:num_files, size = 1, prob = file_prob)
-  } else {
-    file_prob <- NULL
-    rds_files <- sample(rds_files)
-    file_index <- 1
+  read_success <- FALSE
+  while (!read_success) {
+    tryCatch(
+      expr = {
+        if (sample_by_file_size) {
+          file_prob <- file.info(fasta.files)$size/sum(file.info(fasta.files)$size)
+          file_index <- sample(1:num_files, size = 1, prob = file_prob)
+        } else {
+          file_prob <- NULL
+          rds_files <- sample(rds_files)
+          file_index <- 1
+        }
+        rds_file <- readRDS(rds_files[file_index])
+      },
+      error = function(e){ 
+        # choose random file, if previous read not successful
+        file_index <- sample(setdiff(1:num_files, file_index), size = 1)
+        rds_file <- readRDS(rds_files[file_index])
+      },
+      warning = function(w){
+      },
+      finally = {
+        read_success <- TRUE
+      }
+    )
   }
   
-  rds_file <- readRDS(rds_files[file_index])
+  
+  # if (sample_by_file_size) {
+  #   file_prob <- file.info(fasta.files)$size/sum(file.info(fasta.files)$size)
+  #   file_index <- sample(1:num_files, size = 1, prob = file_prob)
+  # } else {
+  #   file_prob <- NULL
+  #   rds_files <- sample(rds_files)
+  #   file_index <- 1
+  # }
+  # rds_file <- readRDS(rds_files[file_index])
+  
   if (is.list(rds_file)) {
     x_complete <- rds_file[[1]]
   } else {
@@ -2810,17 +2838,45 @@ generator_rds <- function(rds_folder, batch_size, path_file_log = NULL,
           sample_index <<- 1:x_dim[1]
         } else {
           
-          if (sample_by_file_size) {
-            file_index <<- sample(1:num_files, size = 1, prob = file_prob)
-          } else {
-            file_index <<- file_index + 1
-            if (file_index > num_files) {
-              file_index <<- 1
-              rds_files <<- sample(rds_files)
-            }
+          read_success <- FALSE
+          while (!read_success) {
+            tryCatch(
+              expr = {
+                if (sample_by_file_size) {
+                  file_index <<- sample(1:num_files, size = 1, prob = file_prob)
+                } else {
+                  file_index <<- file_index + 1
+                  if (file_index > num_files) {
+                    file_index <<- 1
+                    rds_files <<- sample(rds_files)
+                  }
+                }
+                rds_file <<- readRDS(rds_files[file_index])
+              },
+              error = function(e){ 
+                # choose random file, if previous read not successful
+                file_index <- sample(setdiff(1:num_files, file_index), size = 1)
+                rds_file <<- readRDS(rds_files[file_index])
+              },
+              warning = function(w){
+              },
+              finally = {
+                read_success <- TRUE
+              }
+            )
           }
           
-          rds_file <<- readRDS(rds_files[file_index])
+          # if (sample_by_file_size) {
+          #   file_index <<- sample(1:num_files, size = 1, prob = file_prob)
+          # } else {
+          #   file_index <<- file_index + 1
+          #   if (file_index > num_files) {
+          #     file_index <<- 1
+          #     rds_files <<- sample(rds_files)
+          #   }
+          # }
+          # rds_file <<- readRDS(rds_files[file_index])
+          
           x_complete <<- rds_file[[1]]
           x_dim <<- dim(x_complete)
           
@@ -3378,7 +3434,7 @@ get_generator <- function(path = NULL,
   }
   
   # adjust batch size
-  if ((length(batch_size) == 1) & (batch_size %% length(path) != 0) & train_type == "label_folder") {
+  if ((length(batch_size) == 1) && (batch_size %% length(path) != 0) & train_type == "label_folder") {
     batch_size <- ceiling(batch_size/length(path)) * length(path)
     if (!val) {
       message(paste("Batch size needs to be multiple of number of targets. Setting batch_size to", batch_size))

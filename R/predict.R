@@ -964,3 +964,4 @@ summarize_states <- function(states_path = NULL, label_names = NULL, file_type =
   summary_df <- data.table::rbindlist(summary_list)
   return(summary_df)
 }
+
