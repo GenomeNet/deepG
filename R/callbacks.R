@@ -1026,7 +1026,7 @@ get_callbacks <- function(default_arguments, path_tensorboard, run_name, train_t
     for (i in 1:length(model$metrics)) {
       if (model$metrics[[i]]$name == "balanced_acc") contains_macro_acc_metric <- TRUE
     }
-
+    
     if (!contains_macro_acc_metric) {
       if (tb_images) {
         if (!reticulate::py_has_attr(model, "cm_dir")) {
