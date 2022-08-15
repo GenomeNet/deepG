@@ -285,9 +285,10 @@ predict_model_one_seq <- function(path_model = NULL, layer_name = NULL, sequence
     
     if (mode == "lm") {
       input <- seq_encoding_lm(sequence = subsetSeq, maxlen = maxlen, vocabulary = vocabulary, start_ind = subsetStartInd,
-                               output_format = lm_format)[[1]]
+                               output_format = lm_format, adjust_start_ind = TRUE)[[1]]
     } else {
-      input <- seq_encoding_label(sequence = subsetSeq, maxlen = maxlen, vocabulary = vocabulary, start_ind = subsetStartInd)
+      input <- seq_encoding_label(sequence = subsetSeq, maxlen = maxlen, vocabulary = vocabulary, start_ind = subsetStartInd,
+                                  adjust_start_ind = TRUE)
     }
     
     if (target_middle) {
@@ -677,7 +678,7 @@ predict_model_one_pred_per_entry <- function(model = NULL, layer_name = NULL, pa
                                           start_ind = start_ind, ambiguous_nuc = "zero", nuc_dist = NULL,
                                           use_quality = FALSE, quality_vector = NULL, use_coverage = FALSE, max_cov = NULL,
                                           cov_vector = NULL, n_gram = NULL, n_gram_stride = 1, char_sequence = char_seq,
-                                          tokenizer = tokenizer) 
+                                          tokenizer = tokenizer, adjust_start_ind = TRUE) 
       if (reverse_complement_encoding) one_hot_batch <- list(one_hot_batch, reverse_complement_tensor(one_hot_batch))
       activations <- keras::predict_on_batch(model, one_hot_batch)
       writer[row : (row + batch_size - 1), ] <- activations
@@ -698,7 +699,7 @@ predict_model_one_pred_per_entry <- function(model = NULL, layer_name = NULL, pa
                                       start_ind = seq(1, nchar(char_seq), maxlen), ambiguous_nuc = "zero", nuc_dist = NULL,
                                       use_quality = FALSE, quality_vector = NULL, use_coverage = FALSE, max_cov = NULL,
                                       cov_vector = NULL, n_gram = NULL, n_gram_stride = 1, char_sequence = char_seq,
-                                      tokenizer = tokenizer) 
+                                      tokenizer = tokenizer, adjust_start_ind = TRUE) 
   if (reverse_complement_encoding) one_hot_batch <- list(one_hot_batch, reverse_complement_tensor(one_hot_batch))
   activations <- keras::predict_on_batch(model, one_hot_batch)
   writer[row : num_samples, ] <- activations[1 : length(row:num_samples), ]
