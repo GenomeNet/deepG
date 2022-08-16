@@ -29,14 +29,7 @@ predict_model(
 )
 }
 \arguments{
-\item{output_format}{Either "one_seq", "by_entry", "by_entry_one_file", "one_pred_per_entry".
-If "one_seq" computes prediction for sequence argument or fasta/fastq file.
-Combines fasta entries in file to one sequence. This means predictor sequences can contain elements from more than one fasta entry.
-If "by_entry" will output a separate file for each fasta/fastq entry.
-Names of output files are: output_dir + "Nr" + i + filename + output_type, where i is the number of the fasta entry.
-If "by_entry_one_file", will store prediction for all fasta entry in one h5 file.
-If "one_pred_per_entry" will make one prediction for each entry by either picking random sample for long sequences
-or pad sequence for short sequences.}
+\item{output_format}{Either "one_seq", "by_entry", "by_entry_one_file", "one_pred_per_entry".}
 
 \item{model}{A keras model. If model and path_model are not NULL, model will be used for inference.}
 
@@ -78,4 +71,32 @@ padding beginning of sequence with 0-vectors.}
 \description{
 Removes layers (optional) from pretrained model and calculates states of fasta/fastq file or nucleotide sequence.
 Writes states to h5/csv file. To acces the content of h5 output use \code{load_predictions} function.
+If "one_seq" computes prediction for sequence argument or fasta/fastq file.
+Combines fasta entries in file to one sequence. This means predictor sequences can contain elements from more than one fasta entry.
+If "by_entry" will output a separate file for each fasta/fastq entry.
+Names of output files are: output_dir + "Nr" + i + filename + output_type, where i is the number of the fasta entry.
+If "by_entry_one_file", will store prediction for all fasta entry in one h5 file.
+If "one_pred_per_entry" will make one prediction for each entry by either picking random sample for long sequences
+or pad sequence for short sequences.
+}
+\examples{
+# make prediction for single sequence and write to h5 file
+model <- create_model_lstm_cnn(maxlen = 20, layer_lstm = 8, layer_dense = 2, verbose = FALSE)
+vocabulary <- c("a", "c", "g", "t")
+sequence <- paste(sample(vocabulary, 200, replace = TRUE), collapse = "")
+output_file <- tempfile(fileext = ".h5")
+predict_model(output_format = "one_seq", model = model, step = 10,
+             sequence = sequence, filename = output_file, mode = "label")
+
+# make prediction for fasta file with multiple entries, write output to separate h5 files
+fasta_path <- tempfile(fileext = ".fasta")
+create_dummy_data(file_path = fasta_path, num_files = 1,
+                 num_seq = 5, seq_length = 100,
+                 write_to_file_path = TRUE)
+model <- create_model_lstm_cnn(maxlen = 20, layer_lstm = 8, layer_dense = 2, verbose = FALSE)
+output_dir <- tempfile()
+dir.create(output_dir)
+predict_model(output_format = "by_entry", model = model, step = 10, verbose = FALSE,
+               output_dir = output_dir, mode = "label", path_input = fasta_path)
+list.files(output_dir)
 }

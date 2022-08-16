@@ -5,7 +5,7 @@
 \title{Encodes integer sequence for language model}
 \usage{
 seq_encoding_lm(
-  sequence,
+  sequence = NULL,
   maxlen,
   vocabulary,
   start_ind,
@@ -19,7 +19,11 @@ seq_encoding_lm(
   cov_vector = NULL,
   n_gram = NULL,
   n_gram_stride = 1,
-  output_format = "target_right"
+  output_format = "target_right",
+  discard_amb_nt = FALSE,
+  char_sequence = NULL,
+  adjust_start_ind = FALSE,
+  tokenizer = NULL
 )
 }
 \arguments{
@@ -39,8 +43,50 @@ if "equal" input is 1/length(vocabulary) x length(vocabulary). If "discard" samp
 \item{use_quality}{Use quality scores.}
 
 \item{quality_vector}{Vector of quality probabilities.}
+
+\item{char_sequence}{A character string.}
 }
 \description{
 \code{seq_encoding_lm} Helper function for \code{\link{generator_fasta_lm}}. 
 Encodes integer sequence to input/target list according to \code{output_format} argument.
+}
+\examples{
+# use integer sequence as input 
+
+z <- seq_encoding_lm(sequence = c(1,0,5,1,3,4,3,1,4,1,2),
+maxlen = 5,
+vocabulary = c("a", "c", "g", "t"),
+start_ind = c(1,3),
+ambiguous_nuc = "equal",
+target_len = 1,
+output_format = "target_right")
+
+x <- z[[1]]
+y <- z[[2]]
+
+x[1,,] # 1,0,5,1,3
+y[1,] # 4
+
+x[2,,] # 5,1,3,4,
+y[2,] # 1
+
+# use character string as input
+z <- seq_encoding_lm(sequence = NULL,
+maxlen = 5,
+vocabulary = c("a", "c", "g", "t"),
+start_ind = c(1,3),
+ambiguous_nuc = "zero",
+target_len = 1,
+output_format = "target_right",
+char_sequence = "ACTaaTNTNaZ")
+
+
+x <- z[[1]]
+y <- z[[2]]
+
+x[1,,] # actaa
+y[1,] # t
+
+x[2,,] # taatn
+y[2,] # t
 }

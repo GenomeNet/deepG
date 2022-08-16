@@ -224,7 +224,8 @@ Example: If 1.entry AACC, 2. entry TTTG and concat_seq = "ZZZ" this becomes AACC
 Entries in "type" must be named "train" or "val", otherwise file will not be used for either. path and path_val arguments should be the same.
 Not implemented for train_type = "label_folder".}
 
-\item{use_coverage}{Integer or NULL. If not NULL, use coverage as encoding rather than one-hot encoding and normalize .}
+\item{use_coverage}{Integer or NULL. If not NULL, use coverage as encoding rather than one-hot encoding and normalize.
+Coverage information must be contained a fasta header: there must be a string "cov_n" in the header, where n is some integer.}
 
 \item{set_learning}{When you want to assign one label to set of samples. Only implemented for train_type = "label_folder".
 Input is a list with the following parameters
@@ -239,7 +240,7 @@ of length maxlen to one long sequence; if buffer_len is an integer, the subseque
 \item{proportion_entries}{Proportion of fasta entries to keep. For example, if fasta file has 50 entries and proportion_entries = 0.1,
 will randomly select 5 entries.}
 
-\item{sample_by_file_size}{Sample new file weighted by file size (possible to repeatedly sample the same file).}
+\item{sample_by_file_size}{Sample new file weighted by file size (bigger files more likely).}
 
 \item{n_gram}{Encode n nucleotides at once. Can be used for language model for target encoding (not input yet)
 or for input sequence for label training.}
@@ -254,7 +255,7 @@ optional arguments sd or mean if noise_type is "normal" (default is sd=1 and mea
 \description{
 Train a neural network on genomic data. Data can be fasta/fastq files, rds files or a prepared data set.
 If the data is given as collection of fasta, fastq or rds files, function will create a data generator that extracts training and validation batches
-from files. Functions includes several options to detemine the sampling strategy of the generetor and preprocessing of the data.  
+from files. Function includes several options to detemine the sampling strategy of the generetor and preprocessing of the data.  
 Training progress can be visualized in tensorboard. Model weights can be stored during training using checkpoints.
 }
 \examples{
@@ -288,7 +289,6 @@ hist <- train_model(train_type = "label_folder",
                     steps_per_epoch = 6,
                     step = 5,
                     format = "fasta",
-                    path_file_log = NULL,
                     vocabulary_label = c("label_1", "label_2"))
 }                     
 }

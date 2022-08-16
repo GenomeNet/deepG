@@ -2,7 +2,7 @@
 % Please edit documentation in R/create_model.R
 \name{create_model_genomenet}
 \alias{create_model_genomenet}
-\title{Self-genoment model}
+\title{Genomenet model}
 \usage{
 create_model_genomenet(
   maxlen = 300,
@@ -31,9 +31,10 @@ create_model_genomenet(
   recurrent_bidirectional = FALSE,
   recurrent_units = 100,
   vocabulary_size = 4,
-  num_targets = 2
+  num_targets = 2,
+  model_seed = NULL
 )
 }
 \description{
-Self-genoment model
+TODO: add link to paper
 }

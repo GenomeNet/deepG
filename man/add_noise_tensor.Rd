@@ -14,3 +14,4 @@ add_noise_tensor(x, noise_type, ...)
 \description{
 Add noise to tensor
 }
+\keyword{internal}

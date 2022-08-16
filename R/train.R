@@ -37,7 +37,7 @@
 #' or "_{x + 1}" if name ends with integer x. 
 #' @param batch_size Number of samples used for one network update.
 #' @param epochs Number of iterations.
-#' @param max_queue_size Queue on fit_generator().
+#' @param max_queue_size Queue on fit().
 #' @param reduce_lr_on_plateau Whether to use learning_rate scheduler.
 #' @param lr_plateau_factor Factor of decreasing learning_rate when plateau is reached.
 #' @param patience Number of epochs waiting for decrease in val_loss before reducing learning_rate.

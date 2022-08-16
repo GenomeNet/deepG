@@ -2,10 +2,10 @@
 % Please edit documentation in R/n_gram.R
 \name{df_to_distribution_matrix}
 \alias{df_to_distribution_matrix}
-\title{Helper function for \code{n_gram}}
+\title{Helper function for \code{n_gram_dist}}
 \usage{
 df_to_distribution_matrix(freq_df, vocabulary = c("A", "C", "G", "T"))
 }
 \description{
-Helper function for \code{n_gram}
+Helper function for \code{n_gram_dist}
 }

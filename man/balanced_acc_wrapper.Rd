@@ -2,10 +2,15 @@
 % Please edit documentation in R/callbacks.R
 \name{balanced_acc_wrapper}
 \alias{balanced_acc_wrapper}
-\title{Balanced accuracy metric.}
+\title{Balanced accuracy metric}
 \usage{
 balanced_acc_wrapper(num_targets, cm_dir)
 }
+\arguments{
+\item{num_targets}{Number of targets.}
+
+\item{cm_dir}{Directory of confusion matrix used to compute balanced accuracy.}
+}
 \description{
-Balanced accuracy metric.
+Compute balanced accuracy as additional score. Useful for imbalanced data.
 }
