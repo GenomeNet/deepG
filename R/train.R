@@ -376,7 +376,7 @@ train_model <- function(train_type = "lm",
                          split_seq = split_seq, path_file_logVal = path_file_logVal,
                          vocabulary_label = vocabulary_label, new_batch_size = new_batch_size, val = FALSE)
     
-    gen.val <- get_generator(path = path, batch_size = batch_size, model = model,
+    gen.val <- get_generator(path = path_val, batch_size = batch_size, model = model,
                              maxlen = maxlen, step = step, shuffle_file_order = shuffle_file_order,
                              vocabulary = vocabulary, seed = seed[2], proportion_entries = proportion_entries,
                              shuffle_input = shuffle_input, format = format, 
