@@ -87,7 +87,9 @@ evaluate_model <- function(path_input,
   
   if (is.null(vocabulary_label)) vocabulary_label <- list(vocabulary)
   if (!is.list(vocabulary_label)) vocabulary_label <- list(vocabulary_label)
-  number_batches <- rep(ceiling(number_batches/length(path_input)), length(path_input))
+  if (mode == "label_folder") {
+    number_batches <- rep(ceiling(number_batches/length(path_input)), length(path_input))
+  }
   num_classes <- ifelse(mode == "label_folder", length(path_input), 1)
   num_out_layers <- length(activations)
   
