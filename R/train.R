@@ -437,8 +437,7 @@ train_model <- function(train_type = "lm",
         initial_epoch = initial_epoch,
         callbacks = callbacks,
         class_weight = class_weight,
-        verbose = print_scores
-      )
+        verbose = print_scores)
     
     if (validation_only_after_training) {
       history$val_loss <- model$val_loss
