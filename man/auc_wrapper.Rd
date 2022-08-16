@@ -7,11 +7,11 @@
 auc_wrapper(model_output_size, loss = "binary_crossentropy")
 }
 \arguments{
-\item{model_output_size}{Number of neurons in output layer of model, for which metric will be applied to.}
+\item{model_output_size}{Number of neurons in model output layer.}
 
 \item{loss}{Loss function of model, for which metric will be applied to; must be "binary_crossentropy"
 or "catergorical_crossentropy".}
 }
 \description{
-Mean AUC score
+Compute AUC score as additional metric. If model has several output neurons with binary crossentroy loss, will use the average score.
 }

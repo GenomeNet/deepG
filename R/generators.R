@@ -3617,10 +3617,11 @@ get_generator <- function(path = NULL,
 #' @inheritParams generator_fasta_label_header_csv
 #' @inheritParams generator_initialize
 #' @inheritParams generator_fasta_label_folder_wrapper
-#' @param output_path Output directory. Output files will be named output_path + "batch_x" + ".rds" or ".pickle", where x is an index (from 1 to 
+#' @param output_path Output directory. Output files will be named output_path + file_name_start + x + ".rds" or ".pickle", where x is an index (from 1 to 
 #' \code{iterations}) and file ending depends on \code{as_numpy_array} argument.
 #' @param as_numpy_array Store output as list of numpy arrays if TRUE (otherwise as R array). 
 #' @param shuffle Whether to shuffle samples within each batch.
+#' @param file_name_start Start of output file names.
 #' @param ... further generator options.
 #' @export
 dataset_from_gen <- function(output_path,
@@ -3637,6 +3638,7 @@ dataset_from_gen <- function(output_path,
                              set_learning = NULL,
                              seed = NULL,
                              random_sampling,
+                             file_name_start = "batch_",
                              ...) {
   
   stopifnot(train_type %in% c("lm", "label_header", "label_folder", "label_csv"))
@@ -3684,7 +3686,7 @@ dataset_from_gen <- function(output_path,
       }
     }
     
-    filename <- paste0(output_path, "/batch_", batch_number, ".", store_format)
+    filename <- paste0(output_path, file_name_start, "_", batch_number, ".", store_format)
     if (store_format == "pickle") {
       reticulate::py_save_object(object = reticulate::r_to_py(list(x, y)), filename = filename)
     }

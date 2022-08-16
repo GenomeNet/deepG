@@ -27,12 +27,9 @@ i.e. each rows should sum to 1 and have nonnegative entries.
 Output data frame contains average confidence scores, max score and percentage of votes for each class.
 }
 \examples{
-\dontrun{
-df <- data.frame()
 m <- matrix(runif(20*3), ncol = 3)
 m <- m/rowSums(m)
 label_names <- paste0("class_", 1:3)
 df <- as.data.frame(m)
 summarize_states(label_names = label_names, df = df)
-}
 }

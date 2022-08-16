@@ -8,7 +8,7 @@ noisy_loss_wrapper(noise_matrix)
 }
 \arguments{
 \item{noise_matrix}{Matrix of noise distribution.
-If first label contains 5% wrong labels and second label no noise, then
+If first label contains 5\% wrong labels and second label no noise, then
 \code{noise_matrix <- matrix(c(0.95, 0.05, 0, 1), nrow = 2, byrow = TRUE)}.}
 }
 \description{

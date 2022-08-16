@@ -16,6 +16,7 @@ get_run_name(
 \item{auto_extend}{If run_name is already present, add "_2" to name. If name already ends with "_x" replace x with x+1.}
 }
 \description{
-Generate run_name if none is given or is already present.
+If no run name is given, will use date as run name. If run name is already present will add _2 to name or 
+_x+1 if name ends with _x and x is integer.
 }
 \keyword{internal}

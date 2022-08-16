@@ -25,3 +25,13 @@ load_prediction(
 Reads rows from h5 file created by  \code{\link{predict_model}} function,
 rows correspond to position in sequence and columns to neurons.
 }
+\examples{
+# make prediction for single sequence and write to h5 file
+model <- create_model_lstm_cnn(maxlen = 20, layer_lstm = 8, layer_dense = 2, verbose = FALSE)
+vocabulary <- c("a", "c", "g", "t")
+sequence <- paste(sample(vocabulary, 200, replace = TRUE), collapse = "")
+output_file <- tempfile(fileext = ".h5")
+predict_model(output_format = "one_seq", model = model, step = 10,
+              sequence = sequence, filename = output_file, mode = "label")
+load_prediction(h5_path = output_file)
+}

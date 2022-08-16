@@ -18,6 +18,7 @@ get_generator(
   format = "fasta",
   path_file_log = NULL,
   reverse_complement = FALSE,
+  n_gram = NULL,
   n_gram_stride = NULL,
   output_format = "target_right",
   ambiguous_nuc = "zero",
@@ -25,7 +26,6 @@ get_generator(
   skip_amb_nuc = NULL,
   use_quality_score = FALSE,
   padding = FALSE,
-  n_gram = NULL,
   added_label_path = NULL,
   target_from_csv = NULL,
   add_input_as_seq = NULL,
@@ -44,6 +44,7 @@ get_generator(
   split_seq = FALSE,
   target_split = NULL,
   path_file_logVal = NULL,
+  model = NULL,
   vocabulary_label = NULL,
   train_files = NULL,
   val_files = NULL,
@@ -91,6 +92,9 @@ will randomly select 5 entries.}
 
 \item{reverse_complement}{Logical, for every new file decide randomly to use original data or its reverse complement.}
 
+\item{n_gram}{Integer, encode target not nucleotide wise but combine n nucleotides at once. For example for n=2, "AA" ->  (1, 0,..., 0),
+"AC" ->  (0, 1, 0,..., 0), "TT" -> (0,..., 0, 1), where the one-hot vectors have length length(vocabulary)^n.}
+
 \item{n_gram_stride}{Step size for n-gram encoding. For AACCGGTT with n-gram = 4 and n_gram_stride = 2, generator encodes
 (AACC), (CCGG), (GGTT); for n_gram_stride = 4 generator encodes (AACC), (GGTT).}
 
@@ -115,9 +119,6 @@ For example (0.97, 0.01, 0.01, 0.01) instead of (1, 0, 0, 0).}
 
 \item{padding}{Whether to pad sequences too short for one sample with zeros.}
 
-\item{n_gram}{Integer, encode target not nucleotide wise but combine n nucleotides at once. For example for n=2, "AA" ->  (1, 0,..., 0),
-"AC" ->  (0, 1, 0,..., 0), "TT" -> (0,..., 0, 1), where the one-hot vectors have length length(vocabulary)^n.}
-
 \item{added_label_path}{Path to folder with additional input labels. Should be a csv file with one column named "file". Other columns should correspond to one label.}
 
 \item{target_from_csv}{Path to csv file with target mapping. One column should be called "file" and other entries in row are the targets.}
@@ -137,9 +138,10 @@ Example: If 1.entry AACC, 2. entry TTTG and concat_seq = "ZZZ" this becomes AACC
 
 \item{file_filter}{Vector of file names to use from path_corpus.}
 
-\item{use_coverage}{Integer or NULL. If not NULL, use coverage as encoding rather than one-hot encoding and normalize .}
+\item{use_coverage}{Integer or NULL. If not NULL, use coverage as encoding rather than one-hot encoding and normalize.
+Coverage information must be contained a fasta header: there must be a string "cov_n" in the header, where n is some integer.}
 
-\item{sample_by_file_size}{Sample new file weighted by file size (possible to repeatedly sample the same file).}
+\item{sample_by_file_size}{Sample new file weighted by file size (bigger files more likely).}
 
 \item{add_noise}{NULL or list of arguments. If not NULL, list must contain the following arguments: \code{noise_type} can be "normal" or "uniform";
 optional arguments sd or mean if noise_type is "normal" (default is sd=1 and mean=0) or min, max if noise_type is "uniform"

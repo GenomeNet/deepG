@@ -16,7 +16,7 @@ generator_random(
   ambiguous_nuc = "equal",
   padding = FALSE,
   vocabulary = c("a", "c", "g", "t"),
-  number_target_nt = NULL,
+  number_target_nt = 1,
   n_gram = NULL,
   n_gram_stride = NULL,
   sample_by_file_size = TRUE,
@@ -83,7 +83,7 @@ If "empirical" use nucleotide distribution of current file.}
 \item{n_gram_stride}{Step size for n-gram encoding. For AACCGGTT with n-gram = 4 and n_gram_stride = 2, generator encodes
 (AACC), (CCGG), (GGTT); for n_gram_stride = 4 generator encodes (AACC), (GGTT).}
 
-\item{sample_by_file_size}{Sample new file weighted by file size (possible to repeatedly sample the same file).}
+\item{sample_by_file_size}{Sample new file weighted by file size (bigger files more likely).}
 
 \item{max_samples}{Maximum number of samples to use from one file. If not NULL and file has more than \code{max_samples} samples, will randomly choose a
 subset of \code{max_samples} samples.}

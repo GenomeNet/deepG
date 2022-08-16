@@ -30,6 +30,7 @@ create_dummy_data <- function(file_path,
                               write_to_file_path = FALSE,
                               prob = NULL,
                               vocabulary = c("a", "c", "g", "t")) {
+  
   if (!is.null(prob)) {
     stopifnot(length(prob) == length(vocabulary))
     stopifnot(sum(prob) == 1)

@@ -52,7 +52,10 @@ Optional to add dense layers on top of pruned model. Model can have multiple out
 You can freeze all the weights of the pruned model by setting \code{freeze_base_model = TRUE}.
 }
 \examples{
-model_1 <- create_model_lstm_cnn(layer_lstm = c(64, 64), maxlen = 50, layer_dense = c(32, 4), verbose = FALSE)
+model_1 <- create_model_lstm_cnn(layer_lstm = c(64, 64),
+                                 maxlen = 50,
+                                 layer_dense = c(32, 4), 
+                                 verbose = FALSE)
 # get name of second to last layer 
 num_layers <- length(model_1$get_config()$layers)
 layer_name <- model_1$get_config()$layers[[num_layers-1]]$name

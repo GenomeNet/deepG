@@ -2,7 +2,7 @@
 % Please edit documentation in R/create_model.R
 \name{create_model_lstm_cnn_target_middle}
 \alias{create_model_lstm_cnn_target_middle}
-\title{Creates LSTM/CNN network}
+\title{Create LSTM/CNN network to predict middle part of a sequence}
 \usage{
 create_model_lstm_cnn_target_middle(
   maxlen = 50,
@@ -34,7 +34,8 @@ create_model_lstm_cnn_target_middle(
   num_output_layers = 1,
   f1_metric = FALSE,
   verbose = TRUE,
-  batch_norm_momentum = 0.99
+  batch_norm_momentum = 0.99,
+  model_seed = NULL
 )
 }
 \arguments{
@@ -82,9 +83,19 @@ create_model_lstm_cnn_target_middle(
 }
 \description{
 Creates a network consisting of an arbitrary number of CNN, LSTM and dense layers.
-Last layer is a dense layer with softmax activation.
+Function creates two sub networks consisting each of an (optional) CNN layer followed by an arbitrary number of LSTM layers. Afterwards the last LSTM layers
+get concatenated and followed by one or more dense layers. Last layer is a dense layer with softmax activation.
 Network tries to predict target in the middle of a sequence. If input is AACCTAAGG, input tensors should correspond to x1 = AACC, x2 = GGAA and y = T
 (set \code{target_middle = TRUE} in \code{train_model} function).
-Function creates two sub networks consisting each of an (optional) CNN layer followed by an arbitrary number of LSTM layers. Afterwards the last LSTM layers
-get concatenated and followed by a dense layers.
+}
+\examples{
+create_model_lstm_cnn_target_middle(
+  maxlen = 500,
+  vocabulary_size = 4,
+  kernel_size = c(8, 8, 8),
+  filters = c(16, 32, 64),
+  pool_size = c(3, 3, 3),
+  layer_lstm = c(32, 64),
+  layer_dense = c(128, 4),
+  learning_rate = 0.001)
 }
