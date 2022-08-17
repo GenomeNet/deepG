@@ -190,13 +190,3 @@ dist_matrix <- do.call(rbind, l)
 dist_matrix
 ```
 
-
-Our model should be pretty confident, this sequences belongs to the first class
-
-```{r warning = FALSE}
-pred <- predict(model, high_gc_seq_one_hot, verbose = 0)
-colnames(pred) <- c("high_gc", "equal_dist")
-pred
-```
-
-
