@@ -3636,6 +3636,7 @@ dataset_from_gen <- function(output_path,
                              shuffle = FALSE,
                              set_learning = NULL,
                              seed = NULL,
+                             file_name_start = "batch_",
                              random_sampling,
                              ...) {
   
@@ -3684,7 +3685,7 @@ dataset_from_gen <- function(output_path,
       }
     }
     
-    filename <- paste0(output_path, "/batch_", batch_number, ".", store_format)
+    filename <- paste0(output_path, file_name_start, batch_number, ".", store_format)
     if (store_format == "pickle") {
       reticulate::py_save_object(object = reticulate::r_to_py(list(x, y)), filename = filename)
     }
