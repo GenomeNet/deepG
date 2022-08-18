@@ -883,7 +883,7 @@ auc_wrapper <- function(model_output_size,
                                           self$model_output_size <- model_output_size
                                           self$loss <- loss
                                           if (loss == "binary_crossentropy") {
-                                            self$auc_scores <- self$add_weight(name = "auc_vector", shape = c(1, model_output_size), initializer="zeros")
+                                            self$auc_scores <- self$add_weight(name = "auc_vector", shape = c(1L, model_output_size), initializer="zeros")
                                             self$auc_score <-  self$add_weight(name = "auc_score", initializer="zeros")
                                             self$auc_list <- vector("list", model_output_size)
                                             for (i in 1:model_output_size) {
@@ -893,7 +893,7 @@ auc_wrapper <- function(model_output_size,
                                             self$auc_list <- purrr::map(1:model_output_size, ~eval(parse_text[[.x]]))
                                             self$shape <- c(1L, as.integer(self$model_output_size))
                                           } else {
-                                            self$auc_scores <- self$add_weight(name = "auc_vector", shape = c(1, 1), initializer="zeros")
+                                            self$auc_scores <- self$add_weight(name = "auc_vector", shape = c(1L, 1L), initializer="zeros")
                                             self$auc_score <-  self$add_weight(name = "auc_score", initializer="zeros")
                                             self$auc_list <- vector("list", 1)
                                             assign(paste0("m_", 1), tensorflow::tf$keras$metrics$AUC())

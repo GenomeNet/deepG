@@ -16,6 +16,7 @@ library(magrittr)
 devtools::load_all(path = "~/deepGdev")
 library(deepG)
 library(magrittr)
+library(ggplot2)
 ```
 
 ```{css, echo=FALSE}
@@ -58,13 +59,14 @@ for (i in 1:length(data_type)) {
   assign(paste0(data_type[i], "_dir"), temp_file)
   dir.create(temp_file)
   
-  if (i %% 2 == 1) {
-    header <- "label_1"
+if (i %% 2 == 1) {
+    header <- "high_gc"
     prob <- c(0.1, 0.4, 0.4, 0.1)
   } else {
-    header <- "label_2"
+    header <- "equal_dist"
     prob <- rep(0.25, 4)
   }
+  
   fasta_name_start <- paste0(header, "_", data_type[i], "file")
 
   create_dummy_data(file_path = temp_file,
@@ -188,5 +190,12 @@ for (i in 1:length(wrong_pred_seq)) {
 }
 dist_matrix <- do.call(rbind, l)
 dist_matrix
-```
 
+df <- data.frame(distribution = as.vector(dist_matrix),
+                 nt = factor(rep(vocabulary, each = nrow(dist_matrix))),
+                 sample_id = rep(1:nrow(dist_matrix), 4))
+
+ggplot(df, aes(fill=nt, y=distribution, x=nt)) + 
+    geom_bar(position="dodge", stat="identity")  + facet_wrap(~sample_id)
+```
+  
