@@ -1618,7 +1618,7 @@ create_model_lstm_cnn_time_dist <- function(
     model_metrics <- c(macro_average_cb, "acc")
     
     if (f1_metric) {
-      f1 <- f1_wrapper(num_targets)
+      f1 <- f1_wrapper(num_targets = 2, loss = loss_fn)
       model_metrics <- c(model_metrics, f1)
     }
   }
