@@ -1119,3 +1119,35 @@ get_callbacks <- function(default_arguments , model, path_tensorboard, run_name,
   }
   return(callbacks)
 }
+
+
+#' Remove checkpoints
+#' 
+#' Remove all but one checkpoint, based on some condition.
+#' 
+#' @param cp_dir Directory containing checkpoints.
+#' @param metric Either `"acc"`, `"loss"` or `"last_ep"`. Condition which checkpoint to keep.
+#'  
+#' @export 
+remove_checkpoints <- function(cp_dir, metric) {
+  
+  stopifnot(metric %in% c("acc", "loss", "last_ep"))
+  files <- list.files(cp_dir, full.names = TRUE)
+  files_basename <- basename(files)
+  
+  if (metric == "acc") {
+    acc_scores <- files_basename %>% stringr::str_extract("acc\\d++\\.\\d++") %>% 
+      stringr::str_remove("acc") %>% as.numeric()
+  }
+  
+  if (metric == "loss") {
+    loss_scores <- files_basename %>% stringr::str_extract("loss\\d++\\.\\d++") %>% 
+      stringr::str_remove("acc") %>% as.numeric()
+  }
+  
+  if (metric == "last_ep") {
+    ep_scores <- files_basename %>% stringr::str_extract("Ep\\.\\d++") %>% 
+      stringr::str_remove("acc") %>% as.numeric()
+  }
+  
+}
