@@ -3,19 +3,16 @@
 \docType{data}
 \name{crispr_sample}
 \alias{crispr_sample}
-\title{Example training dataset consiting of a sequence of nucleotides of CRISPR loci
-Filtered for unambigous characters and contains only characters in the vocabulary {A,G,G,T
-}
-Can be loaded to workspace via data(crispr_sample)}
+\title{CRISPR data}
 \format{
-Large character of 4.9 Mb
+Large character of 442.41 kB
 }
 \usage{
 crispr_sample
 }
 \description{
-Example training dataset consiting of a sequence of nucleotides of CRISPR loci
-Filtered for unambigous characters and contains only characters in the vocabulary {A,G,G,T
+Example training dataset consisting of a sequence of nucleotides of CRISPR loci
+Filtered for unambiguous characters and contains only characters in the vocabulary {A,G,G,T
 }
 Can be loaded to workspace via data(crispr_sample)
 }

@@ -3,10 +3,9 @@
 \docType{data}
 \name{parenthesis}
 \alias{parenthesis}
-\title{Training dataset of synthetic parenthesis language
-Can be loaded to workspace via data(parenthesis)}
+\title{Parenthesis data}
 \format{
-Large character of 4.9 Mb
+Large character of 1.00 MB
 }
 \usage{
 parenthesis

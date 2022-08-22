@@ -21,7 +21,7 @@
 #' @param auprc Whether to include AUPRC metric. If output layer activation is "softmax", only possible for 2 targets. Computes the average if output layer has sigmoid
 #' activation and multiple targets.
 #' @param path_pred_list Path to store list of predictions (output of output layers) and corresponding true labels as rds file. 
-#' @param exact_num_samples Exact number of samples to evaluate. If you want to evaluate a number of samples not devisible by batch_size. Useful if you want
+#' @param exact_num_samples Exact number of samples to evaluate. If you want to evaluate a number of samples not divisible by batch_size. Useful if you want
 #' to evaluate a data set exactly ones and know the number of samples already. Should be a vector if mode = "label_folder" (with same length as vocabulary_label)
 #' and else an integer.
 #' @param ... Further generator options.

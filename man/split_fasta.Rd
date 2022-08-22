@@ -25,6 +25,6 @@ split_fasta(
 }
 \description{
 Returns smaller files with same file name and "_x" (where x is an integer). For example,
-assume we have input file called "abc.fasta" with 100 entries and split_n = 50. Function will
-create two files called "abc_1.fasta" and "abc_2.fasta" in target_path.
+assume we have input file called "abc.fasta" with 100 entries and \code{split_n = 50}. Function will
+create two files called "abc_1.fasta" and "abc_2.fasta" in \code{target_path}.
 }

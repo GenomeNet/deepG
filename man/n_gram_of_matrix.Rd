@@ -15,9 +15,7 @@ n_gram_of_matrix(input_matrix, n = 3)
 One-hot encoding matrix to n-gram encoding matrix
 }
 \examples{
-\dontrun{
 x <- c(0,0,1,3,3) 
 input_matrix <- keras::to_categorical(x, 4)
 n_gram_of_matrix(input_matrix, n = 2) 
-}
 }

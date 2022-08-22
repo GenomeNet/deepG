@@ -3,10 +3,7 @@
 \docType{data}
 \name{model_self_genomenet_maxlen_10k}
 \alias{model_self_genomenet_maxlen_10k}
-\title{Serialized keras model for "bacteria", "virus-no-phage","virus-phage" classification.
-Can be loaded to workspace via data(self_genomenet_model_maxlen_10k)
-Use keras::unserialize_model to transform to keras model or load with
-load_model_self_genomenet(maxlen = 10000) function call.}
+\title{Genomenet model maxlen 10000}
 \format{
 raw
 }

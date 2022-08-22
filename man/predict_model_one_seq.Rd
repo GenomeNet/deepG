@@ -29,7 +29,7 @@ predict_model_one_seq(
 \arguments{
 \item{path_model}{Path to a pretrained model.}
 
-\item{layer_name}{Name of layer to get output from. If NULL, will use the last layer.}
+\item{layer_name}{Name of layer to get output from. If \code{NULL}, will use the last layer.}
 
 \item{sequence}{Character string, ignores path_input if argument given.}
 
@@ -37,7 +37,7 @@ predict_model_one_seq(
 
 \item{round_digits}{Number of decimal places.}
 
-\item{filename}{Filename to store states in. No file output if argument is NULL.}
+\item{filename}{Filename to store states in. No file output if argument is \code{NULL}.}
 
 \item{step}{Frequency of sampling steps.}
 
@@ -52,13 +52,13 @@ predict_model_one_seq(
 \item{padding}{Logical scalar, generate states for first maxlen nucleotides by
 padding beginning of sequence with 0-vectors.}
 
-\item{output_type}{Either "h5" or "csv".}
+\item{output_type}{Either \verb{"h5"`` or }"csv"`.}
 
 \item{model}{A keras model. If model and path_model are not NULL, model will be used for inference.}
 
-\item{mode}{Either "lm" for language model or "label" for label classification.}
+\item{mode}{Either \code{"lm"} for language model or \code{"label"} for label classification.}
 
-\item{format}{Either "fasta" or "fastq".}
+\item{format}{Either \code{"fasta"} or \code{"fastq"}.}
 
 \item{include_seq}{Whether to include input sequence in h5 file.}
 }

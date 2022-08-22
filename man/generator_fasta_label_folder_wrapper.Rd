@@ -19,7 +19,7 @@ generator_fasta_label_folder_wrapper(
 
 \item{new_batch_size}{Only applied if \code{set_learning} is not NULL}
 
-\item{batch_size}{Number of batches.}
+\item{batch_size}{Number of samples in one batch.}
 
 \item{path}{Path to input files.}
 
@@ -27,15 +27,25 @@ generator_fasta_label_folder_wrapper(
 
 \item{maxlen}{Length of predictor sequence.}
 
-\item{set_learning}{When you want to assign one label to set of samples. Only implemented for train_type = "label_folder".
+\item{set_learning}{When you want to assign one label to set of samples. Only implemented for \code{train_type = "label_folder"}.
 Input is a list with the following parameters
-(1) \code{samples_per_target}, how many samples to use for one target; (2) \code{maxlen} length of one sample
-(3) \code{reshape_mode} "time_dist", "multi_input" or "concat". If reshape_mode is "concat", there is an additional (4) \code{buffer_len}
-argmument. If reshape_mode is "multi_input", generator will produce samples_per_target separate inputs, each of length maxlen (model should have
-samples_per_target input layers). If reshape_mode is "time_dist", generator will produce a 4D input array. The dimensions correspond to
-(batch_size, samples_per_target, maxlen, length(vocabulary)). If reshape mode is "concat", generator will concatenate samples_per_target sequences
-of length maxlen to one long sequence; if buffer_len is an integer, the subsequences are interspaced with buffer_len rows. The input length is
-(maxlen \* samples_per_target) + buffer_len \* (samples_per_target - 1)}
+\itemize{
+\item \code{samples_per_target}: how many samples to use for one target
+\item \code{maxlen}: length of one sample
+\item \code{reshape_mode}: \verb{"time_dist", "multi_input"} or \code{"concat"}.
+\itemize{
+\item
+If \code{reshape_mode} is \code{"multi_input"}, generator will produce \code{samples_per_target} separate inputs, each of length \code{maxlen} (model should have
+\code{samples_per_target} input layers).
+\item If reshape_mode is \code{"time_dist"}, generator will produce a 4D input array. The dimensions correspond to
+\verb{(batch_size, samples_per_target, maxlen, length(vocabulary))}.
+\item If reshape mode is \code{"concat"}, generator will concatenate \code{samples_per_target} sequences
+of length \code{maxlen} to one long sequence
+}
+\item If \code{reshape_mode} is \code{"concat"}, there is an additional \code{buffer_len}
+argument. If \code{buffer_len} is an integer, the subsequences are interspaced with \code{buffer_len} rows. The input length is
+(\code{maxlen} \eqn{*} \code{samples_per_target}) + \code{buffer_len} \eqn{*} (\code{samples_per_target} - 1)
+}}
 }
 \description{
 Combines generators created by \code{\link{generator_initialize}} into a single generator.

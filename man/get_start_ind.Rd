@@ -23,12 +23,11 @@ get_start_ind(
 
 \item{step}{Distance between samples from one entry in \code{seq_vector}.}
 
-\item{train_mode}{Either "lm" for language model or "label" for label classification. Language models need one character more
-(the target) for one sample.}
+\item{train_mode}{Either \code{"lm"} for language model or \code{"label"} for label classification.}
 
-\item{discard_amb_nuc}{Discard all samples that contain characters outside vocabulary.}
+\item{discard_amb_nuc}{Whether to discard all samples that contain characters outside vocabulary.}
 }
 \description{
-Helper function for data generators. 
+Helper function for data generators.
 Computes start positions in sequence where samples can be extracted, given maxlen, step size and ambiguous nucleotide constraints.
 }

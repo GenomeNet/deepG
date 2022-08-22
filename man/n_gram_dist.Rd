@@ -21,15 +21,30 @@ n_gram_dist(
 
 \item{vocabulary}{Vector of allowed characters, samples outside vocabulary get discarded.}
 
-\item{format}{"fasta" or "fastq".}
+\item{format}{File format, either \code{"fasta"} or \code{"fastq"}.}
 
 \item{file_sample}{If integer, size of random sample of files in \code{path_input}.}
 
-\item{step}{Frequency of samples.}
+\item{step}{How often to take a sample.}
 }
 \value{
 Returns a matrix with distributions of nucleotides given the previous n nucleotides.
 }
 \description{
-Get distribution of n-grams
+Get distribution of next character given previous n nucleotides.
+}
+\examples{
+temp_dir <- tempfile()
+dir.create(temp_dir)
+create_dummy_data(file_path = temp_dir,
+                  num_files = 3,
+                  seq_length = 8,
+                  vocabulary = c("A", "C", "G", "T"),
+                  num_seq = 2)
+
+m <- n_gram_dist(path_input = temp_dir,
+                 n = 3,
+                 step = 1,
+                 nuc_dist = FALSE)
+head(round(m, 2))
 }

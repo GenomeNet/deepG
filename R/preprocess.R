@@ -1,17 +1,22 @@
 #' Encodes integer sequence for language model
 #'
-#' \code{seq_encoding_lm} Helper function for \code{\link{generator_fasta_lm}}. 
+#' Helper function for \code{\link{generator_fasta_lm}}. 
 #' Encodes integer sequence to input/target list according to \code{output_format} argument. 
 #'
+#' @inheritParams generator_fasta_lm
 #' @param sequence Sequence of integers.
 #' @param maxlen Length of one sample
-#' @param vocabulary Set of characters to encode.
 #' @param start_ind Start positions of samples in \code{sequence}.
-#' @param ambiguous_nuc How to handle nucleotides outside vocabulary, either "zero", "discard" or "equal". If "zero", input gets encoded as zero vector;
-#' if "equal" input is 1/length(vocabulary) x length(vocabulary). If "discard" samples containing nucleotides outside vocabulary get discarded.
+#' @param ambiguous_nuc How to handle nucleotides outside vocabulary, either `"zero"`, `"empirical"` or `"equal"`.
+#' See \code{\link{train_model}}. Note that `"discard"` option is not available for this function.
 #' @param nuc_dist Nucleotide distribution.
 #' @param use_quality Use quality scores.
+#' @param use_coverage Whether to use coverage encoding. 
+#' @param max_cov Biggest coverage value. Only applies if `use_coverage = TRUE`.
+#' @param cov_vector Vector of coverage values associated to the input. 
+#' @param adjust_start_ind Whether to shift values in \code{start_ind} to start at 1: for example (5,11,25) becomes (1,7,21).
 #' @param quality_vector Vector of quality probabilities.
+#' @param tokenizer A keras tokenizer.
 #' @param char_sequence A character string.
 #' @examples 
 #' # use integer sequence as input 
@@ -57,9 +62,10 @@ seq_encoding_lm <- function(sequence = NULL, maxlen, vocabulary, start_ind, ambi
                             nuc_dist = NULL, use_quality = FALSE, quality_vector = NULL,
                             target_len = 1, use_coverage = FALSE, max_cov = NULL, cov_vector = NULL,
                             n_gram = NULL, n_gram_stride = 1, output_format = "target_right",
-                            discard_amb_nt = FALSE, char_sequence = NULL, adjust_start_ind = FALSE,
+                            char_sequence = NULL, adjust_start_ind = FALSE,
                             tokenizer = NULL) {
 
+  discard_amb_nt <- FALSE
   ## TODO: add discard_amb_nt
   if (!is.null(char_sequence)) {
     
@@ -272,17 +278,9 @@ seq_encoding_lm <- function(sequence = NULL, maxlen, vocabulary, start_ind, ambi
 
 #' Encodes integer sequence for label classification.
 #'
-#' Helper function for \code{\link{generator_fasta_label_header_csv}}, returns encoding for integer sequence.
+#' Returns encoding for integer or character sequence.
 #'
-#' @param sequence Sequence of integers.
-#' @param maxlen Length of predictor sequence.
-#' @param vocabulary Set of characters to encode.
-#' @param start_ind Start positions of samples in \code{sequence}.
-#' @param ambiguous_nuc How to handle nucleotides outside vocabulary, either "zero", "discard" or "equal". If "zero", input gets encoded as zero vector;
-#' if "equal" input is 1/length(vocabulary) x length(vocabulary). If "discard" samples containing nucleotides outside vocabulary get discarded.
-#' @param nuc_dist Nucleotide distribution.
-#' @param use_quality Use quality scores.
-#' @param quality_vector Vector of quality probabilities.
+#' @inheritParams seq_encoding_lm
 #' @examples 
 #' # use integer sequence as input
 #' x <- seq_encoding_label(sequence = c(1,0,5,1,3,4,3,1,4,1,2),
@@ -308,10 +306,11 @@ seq_encoding_lm <- function(sequence = NULL, maxlen, vocabulary, start_ind, ambi
 #' @export
 seq_encoding_label <- function(sequence = NULL, maxlen, vocabulary, start_ind, ambiguous_nuc = "zero", nuc_dist = NULL,
                                use_quality = FALSE, quality_vector = NULL, use_coverage = FALSE, max_cov = NULL,
-                               discard_amb_nt = FALSE, cov_vector = NULL, n_gram = NULL, n_gram_stride = 1,
+                               cov_vector = NULL, n_gram = NULL, n_gram_stride = 1,
                                char_sequence = NULL, tokenizer = NULL, adjust_start_ind = FALSE) {
 
   ## TODO: add discard_amb_nt
+  discard_amb_nt <- FALSE
   if (!is.null(char_sequence)) {
     
     vocabulary <- stringr::str_to_lower(vocabulary)
@@ -405,9 +404,8 @@ seq_encoding_label <- function(sequence = NULL, maxlen, vocabulary, start_ind, a
 #' @param length_vector Length of sequences in \code{seq_vector}.
 #' @param maxlen Length of one predictor sequence.
 #' @param step Distance between samples from one entry in \code{seq_vector}.
-#' @param train_mode Either "lm" for language model or "label" for label classification. Language models need one character more
-#' (the target) for one sample.
-#' @param discard_amb_nuc Discard all samples that contain characters outside vocabulary.
+#' @param train_mode Either `"lm"` for language model or `"label"` for label classification. 
+#' @param discard_amb_nuc Whether to discard all samples that contain characters outside vocabulary.
 #' @export
 get_start_ind <- function(seq_vector, length_vector, maxlen,
                           step, train_mode = "label", discard_amb_nuc = FALSE, vocabulary = c("A", "C", "G", "T")) {
@@ -532,8 +530,6 @@ start_ind_ignore_amb <- function(seq_vector, length_vector, maxlen, step, vocabu
   start_ind
 }
 
-#' convert fastq quality score to probability
-#'
 quality_to_probability <- function(quality_vector) {
   Q <- utf8ToInt(quality_vector) - 33
   1 - 10^(-Q/10)
@@ -561,8 +557,8 @@ remove_amb_nuc_entries <- function(fasta.file, skip_amb_nuc, pattern) {
 #'
 #' @inheritParams generator_fasta_lm
 #' @inheritParams generator_fasta_label_header_csv
+#' @inheritParams train_model
 #' @param file_proportion Proportion of files to randomly sample for estimating class distributions.
-#' @param train_type Either "label_folder", "label_header" or "label_csv".
 #' @export
 get_class_weight <- function(path,
                              vocabulary_label = NULL,
@@ -605,6 +601,7 @@ get_class_weight <- function(path,
     classes <- weight_collection
   }
   
+  names(classes) <- NULL # no list names in tf version > 2.8
   classes
 }
 
@@ -847,7 +844,7 @@ csv_to_tensor <- function(label_csv, added_label_vector, added_label_by_header, 
   return(label_tensor)
 }
 
-#' Devide tensor to list of subsets
+#' Divide tensor to list of subsets
 #'
 #' @keywords internal
 slice_tensor <- function(tensor, target_split) {
@@ -985,14 +982,20 @@ get_coverage_concat <- function(fasta.file, concat_seq) {
 #' 
 #' Reshape input x and target y. Aggregates multiple samples from x and y into single input/target batches  
 #' 
-#' @param samples_per_target How many samples to use for one target. 
-#' @param reshape_mode "time_dist", "multi_input" or "concat".  If reshape_mode is "multi_input",  will produce samples_per_target separate inputs, 
-#' each of length maxlen. If reshape_mode is "time_dist", will produce a 4D input array. The dimensions correspond to
-#' (batch_size, samples_per_target, maxlen, length(vocabulary)). If reshape mode is "concat", will concatenate samples_per_target sequences
-#' of length maxlen to one long sequence
-#' @param buffer_len Only applies if \code{reshape_mode = "concat"}. If buffer_len is an integer, the subsequences are interspaced with buffer_len rows.
-#' The input sequence length is (maxlen \* samples_per_target) + buffer_len \* (samples_per_target - 1).
+#' @param samples_per_target How many samples to use for one target
+#' @param maxlen Length of one sample.
+#' @param reshape_mode `"time_dist", "multi_input"` or `"concat"` 
+#' \itemize{
+#' \item If `"multi_input"`, will produce `samples_per_target` separate inputs, each of length `maxlen`.
+#' \item If `"time_dist"`, will produce a 4D input array. The dimensions correspond to
+#' `(new_batch_size, samples_per_target, maxlen, length(vocabulary))`.
+#' \item If `"concat"`, will concatenate `samples_per_target` sequences of length `maxlen` to one long sequence
+#' }
+#' @param buffer_len Only applies if `reshape_mode = "concat"`. If `buffer_len` is an integer, the subsequences are interspaced with `buffer_len` rows. The input length is
+#' (`maxlen` \eqn{*} `samples_per_target`) + `buffer_len` \eqn{*} (`samples_per_target` - 1)
 #' @param new_batch_size Size of first axis of input/targets after reshaping.
+#' @param voc_len Size of vocabulary.
+#' @param concat_maxlen Length of sequence after concatenation. Only applies if `reshape_mode = "concat"`.
 #' 
 #' @inheritParams generator_initialize
 #' @inheritParams generator_fasta_label_folder_wrapper
@@ -1003,6 +1006,9 @@ reshape_tensor <- function(x, y, new_batch_size,
                            buffer_len = NULL,
                            maxlen, reshape_mode = "time_dist",
                            concat_maxlen = NULL) {
+  
+  # TODO: set concat_maxlen, batch_size and voc_len inside function
+  # Add stop conditions
   
   if (reshape_mode == "time_dist") {
     
@@ -1089,14 +1095,12 @@ create_conf_mat_obj <- function(m, confMatLabels) {
 #' 
 #' Input is sequence of integers from vocabulary of size \code{voc_size}. 
 #' Returns vector of integers corresponding to n-gram encoding.
-#' Integers > voc_size get encoded as voc_size^n + 1.
+#' Integers greater than `voc_size` get encoded as `voc_size^n + 1`.
 #' 
 #' @param int_seq Integer sequence
 #' @param n Length of n-gram aggregation
 #' @examples
-#' \dontrun{
 #' int_to_n_gram(int_seq = c(1,1,2,4,4), n = 2, voc_size = 4)
-#' }
 #' @export
 int_to_n_gram <- function(int_seq, n, voc_size = 4) {
   encoding_len <- length(int_seq) - n + 1
@@ -1121,11 +1125,9 @@ int_to_n_gram <- function(int_seq, n, voc_size = 4) {
 #' @param input_matrix Matrix with one 1 per row and zeros otherwise.
 #' @param n Length of one n-gram.   
 #' @examples
-#' \dontrun{
 #' x <- c(0,0,1,3,3) 
 #' input_matrix <- keras::to_categorical(x, 4)
 #' n_gram_of_matrix(input_matrix, n = 2) 
-#' }
 #' @export
 n_gram_of_matrix <- function(input_matrix, n = 3) {
   voc_len <- ncol(input_matrix)^n
@@ -1168,8 +1170,8 @@ n_gram_vocabulary <- function(n_gram = 3, vocabulary = c("A", "C", "G", "T")) {
 #' Split fasta file into smaller files.
 #'
 #' Returns smaller files with same file name and "_x" (where x is an integer). For example,
-#' assume we have input file called "abc.fasta" with 100 entries and split_n = 50. Function will
-#' create two files called "abc_1.fasta" and "abc_2.fasta" in target_path.
+#' assume we have input file called "abc.fasta" with 100 entries and `split_n = 50`. Function will
+#' create two files called "abc_1.fasta" and "abc_2.fasta" in `target_path`.
 #'
 #' @param path_input Fasta file to split into smaller files
 #' @param split_n Maximum number of entries to use in smaller file.

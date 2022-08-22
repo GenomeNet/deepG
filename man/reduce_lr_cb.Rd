@@ -9,7 +9,7 @@ reduce_lr_cb(patience, cooldown, lr_plateau_factor, monitor = "val_acc")
 \arguments{
 \item{patience}{Number of epochs waiting for decrease in val_loss before reducing learning_rate.}
 
-\item{cooldown}{Number of epochs without changing learning_rate.}
+\item{cooldown}{Number of epochs without changing learning rate.}
 
 \item{lr_plateau_factor}{Factor of decreasing learning_rate when plateau is reached.}
 }

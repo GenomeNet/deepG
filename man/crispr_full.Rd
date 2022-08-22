@@ -3,20 +3,16 @@
 \docType{data}
 \name{crispr_full}
 \alias{crispr_full}
-\title{Example training dataset consiting of a sequence of nucleotides of CRISPR loci
-Filtered for unambigous characters and contains only characters in the vocabulary {A,G,G,T
-}
-contain all CRISPR loci found in NCBI representative genomes using CRT
-Can be loaded to workspace via data(crispr_full)}
+\title{CRISPR data subset}
 \format{
-Large character of 4.9 Mb
+Large character of 7.50 MB
 }
 \usage{
 crispr_full
 }
 \description{
-Example training dataset consiting of a sequence of nucleotides of CRISPR loci
-Filtered for unambigous characters and contains only characters in the vocabulary {A,G,G,T
+Example training dataset consisting of a sequence of nucleotides of CRISPR loci
+Filtered for unambiguous characters and contains only characters in the vocabulary {A,G,G,T
 }
 contain all CRISPR loci found in NCBI representative genomes using CRT
 Can be loaded to workspace via data(crispr_full)

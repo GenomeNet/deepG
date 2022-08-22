@@ -20,7 +20,6 @@ seq_encoding_lm(
   n_gram = NULL,
   n_gram_stride = 1,
   output_format = "target_right",
-  discard_amb_nt = FALSE,
   char_sequence = NULL,
   adjust_start_ind = FALSE,
   tokenizer = NULL
@@ -31,12 +30,12 @@ seq_encoding_lm(
 
 \item{maxlen}{Length of one sample}
 
-\item{vocabulary}{Set of characters to encode.}
+\item{vocabulary}{Vector of allowed characters, character outside vocabulary get encoded as 0-vector.}
 
 \item{start_ind}{Start positions of samples in \code{sequence}.}
 
-\item{ambiguous_nuc}{How to handle nucleotides outside vocabulary, either "zero", "discard" or "equal". If "zero", input gets encoded as zero vector;
-if "equal" input is 1/length(vocabulary) x length(vocabulary). If "discard" samples containing nucleotides outside vocabulary get discarded.}
+\item{ambiguous_nuc}{How to handle nucleotides outside vocabulary, either \code{"zero"}, \code{"empirical"} or \code{"equal"}.
+See \code{\link{train_model}}. Note that \code{"discard"} option is not available for this function.}
 
 \item{nuc_dist}{Nucleotide distribution.}
 
@@ -44,10 +43,38 @@ if "equal" input is 1/length(vocabulary) x length(vocabulary). If "discard" samp
 
 \item{quality_vector}{Vector of quality probabilities.}
 
+\item{target_len}{Number of nucleotides to predict at once.}
+
+\item{use_coverage}{Whether to use coverage encoding.}
+
+\item{max_cov}{Biggest coverage value. Only applies if \code{use_coverage = TRUE}.}
+
+\item{cov_vector}{Vector of coverage values associated to the input.}
+
+\item{n_gram}{Integer, encode target not nucleotide wise but combine n nucleotides at once. For example for \verb{n=2, "AA" ->  (1, 0,..., 0),}
+\verb{"AC" ->  (0, 1, 0,..., 0), "TT" -> (0,..., 0, 1)}, where the one-hot vectors have length \code{length(vocabulary)^n}.}
+
+\item{n_gram_stride}{Step size for n-gram encoding. For AACCGGTT with \code{n-gram = 4} and \code{n_gram_stride = 2}, generator encodes
+\verb{(AACC), (CCGG), (GGTT)}; for \code{n_gram_stride = 4} generator encodes \verb{(AACC), (GGTT)}.}
+
+\item{output_format}{Determines shape of output tensor for language model.
+Either \code{"target_right"}, \code{"target_middle_lstm"}, \code{"target_middle_cnn"} or \code{"wavenet"}.
+Assume a sequence \code{"AACCGTA"}. Output correspond as follows
+\itemize{
+\item \verb{"target_right": X = "AACCGT", Y = "A"}
+\item \verb{"target_middle_lstm": X = (X_1 = "AAC", X_2 = "ATG"), Y = "C"} (note reversed order of X_2)
+\item \verb{"target_middle_cnn": X = "AACGTA", Y = "C"}
+\item \verb{"wavenet": X = "AACCGT", Y = "ACCGTA"}
+}}
+
 \item{char_sequence}{A character string.}
+
+\item{adjust_start_ind}{Whether to shift values in \code{start_ind} to start at 1: for example (5,11,25) becomes (1,7,21).}
+
+\item{tokenizer}{A keras tokenizer.}
 }
 \description{
-\code{seq_encoding_lm} Helper function for \code{\link{generator_fasta_lm}}. 
+Helper function for \code{\link{generator_fasta_lm}}.
 Encodes integer sequence to input/target list according to \code{output_format} argument.
 }
 \examples{

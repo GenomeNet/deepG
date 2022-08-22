@@ -3,10 +3,9 @@
 \docType{data}
 \name{ecoli_small}
 \alias{ecoli_small}
-\title{subset of the E. coli genome for evaluation
-Can be loaded to workspace via data(ecoli_small)}
+\title{Ecoli subset}
 \format{
-character
+character 326.73 kB
 }
 \usage{
 ecoli_small

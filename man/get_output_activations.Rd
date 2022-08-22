@@ -2,7 +2,7 @@
 % Please edit documentation in R/create_model.R
 \name{get_output_activations}
 \alias{get_output_activations}
-\title{Get activtion functions of output layers}
+\title{Get activation functions of output layers}
 \usage{
 get_output_activations(model)
 }
@@ -10,7 +10,7 @@ get_output_activations(model)
 \item{model}{A keras model.}
 }
 \description{
-Get activtion functions of output layers
+Get activation functions of output layers
 }
 \examples{
 model <-  create_model_lstm_cnn(

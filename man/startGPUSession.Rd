@@ -2,7 +2,7 @@
 % Please edit documentation in R/gpu-management.R
 \name{startGPUSession}
 \alias{startGPUSession}
-\title{Limit Tensorflow proccess to one or multiple GPUs.}
+\title{Limit Tensorflow process to one or multiple GPUs.}
 \usage{
 startGPUSession(gpus = "0", growth = T)
 }
@@ -12,5 +12,5 @@ startGPUSession(gpus = "0", growth = T)
 \item{growth}{memory consumption of GPU grows and will not be blocked}
 }
 \description{
-Limit Tensorflow proccess to one or multiple GPUs.
+Limit Tensorflow process to one or multiple GPUs.
 }

@@ -17,7 +17,7 @@ create_dummy_data(
 )
 }
 \arguments{
-\item{file_path}{Output directory or path to output file (only possible if \code{write_to_file_path = TRUE} and 
+\item{file_path}{Output directory; can also be a file name but only possible if \code{write_to_file_path = TRUE} and
 \code{num_files = 1}).}
 
 \item{num_files}{Number of files to create.}
@@ -32,7 +32,7 @@ create_dummy_data(
 
 \item{write_to_file_path}{Whether to write output directly to \code{file_path}, i.e. file_path is not a directory.}
 
-\item{prob}{Probabiltiy of each character in the \code{vocabulary} to be sampled. If NULL each character has same probability.}
+\item{prob}{Probability of each character in the \code{vocabulary} to be sampled. If \code{NULL} each character has same probability.}
 
 \item{vocabulary}{Set of characters to sample sequences from.}
 }
@@ -40,11 +40,12 @@ create_dummy_data(
 Create random sequences from predefined vocabulary and write to fasta file.
 }
 \examples{
-path_input <- tempfile()
-dir.create(path_input)
-create_dummy_data(file_path = path_input,
+path_output <- tempfile()
+dir.create(path_output)
+create_dummy_data(file_path = path_output,
                   num_files = 3,
                   seq_length = 11, 
                   num_seq = 5,                   
                   vocabulary = c("a", "c", "g", "t"))
+list.files(path_output)                   
 }

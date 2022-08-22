@@ -15,15 +15,14 @@ load_prediction(
 \arguments{
 \item{h5_path}{Path to h5 file.}
 
-\item{rows}{Range of rows to read.  If NULL read everything.}
+\item{rows}{Range of rows to read. If \code{NULL} read everything.}
 
-\item{get_target_positions}{Return position of corresponding targets if TRUE.}
+\item{get_target_positions}{Return position of corresponding targets if \code{TRUE}.}
 
-\item{get_seq}{Return nucleotide sequence if TRUE.}
+\item{get_seq}{Return nucleotide sequence if \code{TRUE}.}
 }
 \description{
-Reads rows from h5 file created by  \code{\link{predict_model}} function,
-rows correspond to position in sequence and columns to neurons.
+Reads h5 file created by  \code{\link{predict_model}} function.
 }
 \examples{
 # make prediction for single sequence and write to h5 file

@@ -7,10 +7,10 @@
 tensorboard_cb(path_tensorboard, run_name)
 }
 \arguments{
-\item{path_tensorboard}{Path to path_tensorboard directory or NULL. If NULL, training not tracked on tensorboard.}
+\item{path_tensorboard}{Path to tensorboard directory or \code{NULL}. If \code{NULL}, training not tracked on tensorboard.}
 
-\item{run_name}{Name of the run. Name will be used to identify output from callbacks. If NULL, will use date as run name. If name already present, will add "_2" to name
-or "_{x + 1}" if name ends with integer x.}
+\item{run_name}{Name of the run. Name will be used to identify output from callbacks. If \code{NULL}, will use date as run name. If name already present, will add "\emph{2" to name
+or "}{x + 1}" if name ends with integer x.}
 }
 \description{
 Tensorboard callback

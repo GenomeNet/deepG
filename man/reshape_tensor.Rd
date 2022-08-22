@@ -21,23 +21,28 @@ reshape_tensor(
 \arguments{
 \item{new_batch_size}{Size of first axis of input/targets after reshaping.}
 
-\item{samples_per_target}{How many samples to use for one target.}
+\item{samples_per_target}{How many samples to use for one target}
 
-\item{batch_size}{Number of batches, will get rounded to be multiple of number of targets if necessary.}
+\item{batch_size}{Number of samples in one batch.}
 
 \item{path}{Path to input files.}
 
-\item{voc_len}{Length of vocabulary.}
+\item{voc_len}{Size of vocabulary.}
 
-\item{buffer_len}{Only applies if \code{reshape_mode = "concat"}. If buffer_len is an integer, the subsequences are interspaced with buffer_len rows.
-The input sequence length is (maxlen \* samples_per_target) + buffer_len \* (samples_per_target - 1).}
+\item{buffer_len}{Only applies if \code{reshape_mode = "concat"}. If \code{buffer_len} is an integer, the subsequences are interspaced with \code{buffer_len} rows. The input length is
+(\code{maxlen} \eqn{*} \code{samples_per_target}) + \code{buffer_len} \eqn{*} (\code{samples_per_target} - 1)}
 
-\item{maxlen}{Length of predictor sequence.}
+\item{maxlen}{Length of one sample.}
 
-\item{reshape_mode}{"time_dist", "multi_input" or "concat".  If reshape_mode is "multi_input",  will produce samples_per_target separate inputs, 
-each of length maxlen. If reshape_mode is "time_dist", will produce a 4D input array. The dimensions correspond to
-(batch_size, samples_per_target, maxlen, length(vocabulary)). If reshape mode is "concat", will concatenate samples_per_target sequences
-of length maxlen to one long sequence}
+\item{reshape_mode}{\verb{"time_dist", "multi_input"} or \code{"concat"}
+\itemize{
+\item If \code{"multi_input"}, will produce \code{samples_per_target} separate inputs, each of length \code{maxlen}.
+\item If \code{"time_dist"}, will produce a 4D input array. The dimensions correspond to
+\verb{(new_batch_size, samples_per_target, maxlen, length(vocabulary))}.
+\item If \code{"concat"}, will concatenate \code{samples_per_target} sequences of length \code{maxlen} to one long sequence
+}}
+
+\item{concat_maxlen}{Length of sequence after concatenation. Only applies if \code{reshape_mode = "concat"}.}
 }
 \description{
 Reshape input x and target y. Aggregates multiple samples from x and y into single input/target batches

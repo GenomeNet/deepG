@@ -18,6 +18,10 @@ library(deepG)
 library(magrittr)
 ```
 
+```{r, echo=FALSE, warning=FALSE, message=FALSE}
+options(rmarkdown.html_vignette.check_title = FALSE)
+```
+
 ```{css, echo=FALSE}
 mark.in {
   background-color: CornflowerBlue;
@@ -34,7 +38,7 @@ mark.out {
 The most common use case for the deepG data generator is to extract samples from a collection of 
 fasta (or fastq) files.
 The generator will always return a list of length 2. The first element is the input $X$ and the second the target $Y$.
-We can differentiate between 
+We can differentiate between2 approaches
 
 + **Language model**: Part of a sequence is the input and other part the target.
     + Example: Predict the next nucleotide given the previous 100 nucleotides. 
@@ -299,15 +303,13 @@ Possible arguments are:
 + **"label_header"**: get label from fasta headers.
 + **"label_folder"**: get label from folder, i.e. all files in one folder must belong to the same class.
 + **"label_csv"**: get label from csv file. Csv file should have one column named "file". The targets then correspond to entries in that row (except "file"
-column). Example: if we are currently working with a file called "a.fasta", there should be a row in our csv file <br>
+column). Example: if we are currently working with a file called "a.fasta", there should be a row in our csv file with some target information for that file <br>
 
-<center>
-<span>
-file  &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;  | label_1 | label_2 <br>
-"a.fasta" &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;
-1     &nbsp; &nbsp; &nbsp;  &nbsp; &nbsp; &nbsp;      0 <br>
-</span>
-</center>
+
+  |  file       | label_1 | label_2 | 
+  |   ---       |   ---   |  ---    |   
+  | "a.fasta"   |    1    |    0    |
+
 
 + **"label_rds"**: rds file contains preprocessed list of input and target tensors.
 
@@ -393,7 +395,7 @@ x # abcdef
 y # label_1 
 ```
 
-Exampels for language models follow in the next section.
+Examples for language models follow in the next section.
 
 ### output_format
 

@@ -12,12 +12,10 @@ int_to_n_gram(int_seq, n, voc_size = 4)
 \item{n}{Length of n-gram aggregation}
 }
 \description{
-Input is sequence of integers from vocabulary of size \code{voc_size}. 
+Input is sequence of integers from vocabulary of size \code{voc_size}.
 Returns vector of integers corresponding to n-gram encoding.
-Integers > voc_size get encoded as voc_size^n + 1.
+Integers greater than \code{voc_size} get encoded as \code{voc_size^n + 1}.
 }
 \examples{
-\dontrun{
 int_to_n_gram(int_seq = c(1,1,2,4,4), n = 2, voc_size = 4)
-}
 }

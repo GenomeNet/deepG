@@ -50,9 +50,9 @@ create_model_lstm_cnn_multi_input(
 
 \item{layer_lstm}{Number of cells per network layer. Can be a scalar or vector.}
 
-\item{layer_dense}{Dense layers of size layer_dense after last LSTM (or last CNN is \code{layers.lstm = 0}) layer.}
+\item{layer_dense}{Dense layers of size \code{layer_dense} after last LSTM or CNN layer (if no LSTM used).}
 
-\item{solver}{Optimization method, options are "adam", "adagrad", "rmsprop" or "sgd".}
+\item{solver}{Optimization method, options are \verb{"adam", "adagrad", "rmsprop"} or \code{"sgd"}.}
 
 \item{learning_rate}{Learning rate for optimizer.}
 
@@ -70,7 +70,7 @@ create_model_lstm_cnn_multi_input(
 
 \item{compile}{Whether to compile the model.}
 
-\item{kernel_size}{Size of 1d convolutional layers. For multiple layers, assign a vector. (e.g, rep(3,2) for two layers and kernel size 3)}
+\item{kernel_size}{Size of 1d convolutional layers. For multiple layers, assign a vector. (e.g, \code{rep(3,2)} for two layers and kernel size 3)}
 
 \item{filters}{Number of filters. For multiple layers, assign a vector.}
 
@@ -78,7 +78,7 @@ create_model_lstm_cnn_multi_input(
 
 \item{pool_size}{Integer, size of the max pooling windows. For multiple layers, assign a vector.}
 
-\item{padding}{Padding of CNN layers, e.g. "same", "valid" or "causal".}
+\item{padding}{Padding of CNN layers, e.g. \verb{"same", "valid"} or \code{"causal"}.}
 
 \item{dilation_rate}{Integer, the dilation rate to use for dilated convolution.}
 
@@ -88,17 +88,18 @@ create_model_lstm_cnn_multi_input(
 
 \item{zero_mask}{Boolean, whether to apply zero masking before LSTM layer. Only used if model does not use any CNN layers.}
 
-\item{label_smoothing}{Float in [0, 1]. If 0, no smoothing is applied. If > 0, loss between the predicted
+\item{label_smoothing}{Float in \link{0, 1}. If 0, no smoothing is applied. If > 0, loss between the predicted
 labels and a smoothed version of the true labels, where the smoothing squeezes the labels towards 0.5.
 The closer the argument is to 1 the more the labels get smoothed.}
 
 \item{label_noise_matrix}{Matrix of label noises. Every row stands for one class and columns for percentage of labels in that class.
 If first label contains 5 percent wrong labels and second label no noise, then
+
 \code{label_noise_matrix <- matrix(c(0.95, 0.05, 0, 1), nrow = 2, byrow = TRUE )}}
 
 \item{last_layer_activation}{Either "sigmoid" or "softmax".}
 
-\item{loss_fn}{Either "categorical_crossentropy" or "binary_crossentropy". If label_noise_matrix given, will use custom "noisy_loss".}
+\item{loss_fn}{Either \code{"categorical_crossentropy"} or \code{"binary_crossentropy"}. If \code{label_noise_matrix} given, will use custom \code{"noisy_loss"}.}
 
 \item{auc_metric}{Whether to add AUC metric.}
 
@@ -108,13 +109,13 @@ If first label contains 5 percent wrong labels and second label no noise, then
 
 \item{batch_norm_momentum}{Momentum for the moving mean and the moving variance.}
 
-\item{model_seed}{Set seed for model parameters in tensorflow, if not NULL.}
+\item{model_seed}{Set seed for model parameters in tensorflow, if not \code{NULL}.}
 }
 \description{
-Creates a network consisting of an arbitrary number of CNN, LSTM and dense layers with multiple 
-input layers. After LSTM/CNN part all representations get aggregated by summation. 
-Can be used to make single prediction for combination of multiple input sequences. 
-Implements approach as described here: https://arxiv.org/abs/1703.06114
+Creates a network consisting of an arbitrary number of CNN, LSTM and dense layers with multiple
+input layers. After LSTM/CNN part all representations get aggregated by summation.
+Can be used to make single prediction for combination of multiple input sequences.
+Implements approach as described \href{https://arxiv.org/abs/1703.06114}{here}
 }
 \examples{
 create_model_lstm_cnn_multi_input(

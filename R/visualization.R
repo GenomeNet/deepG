@@ -111,7 +111,7 @@ integral_approximation <- function(gradients) {
 #' @param pred_stepwise Whether to do predictions with batch_size 1 rather than all at once. Can be used if
 #' input is too big to handle at once. Only supported for single input layer.
 #' @param num_baseline_repeats Number of different baseline estimations if baseline_type is "shuffle" (estimate integrated
-#' gradient repeatedly for different shufflings). Final result is average of \code{num_baseline} single calculations.
+#' gradient repeatedly for different shuffles). Final result is average of \code{num_baseline} single calculations.
 #' @examples 
 #' model <- create_model_lstm_cnn(layer_lstm = 8, layer_dense = 3, maxlen = 20, verbose = FALSE)
 #' random_seq <- sample(0:3, 20, replace = TRUE)
@@ -276,7 +276,7 @@ gradients_stepwise <- function(model = model, baseline_seq, target_class_idx,
 #'
 #' @param integrated_grads Output of \code{integrated_gradients} function
 #' @param input_seq Input sequence for model. Should be the same as \code{input_seq} input for corresponding
-#' \code{\link{integrated_gradients}} call that computedinput for \code{integrated_grads} argument.
+#' \code{\link{integrated_gradients}} call that computed input for \code{integrated_grads} argument.
 #' model <- create_model_lstm_cnn(layer_lstm = 8, layer_dense = 3, maxlen = 20)
 #' @examples 
 #' model <- create_model_lstm_cnn(layer_lstm = 8, layer_dense = 3, maxlen = 20, verbose = FALSE)

@@ -54,31 +54,37 @@ evaluate_model(
 \item{mode}{Either "lm" for language model or "label_header", "label_csv" or "label_folder" for label classification.}
 
 \item{output_format}{Determines shape of output tensor for language model.
-Either "target_right", "target_middle_lstm", "target_middle_cnn" or "wavenet".
-Assume a sequence "AACCGTA". Output correspond as follows
-"target_right": X = "AACCGT", Y = "A"
-"target_middle_lstm": X = (X_1 = "AAC", X_2 = "ATG"), Y = "C" (note reversed order of X_2)
-"target_middle_cnn": X = "AACGTA", Y = "C"
-"wavenet": X = "AACCGT", Y = "ACCGTA"}
+Either \code{"target_right"}, \code{"target_middle_lstm"}, \code{"target_middle_cnn"} or \code{"wavenet"}.
+Assume a sequence \code{"AACCGTA"}. Output correspond as follows
+\itemize{
+\item \verb{"target_right": X = "AACCGT", Y = "A"}
+\item \verb{"target_middle_lstm": X = (X_1 = "AAC", X_2 = "ATG"), Y = "C"} (note reversed order of X_2)
+\item \verb{"target_middle_cnn": X = "AACGTA", Y = "C"}
+\item \verb{"wavenet": X = "AACCGT", Y = "ACCGTA"}
+}}
 
-\item{ambiguous_nuc}{How to handle nucleotides outside vocabulary, either "zero", "discard", "empirical" or "equal". If "zero", input gets encoded as zero vector;
-if "equal" input is 1/length(vocabulary) x length(vocabulary). If "discard" samples containing nucleotides outside vocabulary get discarded.
-If "empirical" use nucleotide distribution of current file.}
+\item{ambiguous_nuc}{How to handle nucleotides outside vocabulary, either \code{"zero"}, \code{"discard"}, \code{"empirical"} or \code{"equal"}.
+\itemize{
+\item If \code{"zero"}, input gets encoded as zero vector.
+\item If \code{"equal"}, input is \code{1/length(vocabulary)} \eqn{*} \code{length(vocabulary)}.
+\item If \code{"discard"}, samples containing nucleotides outside vocabulary get discarded.
+\item If \code{"empirical"}, use nucleotide distribution of current file.
+}}
 
 \item{evaluate_all_files}{Boolean, if TRUE will iterate over all files in \code{path_input} once. \code{number_batches} will be overwritten.}
 
-\item{verbose}{Whether to show message.}
+\item{verbose}{Whether to show messages.}
 
 \item{max_iter}{Stop after max_iter number of iterations failed to produce a new batch.}
 
 \item{target_from_csv}{Path to csv file with target mapping. One column should be called "file" and other entries in row are the targets.}
 
-\item{max_samples}{Maximum number of samples to use from one file. If not NULL and file has more than \code{max_samples} samples, will randomly choose a
+\item{max_samples}{Maximum number of samples to use from one file. If not \code{NULL} and file has more than \code{max_samples} samples, will randomly choose a
 subset of \code{max_samples} samples.}
 
 \item{proportion_per_seq}{Numerical value between 0 and 1. Proportion of possible samples to take from one file. Takes samples from random subsequence.}
 
-\item{seed}{Sets seed for set.seed function, for reproducible results when using \code{shuffle_file_order} or \code{shuffle_input}}
+\item{seed}{Sets seed for `set.seed`` function for reproducible results.}
 
 \item{auc}{Whether to include AUC metric. If output layer activation is "softmax", only possible for 2 targets. Computes the average if output layer has sigmoid
 activation and multiple targets.}
@@ -88,7 +94,7 @@ activation and multiple targets.}
 
 \item{path_pred_list}{Path to store list of predictions (output of output layers) and corresponding true labels as rds file.}
 
-\item{exact_num_samples}{Exact number of samples to evaluate. If you want to evaluate a number of samples not devisible by batch_size. Useful if you want
+\item{exact_num_samples}{Exact number of samples to evaluate. If you want to evaluate a number of samples not divisible by batch_size. Useful if you want
 to evaluate a data set exactly ones and know the number of samples already. Should be a vector if mode = "label_folder" (with same length as vocabulary_label)
 and else an integer.}
 

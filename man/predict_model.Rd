@@ -29,11 +29,11 @@ predict_model(
 )
 }
 \arguments{
-\item{output_format}{Either "one_seq", "by_entry", "by_entry_one_file", "one_pred_per_entry".}
+\item{output_format}{Either \code{"one_seq"}, \code{"by_entry"}, \code{"by_entry_one_file"}, \code{"one_pred_per_entry"}.}
 
 \item{model}{A keras model. If model and path_model are not NULL, model will be used for inference.}
 
-\item{layer_name}{Name of layer to get output from. If NULL, will use the last layer.}
+\item{layer_name}{Name of layer to get output from. If \code{NULL}, will use the last layer.}
 
 \item{sequence}{Character string, ignores path_input if argument given.}
 
@@ -41,7 +41,7 @@ predict_model(
 
 \item{round_digits}{Number of decimal places.}
 
-\item{filename}{Filename to store states in. No file output if argument is NULL.}
+\item{filename}{Filename to store states in. No file output if argument is \code{NULL}.}
 
 \item{step}{Frequency of sampling steps.}
 
@@ -51,33 +51,35 @@ predict_model(
 
 \item{verbose}{Whether to print model before and after removing layers.}
 
-\item{return_states}{Return predictions as data frame. Only supported for output_format "one_seq".}
+\item{return_states}{Return predictions as data frame. Only supported for output_format \code{"one_seq"}.}
 
 \item{padding}{Logical scalar, generate states for first maxlen nucleotides by
 padding beginning of sequence with 0-vectors.}
 
-\item{output_type}{"h5" or "csv". If output_format is "by_entries_one_file", "one_pred_per_entry" can only be "h5".}
+\item{output_type}{\code{"h5"} or \code{"csv"}. If \verb{output_format`` is }"by_entries_one_file", "one_pred_per_entry"\verb{can only be}"h5"`.}
 
 \item{path_model}{Path to a pretrained model.}
 
-\item{mode}{Either "lm" for language model or "label" for label classification.}
+\item{mode}{Either \code{"lm"} for language model or \code{"label"} for label classification.}
 
 \item{output_dir}{Path to folder, where to write output.}
 
-\item{format}{Either "fasta" or "fastq".}
+\item{format}{Either \code{"fasta"} or \code{"fastq"}.}
 
 \item{include_seq}{Whether to include input sequence in h5 file.}
 }
 \description{
 Removes layers (optional) from pretrained model and calculates states of fasta/fastq file or nucleotide sequence.
-Writes states to h5/csv file. To acces the content of h5 output use \code{load_predictions} function.
-If "one_seq" computes prediction for sequence argument or fasta/fastq file.
+Writes states to h5/csv file. To access the content of h5 output use \code{load_predictions} function.
+\itemize{
+\item If \code{"one_seq"} computes prediction for sequence argument or fasta/fastq file.
 Combines fasta entries in file to one sequence. This means predictor sequences can contain elements from more than one fasta entry.
-If "by_entry" will output a separate file for each fasta/fastq entry.
+\item If \code{"by_entry"} will output a separate file for each fasta/fastq entry.
 Names of output files are: output_dir + "Nr" + i + filename + output_type, where i is the number of the fasta entry.
-If "by_entry_one_file", will store prediction for all fasta entry in one h5 file.
-If "one_pred_per_entry" will make one prediction for each entry by either picking random sample for long sequences
+\item If \code{"by_entry_one_file"}, will store prediction for all fasta entry in one h5 file.
+\item If \code{"one_pred_per_entry"} will make one prediction for each entry by either picking random sample for long sequences
 or pad sequence for short sequences.
+}
 }
 \examples{
 # make prediction for single sequence and write to h5 file

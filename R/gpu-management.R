@@ -1,4 +1,4 @@
-#' Limit Tensorflow proccess to one or multiple GPUs.
+#' Limit Tensorflow process to one or multiple GPUs.
 #'
 #' @param gpus GPU ids
 #' @param growth memory consumption of GPU grows and will not be blocked

@@ -203,9 +203,10 @@ tensorboard_cb <- function(path_tensorboard, run_name) {
 
 #' Function arguments callback
 #' 
-#' Print train_model call in text field of tensorboard.
+#' Print \code{\link{train_model}} call in text field of tensorboard.
 #' 
 #' @inheritParams train_model
+#' @param argumentList List of function arguments.
 #' @export
 function_args_cb <- function(argumentList, path_tensorboard, run_name) {
   
@@ -483,6 +484,7 @@ validation_after_training_cb <- function(gen.val, validation_steps) {
 #' @inheritParams train_model
 #' @param confMatLabels Names of classes.
 #' @param cm_dir Directory that contains confusion matrix files.
+#' @param total_epochs Number of total training epochs.
 #' @export
 conf_matrix_cb <- function(path_tensorboard, run_name, confMatLabels, cm_dir, total_epochs) {
   

@@ -3,10 +3,9 @@
 \docType{data}
 \name{ecoli}
 \alias{ecoli}
-\title{E. coli genome for evaluation
-Can be loaded to workspace via data(ecoli)}
+\title{Ecoli genome}
 \format{
-Large character of 4.4 Mb
+Large character of 4.64 MB
 }
 \usage{
 ecoli

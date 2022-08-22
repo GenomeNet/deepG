@@ -10,7 +10,7 @@ heatmaps_integrated_grad(integrated_grads, input_seq)
 \item{integrated_grads}{Output of \code{integrated_gradients} function}
 
 \item{input_seq}{Input sequence for model. Should be the same as \code{input_seq} input for corresponding
-\code{\link{integrated_gradients}} call that computedinput for \code{integrated_grads} argument.
+\code{\link{integrated_gradients}} call that computed input for \code{integrated_grads} argument.
 model <- create_model_lstm_cnn(layer_lstm = 8, layer_dense = 3, maxlen = 20)}
 }
 \description{

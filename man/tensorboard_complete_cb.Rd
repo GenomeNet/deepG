@@ -56,42 +56,49 @@ tensorboard_complete_cb(
 \arguments{
 \item{model}{A keras model.}
 
-\item{path_tensorboard}{Path to path_tensorboard directory or NULL. If NULL, training not tracked on tensorboard.}
+\item{path_tensorboard}{Path to tensorboard directory or \code{NULL}. If \code{NULL}, training not tracked on tensorboard.}
 
-\item{run_name}{Name of the run. Name will be used to identify output from callbacks. If NULL, will use date as run name. If name already present, will add "_2" to name
-or "_{x + 1}" if name ends with integer x.}
+\item{run_name}{Name of the run. Name will be used to identify output from callbacks. If \code{NULL}, will use date as run name. If name already present, will add "\emph{2" to name
+or "}{x + 1}" if name ends with integer x.}
 
-\item{train_type}{Either "lm", "lm_rds" for language model; "label_header", "label_folder", "label_csv", "label_rds" for classification or "dummy_gen".
-Language model is trained to predict character in sequence.
-"label_header"/"label_folder"/"label_csv" are trained to predict a corresponding class, given a sequence as input. If "label_header", class will be read from fasta headers.
-If "label_folder", class will be read from folder, i.e. all files in one folder must belong to the same class.
-If "label_csv", targets are read from a csv file. This file should have one column named "file". The targets then correspond to entries in that row (except "file"
-column). Example: if we are currently working with a file called "a.fasta", there should be a row in our csv file
-   file  |  label_1 | label_2
-"a.fasta"     1          8
-If "label_rds", generator will iterate over set of .rds files containing each a list of input and target tensors. Not implemented for model
-with multiple inputs. If "lm_rds", generator will iterate over set of .rds files and will split tensor according to target_len argument
-(targets are last target_len nucleotides of each sequence).
-If "dummy_gen", generator creates random data once and repeatedly feeds these to model.}
+\item{train_type}{Either \code{"lm"}, \code{"lm_rds"} for language model; \code{"label_header"}, \code{"label_folder"}, \code{"label_csv"}, \code{"label_rds"} for classification or \code{"dummy_gen"}.
+\itemize{
+\item Language model is trained to predict character(s) in a sequence. \cr
+\item \code{"label_header"}/\code{"label_folder"}/\code{"label_csv"} are trained to predict a corresponding class given a sequence as input.
+\item If \code{"label_header"}, class will be read from fasta headers.
+\item If \code{"label_folder"}, class will be read from folder, i.e. all files in one folder must belong to the same class.
+\item If \code{"label_csv"}, targets are read from a csv file. This file should have one column named "file". The targets then correspond to entries in that row (except "file"
+column). Example: if we are currently working with a file called "a.fasta", there should be a row in our csv file\tabular{lll}{
+   file \tab label_1 \tab label_2 \cr
+   "a.fasta" \tab 1 \tab 0 \cr
+}
+
+
+\item If \code{"label_rds"}, generator will iterate over set of .rds files containing each a list of input and target tensors. Not implemented for model
+with multiple inputs.
+\item If \code{"lm_rds"}, generator will iterate over set of .rds files and will split tensor according to \code{target_len} argument
+(targets are last \code{target_len} nucleotides of each sequence).
+\item  If \code{"dummy_gen"}, generator creates random data once and repeatedly feeds these to model.
+}}
 
 \item{path}{Path to folder where individual or multiple FASTA or FASTQ files are located for training. If \code{train_type} is \code{label_folder}, should be a vector or list
 where each entry corresponds to a class. If \code{train_type} is not \code{label_folder}, can be a list of directories and/or single files.}
 
-\item{train_val_ratio}{For generator, defines the fraction of batches that will be used for validation (compared to size of training data), i.e. one validtion iteration
-processes \code{batch_size} x \code{steps_per_epoch} x \code{train_val_ratio} samples. If you use dataset instead of generator and \code{dataset_val} is NULL, splits \code{dataset}
+\item{train_val_ratio}{For generator defines the fraction of batches that will be used for validation (compared to size of training data), i.e. one validation iteration
+processes \code{batch_size} \eqn{*} \code{steps_per_epoch} \eqn{*} \code{train_val_ratio} samples. If you use dataset instead of generator and \code{dataset_val} is \code{NULL}, splits \code{dataset}
 into train/validation data.}
 
 \item{batch_size}{Number of samples used for one network update.}
 
 \item{epochs}{Number of iterations.}
 
-\item{max_queue_size}{Queue on fit_generator().}
+\item{max_queue_size}{Queue on fit().}
 
 \item{lr_plateau_factor}{Factor of decreasing learning_rate when plateau is reached.}
 
 \item{patience}{Number of epochs waiting for decrease in val_loss before reducing learning_rate.}
 
-\item{cooldown}{Number of epochs without changing learning_rate.}
+\item{cooldown}{Number of epochs without changing learning rate.}
 
 \item{steps_per_epoch}{Number of training batches per epoch.}
 
@@ -104,16 +111,16 @@ will run for (\code{epochs} - \code{initial_epochs}) rounds and not \code{epochs
 
 \item{vocabulary}{Vector of allowed characters. Character outside vocabulary get encoded as specified in \code{ambiguous_nuc}.}
 
-\item{shuffle_input}{Boolean, shuffle entries in file.}
+\item{shuffle_input}{Whether to shuffle entries in file.}
 
 \item{vocabulary_label}{Character vector of possible targets. Targets outside \code{vocabulary_label} will get discarded if
 \code{train_type = "label_header"}.}
 
-\item{file_limit}{Use only specified number of files, ignored if greater than number of files in \code{path}.}
+\item{file_limit}{Integer or \code{NULL}. If integer, use only specified of number randomly sampled files for training. Ignored if greater than number of files in \code{path}.}
 
 \item{reverse_complement}{Logical, for every new file decide randomly to use original data or its reverse complement.}
 
-\item{tb_images}{Boolean, whether to show plots in tensorboard.}
+\item{tb_images}{Whether to show custom images (confusion matrix) in tensorboard "IMAGES" tab.}
 
 \item{path_file_log}{Write name of files used for training to csv file if path is specified.}
 
@@ -121,7 +128,7 @@ will run for (\code{epochs} - \code{initial_epochs}) rounds and not \code{epochs
 
 \item{skip_amb_nuc}{Threshold of ambiguous nucleotides to accept in fasta entry. Complete entry will get discarded otherwise.}
 
-\item{max_samples}{Maximum number of samples to use from one file. If not NULL and file has more than \code{max_samples} samples, will randomly choose a
+\item{max_samples}{Maximum number of samples to use from one file. If not \code{NULL} and file has more than \code{max_samples} samples, will randomly choose a
 subset of \code{max_samples} samples.}
 
 \item{proportion_entries}{Proportion of fasta entries to keep. For example, if fasta file has 50 entries and proportion_entries = 0.1,

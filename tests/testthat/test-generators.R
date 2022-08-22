@@ -626,7 +626,7 @@ test_that("Checking the generator for the Fasta files", {
   
   ############# padding/amb nucleotide LM ############
   
-  gen <- generator_fasta_lm(path_corpus = "/home/rmreches/deepG/tests/testthat/fasta_3",
+  gen <- generator_fasta_lm(path_corpus = "fasta_3",
                             batch_size = 3,
                             maxlen = 15,
                             step = 1,
@@ -670,7 +670,7 @@ test_that("Checking the generator for the Fasta files", {
   
   ############# padding/amb nucleotide, label_header ############
   
-  gen <- generator_fasta_label_header_csv(path_corpus = "/home/rmreches/deepG/tests/testthat/fasta_3",
+  gen <- generator_fasta_label_header_csv(path_corpus = "fasta_3",
                                           batch_size = 3,
                                           maxlen = 15,
                                           step = 1,

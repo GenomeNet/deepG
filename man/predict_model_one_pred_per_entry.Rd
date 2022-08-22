@@ -23,15 +23,15 @@ predict_model_one_pred_per_entry(
 \arguments{
 \item{model}{A keras model. If model and path_model are not NULL, model will be used for inference.}
 
-\item{layer_name}{Name of layer to get output from. If NULL, will use the last layer.}
+\item{layer_name}{Name of layer to get output from. If \code{NULL}, will use the last layer.}
 
 \item{path_input}{Path to fasta file.}
 
 \item{round_digits}{Number of decimal places.}
 
-\item{format}{Either "fasta" or "fastq".}
+\item{format}{Either \code{"fasta"} or \code{"fastq"}.}
 
-\item{filename}{Filename to store states in. No file output if argument is NULL.}
+\item{filename}{Filename to store states in. No file output if argument is \code{NULL}.}
 
 \item{vocabulary}{Vector of allowed characters, character outside vocabulary get encoded as 0-vector.}
 
