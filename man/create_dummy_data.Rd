@@ -17,7 +17,7 @@ create_dummy_data(
 )
 }
 \arguments{
-\item{file_path}{Output directory or path to output file (only possible if \code{write_to_file_path = TRUE} and 
+\item{file_path}{Output directory or path to output file (only possible if \code{write_to_file_path = TRUE} and
 \code{num_files = 1}).}
 
 \item{num_files}{Number of files to create.}

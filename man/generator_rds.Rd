@@ -30,22 +30,23 @@ subset of \code{max_samples} samples.}
 
 \item{proportion_per_seq}{Numerical value between 0 and 1. Proportion of possible samples to take from one file. Takes samples from random subsequence.}
 
-\item{reverse_complement}{Logical, half of batch contains sequences and other its reverse complements. Reverse complement
-is given by reversed order of sequence and switching A/T and C/G. \code{batch_size} argument has to be even, otherwise 1 will be added
-to \code{batch_size}}
+\item{reverse_complement}{Logical, for every new file decide randomly to use original data or its reverse complement.}
 
 \item{sample_by_file_size}{Sample new file weighted by file size (bigger files more likely).}
 
-\item{n_gram}{Integer, encode target not nucleotide wise but combine n nucleotides at once. For example for n=2, "AA" ->  (1, 0,..., 0),
-"AC" ->  (0, 1, 0,..., 0), "TT" -> (0,..., 0, 1), where the one-hot vectors have length length(vocabulary)^n.}
+\item{n_gram}{Integer, encode target not nucleotide wise but combine n nucleotides at once. For example for \verb{n=2, "AA" ->  (1, 0,..., 0),}
+\verb{"AC" ->  (0, 1, 0,..., 0), "TT" -> (0,..., 0, 1)}, where the one-hot vectors have length \code{length(vocabulary)^n}.}
 
-\item{add_noise}{NULL or list of arguments. If not NULL, list must contain the following arguments: \code{noise_type} can be "normal" or "uniform";
-optional arguments sd or mean if noise_type is "normal" (default is sd=1 and mean=0) or min, max if noise_type is "uniform"
-(default is min=0, max=1).}
+\item{n_gram_stride}{Step size for n-gram encoding. For AACCGGTT with \code{n-gram = 4} and \code{n_gram_stride = 2}, generator encodes
+\verb{(AACC), (CCGG), (GGTT)}; for \code{n_gram_stride = 4} generator encodes \verb{(AACC), (GGTT)}.}
+
+\item{add_noise}{NULL or list of arguments. If not \code{NULL}, list must contain the following arguments: \code{noise_type} can be \code{"normal"} or \code{"uniform"};
+optional arguments \code{sd} or \code{mean} if noise_type is \code{"normal"} (default is \code{sd=1} and \code{mean=0}) or \verb{min, max} if noise_type is \code{"uniform"}
+(default is \verb{min=0, max=1}).}
 }
 \description{
-Creates training batches from rds files. Rds files must contain a  
+Creates training batches from rds files. Rds files must contain a
 list of length 2 (input/target) or of length 1 (for language model).
-If \code{target_len} is not NULL will take the last \code{target_len} entries of 
+If \code{target_len} is not NULL will take the last \code{target_len} entries of
 the first list element as targets and the rest as input.
 }

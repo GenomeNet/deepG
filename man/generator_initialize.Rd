@@ -46,9 +46,9 @@ generator_initialize(
 \arguments{
 \item{directories}{Vector of paths to folder containing fasta files. Files in one folder should belong to one class.}
 
-\item{format}{File format.}
+\item{format}{File format, either \code{"fasta"} or \code{"fastq"}.}
 
-\item{batch_size}{Number of batches, will get rounded to be multiple of number of targets if necessary.}
+\item{batch_size}{Number of batches.}
 
 \item{maxlen}{Length of predictor sequence.}
 
@@ -56,30 +56,33 @@ generator_initialize(
 
 \item{vocabulary}{Vector of allowed characters, character outside vocabulary get encoded as 0-vector.}
 
-\item{verbose}{Whether to show message.}
+\item{verbose}{Whether to show messages.}
 
-\item{shuffle_file_order}{Logical, whether to go through files randomly or sequential.}
+\item{shuffle_file_order}{Logical, whether to go through files randomly or sequentially.}
 
 \item{step}{How often to take a sample.}
 
 \item{seed}{Sets seed for set.seed function, for reproducible results when using \code{shuffle_file_order} or \code{shuffle_input}}
 
-\item{shuffle_input}{Logical, shuffle fasta entries.}
+\item{shuffle_input}{Whether to shuffle entries in every fasta/fastq file before extracting samples.}
 
-\item{file_limit}{Use only specified number of files, ignored if greater than number of files in \code{directories}.}
+\item{file_limit}{Use only specified number of files, ignored if greater than number of files in path_corpus.}
 
 \item{path_file_log}{Write name of files to csv file if path is specified.}
 
-\item{reverse_complement}{Logical, half of batch contains sequences and other its reverse complements. Reverse complement
-is given by reversed order of sequence and switching A/T and C/G. \code{batch_size} argument has to be even, otherwise 1 will be added
-to \code{batch_size}}
+\item{reverse_complement}{Logical, for every new file decide randomly to use original data or its reverse complement.}
 
-\item{reverse_complement_encoding}{Logical, use both original sequence and reverse.complement as two input sequences.}
+\item{reverse_complement_encoding}{Whether to use both original sequence and reverse complement as two input sequences.}
 
 \item{val}{Logical, call initialized generarator "genY" or "genValY" where Y is an integer between 1 and length of directories.}
 
-\item{ambiguous_nuc}{How to handle nucleotides outside vocabulary, either "zero", "discard" or "equal". If "zero", input gets encoded as zero vector;
-if "equal" input is 1/length(vocabulary) x length(vocabulary). If "discard" samples containing nucleotides outside vocabulary get discarded.}
+\item{ambiguous_nuc}{How to handle nucleotides outside vocabulary, either \code{"zero"}, \code{"discard"}, \code{"empirical"} or \code{"equal"}.
+\itemize{
+\item If \code{"zero"}, input gets encoded as zero vector.
+\item If \code{"equal"}, input is \code{1/length(vocabulary)} \eqn{*} \code{length(vocabulary)}.
+\item If \code{"discard"}, samples containing nucleotides outside vocabulary get discarded.
+\item If \code{"empirical"}, use nucleotide distribution of current file.
+}}
 
 \item{proportion_per_seq}{Numerical value between 0 and 1. Proportion of possible samples to take from one file. Takes samples from random subsequence.}
 
@@ -105,25 +108,52 @@ FALSE this will feed network just raw data (a 2D tensor).}
 \item{max_samples}{Maximum number of samples to use from one file. If not NULL and file has more than \code{max_samples} samples, will randomly choose a
 subset of \code{max_samples} samples.}
 
+\item{split_seq}{Split input sequence into two sequences while removing nucleotide in middle. If input is \verb{x_1,..., x_(n+1)}, input gets split into
+\verb{input_1 = x_1,..., x_m} and \verb{input_2 = x_(n+1),..., x_(m+2)} where \code{m = ceiling((n+1)/2)} and \code{n = maxlen}. Note that \code{x_(m+1)} is not used. Can be used for transfer learning,
+when switching from language model trained with target in middle to label classification.}
+
 \item{file_filter}{Vector of file names to use from path_corpus.}
 
-\item{concat_seq}{Character string or NULL. If not NULL all entries from file get concatenated to one sequence with concat_seq string between them.
-Example: If 1.entry AACC, 2. entry TTTG and concat_seq = "ZZZ" this becomes AACCZZZTTTG.}
+\item{concat_seq}{Character string or \code{NULL}. If not \code{NULL} all entries from file get concatenated to one sequence with concat_seq string between them.
+Example: If 1.entry AACC, 2. entry TTTG and \code{concat_seq = "ZZZ"} this becomes AACCZZZTTTG.}
 
-\item{use_coverage}{Integer or NULL. If not NULL, use coverage as encoding rather than one-hot encoding and normalize.
-Coverage information must be contained a fasta header: there must be a string "cov_n" in the header, where n is some integer.}
+\item{use_coverage}{Integer or \code{NULL}. If not \code{NULL}, use coverage as encoding rather than one-hot encoding and normalize.
+Coverage information must be contained a fasta header: there must be a string \code{"cov_n"} in the header, where \code{n} is some integer.}
+
+\item{set_learning}{When you want to assign one label to set of samples. Only implemented for \code{train_type = "label_folder"}.
+Input is a list with the following parameters
+\itemize{
+\item \code{samples_per_target}: how many samples to use for one target
+\item \code{maxlen}: length of one sample
+\item \code{reshape_mode}: \verb{"time_dist", "multi_input"} or \code{"concat"}.
+\itemize{
+\item
+If \code{reshape_mode} is \code{"multi_input"}, generator will produce \code{samples_per_target} separate inputs, each of length \code{maxlen} (model should have
+\code{samples_per_target} input layers).
+\item If reshape_mode is \code{"time_dist"}, generator will produce a 4D input array. The dimensions correspond to
+\verb{(batch_size, samples_per_target, maxlen, length(vocabulary))}.
+\item If reshape mode is \code{"concat"}, generator will concatenate \code{samples_per_target} sequences
+of length \code{maxlen} to one long sequence
+}
+\item If \code{reshape_mode} is \code{"concat"}, there is an additional \code{buffer_len}
+argmument. If \code{buffer_len} is an integer, the subsequences are interspaced with \code{buffer_len} rows. The input length is
+(\code{maxlen} \eqn{*} \code{samples_per_target}) + \code{buffer_len} \eqn{*} (\code{samples_per_target} - 1)
+}}
 
 \item{proportion_entries}{Proportion of fasta entries to keep. For example, if fasta file has 50 entries and proportion_entries = 0.1,
 will randomly select 5 entries.}
 
 \item{sample_by_file_size}{Sample new file weighted by file size (bigger files more likely).}
 
-\item{n_gram}{Integer, encode target not nucleotide wise but combine n nucleotides at once. For example for n=2, "AA" ->  (1, 0,..., 0),
-"AC" ->  (0, 1, 0,..., 0), "TT" -> (0,..., 0, 1), where the one-hot vectors have length length(vocabulary)^n.}
+\item{n_gram}{Integer, encode target not nucleotide wise but combine n nucleotides at once. For example for \verb{n=2, "AA" ->  (1, 0,..., 0),}
+\verb{"AC" ->  (0, 1, 0,..., 0), "TT" -> (0,..., 0, 1)}, where the one-hot vectors have length \code{length(vocabulary)^n}.}
 
-\item{add_noise}{NULL or list of arguments. If not NULL, list must contain the following arguments: \code{noise_type} can be "normal" or "uniform";
-optional arguments sd or mean if noise_type is "normal" (default is sd=1 and mean=0) or min, max if noise_type is "uniform"
-(default is min=0, max=1).}
+\item{n_gram_stride}{Step size for n-gram encoding. For AACCGGTT with \code{n-gram = 4} and \code{n_gram_stride = 2}, generator encodes
+\verb{(AACC), (CCGG), (GGTT)}; for \code{n_gram_stride = 4} generator encodes \verb{(AACC), (GGTT)}.}
+
+\item{add_noise}{NULL or list of arguments. If not \code{NULL}, list must contain the following arguments: \code{noise_type} can be \code{"normal"} or \code{"uniform"};
+optional arguments \code{sd} or \code{mean} if noise_type is \code{"normal"} (default is \code{sd=1} and \code{mean=0}) or \verb{min, max} if noise_type is \code{"uniform"}
+(default is \verb{min=0, max=1}).}
 }
 \description{
 \code{generator_initialize} Initializes generators defined by \code{\link{generator_fasta_label_folder}} function. Targets get encoded in order of directories.

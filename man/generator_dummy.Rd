@@ -8,7 +8,22 @@ generator_dummy(model, batch_size)
 }
 \arguments{
 \item{model}{A keras model.}
+
+\item{batch_size}{Number of batches.}
 }
 \description{
 Creates a random input/target list once and repeatedly returns list.
+}
+\examples{
+model <- create_model_lstm_cnn(
+  maxlen = 10,
+  layer_lstm = c(4),
+  layer_dense = c(5))
+gen <- generator_dummy(model, 12)
+z <- gen()
+x <- z[[1]]
+y <- z[[2]]
+dim(x)
+dim(y)
+predict(model, x)   
 }

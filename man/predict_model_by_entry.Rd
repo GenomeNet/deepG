@@ -26,7 +26,7 @@ predict_model_by_entry(
 )
 }
 \arguments{
-\item{filename}{Filename to store states, function adds "_nr_" + "i" after name, where i is entry number.}
+\item{filename}{Filename to store states, function adds "\emph{nr}" + "i" after name, where i is entry number.}
 
 \item{output_dir}{Path to folder, where to write output.}
 }

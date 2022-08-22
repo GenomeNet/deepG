@@ -43,7 +43,7 @@ generator_fasta_lm(
 \item{path_corpus}{Input directory where .fasta files are located or path to single file ending with .fasta or .fastq
 (as specified in format argument). Can also be a list of directories and/or files.}
 
-\item{format}{File format, either "fasta" or "fastq".}
+\item{format}{File format, either \code{"fasta"} or \code{"fastq"}.}
 
 \item{batch_size}{Number of batches.}
 
@@ -53,15 +53,15 @@ generator_fasta_lm(
 
 \item{vocabulary}{Vector of allowed characters, character outside vocabulary get encoded as 0-vector.}
 
-\item{verbose}{Whether to show message.}
+\item{verbose}{Whether to show messages.}
 
-\item{shuffle_file_order}{Logical, whether to go through files randomly or sequential.}
+\item{shuffle_file_order}{Logical, whether to go through files randomly or sequentially.}
 
 \item{step}{How often to take a sample.}
 
 \item{seed}{Sets seed for set.seed function, for reproducible results when using \code{shuffle_file_order} or \code{shuffle_input}}
 
-\item{shuffle_input}{Logical, shuffle entries in every fasta file before connecting them to sequence.}
+\item{shuffle_input}{Whether to shuffle entries in every fasta/fastq file before extracting samples.}
 
 \item{file_limit}{Use only specified number of files, ignored if greater than number of files in path_corpus.}
 
@@ -70,16 +70,22 @@ generator_fasta_lm(
 \item{reverse_complement}{Logical, for every new file decide randomly to use original data or its reverse complement.}
 
 \item{output_format}{Determines shape of output tensor for language model.
-Either "target_right", "target_middle_lstm", "target_middle_cnn" or "wavenet".
-Assume a sequence "AACCGTA". Output correspond as follows
-"target_right": X = "AACCGT", Y = "A"
-"target_middle_lstm": X = (X_1 = "AAC", X_2 = "ATG"), Y = "C" (note reversed order of X_2)
-"target_middle_cnn": X = "AACGTA", Y = "C"
-"wavenet": X = "AACCGT", Y = "ACCGTA"}
+Either \code{"target_right"}, \code{"target_middle_lstm"}, \code{"target_middle_cnn"} or \code{"wavenet"}.
+Assume a sequence \code{"AACCGTA"}. Output correspond as follows
+\itemize{
+\item \verb{"target_right": X = "AACCGT", Y = "A"}
+\item \verb{"target_middle_lstm": X = (X_1 = "AAC", X_2 = "ATG"), Y = "C"} (note reversed order of X_2)
+\item \verb{"target_middle_cnn": X = "AACGTA", Y = "C"}
+\item \verb{"wavenet": X = "AACCGT", Y = "ACCGTA"}
+}}
 
-\item{ambiguous_nuc}{How to handle nucleotides outside vocabulary, either "zero", "discard", "empirical" or "equal". If "zero", input gets encoded as zero vector;
-if "equal" input is 1/length(vocabulary) x length(vocabulary). If "discard" samples containing nucleotides outside vocabulary get discarded.
-If "empirical" use nucleotide distribution of current file.}
+\item{ambiguous_nuc}{How to handle nucleotides outside vocabulary, either \code{"zero"}, \code{"discard"}, \code{"empirical"} or \code{"equal"}.
+\itemize{
+\item If \code{"zero"}, input gets encoded as zero vector.
+\item If \code{"equal"}, input is \code{1/length(vocabulary)} \eqn{*} \code{length(vocabulary)}.
+\item If \code{"discard"}, samples containing nucleotides outside vocabulary get discarded.
+\item If \code{"empirical"}, use nucleotide distribution of current file.
+}}
 
 \item{use_quality_score}{Whether to use fastq qualitiy scores. If TRUE input is not one-hot-encoding but corresponds to probabilities.
 For example (0.97, 0.01, 0.01, 0.01) instead of (1, 0, 0, 0).}
@@ -100,27 +106,30 @@ FALSE this will feed network just raw data (a 2D tensor).}
 \item{max_samples}{Maximum number of samples to use from one file. If not NULL and file has more than \code{max_samples} samples, will randomly choose a
 subset of \code{max_samples} samples.}
 
-\item{concat_seq}{Character string or NULL. If not NULL all entries from file get concatenated to one sequence with concat_seq string between them.
-Example: If 1.entry AACC, 2. entry TTTG and concat_seq = "ZZZ" this becomes AACCZZZTTTG.}
+\item{concat_seq}{Character string or \code{NULL}. If not \code{NULL} all entries from file get concatenated to one sequence with concat_seq string between them.
+Example: If 1.entry AACC, 2. entry TTTG and \code{concat_seq = "ZZZ"} this becomes AACCZZZTTTG.}
 
 \item{target_len}{Number of nucleotides to predict at once.}
 
 \item{file_filter}{Vector of file names to use from path_corpus.}
 
-\item{use_coverage}{Integer or NULL. If not NULL, use coverage as encoding rather than one-hot encoding and normalize.
-Coverage information must be contained a fasta header: there must be a string "cov_n" in the header, where n is some integer.}
+\item{use_coverage}{Integer or \code{NULL}. If not \code{NULL}, use coverage as encoding rather than one-hot encoding and normalize.
+Coverage information must be contained a fasta header: there must be a string \code{"cov_n"} in the header, where \code{n} is some integer.}
 
 \item{proportion_entries}{Proportion of fasta entries to keep. For example, if fasta file has 50 entries and proportion_entries = 0.1,
 will randomly select 5 entries.}
 
 \item{sample_by_file_size}{Sample new file weighted by file size (bigger files more likely).}
 
-\item{n_gram}{Integer, encode target not nucleotide wise but combine n nucleotides at once. For example for n=2, "AA" ->  (1, 0,..., 0),
-"AC" ->  (0, 1, 0,..., 0), "TT" -> (0,..., 0, 1), where the one-hot vectors have length length(vocabulary)^n.}
+\item{n_gram}{Integer, encode target not nucleotide wise but combine n nucleotides at once. For example for \verb{n=2, "AA" ->  (1, 0,..., 0),}
+\verb{"AC" ->  (0, 1, 0,..., 0), "TT" -> (0,..., 0, 1)}, where the one-hot vectors have length \code{length(vocabulary)^n}.}
 
-\item{add_noise}{NULL or list of arguments. If not NULL, list must contain the following arguments: \code{noise_type} can be "normal" or "uniform";
-optional arguments sd or mean if noise_type is "normal" (default is sd=1 and mean=0) or min, max if noise_type is "uniform"
-(default is min=0, max=1).}
+\item{n_gram_stride}{Step size for n-gram encoding. For AACCGGTT with \code{n-gram = 4} and \code{n_gram_stride = 2}, generator encodes
+\verb{(AACC), (CCGG), (GGTT)}; for \code{n_gram_stride = 4} generator encodes \verb{(AACC), (GGTT)}.}
+
+\item{add_noise}{NULL or list of arguments. If not \code{NULL}, list must contain the following arguments: \code{noise_type} can be \code{"normal"} or \code{"uniform"};
+optional arguments \code{sd} or \code{mean} if noise_type is \code{"normal"} (default is \code{sd=1} and \code{mean=0}) or \verb{min, max} if noise_type is \code{"uniform"}
+(default is \verb{min=0, max=1}).}
 }
 \description{
 Iterates over folder containing .fasta/.fastq files and produces encoding of predictor sequences

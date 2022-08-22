@@ -54,20 +54,26 @@ evaluate_model(
 \item{mode}{Either "lm" for language model or "label_header", "label_csv" or "label_folder" for label classification.}
 
 \item{output_format}{Determines shape of output tensor for language model.
-Either "target_right", "target_middle_lstm", "target_middle_cnn" or "wavenet".
-Assume a sequence "AACCGTA". Output correspond as follows
-"target_right": X = "AACCGT", Y = "A"
-"target_middle_lstm": X = (X_1 = "AAC", X_2 = "ATG"), Y = "C" (note reversed order of X_2)
-"target_middle_cnn": X = "AACGTA", Y = "C"
-"wavenet": X = "AACCGT", Y = "ACCGTA"}
+Either \code{"target_right"}, \code{"target_middle_lstm"}, \code{"target_middle_cnn"} or \code{"wavenet"}.
+Assume a sequence \code{"AACCGTA"}. Output correspond as follows
+\itemize{
+\item \verb{"target_right": X = "AACCGT", Y = "A"}
+\item \verb{"target_middle_lstm": X = (X_1 = "AAC", X_2 = "ATG"), Y = "C"} (note reversed order of X_2)
+\item \verb{"target_middle_cnn": X = "AACGTA", Y = "C"}
+\item \verb{"wavenet": X = "AACCGT", Y = "ACCGTA"}
+}}
 
-\item{ambiguous_nuc}{How to handle nucleotides outside vocabulary, either "zero", "discard", "empirical" or "equal". If "zero", input gets encoded as zero vector;
-if "equal" input is 1/length(vocabulary) x length(vocabulary). If "discard" samples containing nucleotides outside vocabulary get discarded.
-If "empirical" use nucleotide distribution of current file.}
+\item{ambiguous_nuc}{How to handle nucleotides outside vocabulary, either \code{"zero"}, \code{"discard"}, \code{"empirical"} or \code{"equal"}.
+\itemize{
+\item If \code{"zero"}, input gets encoded as zero vector.
+\item If \code{"equal"}, input is \code{1/length(vocabulary)} \eqn{*} \code{length(vocabulary)}.
+\item If \code{"discard"}, samples containing nucleotides outside vocabulary get discarded.
+\item If \code{"empirical"}, use nucleotide distribution of current file.
+}}
 
 \item{evaluate_all_files}{Boolean, if TRUE will iterate over all files in \code{path_input} once. \code{number_batches} will be overwritten.}
 
-\item{verbose}{Whether to show message.}
+\item{verbose}{Whether to show messages.}
 
 \item{max_iter}{Stop after max_iter number of iterations failed to produce a new batch.}
 

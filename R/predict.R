@@ -2,17 +2,18 @@
 #'
 #' @description Removes layers (optional) from pretrained model and calculates states of fasta/fastq file or nucleotide sequence.
 #' Writes states to h5/csv file. To acces the content of h5 output use \code{load_predictions} function.
-#' If "one_seq" computes prediction for sequence argument or fasta/fastq file.
+#' \itemize{
+#' \item If `"one_seq"` computes prediction for sequence argument or fasta/fastq file.
 #' Combines fasta entries in file to one sequence. This means predictor sequences can contain elements from more than one fasta entry.
-#' If "by_entry" will output a separate file for each fasta/fastq entry.
+#' \item If `"by_entry"` will output a separate file for each fasta/fastq entry.
 #' Names of output files are: output_dir + "Nr" + i + filename + output_type, where i is the number of the fasta entry.
-#' If "by_entry_one_file", will store prediction for all fasta entry in one h5 file.
-#' If "one_pred_per_entry" will make one prediction for each entry by either picking random sample for long sequences
+#' \item If `"by_entry_one_file"`, will store prediction for all fasta entry in one h5 file.
+#' \item If `"one_pred_per_entry"` will make one prediction for each entry by either picking random sample for long sequences
 #' or pad sequence for short sequences.
-#'
-#' @param output_format Either "one_seq", "by_entry", "by_entry_one_file", "one_pred_per_entry".
-#' @param output_type "h5" or "csv". If output_format is "by_entries_one_file", "one_pred_per_entry" can only be "h5".
-#' @param return_states Return predictions as data frame. Only supported for output_format "one_seq".
+#' }
+#' @param output_format Either `"one_seq"`, `"by_entry"`, `"by_entry_one_file"`, `"one_pred_per_entry"`.
+#' @param output_type `"h5"` or `"csv"`. If `output_format`` is `"by_entries_one_file", "one_pred_per_entry"` can only be `"h5"`.
+#' @param return_states Return predictions as data frame. Only supported for output_format `"one_seq"`.
 #' @inheritParams predict_model_one_seq
 #' @inheritParams predict_model_by_entry
 #' @inheritParams predict_model_by_entry_one_file
@@ -102,22 +103,22 @@ predict_model <- function(output_format = "one_seq", model = NULL, layer_name = 
 #' h5 file also contains sequence and positions of targets corresponding to states.
 #'
 #' @param path_model Path to a pretrained model.
-#' @param layer_name Name of layer to get output from. If NULL, will use the last layer.
+#' @param layer_name Name of layer to get output from. If `NULL`, will use the last layer.
 #' @param path_input Path to fasta file.
 #' @param sequence Character string, ignores path_input if argument given.
 #' @param round_digits Number of decimal places.
 #' @param batch_size Number of samples to evaluate at once. Does not change output, only relevant for speed and memory.
 #' @param step Frequency of sampling steps.
-#' @param filename Filename to store states in. No file output if argument is NULL.
+#' @param filename Filename to store states in. No file output if argument is `NULL`.
 #' @param vocabulary Vector of allowed characters, character outside vocabulary get encoded as 0-vector.
 #' @param return_states Logical scalar, return states matrix.
 #' @param verbose Whether to print model before and after removing layers.
 #' @param padding Logical scalar, generate states for first maxlen nucleotides by
 #' padding beginning of sequence with 0-vectors.
-#' @param output_type Either "h5" or "csv".
+#' @param output_type Either `"h5"`` or `"csv"`.
 #' @param model A keras model. If model and path_model are not NULL, model will be used for inference.
-#' @param mode Either "lm" for language model or "label" for label classification.
-#' @param format Either "fasta" or "fastq".
+#' @param mode Either `"lm"` for language model or `"label"` for label classification.
+#' @param format Either `"fasta"` or `"fastq"`.
 #' @param include_seq Whether to include input sequence in h5 file.
 #' @keywords internal
 predict_model_one_seq <- function(path_model = NULL, layer_name = NULL, sequence = NULL, path_input = NULL, round_digits = 2,
@@ -714,13 +715,12 @@ predict_model_one_pred_per_entry <- function(model = NULL, layer_name = NULL, pa
 
 #' Read states from h5 file
 #'
-#' Reads rows from h5 file created by  \code{\link{predict_model}} function,
-#' rows correspond to position in sequence and columns to neurons.
+#' Reads h5 file created by  \code{\link{predict_model}} function.
 #'
 #' @param h5_path Path to h5 file.
-#' @param rows Range of rows to read.  If NULL read everything.
-#' @param get_target_positions Return position of corresponding targets if TRUE.
-#' @param get_seq Return nucleotide sequence if TRUE.
+#' @param rows Range of rows to read. If `NULL` read everything.
+#' @param get_target_positions Return position of corresponding targets if `TRUE`.
+#' @param get_seq Return nucleotide sequence if `TRUE`.
 #' @examples
 #' # make prediction for single sequence and write to h5 file
 #' model <- create_model_lstm_cnn(maxlen = 20, layer_lstm = 8, layer_dense = 2, verbose = FALSE)
@@ -870,16 +870,17 @@ load_prediction <- function(h5_path, rows = NULL, verbose = TRUE,
 #' i.e. each rows should sum to 1 and have nonnegative entries. 
 #' Output data frame contains average confidence scores, max score and percentage of votes for each class.
 #'
-#' @param states_path Folder containing state files or a single file with same ending as file_type.
+#' @param states_path Folder containing state files or a single file with same ending as `file_type`.
 #' @param label_names Names of predicted classes.
-#' @param file_type "h5" or "csv".
-#' @param df A states data frame. Ignores states_dir if not NULL.
+#' @param file_type `"h5"` or `"csv"`.
+#' @param df A states data frame. Ignores states_dir if not `NULL`.
 #' @examples 
 #' m <- matrix(runif(20*3), ncol = 3)
 #' m <- m/rowSums(m)
 #' label_names <- paste0("class_", 1:3)
 #' df <- as.data.frame(m)
-#' summarize_states(label_names = label_names, df = df)
+#' pred_summary <- summarize_states(label_names = label_names, df = df)
+#' t(pred_summary) 
 #' @export
 summarize_states <- function(states_path = NULL, label_names = NULL, file_type = "h5", df = NULL) {
   

@@ -16,7 +16,7 @@ count_nuc(
 \arguments{
 \item{vocabulary_label}{Character vector of possible targets. Targets outside \code{vocabulary_label} will get discarded.}
 
-\item{format}{File format, either "fasta" or "fastq".}
+\item{format}{File format, either \code{"fasta"} or \code{"fastq"}.}
 
 \item{file_proportion}{Proportion of files to randomly sample for estimating class distributions.}
 

@@ -6,7 +6,7 @@
 \usage{
 dataset_from_gen(
   output_path,
-  iterations = 1000,
+  iterations = 10,
   train_type = "lm",
   output_format = "target_right",
   path_corpus,
@@ -19,20 +19,23 @@ dataset_from_gen(
   set_learning = NULL,
   seed = NULL,
   random_sampling,
+  file_name_start = "batch_",
   ...
 )
 }
 \arguments{
-\item{output_path}{Output directory. Output files will be named output_path + "batch_x" + ".rds" or ".pickle", where x is an index (from 1 to 
+\item{output_path}{Output directory. Output files will be named output_path + file_name_start + x + ".rds" or ".pickle", where x is an index (from 1 to
 \code{iterations}) and file ending depends on \code{as_numpy_array} argument.}
 
 \item{output_format}{Determines shape of output tensor for language model.
-Either "target_right", "target_middle_lstm", "target_middle_cnn" or "wavenet".
-Assume a sequence "AACCGTA". Output correspond as follows
-"target_right": X = "AACCGT", Y = "A"
-"target_middle_lstm": X = (X_1 = "AAC", X_2 = "ATG"), Y = "C" (note reversed order of X_2)
-"target_middle_cnn": X = "AACGTA", Y = "C"
-"wavenet": X = "AACCGT", Y = "ACCGTA"}
+Either \code{"target_right"}, \code{"target_middle_lstm"}, \code{"target_middle_cnn"} or \code{"wavenet"}.
+Assume a sequence \code{"AACCGTA"}. Output correspond as follows
+\itemize{
+\item \verb{"target_right": X = "AACCGT", Y = "A"}
+\item \verb{"target_middle_lstm": X = (X_1 = "AAC", X_2 = "ATG"), Y = "C"} (note reversed order of X_2)
+\item \verb{"target_middle_cnn": X = "AACGTA", Y = "C"}
+\item \verb{"wavenet": X = "AACCGT", Y = "ACCGTA"}
+}}
 
 \item{path_corpus}{Input directory where .fasta files are located or path to single file ending with .fasta or .fastq
 (as specified in format argument). Can also be a list of directories and/or files.}
@@ -49,21 +52,33 @@ Assume a sequence "AACCGTA". Output correspond as follows
 
 \item{shuffle}{Whether to shuffle samples within each batch.}
 
-\item{set_learning}{When you want to assign one label to set of samples. Only implemented for train_type = "label_folder".
+\item{set_learning}{When you want to assign one label to set of samples. Only implemented for \code{train_type = "label_folder"}.
 Input is a list with the following parameters
-(1) \code{samples_per_target}, how many samples to use for one target; (2) \code{maxlen} length of one sample
-(3) \code{reshape_mode} "time_dist", "multi_input" or "concat". If reshape_mode is "concat", there is an additional (4) \code{buffer_len}
-argmument. If reshape_mode is "multi_input", generator will produce samples_per_target separate inputs, each of length maxlen (model should have
-samples_per_target input layers). If reshape_mode is "time_dist", generator will produce a 4D input array. The dimensions correspond to
-(batch_size, samples_per_target, maxlen, length(vocabulary)). If reshape mode is "concat", generator will concatenate samples_per_target sequences
-of length maxlen to one long sequence; if buffer_len is an integer, the subsequences are interspaced with buffer_len rows. The input length is
-(maxlen \* samples_per_target) + buffer_len \* (samples_per_target - 1)}
+\itemize{
+\item \code{samples_per_target}: how many samples to use for one target
+\item \code{maxlen}: length of one sample
+\item \code{reshape_mode}: \verb{"time_dist", "multi_input"} or \code{"concat"}.
+\itemize{
+\item
+If \code{reshape_mode} is \code{"multi_input"}, generator will produce \code{samples_per_target} separate inputs, each of length \code{maxlen} (model should have
+\code{samples_per_target} input layers).
+\item If reshape_mode is \code{"time_dist"}, generator will produce a 4D input array. The dimensions correspond to
+\verb{(batch_size, samples_per_target, maxlen, length(vocabulary))}.
+\item If reshape mode is \code{"concat"}, generator will concatenate \code{samples_per_target} sequences
+of length \code{maxlen} to one long sequence
+}
+\item If \code{reshape_mode} is \code{"concat"}, there is an additional \code{buffer_len}
+argmument. If \code{buffer_len} is an integer, the subsequences are interspaced with \code{buffer_len} rows. The input length is
+(\code{maxlen} \eqn{*} \code{samples_per_target}) + \code{buffer_len} \eqn{*} (\code{samples_per_target} - 1)
+}}
 
 \item{seed}{Sets seed for set.seed function, for reproducible results when using \code{shuffle_file_order} or \code{shuffle_input}}
+
+\item{file_name_start}{Start of output file names.}
 
 \item{...}{further generator options.}
 }
 \description{
-Repeatedly generate samples with data generator and store output. Creates a separate rds or pickle file in \code{output_path} for each 
+Repeatedly generate samples with data generator and store output. Creates a separate rds or pickle file in \code{output_path} for each
 batch.
 }

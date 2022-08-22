@@ -23,7 +23,7 @@ reshape_tensor(
 
 \item{samples_per_target}{How many samples to use for one target.}
 
-\item{batch_size}{Number of batches, will get rounded to be multiple of number of targets if necessary.}
+\item{batch_size}{Number of samples in one batch.}
 
 \item{path}{Path to input files.}
 
@@ -34,7 +34,7 @@ The input sequence length is (maxlen \* samples_per_target) + buffer_len \* (sam
 
 \item{maxlen}{Length of predictor sequence.}
 
-\item{reshape_mode}{"time_dist", "multi_input" or "concat".  If reshape_mode is "multi_input",  will produce samples_per_target separate inputs, 
+\item{reshape_mode}{"time_dist", "multi_input" or "concat".  If reshape_mode is "multi_input",  will produce samples_per_target separate inputs,
 each of length maxlen. If reshape_mode is "time_dist", will produce a 4D input array. The dimensions correspond to
 (batch_size, samples_per_target, maxlen, length(vocabulary)). If reshape mode is "concat", will concatenate samples_per_target sequences
 of length maxlen to one long sequence}

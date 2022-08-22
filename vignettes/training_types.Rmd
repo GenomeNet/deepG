@@ -202,7 +202,7 @@ for (i in 1:2) {
   } else {
     vocabulary <- c("G", "T")
     header <- "label_2"
-    fasta_name_start <- "label_1_val_file"
+    fasta_name_start <- "label_2_val_file"
   }
   create_dummy_data(file_path = val_dir[[i]],
                     num_files = 3,
@@ -279,22 +279,23 @@ In this approach we extract the sequence label by mapping the current file name 
 files_1 <- basename(list.files(c(train_dir_1, val_dir_1)))
 files_2 <- basename(list.files(c(train_dir_2, val_dir_2)))
 file <- c(files_1, files_2)
-label_1 <- c(rep(1, length(files_1)), rep(0, length(files_1)))
-label_2 <- c(rep(0, length(files_1)), rep(1, length(files_1)))
+label_1 <- stringr::str_detect(file, "label_1") %>% as.integer()
+label_2 <- stringr::str_detect(file, "label_2") %>% as.integer()
 df <- data.frame(file, label_1, label_2)
 df
 
 csv_path <- tempfile(fileext = ".csv")
 write.csv(df, csv_path, row.names = FALSE)
 
-train_model(train_type = "label_csv",
-            target_from_csv = csv_path,
-            model = model,
-            path = train_dir,
-            path_val = val_dir,
-            steps_per_epoch = 5,
-            train_val_ratio = 0.2,
-            batch_size = 8,
-            epochs = 2
-)
+hist <- train_model(train_type = "label_csv",
+                    target_from_csv = csv_path,
+                    model = model,
+                    path = train_dir,
+                    path_val = val_dir,
+                    steps_per_epoch = 5,
+                    train_val_ratio = 0.2,
+                    batch_size = 8,
+                    epochs = 2)
+
+plot(hist)
 ```

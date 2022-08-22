@@ -1,14 +1,14 @@
 #' @title Creates LSTM/CNN network
 #'
 #' @description Creates a network consisting of an arbitrary number of CNN, LSTM and dense layers.
-#' Last layer is a dense layer with default softmax activation.
+#' Last layer is a dense layer.
 #' 
 #' @param maxlen Length of predictor sequence.
 #' @param dropout_lstm Fraction of the units to drop for inputs.
 #' @param recurrent_dropout_lstm Fraction of the units to drop for recurrent state.
 #' @param layer_lstm Number of cells per network layer. Can be a scalar or vector.
-#' @param layer_dense Dense layers of size layer_dense after last LSTM (or last CNN is \code{layers.lstm = 0}) layer.
-#' @param solver Optimization method, options are "adam", "adagrad", "rmsprop" or "sgd".
+#' @param layer_dense Dense layers of size `layer_dense` after last LSTM or CNN layer (if no LSTM used).
+#' @param solver Optimization method, options are `"adam", "adagrad", "rmsprop"` or `"sgd"`.
 #' @param learning_rate Learning rate for optimizer.
 #' @param use_multiple_gpus If true, multi_gpu_model() will be used based on gpu_num.
 #' @param gpu_num Number of GPUs to be used, only relevant if multiple_gpu is true.
@@ -18,11 +18,11 @@
 #' @param stateful Boolean. Whether to use stateful LSTM layer.
 #' @param batch_size Number of samples that are used for one network update. Only used if \code{stateful = TRUE}.
 #' @param compile Whether to compile the model.
-#' @param kernel_size Size of 1d convolutional layers. For multiple layers, assign a vector. (e.g, rep(3,2) for two layers and kernel size 3)
+#' @param kernel_size Size of 1d convolutional layers. For multiple layers, assign a vector. (e.g, `rep(3,2)` for two layers and kernel size 3)
 #' @param filters Number of filters. For multiple layers, assign a vector.
 #' @param strides Stride values. For multiple layers, assign a vector.
 #' @param pool_size Integer, size of the max pooling windows. For multiple layers, assign a vector.
-#' @param padding Padding of CNN layers, e.g. "same", "valid" or "causal".
+#' @param padding Padding of CNN layers, e.g. `"same", "valid"` or `"causal"`.
 #' @param dilation_rate Integer, the dilation rate to use for dilated convolution.
 #' @param gap Whether to apply global average pooling after last CNN layer.
 #' @param use_bias Boolean. Usage of bias for CNN layers.
@@ -33,22 +33,23 @@
 #' @param size_reduction_1Dconv Boolean. When TRUE, the number of filters in the convolutional layers is reduced to 1/4 of the number of filters of
 #  the original layer by a convolution layer with kernel size 1, and number of filters are increased back to the original value by a convolution layer
 #  with kernel size 1 after the convolution with original kernel size with reduced number of filters.
-#' @param label_input Integer or NULL. If not NULL, adds additional input layer of \code{label_input} size.
+#' @param label_input Integer or `NULL`. If not `NULL`, adds additional input layer of \code{label_input} size.
 #' @param zero_mask Boolean, whether to apply zero masking before LSTM layer. Only used if model does not use any CNN layers.
 #' @param label_smoothing Float in [0, 1]. If 0, no smoothing is applied. If > 0, loss between the predicted
 #' labels and a smoothed version of the true labels, where the smoothing squeezes the labels towards 0.5.
 #' The closer the argument is to 1 the more the labels get smoothed.
 #' @param label_noise_matrix Matrix of label noises. Every row stands for one class and columns for percentage of labels in that class.
 #' If first label contains 5 percent wrong labels and second label no noise, then
+#' 
 #' \code{label_noise_matrix <- matrix(c(0.95, 0.05, 0, 1), nrow = 2, byrow = TRUE )}
 #' @param last_layer_activation Either "sigmoid" or "softmax".
-#' @param loss_fn Either "categorical_crossentropy" or "binary_crossentropy". If label_noise_matrix given, will use custom "noisy_loss".
+#' @param loss_fn Either `"categorical_crossentropy"` or `"binary_crossentropy"`. If `label_noise_matrix` given, will use custom `"noisy_loss"`.
 #' @param num_output_layers Number of output layers.
 #' @param auc_metric Whether to add AUC metric.
 #' @param f1_metric Whether to add F1 metric.
 #' @param bal_acc Whether to add balanced accuracy.
 #' @param batch_norm_momentum Momentum for the moving mean and the moving variance.
-#' @param model_seed Set seed for model parameters in tensorflow, if not NULL.
+#' @param model_seed Set seed for model parameters in tensorflow, if not `NULL`.
 #' @examples 
 #' create_model_lstm_cnn(
 #'   maxlen = 500,
@@ -534,69 +535,49 @@ create_model_lstm_cnn <- function(
   return_model <- model
 }
 
-# #' Create wavenet model
-# #'
-# #' Create network architecture as described here: https://arxiv.org/abs/1609.03499
-# #'
-# #' @inheritParams wavenet::wavenet
-# #' @export
-# create_model_wavenet <- function(filters = 16, kernel_size = 2, residual_blocks, maxlen,
-#                                  input_tensor = NULL, initial_kernel_size = 32, initial_filters = 32,
-#                                  output_channels = 4, output_activation = "softmax", solver = "adam",
-#                                  learning_rate = 0.001, compile = TRUE, verbose = TRUE, model_seed = NULL) {
-#   
-#   if (!is.null(model_seed)) tensorflow::tf$random$set_seed(model_seed)
-#   
-#   model <- wavenet::wavenet(filters = filters, kernel_size = kernel_size, residual_blocks = residual_blocks,
-#                             input_shape = list(maxlen, output_channels), input_tensor = input_tensor, initial_kernel_size = initial_kernel_size,
-#                             initial_filters = initial_filters, output_channels = output_channels, output_activation = "softmax")
-#
-#   optimizer <- set_optimizer(solver, learning_rate) 
-#   
-#   if (compile) {
-#     model %>% keras::compile(loss = "categorical_crossentropy",
-#                              optimizer = optimizer, metrics = c("acc"))
-#   }
-#   
-#   argg <- c(as.list(environment()))
-#   argg["model"] <- NULL
-#   argg["optimizer"] <- NULL
-#   argg["residual_blocks"] <- paste(as.character(residual_blocks), collapse = " ")
-#   model$hparam <- argg
-#   reticulate::py_set_attr(x = model, name = "hparam", value = model$hparam)
-#   if (verbose) summary(model)
-#   model
-# }
+#' Create wavenet model
+#'
+#' Create network architecture as described [here](https://arxiv.org/abs/1609.03499) 
+#'
+#' @inheritParams wavenet::wavenet
+#' @inheritParams create_model_lstm_cnn
+#' @export
+create_model_wavenet <- function(filters = 16, kernel_size = 2, residual_blocks, maxlen,
+                                 input_tensor = NULL, initial_kernel_size = 32, initial_filters = 32,
+                                 output_channels = 4, output_activation = "softmax", solver = "adam",
+                                 learning_rate = 0.001, compile = TRUE, verbose = TRUE, model_seed = NULL) {
+
+  if (!is.null(model_seed)) tensorflow::tf$random$set_seed(model_seed)
+
+  model <- wavenet::wavenet(filters = filters, kernel_size = kernel_size, residual_blocks = residual_blocks,
+                            input_shape = list(maxlen, output_channels), input_tensor = input_tensor, initial_kernel_size = initial_kernel_size,
+                            initial_filters = initial_filters, output_channels = output_channels, output_activation = "softmax")
+
+  optimizer <- set_optimizer(solver, learning_rate)
+
+  if (compile) {
+    model %>% keras::compile(loss = "categorical_crossentropy",
+                             optimizer = optimizer, metrics = c("acc"))
+  }
+
+  argg <- c(as.list(environment()))
+  argg["model"] <- NULL
+  argg["optimizer"] <- NULL
+  argg["residual_blocks"] <- paste(as.character(residual_blocks), collapse = " ")
+  model$hparam <- argg
+  reticulate::py_set_attr(x = model, name = "hparam", value = model$hparam)
+  if (verbose) summary(model)
+  model
+}
 
 #' @title Create LSTM/CNN network to predict middle part of a sequence
 #'
 #' @description
 #' Creates a network consisting of an arbitrary number of CNN, LSTM and dense layers.
 #' Function creates two sub networks consisting each of an (optional) CNN layer followed by an arbitrary number of LSTM layers. Afterwards the last LSTM layers
-#' get concatenated and followed by one or more dense layers. Last layer is a dense layer with softmax activation.
-#' Network tries to predict target in the middle of a sequence. If input is AACCTAAGG, input tensors should correspond to x1 = AACC, x2 = GGAA and y = T
-#' (set \code{target_middle = TRUE} in \code{train_model} function).
-#' @param maxlen Length of predictor sequence.
-#' @param dropout_lstm Fraction of the units to drop for inputs.
-#' @param recurrent_dropout_lstm Fraction of the units to drop for recurrent state.
-#' @param layer_lstm Number of cells per network layer. Can be a scalar or vector.
-#' @param solver Optimization method, options are "adam", "adagrad", "rmsprop" or "sgd".
-#' @param learning_rate Learning rate for optimizer.
-#' @param use_multiple_gpus If true, multi_gpu_model() will be used based on gpu_num.
-#' @param gpu_num Number of GPUs to be used, only relevant if multiple_gpu is true.
-#' @param merge_on_cpu True on default, false recommend if the server supports NVlink, only relevant if use.multiple.gpu is true.
-#' @param bidirectional Use bidirectional wrapper for lstm layers.
-#' @param vocabulary_size Number of unique character in vocabulary.
-#' @param stateful Boolean. Whether to use stateful LSTM layer.
-#' @param batch_size Number of samples that are used for one network update. Only used if \code{stateful = TRUE}.
-#' @param padding Padding of CNN layers, e.g. "same", "valid" or "causal".
-#' @param compile Whether to compile the model.
-#' @param layer_dense Dense layers of size layer_dense after last LSTM (or last CNN if \code{layers.lstm = 0}) layer.
-#' @param kernel_size Size of 1d convolutional layer.
-#' @param filters Number of filters.
-#' @param pool_size Integer, size of the max pooling windows.
-#' @param strides Stide length of convolution.
-#' @param label_input Integer or NULL. If not NULL, adds additional input layer of \code{label_input} size.
+#' get concatenated and followed by one or more dense layers. Last layer is a dense layer.
+#' Network tries to predict target in the middle of a sequence. If input is AACCTAAGG, input tensors should correspond to x1 = AACC, x2 = GGAA and y = T.
+#' @inheritParams create_model_lstm_cnn
 #' @examples
 #' create_model_lstm_cnn_target_middle(
 #'   maxlen = 500,
@@ -1086,23 +1067,23 @@ get_hyper_param <- function(model) {
 
 #' Remove layers from model and add dense layers
 #' 
-#' Functions takes a model as input and removes all layers after a certain layer, specified in \code{layer_name} argument.
+#' Function takes a model as input and removes all layers after a certain layer, specified in \code{layer_name} argument.
 #' Optional to add dense layers on top of pruned model. Model can have multiple output layers with separate loss/activation functions.
 #' You can freeze all the weights of the pruned model by setting \code{freeze_base_model = TRUE}.
 #'
+#' @inheritParams create_model_lstm_cnn
 #' @param layer_name Name of last layer to use from old model.
 #' @param model A keras model. If model and path_model are both not NULL, path_model will be used.
 #' @param dense_layers List of vectors specifiying number of units for each dense layer. If this is a list of length > 1, model
 #' has multiple output layers.
-#' @param last_activation List of activations for last entry for each list entry from \code{dense_layers}. Either "softmax", "sigmoid" or "linear".
+#' @param last_activation List of activations for last entry for each list entry from \code{dense_layers}. Either `"softmax"`, `"sigmoid"` or `"linear"`.
 #' @param output_names List of names for each output layer.
 #' @param losses List of loss function for each output.
 #' @param verbose Boolean.
 #' @param dropout List of vectors with dropout rates for each new dense layer.
 #' @param freeze_base_model Whether to freeze all weights before new dense layers.
 #' @param compile Boolean, whether the new model is compiled or not
-#' @param learning_rate learning_rate if compile == TRUE, default -> learning_rate of the old model
-#' @param solver "adam", "adagrad", "rmsprop" or "sgd" if compile == TRUE, default -> solver of the old model
+#' @param learning_rate Learning rate if `compile = TRUE`, default learning rate of the old model
 #' @examples
 #' model_1 <- create_model_lstm_cnn(layer_lstm = c(64, 64),
 #'                                  maxlen = 50,
@@ -1290,7 +1271,8 @@ remove_add_layers <- function(model = NULL,
 #'                       layer_dense = c(6, 2), 
 #'                       freeze_base_model = c(FALSE, FALSE)) 
 #' @export
-merge_models <- function(models, layer_names, layer_dense, solver = "adam", learning_rate = 0.0001,
+merge_models <- function(models, layer_names, layer_dense, solver = "adam",
+                         learning_rate = 0.0001,
                          freeze_base_model = c(FALSE, FALSE),
                          model_seed = NULL) {
   
@@ -1362,7 +1344,9 @@ check_layer_name <- function(model, layer_name) {
 #'    \item size of vocabulary
 #' }
 #' After LSTM/CNN part all representations get aggregated by summation.
-#' Can be used to make single prediction for combination of multiple input sequences. 
+#' Can be used to make single prediction for combination of multiple input sequences. Architecture
+#' is equivalent to [create_model_lstm_cnn_multi_input()], but instead of multiple input layers with 3D input, 
+#' input here in one 4D tensor.  
 #'     
 #' @inheritParams create_model_lstm_cnn
 #' @param samples_per_target Number of samples to combine for one target.
@@ -1679,7 +1663,7 @@ create_model_lstm_cnn_time_dist <- function(
 #' @description Creates a network consisting of an arbitrary number of CNN, LSTM and dense layers with multiple 
 #' input layers. After LSTM/CNN part all representations get aggregated by summation. 
 #' Can be used to make single prediction for combination of multiple input sequences. 
-#' Implements approach as described here: https://arxiv.org/abs/1703.06114
+#' Implements approach as described [here](https://arxiv.org/abs/1703.06114)
 #'
 #' @inheritParams create_model_lstm_cnn
 #' @param samples_per_target Number of samples to combine for one target.
@@ -2275,43 +2259,44 @@ create_model_genomenet <- function(
   model
 }
 
-#' Load pretrained Genomenet model
-#'
-#' Classification model with labels "bacteria", "virus-no-phage","virus-phage".
-#' TODO: add link to paper
-#'
-#' @inheritParams create_model_lstm_cnn
-#' @param maxlen Model input size. Either 150 or 10000.
-#' @param learning_rate Learning rate for optimizer. If compile is TRUE and learning_rate is NULL,
-#' will use learning rate from previous training.
-#' @export
-load_model_self_genomenet <- function(maxlen, compile = FALSE, optimizer = "adam",
-                                      learning_rate = NULL) {
-  
-  stopifnot(any(maxlen == c(150,10000)))
-  
-  if (maxlen == 150) {
-    data(model_self_genomenet_maxlen_150)
-    model <- keras::unserialize_model(model_self_genomenet_maxlen_150, compile = FALSE)
-  }
-  
-  if (maxlen == 10000) {
-    data(model_self_genomenet_maxlen_10k)
-    model <- keras::unserialize_model(model_self_genomenet_maxlen_10k, compile = FALSE)
-  }
-  
-  if (is.null(learning_rate)) {
-    if (maxlen == 150) learning_rate <- 0.00039517784549691
-    if (maxlen == 10000) learning_rate <- 8.77530464905713e-05
-  }
-  
-  if (compile) {
-    keras_optimizer <- set_optimizer(optimizer, learning_rate)
-    model %>% keras::compile(loss = "categorical_crossentropy", optimizer = keras_optimizer, metrics = "acc")
-  }
-  
-  return_model <- model
-}
+# #' Load pretrained Genomenet model
+# #'
+# #' Classification model with labels "bacteria", "virus-no-phage","virus-phage".
+# #' TODO: add link to paper
+# #'
+# #' @inheritParams create_model_lstm_cnn
+# #' @param maxlen Model input size. Either 150 or 10000.
+# #' @param learning_rate Learning rate for optimizer. If compile is TRUE and learning_rate is NULL,
+# #' will use learning rate from previous training.
+# #' @export
+# load_model_self_genomenet <- function(maxlen, compile = FALSE, optimizer = "adam",
+#                                       learning_rate = NULL) {
+#   
+#   stopifnot(any(maxlen == c(150,10000)))
+#   
+#   if (maxlen == 150) {
+#     load(model_self_genomenet_maxlen_150)
+#     model <- keras::unserialize_model(model_self_genomenet_maxlen_150, compile = FALSE)
+#   }
+#   
+#   if (maxlen == 10000) {
+#     load("data/self_genomenet_model_maxlen_10k.rda")
+#     #data(model_self_genomenet_maxlen_10k)
+#     model <- keras::unserialize_model(model_self_genomenet_maxlen_10k, compile = FALSE)
+#   }
+#   
+#   if (is.null(learning_rate)) {
+#     if (maxlen == 150) learning_rate <- 0.00039517784549691
+#     if (maxlen == 10000) learning_rate <- 8.77530464905713e-05
+#   }
+#   
+#   if (compile) {
+#     keras_optimizer <- set_optimizer(optimizer, learning_rate)
+#     model %>% keras::compile(loss = "categorical_crossentropy", optimizer = keras_optimizer, metrics = "acc")
+#   }
+#   
+#   return_model <- model
+# }
 
 set_optimizer <- function(solver = "adam", learning_rate = 0.01) {
   

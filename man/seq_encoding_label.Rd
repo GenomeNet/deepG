@@ -27,23 +27,25 @@ seq_encoding_label(
 \arguments{
 \item{sequence}{Sequence of integers.}
 
-\item{maxlen}{Length of predictor sequence.}
+\item{maxlen}{Length of one sample}
 
 \item{vocabulary}{Set of characters to encode.}
 
 \item{start_ind}{Start positions of samples in \code{sequence}.}
 
-\item{ambiguous_nuc}{How to handle nucleotides outside vocabulary, either "zero", "discard" or "equal". If "zero", input gets encoded as zero vector;
-if "equal" input is 1/length(vocabulary) x length(vocabulary). If "discard" samples containing nucleotides outside vocabulary get discarded.}
+\item{ambiguous_nuc}{How to handle nucleotides outside vocabulary, either "zero", "empirical" or "equal". If "zero", input gets encoded as zero vector;
+if "equal" input is \code{1/length(vocabulary)} \eqn{*} \code{length(vocabulary)}. If "empirical", use nucleotide distribution from \code{nuc_dist} argument.}
 
 \item{nuc_dist}{Nucleotide distribution.}
 
 \item{use_quality}{Use quality scores.}
 
 \item{quality_vector}{Vector of quality probabilities.}
+
+\item{char_sequence}{A character string.}
 }
 \description{
-Helper function for \code{\link{generator_fasta_label_header_csv}}, returns encoding for integer sequence.
+Returns encoding for integer or character sequence.
 }
 \examples{
 # use integer sequence as input

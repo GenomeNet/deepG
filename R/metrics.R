@@ -25,16 +25,17 @@
 #'                                layer_dense = c(8, num_targets))
 #' 
 #' f1_metric <- f1_wrapper(num_targets, loss = model$loss)
-#' model %>% compile(loss = model$loss, 
-#'                   optimizer = model$optimizer,
-#'                   metrics = c(model$metrics, f1_metric))
+#' model %>% keras::compile(loss = model$loss, 
+#'                          optimizer = model$optimizer,
+#'                          metrics = c(model$metrics, f1_metric))
 #'@export
 f1_wrapper <- function(num_targets = 2, loss = "binary_crossentropy") {
   
   stopifnot(loss %in% c("binary_crossentropy", "categorical_crossentropy"))
   
   if (loss == "binary_crossentropy" & num_targets > 1) {
-    warning("Will flatten y_true and y_pred matrices to a single vector for evaluation, rather than computing separate F1 scores for each class and taking the mean.")
+    warning("Will flatten y_true and y_pred matrices to a single vector for evaluation
+            rather than computing separate F1 scores for each class and taking the mean.")
   }
   
   if (loss == "categorical_crossentropy" & num_targets != 2) {
@@ -174,6 +175,28 @@ balanced_acc_wrapper <- function(num_targets, cm_dir) {
 #' @param model_output_size Number of neurons in model output layer.
 #' @param loss Loss function of model, for which metric will be applied to; must be "binary_crossentropy"
 #' or "catergorical_crossentropy".
+#' @examples 
+#' y_true <- c(1,0,0,1,1,0,1,0,0) %>% matrix(ncol = 3)
+#' y_pred <- c(0.9,0.1,0.1,0.9,0.1,0.1,0.9,0.1,0.1) %>% matrix(ncol = 3)
+#' 
+#' auc_metric <- auc_wrapper(3L, "binary_crossentropy")
+#' 
+#' auc_metric$update_state(y_true, y_pred)
+#' auc_metric$result()  
+#' 
+#' # add metric to a model
+#' num_targets <- 4
+#' model <- create_model_lstm_cnn(maxlen = 20,
+#'                                layer_lstm = 8,
+#'                                bal_acc = FALSE,
+#'                                last_layer_activation = "sigmoid",
+#'                                loss_fn = "binary_crossentropy",
+#'                                layer_dense = c(8, num_targets))
+#' 
+#' auc_metric <- auc_wrapper(num_targets, loss = model$loss)
+#' model %>% keras::compile(loss = model$loss, 
+#'                          optimizer = model$optimizer,
+#'                          metrics = c(model$metrics, auc_metric))
 #' @export
 auc_wrapper <- function(model_output_size,
                         loss = "binary_crossentropy") {
@@ -207,12 +230,15 @@ auc_wrapper <- function(model_output_size,
 
 #' Loss function for label noise
 #' 
-#' Implements approach from https://arxiv.org/abs/1609.03683 and code from 
-#' https://github.com/giorgiop/loss-correction/blob/15a79de3c67c31907733392085c333547c2f2b16/loss.py#L16-L21 
+#' Implements approach from this [paper](https://arxiv.org/abs/1609.03683) and code from 
+#' [here](https://github.com/giorgiop/loss-correction/blob/15a79de3c67c31907733392085c333547c2f2b16/loss.py#L16-L21). 
 #'
 #' @param noise_matrix Matrix of noise distribution.
-#' If first label contains 5\% wrong labels and second label no noise, then
-#' \code{noise_matrix <- matrix(c(0.95, 0.05, 0, 1), nrow = 2, byrow = TRUE)}.
+#' @importFrom magrittr "%>%"
+#' @examples 
+#' # If first label contains 5\% wrong labels and second label no noise
+#' noise_matrix <- matrix(c(0.95, 0.05, 0, 1), nrow = 2, byrow = TRUE)
+#' noisy_loss <- noisy_loss_wrapper(noise_matrix)
 #' @export
 noisy_loss_wrapper <- function(noise_matrix) {
   inverted_noise_matrix <- solve(noise_matrix)

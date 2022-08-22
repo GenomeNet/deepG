@@ -27,6 +27,8 @@ NULL
   h5_file <- hdf5r::H5File$new(temp_file, mode = "w") 
   h5_file$close_all()
   file.remove(temp_file)
+
+  usethis::use_pipe(export = TRUE)
   
   packageStartupMessage("The deepG package has been successfully loaded.")
 }

@@ -12,18 +12,18 @@ summarize_states(
 )
 }
 \arguments{
-\item{states_path}{Folder containing state files or a single file with same ending as file_type.}
+\item{states_path}{Folder containing state files or a single file with same ending as \code{file_type}.}
 
 \item{label_names}{Names of predicted classes.}
 
-\item{file_type}{"h5" or "csv".}
+\item{file_type}{\code{"h5"} or \code{"csv"}.}
 
-\item{df}{A states data frame. Ignores states_dir if not NULL.}
+\item{df}{A states data frame. Ignores states_dir if not \code{NULL}.}
 }
 \description{
 Create summary data frame for confidence predictions over 1 or several state files or a data frame.
 Columns in file or data frame should be confidence preditions for one class,
-i.e. each rows should sum to 1 and have nonnegative entries. 
+i.e. each rows should sum to 1 and have nonnegative entries.
 Output data frame contains average confidence scores, max score and percentage of votes for each class.
 }
 \examples{
@@ -31,5 +31,6 @@ m <- matrix(runif(20*3), ncol = 3)
 m <- m/rowSums(m)
 label_names <- paste0("class_", 1:3)
 df <- as.data.frame(m)
-summarize_states(label_names = label_names, df = df)
+pred_summary <- summarize_states(label_names = label_names, df = df)
+t(pred_summary) 
 }

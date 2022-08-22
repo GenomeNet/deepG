@@ -16,7 +16,7 @@ plot_roc(y_true, y_conf, path_roc_plot = NULL, return_plot = TRUE)
 \item{return_plot}{Whether to return plot.}
 }
 \description{
-Compute ROC and AUC from target and prediction matrix and plot ROC. Target/prediction matrix should 
+Compute ROC and AUC from target and prediction matrix and plot ROC. Target/prediction matrix should
 have one column if is output of layer with sigmoid activation and two columns for softmax activation.
 }
 \examples{

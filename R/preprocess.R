@@ -7,8 +7,8 @@
 #' @param maxlen Length of one sample
 #' @param vocabulary Set of characters to encode.
 #' @param start_ind Start positions of samples in \code{sequence}.
-#' @param ambiguous_nuc How to handle nucleotides outside vocabulary, either "zero", "discard" or "equal". If "zero", input gets encoded as zero vector;
-#' if "equal" input is 1/length(vocabulary) x length(vocabulary). If "discard" samples containing nucleotides outside vocabulary get discarded.
+#' @param ambiguous_nuc How to handle nucleotides outside vocabulary, either "zero", "empirical" or "equal". If "zero", input gets encoded as zero vector;
+#' if "equal" input is `1/length(vocabulary)` \eqn{*} `length(vocabulary)`. If "empirical", use nucleotide distribution from `nuc_dist` argument. 
 #' @param nuc_dist Nucleotide distribution.
 #' @param use_quality Use quality scores.
 #' @param quality_vector Vector of quality probabilities.
@@ -272,17 +272,9 @@ seq_encoding_lm <- function(sequence = NULL, maxlen, vocabulary, start_ind, ambi
 
 #' Encodes integer sequence for label classification.
 #'
-#' Helper function for \code{\link{generator_fasta_label_header_csv}}, returns encoding for integer sequence.
+#' Returns encoding for integer or character sequence.
 #'
-#' @param sequence Sequence of integers.
-#' @param maxlen Length of predictor sequence.
-#' @param vocabulary Set of characters to encode.
-#' @param start_ind Start positions of samples in \code{sequence}.
-#' @param ambiguous_nuc How to handle nucleotides outside vocabulary, either "zero", "discard" or "equal". If "zero", input gets encoded as zero vector;
-#' if "equal" input is 1/length(vocabulary) x length(vocabulary). If "discard" samples containing nucleotides outside vocabulary get discarded.
-#' @param nuc_dist Nucleotide distribution.
-#' @param use_quality Use quality scores.
-#' @param quality_vector Vector of quality probabilities.
+#' @inheritParams seq_encoding_lm
 #' @examples 
 #' # use integer sequence as input
 #' x <- seq_encoding_label(sequence = c(1,0,5,1,3,4,3,1,4,1,2),
@@ -605,6 +597,7 @@ get_class_weight <- function(path,
     classes <- weight_collection
   }
   
+  names(classes) <- NULL # no list names in tf version > 2.8
   classes
 }
 

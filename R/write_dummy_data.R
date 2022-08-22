@@ -2,7 +2,7 @@
 #' 
 #' Create random sequences from predefined vocabulary and write to fasta file.
 #' 
-#' @param file_path Output directory or path to output file (only possible if \code{write_to_file_path = TRUE} and 
+#' @param file_path Output directory; can also be a file name but only possible if \code{write_to_file_path = TRUE} and 
 #' \code{num_files = 1}).
 #' @param num_files Number of files to create.
 #' @param header Fasta header name. 
@@ -10,16 +10,17 @@
 #' @param num_seq Number of sequences per file.
 #' @param fasta_name_start Beginning string of file name. Output files are named fasta_name_start + _i.fasta where i is an integer index.
 #' @param write_to_file_path Whether to write output directly to \code{file_path}, i.e. file_path is not a directory.
-#' @param prob Probabiltiy of each character in the \code{vocabulary} to be sampled. If NULL each character has same probability.
+#' @param prob Probabiltiy of each character in the \code{vocabulary} to be sampled. If `NULL` each character has same probability.
 #' @param vocabulary Set of characters to sample sequences from. 
 #' @examples
-#' path_input <- tempfile()
-#' dir.create(path_input)
-#' create_dummy_data(file_path = path_input,
+#' path_output <- tempfile()
+#' dir.create(path_output)
+#' create_dummy_data(file_path = path_output,
 #'                   num_files = 3,
 #'                   seq_length = 11, 
 #'                   num_seq = 5,                   
 #'                   vocabulary = c("a", "c", "g", "t"))
+#' list.files(path_output)                   
 #' @export
 create_dummy_data <- function(file_path,
                               num_files,

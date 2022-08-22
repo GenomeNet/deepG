@@ -12,7 +12,7 @@ int_to_n_gram(int_seq, n, voc_size = 4)
 \item{n}{Length of n-gram aggregation}
 }
 \description{
-Input is sequence of integers from vocabulary of size \code{voc_size}. 
+Input is sequence of integers from vocabulary of size \code{voc_size}.
 Returns vector of integers corresponding to n-gram encoding.
 Integers > voc_size get encoded as voc_size^n + 1.
 }

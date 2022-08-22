@@ -19,13 +19,13 @@ merge_models(
 
 \item{layer_names}{Vector of length 2 with names of layers to merge.}
 
-\item{layer_dense}{Dense layers of size layer_dense after last LSTM (or last CNN is \code{layers.lstm = 0}) layer.}
+\item{layer_dense}{Dense layers of size \code{layer_dense} after last LSTM or CNN layer (if no LSTM used).}
 
-\item{solver}{Optimization method, options are "adam", "adagrad", "rmsprop" or "sgd".}
+\item{solver}{Optimization method, options are \verb{"adam", "adagrad", "rmsprop"} or \code{"sgd"}.}
 
 \item{learning_rate}{Learning rate for optimizer.}
 
-\item{model_seed}{Set seed for model parameters in tensorflow, if not NULL.}
+\item{model_seed}{Set seed for model parameters in tensorflow, if not \code{NULL}.}
 }
 \description{
 Combine two models at certain layers and add dense layers afterwards.
