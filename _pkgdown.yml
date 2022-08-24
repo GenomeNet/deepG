@@ -1,0 +1,113 @@
+url: https://genomenet.github.io/deepG/
+development:
+  mode: release
+  version_label: default
+template:
+  bootswatch: spacelab
+navbar:
+  structure:
+    left:
+    - reference
+    - notebooks
+    - tutorials
+    right: github
+  components:
+    home: ~
+    reference:
+      icon: fa fa-file-alt
+      text: Reference
+      href: reference/index.html
+    notebooks:
+      text: Google Colab Notebooks
+      menu:
+      - text: deepG tutorial
+        href: https://colab.research.google.com/drive/175jIdXcDcgPUvaBo2rH2Lupbpjnp5O7G?usp=sharing
+      - text: Human contamination
+        href: https://colab.research.google.com/drive/1Eolc0koMNM1zkuO4XyVM58ImeF1BpRiH?usp=sharing
+      - text: CRISPR detection
+        href: https://colab.research.google.com/drive/1MmQB2pFfEcp4GbgbT7wu6ScNt1YsChmn?usp=sharing
+      - text: 16S rRNA detection
+        href: https://colab.research.google.com/drive/1G7bOFEX87cZNrM2tdRtTdkrZn5fM__g0?usp=sharing
+    tutorials:
+      text: Tutorials
+      menu:
+      - text: Getting Started
+        href: articles/getting_started.html
+      - text: Training types
+        href: articles/training_types.html
+      - text: Data generator
+        href: articles/data_generator.html
+      - text: Using tensorboard
+        href: articles/using_tb.html
+      - text: Integrated Gradient
+        href: articles/integrated_gradient.html
+reference:
+- title: Training
+  contents: train_model
+- title: Model Architecture
+  contents:
+  - starts_with("create_model_")
+  - remove_add_layers
+  - merge_models
+  - get_output_activations
+  - reshape_input
+- title: Callbacks
+  contents:
+  - conf_matrix_cb
+  - early_stopping_time_cb
+  - function_args_cb
+  - validation_after_training_cb
+  - reset_states_cb
+- title: Metrics and Losses
+  contents:
+  - noisy_loss_wrapper
+  - balanced_acc_wrapper
+  - f1_wrapper
+  - auc_wrapper
+- title: Generators
+  contents:
+  - starts_with("generator_")
+  - get_generator
+  - dataset_from_gen
+- title: Prediction
+  contents:
+  - predict_model
+  - summarize_states
+  - predict_with_n_gram
+  - load_prediction
+- title: Evaluation
+  contents:
+  - starts_with("evaluate_")
+  - plot_roc
+- title: Visualization
+  contents:
+  - integrated_gradients
+  - heatmaps_integrated_grad
+- title: Preprocessing
+  contents:
+  - seq_encoding_label
+  - seq_encoding_lm
+  - get_class_weight
+  - get_start_ind
+  - int_to_n_gram
+  - n_gram_dist
+  - n_gram_of_matrix
+  - reshape_tensor
+  - split_fasta
+- title: Data
+  contents:
+  - crispr_full
+  - crispr_sample
+  - ecoli
+  - ecoli_small
+  - model_self_genomenet_maxlen_10k
+  - model_self_genomenet_maxlen_150
+  - parenthesis
+- title: Dummy Data
+  contents: create_dummy_data
+- title: Session Management
+  contents:
+  - end_gpu_session
+  - startGPUSession
+  - deepG
+
