@@ -62,7 +62,7 @@ devtools::install_github("GenomeNet/deepG")
 
 ## Usage
 
-See the package website at <https://genomenet.github.io/deepG/> for
+See the package website at <deepg.de> for
 documentation and example
 code.
 
