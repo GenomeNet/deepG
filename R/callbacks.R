@@ -757,14 +757,14 @@ balanced_acc_wrapper <- function(num_targets, cm_dir) {
                                                  },
                                                  
                                                  compute_balanced_acc = function(self) {
-                                                     diag <- tensorflow::tf$linalg$diag_part(self$cm)
-                                                     col_sums <- tensorflow::tf$math$reduce_sum(self$cm, axis=0L)
-                                                     average_per_class <- tensorflow::tf$math$divide(diag, col_sums)
-                                                     nan_index <- tensorflow::tf$math$logical_not(tensorflow::tf$math$is_nan(average_per_class))
-                                                     average_per_class <- tensorflow::tf$boolean_mask(average_per_class, nan_index)
-                                                     acc_sum <- tensorflow::tf$math$reduce_sum(average_per_class)
-                                                     balanced_acc <- tensorflow::tf$math$divide(acc_sum, tensorflow::tf$math$count_nonzero(col_sums, dtype= "float32"))
-                                                     return(balanced_acc)
+                                                   diag <- tensorflow::tf$linalg$diag_part(self$cm)
+                                                   col_sums <- tensorflow::tf$math$reduce_sum(self$cm, axis=0L)
+                                                   average_per_class <- tensorflow::tf$math$divide(diag, col_sums)
+                                                   nan_index <- tensorflow::tf$math$logical_not(tensorflow::tf$math$is_nan(average_per_class))
+                                                   average_per_class <- tensorflow::tf$boolean_mask(average_per_class, nan_index)
+                                                   acc_sum <- tensorflow::tf$math$reduce_sum(average_per_class)
+                                                   balanced_acc <- tensorflow::tf$math$divide(acc_sum, tensorflow::tf$math$count_nonzero(col_sums, dtype= "float32"))
+                                                   return(balanced_acc)
                                                  },
                                                  
                                                  reset_states = function(self) {
@@ -1127,27 +1127,50 @@ get_callbacks <- function(default_arguments , model, path_tensorboard, run_name,
 #' 
 #' @param cp_dir Directory containing checkpoints.
 #' @param metric Either `"acc"`, `"loss"` or `"last_ep"`. Condition which checkpoint to keep.
+#' @param best_n Number of checkpoints to keep.
+#' @param ask_before_remove Whether to show files to keep before deleting rest.
 #'  
 #' @export 
-remove_checkpoints <- function(cp_dir, metric) {
+remove_checkpoints <- function(cp_dir, metric = "acc", best_n = 1, ask_before_remove = TRUE) {
   
   stopifnot(metric %in% c("acc", "loss", "last_ep"))
+  stopifnot(dir.exists(cp_dir))
   files <- list.files(cp_dir, full.names = TRUE)
+  if (length(files) == 0) {
+    stop("Directory is empty")
+  }
   files_basename <- basename(files)
   
   if (metric == "acc") {
     acc_scores <- files_basename %>% stringr::str_extract("acc\\d++\\.\\d++") %>% 
       stringr::str_remove("acc") %>% as.numeric()
+    rank_order <- order(acc_scores, decreasing = TRUE)
   }
   
   if (metric == "loss") {
     loss_scores <- files_basename %>% stringr::str_extract("loss\\d++\\.\\d++") %>% 
-      stringr::str_remove("acc") %>% as.numeric()
+      stringr::str_remove("loss") %>% as.numeric()
+    rank_order <- order(loss_scores)
   }
   
   if (metric == "last_ep") {
     ep_scores <- files_basename %>% stringr::str_extract("Ep\\.\\d++") %>% 
-      stringr::str_remove("acc") %>% as.numeric()
+      stringr::str_remove("Ep\\.") %>% as.numeric()
+    rank_order <- order(ep_scores, decreasing = TRUE)
+  }
+  
+  index <- rank_order <= best_n
+  
+  if (ask_before_remove) {
+    cat("Deleting", sum(!index), paste0(ifelse(sum(!index) == 1, "file", "files") , "."),
+        "Only keep \n", paste0(basename(files[index]), collapse = ",\n "), "\n")
+    remove_cps <- askYesNo("")
+  }
+  
+  if (is.na(remove_cps)) return(NULL)
+  
+  if (remove_cps) {
+    invisible(file.remove(files[!index]))
   }
   
 }
