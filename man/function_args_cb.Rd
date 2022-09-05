@@ -11,9 +11,8 @@ function_args_cb(argumentList, path_tensorboard, run_name)
 
 \item{path_tensorboard}{Path to tensorboard directory or \code{NULL}. If \code{NULL}, training not tracked on tensorboard.}
 
-\item{run_name}{Name of the run. Name will be used to identify output from callbacks. If \code{NULL}, will use date as run name. If name already present, will add "\emph{2" to name
-or "}{x + 1}" if name ends with integer x.}
+\item{run_name}{Name of training run.}
 }
 \description{
-Print \code{\link{train_model}} call in text field of tensorboard.
+Print \code{\link{train_model}} call in tensorboard "TEXT" tab.
 }

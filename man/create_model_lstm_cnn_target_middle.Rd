@@ -11,9 +11,6 @@ create_model_lstm_cnn_target_middle(
   layer_lstm = 128,
   solver = "adam",
   learning_rate = 0.001,
-  use_multiple_gpus = FALSE,
-  merge_on_cpu = TRUE,
-  gpu_num = 2,
   vocabulary_size = 4,
   bidirectional = FALSE,
   stateful = FALSE,
@@ -51,12 +48,6 @@ create_model_lstm_cnn_target_middle(
 
 \item{learning_rate}{Learning rate for optimizer.}
 
-\item{use_multiple_gpus}{If true, multi_gpu_model() will be used based on gpu_num.}
-
-\item{merge_on_cpu}{True on default, false recommend if the server supports NVlink, only relevant if use.multiple.gpu is true.}
-
-\item{gpu_num}{Number of GPUs to be used, only relevant if multiple_gpu is true.}
-
 \item{vocabulary_size}{Number of unique character in vocabulary.}
 
 \item{bidirectional}{Use bidirectional wrapper for lstm layers.}
@@ -69,7 +60,7 @@ create_model_lstm_cnn_target_middle(
 
 \item{compile}{Whether to compile the model.}
 
-\item{layer_dense}{Dense layers of size \code{layer_dense} after last LSTM or CNN layer (if no LSTM used).}
+\item{layer_dense}{Vector specifying number of neurons per dense layer after last LSTM or CNN layer (if no LSTM used).}
 
 \item{kernel_size}{Size of 1d convolutional layers. For multiple layers, assign a vector. (e.g, \code{rep(3,2)} for two layers and kernel size 3)}
 
@@ -83,7 +74,7 @@ create_model_lstm_cnn_target_middle(
 
 \item{zero_mask}{Boolean, whether to apply zero masking before LSTM layer. Only used if model does not use any CNN layers.}
 
-\item{label_smoothing}{Float in \link{0, 1}. If 0, no smoothing is applied. If > 0, loss between the predicted
+\item{label_smoothing}{Float in [0, 1]. If 0, no smoothing is applied. If > 0, loss between the predicted
 labels and a smoothed version of the true labels, where the smoothing squeezes the labels towards 0.5.
 The closer the argument is to 1 the more the labels get smoothed.}
 
@@ -92,7 +83,7 @@ If first label contains 5 percent wrong labels and second label no noise, then
 
 \code{label_noise_matrix <- matrix(c(0.95, 0.05, 0, 1), nrow = 2, byrow = TRUE )}}
 
-\item{last_layer_activation}{Either "sigmoid" or "softmax".}
+\item{last_layer_activation}{Either \code{"sigmoid"} or \code{"softmax"}.}
 
 \item{loss_fn}{Either \code{"categorical_crossentropy"} or \code{"binary_crossentropy"}. If \code{label_noise_matrix} given, will use custom \code{"noisy_loss"}.}
 
@@ -102,11 +93,11 @@ If first label contains 5 percent wrong labels and second label no noise, then
 
 \item{batch_norm_momentum}{Momentum for the moving mean and the moving variance.}
 
-\item{model_seed}{Set seed for model parameters in tensorflow, if not \code{NULL}.}
+\item{model_seed}{Set seed for model parameters in tensorflow if not \code{NULL}.}
 }
 \description{
 Creates a network consisting of an arbitrary number of CNN, LSTM and dense layers.
-Function creates two sub networks consisting each of an (optional) CNN layer followed by an arbitrary number of LSTM layers. Afterwards the last LSTM layers
+Function creates two sub networks consisting each of (optional) CNN layers followed by an arbitrary number of LSTM layers. Afterwards the last LSTM layers
 get concatenated and followed by one or more dense layers. Last layer is a dense layer.
 Network tries to predict target in the middle of a sequence. If input is AACCTAAGG, input tensors should correspond to x1 = AACC, x2 = GGAA and y = T.
 }

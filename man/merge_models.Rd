@@ -15,25 +15,29 @@ merge_models(
 )
 }
 \arguments{
-\item{models}{List of two models}
+\item{models}{List of two models.}
 
 \item{layer_names}{Vector of length 2 with names of layers to merge.}
 
-\item{layer_dense}{Dense layers of size \code{layer_dense} after last LSTM or CNN layer (if no LSTM used).}
+\item{layer_dense}{Vector specifying number of neurons per dense layer after last LSTM or CNN layer (if no LSTM used).}
 
 \item{solver}{Optimization method, options are \verb{"adam", "adagrad", "rmsprop"} or \code{"sgd"}.}
 
 \item{learning_rate}{Learning rate for optimizer.}
 
-\item{model_seed}{Set seed for model parameters in tensorflow, if not \code{NULL}.}
+\item{freeze_base_model}{Boolean vector of length 2. Whether to freeze weights of individual models.}
+
+\item{model_seed}{Set seed for model parameters in tensorflow if not \code{NULL}.}
 }
 \description{
-Combine two models at certain layers and add dense layers afterwards.
+Combine two models at certain layers and add dense layer(s) afterwards.
 }
 \examples{
-model_1 <- create_model_lstm_cnn(layer_lstm = c(64, 64), maxlen = 50, layer_dense = c(32, 4), verbose = FALSE)
-model_2 <- create_model_lstm_cnn(layer_lstm = c(32), maxlen = 40, layer_dense = c(8, 2), verbose = FALSE)
-# get name of second to last layers
+model_1 <- create_model_lstm_cnn(layer_lstm = c(64, 64), maxlen = 50, layer_dense = c(32, 4),
+                                 verbose = FALSE)
+model_2 <- create_model_lstm_cnn(layer_lstm = c(32), maxlen = 40, 
+                                 layer_dense = c(8, 2), verbose = FALSE)
+# get names of second to last layers
 num_layers_1 <- length(model_1$get_config()$layers)
 layer_name_1 <- model_1$get_config()$layers[[num_layers_1 - 1]]$name
 num_layers_2 <- length(model_2$get_config()$layers)

@@ -4,12 +4,12 @@
 \alias{evaluate_linear}
 \title{Evaluate matrices of true targets and predictions from layer with linear activation.}
 \usage{
-evaluate_linear(y_true, y_conf, label_names = NULL)
+evaluate_linear(y_true, y_pred, label_names = NULL)
 }
 \arguments{
-\item{y_true}{Matrix of true labels}
+\item{y_true}{Matrix of true labels.}
 
-\item{y_conf}{Matrix of predictions.}
+\item{y_pred}{Matrix of predictions.}
 
 \item{label_names}{Names of corresponding labels. Length must be equal to number of columns of \code{y}.}
 }
@@ -19,6 +19,6 @@ true targets. Outputs columnwise average.
 }
 \examples{
 y_true <- matrix(rnorm(n = 12), ncol = 3)
-y_conf <- matrix(rnorm(n = 12), ncol = 3)
-evaluate_linear(y_true, y_conf)
+y_pred <- matrix(rnorm(n = 12), ncol = 3)
+evaluate_linear(y_true, y_pred)
 }

@@ -16,7 +16,7 @@ predict_model_one_seq(
   batch_size = 256,
   verbose = TRUE,
   return_states = FALSE,
-  padding = FALSE,
+  padding_maxlen = FALSE,
   output_type = "h5",
   model = NULL,
   mode = "lm",
@@ -49,10 +49,9 @@ predict_model_one_seq(
 
 \item{return_states}{Logical scalar, return states matrix.}
 
-\item{padding}{Logical scalar, generate states for first maxlen nucleotides by
-padding beginning of sequence with 0-vectors.}
+\item{padding_maxlen}{Boolean, whether to pad input with maxlen 0-vectors. (First prediction is for tensor of zeros)}
 
-\item{output_type}{Either \verb{"h5"`` or }"csv"`.}
+\item{output_type}{Either \code{"h5"} or \code{"csv"}.}
 
 \item{model}{A keras model. If model and path_model are not NULL, model will be used for inference.}
 

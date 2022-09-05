@@ -10,7 +10,7 @@ get_output_activations(model)
 \item{model}{A keras model.}
 }
 \description{
-Get activation functions of output layers
+Get activation functions of output layers.
 }
 \examples{
 model <-  create_model_lstm_cnn(

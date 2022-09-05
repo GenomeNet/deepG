@@ -93,40 +93,40 @@ with multiple inputs.
 
 \item{model}{A keras model.}
 
-\item{path}{Path to folder where individual or multiple FASTA or FASTQ files are located for training. If \code{train_type} is \code{label_folder}, should be a vector or list
-where each entry corresponds to a class. If \code{train_type} is not \code{label_folder}, can be a list of directories and/or single files.}
+\item{path}{Path to training data. If \code{train_type} is \code{label_folder}, should be a vector or list
+where each entry corresponds to a class (list elements can be directories and/or individual files). If \code{train_type} is not \code{label_folder},
+can be a single directory or file or a list of directories and/or files.}
 
-\item{path_val}{Path to folder where individual or multiple FASTA or FASTQ files are located for validation. If \code{train_type} is \code{label_folder}, should be a vector
-containing a path for each class. If \code{train_type} is not \code{label_folder}, can be a list of directories and/or files.}
+\item{path_val}{Path to validation data. See \code{path} argument for details.}
 
-\item{dataset}{List of training data, holding training samples in RAM instead of using generator. Should be list with two entries called \code{"X"} and \code{"Y"}.}
+\item{dataset}{List of training data holding training samples in RAM instead of using generator. Should be list with two entries called \code{"X"} and \code{"Y"}.}
 
-\item{dataset_val}{List of validation data. Should be list with two entries. Should be list with two entries called \code{"X"} and \code{"Y"}.}
+\item{dataset_val}{List of validation data. Should have two entries called \code{"X"} and \code{"Y"}.}
 
 \item{path_checkpoint}{Path to checkpoints folder or \code{NULL}. If \code{NULL}, checkpoints don't get stored.}
 
 \item{path_tensorboard}{Path to tensorboard directory or \code{NULL}. If \code{NULL}, training not tracked on tensorboard.}
 
-\item{path_log}{Path to directory to write training scores. File name is \code{run_name} + \code{".csv"}. No output if path_log is \code{NULL}.}
+\item{path_log}{Path to directory to write training scores. File name is \code{run_name} + \code{".csv"}. No output if \code{NULL}.}
 
 \item{train_val_ratio}{For generator defines the fraction of batches that will be used for validation (compared to size of training data), i.e. one validation iteration
 processes \code{batch_size} \eqn{*} \code{steps_per_epoch} \eqn{*} \code{train_val_ratio} samples. If you use dataset instead of generator and \code{dataset_val} is \code{NULL}, splits \code{dataset}
 into train/validation data.}
 
-\item{run_name}{Name of the run. Name will be used to identify output from callbacks. If \code{NULL}, will use date as run name. If name already present, will add "\emph{2" to name
-or "}{x + 1}" if name ends with integer x.}
+\item{run_name}{Name of the run. Name will be used to identify output from callbacks. If \code{NULL}, will use date as run name.
+If name already present, will add \code{"_2"} to name or \code{"_{x+1}"} if name ends with \verb{_x}, where \code{x} is some integer.}
 
 \item{batch_size}{Number of samples used for one network update.}
 
 \item{epochs}{Number of iterations.}
 
-\item{max_queue_size}{Queue on fit().}
+\item{max_queue_size}{Maximum size for the generator queue.}
 
 \item{reduce_lr_on_plateau}{Whether to use learning rate scheduler.}
 
-\item{lr_plateau_factor}{Factor of decreasing learning_rate when plateau is reached.}
+\item{lr_plateau_factor}{Factor of decreasing learning rate when plateau is reached.}
 
-\item{patience}{Number of epochs waiting for decrease in val_loss before reducing learning_rate.}
+\item{patience}{Number of epochs waiting for decrease in validation loss before reducing learning rate.}
 
 \item{cooldown}{Number of epochs without changing learning rate.}
 
@@ -139,9 +139,9 @@ or "}{x + 1}" if name ends with integer x.}
 \item{initial_epoch}{Epoch at which to start training. Note that network
 will run for (\code{epochs} - \code{initial_epochs}) rounds and not \code{epochs} rounds.}
 
-\item{vocabulary}{Vector of allowed characters. Character outside vocabulary get encoded as specified in \code{ambiguous_nuc}.}
+\item{vocabulary}{Vector of allowed characters. Characters outside vocabulary get encoded as specified in \code{ambiguous_nuc}.}
 
-\item{save_best_only}{Only save model that improved on best val_loss score.}
+\item{save_best_only}{Only save model that improved on best validation loss score.}
 
 \item{save_weights_only}{Whether to save weights only.}
 
@@ -158,9 +158,9 @@ will run for (\code{epochs} - \code{initial_epochs}) rounds and not \code{epochs
 \item{vocabulary_label}{Character vector of possible targets. Targets outside \code{vocabulary_label} will get discarded if
 \code{train_type = "label_header"}.}
 
-\item{file_limit}{Integer or \code{NULL}. If integer, use only specified of number randomly sampled files for training. Ignored if greater than number of files in \code{path}.}
+\item{file_limit}{Integer or \code{NULL}. If integer, use only specified number of randomly sampled files for training. Ignored if greater than number of files in \code{path}.}
 
-\item{reverse_complement}{Logical, for every new file decide randomly to use original data or its reverse complement.}
+\item{reverse_complement}{Boolean, for every new file decide randomly to use original data or its reverse complement.}
 
 \item{reverse_complement_encoding}{Whether to use both original sequence and reverse complement as two input sequences.}
 
@@ -179,14 +179,14 @@ Assume a sequence \code{"AACCGTA"}. Output correspond as follows
 \item{ambiguous_nuc}{How to handle nucleotides outside vocabulary, either \code{"zero"}, \code{"discard"}, \code{"empirical"} or \code{"equal"}.
 \itemize{
 \item If \code{"zero"}, input gets encoded as zero vector.
-\item If \code{"equal"}, input is \code{1/length(vocabulary)} \eqn{*} \code{length(vocabulary)}.
+\item If \code{"equal"}, input is repetition of \code{1/length(vocabulary)}.
 \item If \code{"discard"}, samples containing nucleotides outside vocabulary get discarded.
 \item If \code{"empirical"}, use nucleotide distribution of current file.
 }}
 
-\item{proportion_per_seq}{Numerical value between 0 and 1. Proportion of possible samples to take from one file. Takes samples from random subsequence.}
+\item{proportion_per_seq}{Numerical value between 0 and 1. Proportion of sequence to take samples from (use random subsequence).}
 
-\item{read_data}{If true the first element of output is a list of length 2, each containing one part of paired read. Maxlen should be 2*length of one read.}
+\item{read_data}{If \code{TRUE} the first element of output is a list of length 2, each containing one part of paired read. Maxlen should be 2*length of one read.}
 
 \item{use_quality_score}{Whether to use fastq quality scores. If \code{TRUE} input is not one-hot-encoding but corresponds to probabilities.
 For example (0.97, 0.01, 0.01, 0.01) instead of (1, 0, 0, 0).}
@@ -195,17 +195,17 @@ For example (0.97, 0.01, 0.01, 0.01) instead of (1, 0, 0, 0).}
 
 \item{early_stopping_time}{Time in seconds after which to stop training.}
 
-\item{added_label_path}{Path to folder with additional input labels. Should be a csv file with one column named "file". Other columns should correspond to one label.}
+\item{added_label_path}{Path to file with additional input labels. Should be a csv file with one column named "file". Other columns should correspond to labels.}
 
 \item{add_input_as_seq}{Boolean vector specifying for each entry in \code{added_label_path} if rows from csv should be encoded as a sequence or used directly.
-If a row in your csv file is a sequence this should be true. For example you may want to add another sequence, say ACCGT. Then this would correspond to 1,2,2,3,4 in
-csv file (if vocabulary = c("A", "C", "G", "T")).  If \code{add_input_as_seq} is TRUE, 12234 gets one-hot encoded, so added input is a 3D tensor.  If \code{add_input_as_seq} is
-FALSE this will feed network just raw data (a 2D tensor).}
+If a row in your csv file is a sequence this should be \code{TRUE}. For example you may want to add another sequence, say ACCGT. Then this would correspond to 1,2,2,3,4 in
+csv file (if vocabulary = c("A", "C", "G", "T")).  If \code{add_input_as_seq} is \code{TRUE}, 12234 gets one-hot encoded, so added input is a 3D tensor.  If \code{add_input_as_seq} is
+\code{FALSE} this will feed network just raw data (a 2D tensor).}
 
 \item{target_from_csv}{Path to csv file with target mapping. One column should be called "file" and other entries in row are the targets.}
 
 \item{target_split}{If target gets read from csv file, list of names to divide target tensor into list of tensors.
-Example: if csv file has header names \verb{"file", "label_1", "label_2", "label_3"} und \code{target_split = list(c("label_1", "label_2"), "label_3")},
+Example: if csv file has header names \verb{"file", "label_1", "label_2", "label_3"} and \code{target_split = list(c("label_1", "label_2"), "label_3")},
 this will divide target matrix to list of length 2, where the first element contains columns named \code{"label_1"} and \code{"label_2"} and the
 second entry contains the column named \code{"label_3"}.}
 
@@ -221,7 +221,7 @@ subset of \code{max_samples} samples.}
 when switching from language model trained with target in middle to label classification.}
 
 \item{class_weight}{List of weights for output. Order should correspond to \code{vocabulary_label}.
-You can use \code{get_class_weight} function to estimates class weights:
+You can use \code{\link{get_class_weight}} function to estimate class weights:
 
 \code{class_weights <- get_class_weights(path = path, train_type = train_type)}
 
@@ -229,10 +229,10 @@ If \code{train_type = "label_csv"} you need to add path to csv file:
 
 \code{class_weights <- get_class_weights(path = path, train_type = train_type, csv_path = target_from_csv)}}
 
-\item{concat_seq}{Character string or \code{NULL}. If not \code{NULL} all entries from file get concatenated to one sequence with concat_seq string between them.
+\item{concat_seq}{Character string or \code{NULL}. If not \code{NULL} all entries from file get concatenated to one sequence with \code{concat_seq} string between them.
 Example: If 1.entry AACC, 2. entry TTTG and \code{concat_seq = "ZZZ"} this becomes AACCZZZTTTG.}
 
-\item{target_len}{Number of nucleotides to predict at once.}
+\item{target_len}{Number of nucleotides to predict at once for language model.}
 
 \item{print_scores}{Whether to print train/validation scores during training.}
 
@@ -242,13 +242,13 @@ Entries in \code{"type"} must be named \code{"train"} or \code{"val"}, otherwise
 Not implemented for \code{train_type = "label_folder"}.}
 
 \item{use_coverage}{Integer or \code{NULL}. If not \code{NULL}, use coverage as encoding rather than one-hot encoding and normalize.
-Coverage information must be contained a fasta header: there must be a string \code{"cov_n"} in the header, where \code{n} is some integer.}
+Coverage information must be contained in fasta header: there must be a string \code{"cov_n"} in the header, where \code{n} is some integer.}
 
 \item{set_learning}{When you want to assign one label to set of samples. Only implemented for \code{train_type = "label_folder"}.
 Input is a list with the following parameters
 \itemize{
-\item \code{samples_per_target}: how many samples to use for one target
-\item \code{maxlen}: length of one sample
+\item \code{samples_per_target}: how many samples to use for one target.
+\item \code{maxlen}: length of one sample.
 \item \code{reshape_mode}: \verb{"time_dist", "multi_input"} or \code{"concat"}.
 \itemize{
 \item
@@ -256,27 +256,26 @@ If \code{reshape_mode} is \code{"multi_input"}, generator will produce \code{sam
 \code{samples_per_target} input layers).
 \item If reshape_mode is \code{"time_dist"}, generator will produce a 4D input array. The dimensions correspond to
 \verb{(batch_size, samples_per_target, maxlen, length(vocabulary))}.
-\item If reshape mode is \code{"concat"}, generator will concatenate \code{samples_per_target} sequences
-of length \code{maxlen} to one long sequence
+\item If \code{reshape_mode} is \code{"concat"}, generator will concatenate \code{samples_per_target} sequences
+of length \code{maxlen} to one long sequence.
 }
 \item If \code{reshape_mode} is \code{"concat"}, there is an additional \code{buffer_len}
 argument. If \code{buffer_len} is an integer, the subsequences are interspaced with \code{buffer_len} rows. The input length is
-(\code{maxlen} \eqn{*} \code{samples_per_target}) + \code{buffer_len} \eqn{*} (\code{samples_per_target} - 1)
+(\code{maxlen} \eqn{*} \code{samples_per_target}) + \code{buffer_len} \eqn{*} (\code{samples_per_target} - 1).
 }}
 
-\item{proportion_entries}{Proportion of fasta entries to keep. For example, if fasta file has 50 entries and proportion_entries = 0.1,
+\item{proportion_entries}{Proportion of fasta entries to keep. For example, if fasta file has 50 entries and \code{proportion_entries = 0.1},
 will randomly select 5 entries.}
 
 \item{sample_by_file_size}{Sample new file weighted by file size (bigger files more likely).}
 
-\item{n_gram}{Encode n nucleotides at once. Can be used for language model for target encoding (not input yet)
-or for input sequence for label training.}
+\item{n_gram}{Encode n nucleotides at once. Can be used for language model for target encoding.}
 
 \item{n_gram_stride}{Step size for n-gram encoding. For AACCGGTT with \code{n-gram = 4} and \code{n_gram_stride = 2}, generator encodes
 \verb{(AACC), (CCGG), (GGTT)}; for \code{n_gram_stride = 4} generator encodes \verb{(AACC), (GGTT)}.}
 
 \item{add_noise}{\code{NULL} or list of arguments. If not \code{NULL}, list must contain the following arguments: \code{noise_type} can be \code{"normal"} or \code{"uniform"};
-optional arguments \code{sd} or \code{mean} if noise_type is \code{"normal"} (default is \code{sd=1} and \code{mean=0}) or \verb{min, max} if noise_type is \code{"uniform"}
+optional arguments \code{sd} or \code{mean} if noise_type is \code{"normal"} (default is \code{sd=1} and \code{mean=0}) or \verb{min, max} if \code{noise_type} is \code{"uniform"}
 (default is \verb{min=0, max=1}).}
 }
 \description{
@@ -286,7 +285,6 @@ from files. Function includes several options to determine the sampling strategy
 Training progress can be visualized in tensorboard. Model weights can be stored during training using checkpoints.
 }
 \examples{
-\dontrun{
 # create dummy data
 path_train_1 <- tempfile()
 path_train_2 <- tempfile()
@@ -317,5 +315,5 @@ hist <- train_model(train_type = "label_folder",
                     step = 5,
                     format = "fasta",
                     vocabulary_label = c("label_1", "label_2"))
-}                     
+ 
 }

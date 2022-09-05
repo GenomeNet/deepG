@@ -17,7 +17,7 @@ predict_model(
   batch_size = 256,
   verbose = TRUE,
   return_states = FALSE,
-  padding = FALSE,
+  padding_maxlen = FALSE,
   output_type = "h5",
   path_model = NULL,
   mode = "lm",
@@ -49,12 +49,11 @@ predict_model(
 
 \item{batch_size}{Number of samples to evaluate at once. Does not change output, only relevant for speed and memory.}
 
-\item{verbose}{Whether to print model before and after removing layers.}
+\item{verbose}{Boolean.}
 
 \item{return_states}{Return predictions as data frame. Only supported for output_format \code{"one_seq"}.}
 
-\item{padding}{Logical scalar, generate states for first maxlen nucleotides by
-padding beginning of sequence with 0-vectors.}
+\item{padding_maxlen}{Boolean, whether to pad input with maxlen 0-vectors. (First prediction is for tensor of zeros)}
 
 \item{output_type}{\code{"h5"} or \code{"csv"}. If \verb{output_format`` is }"by_entries_one_file", "one_pred_per_entry"\verb{can only be}"h5"`.}
 
@@ -70,14 +69,15 @@ padding beginning of sequence with 0-vectors.}
 }
 \description{
 Removes layers (optional) from pretrained model and calculates states of fasta/fastq file or nucleotide sequence.
-Writes states to h5/csv file. To access the content of h5 output use \code{load_predictions} function.
+Writes states to h5 or csv file (access content of h5 output with \code{\link{load_predictions}} function).
+There are several options on how to process an input file:
 \itemize{
-\item If \code{"one_seq"} computes prediction for sequence argument or fasta/fastq file.
+\item If \code{"one_seq"}, computes prediction for sequence argument or fasta/fastq file.
 Combines fasta entries in file to one sequence. This means predictor sequences can contain elements from more than one fasta entry.
-\item If \code{"by_entry"} will output a separate file for each fasta/fastq entry.
-Names of output files are: output_dir + "Nr" + i + filename + output_type, where i is the number of the fasta entry.
-\item If \code{"by_entry_one_file"}, will store prediction for all fasta entry in one h5 file.
-\item If \code{"one_pred_per_entry"} will make one prediction for each entry by either picking random sample for long sequences
+\item If \code{"by_entry"}, will output a separate file for each fasta/fastq entry.
+Names of output files are: \code{output_dir} + "Nr" + i + \code{filename} + \code{output_type}, where i is the number of the fasta entry.
+\item If \code{"by_entry_one_file"}, will store prediction for all fasta entries in one h5 file.
+\item If \code{"one_pred_per_entry"}, will make one prediction for each entry by either picking random sample for long sequences
 or pad sequence for short sequences.
 }
 }

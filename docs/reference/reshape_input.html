@@ -107,7 +107,7 @@ use CNN and LSTM layers.</p>
 
 
 <dt>input_shape</dt>
-<dd><p>The new input shape vector (without batch_size).</p></dd>
+<dd><p>The new input shape vector (without batch size).</p></dd>
 
 </dl></div>
 
@@ -121,7 +121,31 @@ use CNN and LSTM layers.</p>
 <span class="r-in"><span>  layer_lstm <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">32</span><span class="op">)</span>,</span></span>
 <span class="r-in"><span>  verbose <span class="op">=</span> <span class="cn">FALSE</span>,</span></span>
 <span class="r-in"><span>  layer_dense <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">64</span>, <span class="fl">2</span><span class="op">)</span><span class="op">)</span></span></span>
-<span class="r-in"><span><span class="fu">reshape_input</span><span class="op">(</span><span class="va">model_1</span>, input_shape <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">120</span>, <span class="fl">4</span><span class="op">)</span><span class="op">)</span> </span></span>
+<span class="r-in"><span><span class="va">model</span> <span class="op">&lt;-</span> <span class="fu">reshape_input</span><span class="op">(</span><span class="va">model_1</span>, input_shape <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">120</span>, <span class="fl">4</span><span class="op">)</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">model</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Model: "model_32"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> ________________________________________________________________________________</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Layer (type)                  Output Shape               Param #    Trainable  </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> ================================================================================</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  input_21 (InputLayer)         [(None, 120, 4)]           0          Y          </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  conv1d_16 (Conv1D)            multiple                   2624       Y          </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  max_pooling1d_13 (MaxPooling1  multiple                  0          Y          </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  D)                                                                             </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  batch_normalization_13 (Batch  multiple                  256        Y          </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Normalization)                                                                 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  conv1d_17 (Conv1D)            multiple                   82048      Y          </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  batch_normalization_14 (Batch  multiple                  512        Y          </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Normalization)                                                                 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  max_pooling1d_14 (MaxPooling1  multiple                  0          Y          </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  D)                                                                             </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  lstm_23 (LSTM)                (None, 32)                 20608      Y          </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  dense_33 (Dense)              (None, 64)                 2112       Y          </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  dense_34 (Dense)              (None, 2)                  130        Y          </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> ================================================================================</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Total params: 108,290</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Trainable params: 107,906</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Non-trainable params: 384</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> ________________________________________________________________________________</span>
 </code></pre></div>
     </div>
   </div>

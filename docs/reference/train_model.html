@@ -190,21 +190,21 @@ with multiple inputs.</p></li>
 
 
 <dt>path</dt>
-<dd><p>Path to folder where individual or multiple FASTA or FASTQ files are located for training. If <code>train_type</code> is <code>label_folder</code>, should be a vector or list
-where each entry corresponds to a class. If <code>train_type</code> is not <code>label_folder</code>, can be a list of directories and/or single files.</p></dd>
+<dd><p>Path to training data. If <code>train_type</code> is <code>label_folder</code>, should be a vector or list
+where each entry corresponds to a class (list elements can be directories and/or individual files). If <code>train_type</code> is not <code>label_folder</code>,
+can be a single directory or file or a list of directories and/or files.</p></dd>
 
 
 <dt>path_val</dt>
-<dd><p>Path to folder where individual or multiple FASTA or FASTQ files are located for validation. If <code>train_type</code> is <code>label_folder</code>, should be a vector
-containing a path for each class. If <code>train_type</code> is not <code>label_folder</code>, can be a list of directories and/or files.</p></dd>
+<dd><p>Path to validation data. See <code>path</code> argument for details.</p></dd>
 
 
 <dt>dataset</dt>
-<dd><p>List of training data, holding training samples in RAM instead of using generator. Should be list with two entries called <code>"X"</code> and <code>"Y"</code>.</p></dd>
+<dd><p>List of training data holding training samples in RAM instead of using generator. Should be list with two entries called <code>"X"</code> and <code>"Y"</code>.</p></dd>
 
 
 <dt>dataset_val</dt>
-<dd><p>List of validation data. Should be list with two entries. Should be list with two entries called <code>"X"</code> and <code>"Y"</code>.</p></dd>
+<dd><p>List of validation data. Should have two entries called <code>"X"</code> and <code>"Y"</code>.</p></dd>
 
 
 <dt>path_checkpoint</dt>
@@ -216,7 +216,7 @@ containing a path for each class. If <code>train_type</code> is not <code>label_
 
 
 <dt>path_log</dt>
-<dd><p>Path to directory to write training scores. File name is <code>run_name</code> + <code>".csv"</code>. No output if path_log is <code>NULL</code>.</p></dd>
+<dd><p>Path to directory to write training scores. File name is <code>run_name</code> + <code>".csv"</code>. No output if <code>NULL</code>.</p></dd>
 
 
 <dt>train_val_ratio</dt>
@@ -226,8 +226,8 @@ into train/validation data.</p></dd>
 
 
 <dt>run_name</dt>
-<dd><p>Name of the run. Name will be used to identify output from callbacks. If <code>NULL</code>, will use date as run name. If name already present, will add "<em>2" to name
-or "</em>x + 1" if name ends with integer x.</p></dd>
+<dd><p>Name of the run. Name will be used to identify output from callbacks. If <code>NULL</code>, will use date as run name.
+If name already present, will add <code>"_2"</code> to name or <code>"_{x+1}"</code> if name ends with <code>_x</code>, where <code>x</code> is some integer.</p></dd>
 
 
 <dt>batch_size</dt>
@@ -239,7 +239,7 @@ or "</em>x + 1" if name ends with integer x.</p></dd>
 
 
 <dt>max_queue_size</dt>
-<dd><p>Queue on fit().</p></dd>
+<dd><p>Maximum size for the generator queue.</p></dd>
 
 
 <dt>reduce_lr_on_plateau</dt>
@@ -247,11 +247,11 @@ or "</em>x + 1" if name ends with integer x.</p></dd>
 
 
 <dt>lr_plateau_factor</dt>
-<dd><p>Factor of decreasing learning_rate when plateau is reached.</p></dd>
+<dd><p>Factor of decreasing learning rate when plateau is reached.</p></dd>
 
 
 <dt>patience</dt>
-<dd><p>Number of epochs waiting for decrease in val_loss before reducing learning_rate.</p></dd>
+<dd><p>Number of epochs waiting for decrease in validation loss before reducing learning rate.</p></dd>
 
 
 <dt>cooldown</dt>
@@ -276,11 +276,11 @@ will run for (<code>epochs</code> - <code>initial_epochs</code>) rounds and not 
 
 
 <dt>vocabulary</dt>
-<dd><p>Vector of allowed characters. Character outside vocabulary get encoded as specified in <code>ambiguous_nuc</code>.</p></dd>
+<dd><p>Vector of allowed characters. Characters outside vocabulary get encoded as specified in <code>ambiguous_nuc</code>.</p></dd>
 
 
 <dt>save_best_only</dt>
-<dd><p>Only save model that improved on best val_loss score.</p></dd>
+<dd><p>Only save model that improved on best validation loss score.</p></dd>
 
 
 <dt>save_weights_only</dt>
@@ -313,11 +313,11 @@ will run for (<code>epochs</code> - <code>initial_epochs</code>) rounds and not 
 
 
 <dt>file_limit</dt>
-<dd><p>Integer or <code>NULL</code>. If integer, use only specified of number randomly sampled files for training. Ignored if greater than number of files in <code>path</code>.</p></dd>
+<dd><p>Integer or <code>NULL</code>. If integer, use only specified number of randomly sampled files for training. Ignored if greater than number of files in <code>path</code>.</p></dd>
 
 
 <dt>reverse_complement</dt>
-<dd><p>Logical, for every new file decide randomly to use original data or its reverse complement.</p></dd>
+<dd><p>Boolean, for every new file decide randomly to use original data or its reverse complement.</p></dd>
 
 
 <dt>reverse_complement_encoding</dt>
@@ -340,18 +340,18 @@ Assume a sequence <code>"AACCGTA"</code>. Output correspond as follows</p><ul><l
 
 <dt>ambiguous_nuc</dt>
 <dd><p>How to handle nucleotides outside vocabulary, either <code>"zero"</code>, <code>"discard"</code>, <code>"empirical"</code> or <code>"equal"</code>.</p><ul><li><p>If <code>"zero"</code>, input gets encoded as zero vector.</p></li>
-<li><p>If <code>"equal"</code>, input is <code>1/length(vocabulary)</code> \(*\) <code>length(vocabulary)</code>.</p></li>
+<li><p>If <code>"equal"</code>, input is repetition of <code>1/length(vocabulary)</code>.</p></li>
 <li><p>If <code>"discard"</code>, samples containing nucleotides outside vocabulary get discarded.</p></li>
 <li><p>If <code>"empirical"</code>, use nucleotide distribution of current file.</p></li>
 </ul></dd>
 
 
 <dt>proportion_per_seq</dt>
-<dd><p>Numerical value between 0 and 1. Proportion of possible samples to take from one file. Takes samples from random subsequence.</p></dd>
+<dd><p>Numerical value between 0 and 1. Proportion of sequence to take samples from (use random subsequence).</p></dd>
 
 
 <dt>read_data</dt>
-<dd><p>If true the first element of output is a list of length 2, each containing one part of paired read. Maxlen should be 2*length of one read.</p></dd>
+<dd><p>If <code>TRUE</code> the first element of output is a list of length 2, each containing one part of paired read. Maxlen should be 2*length of one read.</p></dd>
 
 
 <dt>use_quality_score</dt>
@@ -368,14 +368,14 @@ For example (0.97, 0.01, 0.01, 0.01) instead of (1, 0, 0, 0).</p></dd>
 
 
 <dt>added_label_path</dt>
-<dd><p>Path to folder with additional input labels. Should be a csv file with one column named "file". Other columns should correspond to one label.</p></dd>
+<dd><p>Path to file with additional input labels. Should be a csv file with one column named "file". Other columns should correspond to labels.</p></dd>
 
 
 <dt>add_input_as_seq</dt>
 <dd><p>Boolean vector specifying for each entry in <code>added_label_path</code> if rows from csv should be encoded as a sequence or used directly.
-If a row in your csv file is a sequence this should be true. For example you may want to add another sequence, say ACCGT. Then this would correspond to 1,2,2,3,4 in
-csv file (if vocabulary = c("A", "C", "G", "T")).  If <code>add_input_as_seq</code> is TRUE, 12234 gets one-hot encoded, so added input is a 3D tensor.  If <code>add_input_as_seq</code> is
-FALSE this will feed network just raw data (a 2D tensor).</p></dd>
+If a row in your csv file is a sequence this should be <code>TRUE</code>. For example you may want to add another sequence, say ACCGT. Then this would correspond to 1,2,2,3,4 in
+csv file (if vocabulary = c("A", "C", "G", "T")).  If <code>add_input_as_seq</code> is <code>TRUE</code>, 12234 gets one-hot encoded, so added input is a 3D tensor.  If <code>add_input_as_seq</code> is
+<code>FALSE</code> this will feed network just raw data (a 2D tensor).</p></dd>
 
 
 <dt>target_from_csv</dt>
@@ -384,7 +384,7 @@ FALSE this will feed network just raw data (a 2D tensor).</p></dd>
 
 <dt>target_split</dt>
 <dd><p>If target gets read from csv file, list of names to divide target tensor into list of tensors.
-Example: if csv file has header names <code>"file", "label_1", "label_2", "label_3"</code> und <code>target_split = list(c("label_1", "label_2"), "label_3")</code>,
+Example: if csv file has header names <code>"file", "label_1", "label_2", "label_3"</code> and <code>target_split = list(c("label_1", "label_2"), "label_3")</code>,
 this will divide target matrix to list of length 2, where the first element contains columns named <code>"label_1"</code> and <code>"label_2"</code> and the
 second entry contains the column named <code>"label_3"</code>.</p></dd>
 
@@ -410,19 +410,19 @@ when switching from language model trained with target in middle to label classi
 
 <dt>class_weight</dt>
 <dd><p>List of weights for output. Order should correspond to <code>vocabulary_label</code>.
-You can use <code>get_class_weight</code> function to estimates class weights:</p>
+You can use <code><a href="get_class_weight.html">get_class_weight</a></code> function to estimate class weights:</p>
 <p><code>class_weights &lt;- get_class_weights(path = path, train_type = train_type)</code></p>
 <p>If <code>train_type = "label_csv"</code> you need to add path to csv file:</p>
 <p><code>class_weights &lt;- get_class_weights(path = path, train_type = train_type, csv_path = target_from_csv)</code></p></dd>
 
 
 <dt>concat_seq</dt>
-<dd><p>Character string or <code>NULL</code>. If not <code>NULL</code> all entries from file get concatenated to one sequence with concat_seq string between them.
+<dd><p>Character string or <code>NULL</code>. If not <code>NULL</code> all entries from file get concatenated to one sequence with <code>concat_seq</code> string between them.
 Example: If 1.entry AACC, 2. entry TTTG and <code>concat_seq = "ZZZ"</code> this becomes AACCZZZTTTG.</p></dd>
 
 
 <dt>target_len</dt>
-<dd><p>Number of nucleotides to predict at once.</p></dd>
+<dd><p>Number of nucleotides to predict at once for language model.</p></dd>
 
 
 <dt>print_scores</dt>
@@ -438,28 +438,28 @@ Not implemented for <code>train_type = "label_folder"</code>.</p></dd>
 
 <dt>use_coverage</dt>
 <dd><p>Integer or <code>NULL</code>. If not <code>NULL</code>, use coverage as encoding rather than one-hot encoding and normalize.
-Coverage information must be contained a fasta header: there must be a string <code>"cov_n"</code> in the header, where <code>n</code> is some integer.</p></dd>
+Coverage information must be contained in fasta header: there must be a string <code>"cov_n"</code> in the header, where <code>n</code> is some integer.</p></dd>
 
 
 <dt>set_learning</dt>
 <dd><p>When you want to assign one label to set of samples. Only implemented for <code>train_type = "label_folder"</code>.
-Input is a list with the following parameters</p><ul><li><p><code>samples_per_target</code>: how many samples to use for one target</p></li>
-<li><p><code>maxlen</code>: length of one sample</p></li>
+Input is a list with the following parameters</p><ul><li><p><code>samples_per_target</code>: how many samples to use for one target.</p></li>
+<li><p><code>maxlen</code>: length of one sample.</p></li>
 <li><p><code>reshape_mode</code>: <code>"time_dist", "multi_input"</code> or <code>"concat"</code>.</p><ul><li><p>If <code>reshape_mode</code> is <code>"multi_input"</code>, generator will produce <code>samples_per_target</code> separate inputs, each of length <code>maxlen</code> (model should have
 <code>samples_per_target</code> input layers).</p></li>
 <li><p>If reshape_mode is <code>"time_dist"</code>, generator will produce a 4D input array. The dimensions correspond to
 <code>(batch_size, samples_per_target, maxlen, length(vocabulary))</code>.</p></li>
-<li><p>If reshape mode is <code>"concat"</code>, generator will concatenate <code>samples_per_target</code> sequences
-of length <code>maxlen</code> to one long sequence</p></li>
+<li><p>If <code>reshape_mode</code> is <code>"concat"</code>, generator will concatenate <code>samples_per_target</code> sequences
+of length <code>maxlen</code> to one long sequence.</p></li>
 </ul></li>
 <li><p>If <code>reshape_mode</code> is <code>"concat"</code>, there is an additional <code>buffer_len</code>
 argument. If <code>buffer_len</code> is an integer, the subsequences are interspaced with <code>buffer_len</code> rows. The input length is
-(<code>maxlen</code> \(*\) <code>samples_per_target</code>) + <code>buffer_len</code> \(*\) (<code>samples_per_target</code> - 1)</p></li>
+(<code>maxlen</code> \(*\) <code>samples_per_target</code>) + <code>buffer_len</code> \(*\) (<code>samples_per_target</code> - 1).</p></li>
 </ul></dd>
 
 
 <dt>proportion_entries</dt>
-<dd><p>Proportion of fasta entries to keep. For example, if fasta file has 50 entries and proportion_entries = 0.1,
+<dd><p>Proportion of fasta entries to keep. For example, if fasta file has 50 entries and <code>proportion_entries = 0.1</code>,
 will randomly select 5 entries.</p></dd>
 
 
@@ -468,8 +468,7 @@ will randomly select 5 entries.</p></dd>
 
 
 <dt>n_gram</dt>
-<dd><p>Encode n nucleotides at once. Can be used for language model for target encoding (not input yet)
-or for input sequence for label training.</p></dd>
+<dd><p>Encode n nucleotides at once. Can be used for language model for target encoding.</p></dd>
 
 
 <dt>n_gram_stride</dt>
@@ -479,15 +478,14 @@ or for input sequence for label training.</p></dd>
 
 <dt>add_noise</dt>
 <dd><p><code>NULL</code> or list of arguments. If not <code>NULL</code>, list must contain the following arguments: <code>noise_type</code> can be <code>"normal"</code> or <code>"uniform"</code>;
-optional arguments <code>sd</code> or <code>mean</code> if noise_type is <code>"normal"</code> (default is <code>sd=1</code> and <code>mean=0</code>) or <code>min, max</code> if noise_type is <code>"uniform"</code>
+optional arguments <code>sd</code> or <code>mean</code> if noise_type is <code>"normal"</code> (default is <code>sd=1</code> and <code>mean=0</code>) or <code>min, max</code> if <code>noise_type</code> is <code>"uniform"</code>
 (default is <code>min=0, max=1</code>).</p></dd>
 
 </dl></div>
 
     <div id="ref-examples">
     <h2>Examples</h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="kw">if</span> <span class="op">(</span><span class="cn">FALSE</span><span class="op">)</span> <span class="op">{</span></span></span>
-<span class="r-in"><span><span class="co"># create dummy data</span></span></span>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="co"># create dummy data</span></span></span>
 <span class="r-in"><span><span class="va">path_train_1</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/tempfile.html" class="external-link">tempfile</a></span><span class="op">(</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="va">path_train_2</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/tempfile.html" class="external-link">tempfile</a></span><span class="op">(</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="va">path_val_1</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/tempfile.html" class="external-link">tempfile</a></span><span class="op">(</span><span class="op">)</span></span></span>
@@ -505,6 +503,18 @@ optional arguments <code>sd</code> or <code>mean</code> if noise_type is <code>"
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># create model</span></span></span>
 <span class="r-in"><span><span class="va">model</span> <span class="op">&lt;-</span> <span class="fu"><a href="create_model_lstm_cnn.html">create_model_lstm_cnn</a></span><span class="op">(</span>layer_lstm <span class="op">=</span> <span class="fl">8</span>, layer_dense <span class="op">=</span> <span class="fl">2</span>, maxlen <span class="op">=</span> <span class="fl">5</span><span class="op">)</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Model: "model_33"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> ________________________________________________________________________________</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Layer (type)                       Output Shape                    Param #     </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> ================================================================================</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  input_22 (InputLayer)              [(None, 5, 4)]                  0           </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  lstm_24 (LSTM)                     (None, 8)                       416         </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  dense_35 (Dense)                   (None, 2)                       18          </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> ================================================================================</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Total params: 434</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Trainable params: 434</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Non-trainable params: 0</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> ________________________________________________________________________________</span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># train model</span></span></span>
 <span class="r-in"><span><span class="va">hist</span> <span class="op">&lt;-</span> <span class="fu">train_model</span><span class="op">(</span>train_type <span class="op">=</span> <span class="st">"label_folder"</span>,</span></span>
@@ -517,7 +527,8 @@ optional arguments <code>sd</code> or <code>mean</code> if noise_type is <code>"
 <span class="r-in"><span>                    step <span class="op">=</span> <span class="fl">5</span>,</span></span>
 <span class="r-in"><span>                    format <span class="op">=</span> <span class="st">"fasta"</span>,</span></span>
 <span class="r-in"><span>                    vocabulary_label <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"label_1"</span>, <span class="st">"label_2"</span><span class="op">)</span><span class="op">)</span></span></span>
-<span class="r-in"><span><span class="op">}</span>                     </span></span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Training done.</span>
+<span class="r-in"><span> </span></span>
 </code></pre></div>
     </div>
   </div>

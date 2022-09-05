@@ -31,3 +31,14 @@ get_start_ind(
 Helper function for data generators.
 Computes start positions in sequence where samples can be extracted, given maxlen, step size and ambiguous nucleotide constraints.
 }
+\examples{
+seq_vector <- c("AAACCCNNNGGGTTT")
+get_start_ind(
+  seq_vector = seq_vector,
+  length_vector = nchar(seq_vector),
+  maxlen = 4,
+  step = 2,
+  train_mode = "label",
+  discard_amb_nuc = TRUE,
+  vocabulary = c("A", "C", "G", "T"))
+}

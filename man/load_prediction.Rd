@@ -17,6 +17,8 @@ load_prediction(
 
 \item{rows}{Range of rows to read. If \code{NULL} read everything.}
 
+\item{verbose}{Boolean.}
+
 \item{get_target_positions}{Return position of corresponding targets if \code{TRUE}.}
 
 \item{get_seq}{Return nucleotide sequence if \code{TRUE}.}

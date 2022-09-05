@@ -3,7 +3,7 @@
 #' deepG is a is an open source software library for building deep neuronal 
 #' networks for genomic modeling
 #' 
-#' This package generates \href{http://www.genomenet.de}{GenomeNet}
+#' This package generates \href{http://deepg.de}{deepG}
 #'
 #' For additional documentation on the deepG package see
 #' \href{https://genomenet.de}{https://genomenet.de}
@@ -22,6 +22,7 @@ NULL
 .globals$tensorboard <- NULL
 
 .onLoad <- function(libname, pkgname) {  
+  
   # call hdf5r function to avoid error message 
   temp_file <- tempfile(fileext = ".h5")
   h5_file <- hdf5r::H5File$new(temp_file, mode = "w") 

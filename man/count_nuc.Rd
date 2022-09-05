@@ -14,8 +14,9 @@ count_nuc(
 )
 }
 \arguments{
-\item{path}{Path to folder where individual or multiple FASTA or FASTQ files are located for training. If \code{train_type} is \code{label_folder}, should be a vector or list
-where each entry corresponds to a class. If \code{train_type} is not \code{label_folder}, can be a list of directories and/or single files.}
+\item{path}{Path to training data. If \code{train_type} is \code{label_folder}, should be a vector or list
+where each entry corresponds to a class (list elements can be directories and/or individual files). If \code{train_type} is not \code{label_folder},
+can be a single directory or file or a list of directories and/or files.}
 
 \item{vocabulary_label}{Character vector of possible targets. Targets outside \code{vocabulary_label} will get discarded.}
 
@@ -42,6 +43,8 @@ with multiple inputs.
 (targets are last \code{target_len} nucleotides of each sequence).
 \item  If \code{"dummy_gen"}, generator creates random data once and repeatedly feeds these to model.
 }}
+
+\item{csv_path}{If \code{train_type = "label_csv"}, path to csv file containing labels.}
 }
 \description{
 Count nucleotides per class

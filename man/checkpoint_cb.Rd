@@ -9,7 +9,7 @@ checkpoint_cb(filepath_checkpoints, save_weights_only, save_best_only)
 \arguments{
 \item{save_weights_only}{Whether to save weights only.}
 
-\item{save_best_only}{Only save model that improved on best val_loss score.}
+\item{save_best_only}{Only save model that improved on best validation loss score.}
 }
 \description{
 Checkpoint callback

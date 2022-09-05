@@ -126,11 +126,11 @@ Encodes integer sequence to input/target list according to <code>output_format</
 
 
 <dt>maxlen</dt>
-<dd><p>Length of one sample</p></dd>
+<dd><p>Length of predictor sequence.</p></dd>
 
 
 <dt>vocabulary</dt>
-<dd><p>Vector of allowed characters, character outside vocabulary get encoded as 0-vector.</p></dd>
+<dd><p>Vector of allowed characters. Characters outside vocabulary get encoded as specified in <code>ambiguous_nuc</code>.</p></dd>
 
 
 <dt>start_ind</dt>
@@ -146,20 +146,17 @@ See <code><a href="train_model.html">train_model</a></code>. Note that <code>"di
 <dd><p>Nucleotide distribution.</p></dd>
 
 
-<dt>use_quality</dt>
-<dd><p>Use quality scores.</p></dd>
-
-
 <dt>quality_vector</dt>
 <dd><p>Vector of quality probabilities.</p></dd>
 
 
 <dt>target_len</dt>
-<dd><p>Number of nucleotides to predict at once.</p></dd>
+<dd><p>Number of nucleotides to predict at once for language model.</p></dd>
 
 
 <dt>use_coverage</dt>
-<dd><p>Whether to use coverage encoding.</p></dd>
+<dd><p>Integer or <code>NULL</code>. If not <code>NULL</code>, use coverage as encoding rather than one-hot encoding and normalize.
+Coverage information must be contained in fasta header: there must be a string <code>"cov_n"</code> in the header, where <code>n</code> is some integer.</p></dd>
 
 
 <dt>max_cov</dt>

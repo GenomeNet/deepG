@@ -28,9 +28,9 @@ seq_encoding_lm(
 \arguments{
 \item{sequence}{Sequence of integers.}
 
-\item{maxlen}{Length of one sample}
+\item{maxlen}{Length of predictor sequence.}
 
-\item{vocabulary}{Vector of allowed characters, character outside vocabulary get encoded as 0-vector.}
+\item{vocabulary}{Vector of allowed characters. Characters outside vocabulary get encoded as specified in \code{ambiguous_nuc}.}
 
 \item{start_ind}{Start positions of samples in \code{sequence}.}
 
@@ -39,13 +39,12 @@ See \code{\link{train_model}}. Note that \code{"discard"} option is not availabl
 
 \item{nuc_dist}{Nucleotide distribution.}
 
-\item{use_quality}{Use quality scores.}
-
 \item{quality_vector}{Vector of quality probabilities.}
 
-\item{target_len}{Number of nucleotides to predict at once.}
+\item{target_len}{Number of nucleotides to predict at once for language model.}
 
-\item{use_coverage}{Whether to use coverage encoding.}
+\item{use_coverage}{Integer or \code{NULL}. If not \code{NULL}, use coverage as encoding rather than one-hot encoding and normalize.
+Coverage information must be contained in fasta header: there must be a string \code{"cov_n"} in the header, where \code{n} is some integer.}
 
 \item{max_cov}{Biggest coverage value. Only applies if \code{use_coverage = TRUE}.}
 

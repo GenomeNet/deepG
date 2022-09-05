@@ -9,30 +9,22 @@ reshape_tensor(
   y,
   new_batch_size,
   samples_per_target,
-  batch_size,
-  path,
-  voc_len,
   buffer_len = NULL,
-  maxlen,
   reshape_mode = "time_dist",
-  concat_maxlen = NULL
+  check_y = FALSE
 )
 }
 \arguments{
+\item{x}{3D input tensor.}
+
+\item{y}{2D target tensor.}
+
 \item{new_batch_size}{Size of first axis of input/targets after reshaping.}
 
 \item{samples_per_target}{How many samples to use for one target}
 
-\item{batch_size}{Number of samples in one batch.}
-
-\item{path}{Path to input files.}
-
-\item{voc_len}{Size of vocabulary.}
-
-\item{buffer_len}{Only applies if \code{reshape_mode = "concat"}. If \code{buffer_len} is an integer, the subsequences are interspaced with \code{buffer_len} rows. The input length is
-(\code{maxlen} \eqn{*} \code{samples_per_target}) + \code{buffer_len} \eqn{*} (\code{samples_per_target} - 1)}
-
-\item{maxlen}{Length of one sample.}
+\item{buffer_len}{Only applies if \code{reshape_mode = "concat"}. If \code{buffer_len} is an integer, the subsequences are interspaced with \code{buffer_len} rows. The reshaped x has
+new maxlen: (\code{maxlen} \eqn{*} \code{samples_per_target}) + \code{buffer_len} \eqn{*} (\code{samples_per_target} - 1).}
 
 \item{reshape_mode}{\verb{"time_dist", "multi_input"} or \code{"concat"}
 \itemize{
@@ -42,8 +34,8 @@ reshape_tensor(
 \item If \code{"concat"}, will concatenate \code{samples_per_target} sequences of length \code{maxlen} to one long sequence
 }}
 
-\item{concat_maxlen}{Length of sequence after concatenation. Only applies if \code{reshape_mode = "concat"}.}
+\item{check_y}{Check if entries in \code{y} are consistent with reshape strategy (same label when aggregating).}
 }
 \description{
-Reshape input x and target y. Aggregates multiple samples from x and y into single input/target batches
+Reshape input x and target y. Aggregates multiple samples from x and y into single input/target batches.
 }

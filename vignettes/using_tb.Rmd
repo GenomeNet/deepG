@@ -137,7 +137,7 @@ We can observe the scores for loss, accuracy, balanced accuracy, F1 and AUC unde
 
 <img src="tb_images/bal_acc.png" height= "300" />
 
-![F1](tb_images/f1.png)
+![](tb_images/f1.png)
 
 <img src="tb_images/auc.png" height= "300" />
 

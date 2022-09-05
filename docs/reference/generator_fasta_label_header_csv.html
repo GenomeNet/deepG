@@ -139,7 +139,7 @@ and target variables. Targets will be read from fasta headers or a separate csv 
     <div id="arguments">
     <h2>Arguments</h2>
     <dl><dt>path_corpus</dt>
-<dd><p>Input directory where .fasta files are located or path to single file ending with .fasta or .fastq
+<dd><p>Input directory where fasta files are located or path to single file ending with fasta or fastq
 (as specified in format argument). Can also be a list of directories and/or files.</p></dd>
 
 
@@ -156,11 +156,11 @@ and target variables. Targets will be read from fasta headers or a separate csv 
 
 
 <dt>max_iter</dt>
-<dd><p>Stop after max_iter number of iterations failed to produce a new batch.</p></dd>
+<dd><p>Stop after <code>max_iter</code> number of iterations failed to produce a new batch.</p></dd>
 
 
 <dt>vocabulary</dt>
-<dd><p>Vector of allowed characters, character outside vocabulary get encoded as 0-vector.</p></dd>
+<dd><p>Vector of allowed characters. Characters outside vocabulary get encoded as specified in <code>ambiguous_nuc</code>.</p></dd>
 
 
 <dt>verbose</dt>
@@ -176,7 +176,7 @@ and target variables. Targets will be read from fasta headers or a separate csv 
 
 
 <dt>seed</dt>
-<dd><p>Sets seed for `set.seed`` function for reproducible results.</p></dd>
+<dd><p>Sets seed for <code>set.seed</code> function for reproducible results.</p></dd>
 
 
 <dt>shuffle_input</dt>
@@ -184,7 +184,7 @@ and target variables. Targets will be read from fasta headers or a separate csv 
 
 
 <dt>file_limit</dt>
-<dd><p>Use only specified number of files, ignored if greater than number of files in path_corpus.</p></dd>
+<dd><p>Integer or <code>NULL</code>. If integer, use only specified number of randomly sampled files for training. Ignored if greater than number of files in <code>path</code>.</p></dd>
 
 
 <dt>path_file_log</dt>
@@ -196,19 +196,19 @@ and target variables. Targets will be read from fasta headers or a separate csv 
 
 
 <dt>reverse_complement</dt>
-<dd><p>Logical, for every new file decide randomly to use original data or its reverse complement.</p></dd>
+<dd><p>Boolean, for every new file decide randomly to use original data or its reverse complement.</p></dd>
 
 
 <dt>ambiguous_nuc</dt>
 <dd><p>How to handle nucleotides outside vocabulary, either <code>"zero"</code>, <code>"discard"</code>, <code>"empirical"</code> or <code>"equal"</code>.</p><ul><li><p>If <code>"zero"</code>, input gets encoded as zero vector.</p></li>
-<li><p>If <code>"equal"</code>, input is <code>1/length(vocabulary)</code> \(*\) <code>length(vocabulary)</code>.</p></li>
+<li><p>If <code>"equal"</code>, input is repetition of <code>1/length(vocabulary)</code>.</p></li>
 <li><p>If <code>"discard"</code>, samples containing nucleotides outside vocabulary get discarded.</p></li>
 <li><p>If <code>"empirical"</code>, use nucleotide distribution of current file.</p></li>
 </ul></dd>
 
 
 <dt>proportion_per_seq</dt>
-<dd><p>Numerical value between 0 and 1. Proportion of possible samples to take from one file. Takes samples from random subsequence.</p></dd>
+<dd><p>Numerical value between 0 and 1. Proportion of sequence to take samples from (use random subsequence).</p></dd>
 
 
 <dt>use_quality_score</dt>
@@ -230,19 +230,19 @@ subset of <code>max_samples</code> samples.</p></dd>
 
 
 <dt>concat_seq</dt>
-<dd><p>Character string or <code>NULL</code>. If not <code>NULL</code> all entries from file get concatenated to one sequence with concat_seq string between them.
+<dd><p>Character string or <code>NULL</code>. If not <code>NULL</code> all entries from file get concatenated to one sequence with <code>concat_seq</code> string between them.
 Example: If 1.entry AACC, 2. entry TTTG and <code>concat_seq = "ZZZ"</code> this becomes AACCZZZTTTG.</p></dd>
 
 
 <dt>added_label_path</dt>
-<dd><p>Path to folder with additional input labels. Should be a csv file with one column named "file". Other columns should correspond to one label.</p></dd>
+<dd><p>Path to file with additional input labels. Should be a csv file with one column named "file". Other columns should correspond to labels.</p></dd>
 
 
 <dt>add_input_as_seq</dt>
 <dd><p>Boolean vector specifying for each entry in <code>added_label_path</code> if rows from csv should be encoded as a sequence or used directly.
-If a row in your csv file is a sequence this should be true. For example you may want to add another sequence, say ACCGT. Then this would correspond to 1,2,2,3,4 in
-csv file (if vocabulary = c("A", "C", "G", "T")).  If <code>add_input_as_seq</code> is TRUE, 12234 gets one-hot encoded, so added input is a 3D tensor.  If <code>add_input_as_seq</code> is
-FALSE this will feed network just raw data (a 2D tensor).</p></dd>
+If a row in your csv file is a sequence this should be <code>TRUE</code>. For example you may want to add another sequence, say ACCGT. Then this would correspond to 1,2,2,3,4 in
+csv file (if vocabulary = c("A", "C", "G", "T")).  If <code>add_input_as_seq</code> is <code>TRUE</code>, 12234 gets one-hot encoded, so added input is a 3D tensor.  If <code>add_input_as_seq</code> is
+<code>FALSE</code> this will feed network just raw data (a 2D tensor).</p></dd>
 
 
 <dt>target_from_csv</dt>
@@ -251,7 +251,7 @@ FALSE this will feed network just raw data (a 2D tensor).</p></dd>
 
 <dt>target_split</dt>
 <dd><p>If target gets read from csv file, list of names to divide target tensor into list of tensors.
-Example: if csv file has header names <code>"file", "label_1", "label_2", "label_3"</code> und <code>target_split = list(c("label_1", "label_2"), "label_3")</code>,
+Example: if csv file has header names <code>"file", "label_1", "label_2", "label_3"</code> and <code>target_split = list(c("label_1", "label_2"), "label_3")</code>,
 this will divide target matrix to list of length 2, where the first element contains columns named <code>"label_1"</code> and <code>"label_2"</code> and the
 second entry contains the column named <code>"label_3"</code>.</p></dd>
 
@@ -262,11 +262,11 @@ second entry contains the column named <code>"label_3"</code>.</p></dd>
 
 <dt>use_coverage</dt>
 <dd><p>Integer or <code>NULL</code>. If not <code>NULL</code>, use coverage as encoding rather than one-hot encoding and normalize.
-Coverage information must be contained a fasta header: there must be a string <code>"cov_n"</code> in the header, where <code>n</code> is some integer.</p></dd>
+Coverage information must be contained in fasta header: there must be a string <code>"cov_n"</code> in the header, where <code>n</code> is some integer.</p></dd>
 
 
 <dt>proportion_entries</dt>
-<dd><p>Proportion of fasta entries to keep. For example, if fasta file has 50 entries and proportion_entries = 0.1,
+<dd><p>Proportion of fasta entries to keep. For example, if fasta file has 50 entries and <code>proportion_entries = 0.1</code>,
 will randomly select 5 entries.</p></dd>
 
 
@@ -290,17 +290,10 @@ will randomly select 5 entries.</p></dd>
 
 <dt>add_noise</dt>
 <dd><p><code>NULL</code> or list of arguments. If not <code>NULL</code>, list must contain the following arguments: <code>noise_type</code> can be <code>"normal"</code> or <code>"uniform"</code>;
-optional arguments <code>sd</code> or <code>mean</code> if noise_type is <code>"normal"</code> (default is <code>sd=1</code> and <code>mean=0</code>) or <code>min, max</code> if noise_type is <code>"uniform"</code>
+optional arguments <code>sd</code> or <code>mean</code> if noise_type is <code>"normal"</code> (default is <code>sd=1</code> and <code>mean=0</code>) or <code>min, max</code> if <code>noise_type</code> is <code>"uniform"</code>
 (default is <code>min=0, max=1</code>).</p></dd>
 
 </dl></div>
-    <div id="value">
-    <h2>Value</h2>
-    
-
-<p>A list of length 2. First element is a 3-dimensional tensor with dimensions (batch_size, maxlen, length(vocabulary)), encoding
-the predictor sequences. Second element is a matrix with dimensions (batch_size, length(vocabulary_label)), encoding the targets.</p>
-    </div>
 
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">

@@ -146,7 +146,7 @@ mark.out {
 <div class="section level2">
 <h2 id="introduction">Introduction<a class="anchor" aria-label="anchor" href="#introduction"></a>
 </h2>
-<p>The most common use case for the deepG data generator is to extract samples from a collection of fasta (or fastq) files. The generator will always return a list of length 2. The first element is the input <span class="math inline">\(X\)</span> and the second the target <span class="math inline">\(Y\)</span>. We can differentiate between2 approaches</p>
+<p>The most common use case for the deepG data generator is to extract samples from a collection of fasta (or fastq) files. The generator will always return a list of length 2. The first element is the input <span class="math inline">\(X\)</span> and the second the target <span class="math inline">\(Y\)</span>. We can differentiate between 2 approaches</p>
 <ul>
 <li>
 <strong>Language model</strong>: Part of a sequence is the input and other part the target.
@@ -283,9 +283,14 @@ mark.out {
 <span><span class="co">## [5,] 0 0 0 0 0 0 0 0 1</span></span>
 <span><span class="co">## [6,] 0 1 0 0 0 0 0 0 0</span></span></code></pre>
 <div class="section level3">
+<h3 id="maxlen">maxlen<a class="anchor" aria-label="anchor" href="#maxlen"></a>
+</h3>
+<p>The length of the input sequence.</p>
+</div>
+<div class="section level3">
 <h3 id="vocabulary">vocabulary<a class="anchor" aria-label="anchor" href="#vocabulary"></a>
 </h3>
-<p>The set of allowed character in a sequence. What happens with characters outside the vocabulary can be controlled with the <code>ambiguous_nuc</code> argument.</p>
+<p>The set of allowed characters in a sequence. What happens to characters outside the vocabulary can be controlled with the <code>ambiguous_nuc</code> argument.</p>
 </div>
 <div class="section level3">
 <h3 id="train_type">train_type<a class="anchor" aria-label="anchor" href="#train_type"></a>
@@ -323,12 +328,13 @@ mark.out {
 <div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># get target from header</span></span>
 <span><span class="va">vocabulary_label</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste0</a></span><span class="op">(</span><span class="st">"label_"</span>, <span class="fl">1</span><span class="op">:</span><span class="fl">5</span><span class="op">)</span></span>
-<span><span class="va">gen</span> <span class="op">&lt;-</span>  <span class="fu"><a href="../reference/get_generator.html">get_generator</a></span><span class="op">(</span>path <span class="op">=</span> <span class="va">file_path</span>,</span>
-<span>                      train_type <span class="op">=</span> <span class="st">"label_header"</span>,</span>
-<span>                      batch_size <span class="op">=</span> <span class="fl">1</span>,</span>
-<span>                      maxlen <span class="op">=</span> <span class="fl">6</span>,</span>
-<span>                      vocabulary <span class="op">=</span> <span class="va">vocabulary</span>,</span>
-<span>                      vocabulary_label <span class="op">=</span> <span class="va">vocabulary_label</span><span class="op">)</span></span>
+<span><span class="va">gen</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/get_generator.html">get_generator</a></span><span class="op">(</span>path <span class="op">=</span> <span class="va">file_path</span>,</span>
+<span>                     train_type <span class="op">=</span> <span class="st">"label_header"</span>,</span>
+<span>                     batch_size <span class="op">=</span> <span class="fl">1</span>,</span>
+<span>                     maxlen <span class="op">=</span> <span class="fl">6</span>,</span>
+<span>                     vocabulary <span class="op">=</span> <span class="va">vocabulary</span>,</span>
+<span>                     vocabulary_label <span class="op">=</span> <span class="va">vocabulary_label</span><span class="op">)</span></span>
+<span></span>
 <span><span class="va">z</span> <span class="op">&lt;-</span> <span class="fu">gen</span><span class="op">(</span><span class="op">)</span></span>
 <span><span class="va">x</span> <span class="op">&lt;-</span> <span class="va">z</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span><span class="op">[</span><span class="fl">1</span>,,<span class="op">]</span> </span>
 <span><span class="va">y</span> <span class="op">&lt;-</span> <span class="va">z</span><span class="op">[[</span><span class="fl">2</span><span class="op">]</span><span class="op">]</span> </span>
@@ -355,12 +361,13 @@ mark.out {
 <span></span>
 <span><span class="co"># get target from folder</span></span>
 <span><span class="va">vocabulary_label</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste0</a></span><span class="op">(</span><span class="st">"label_"</span>, <span class="fl">1</span><span class="op">:</span><span class="fl">2</span><span class="op">)</span></span>
-<span><span class="va">gen</span> <span class="op">&lt;-</span>  <span class="fu"><a href="../reference/get_generator.html">get_generator</a></span><span class="op">(</span>path <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">file_path</span>, <span class="va">file_path_2</span><span class="op">)</span>, <span class="co"># one entry for each class</span></span>
-<span>                      train_type <span class="op">=</span> <span class="st">"label_folder"</span>,</span>
-<span>                      batch_size <span class="op">=</span> <span class="fl">8</span>,</span>
-<span>                      maxlen <span class="op">=</span> <span class="fl">6</span>,</span>
-<span>                      vocabulary <span class="op">=</span> <span class="va">vocabulary</span>,</span>
-<span>                      vocabulary_label <span class="op">=</span> <span class="va">vocabulary_label</span><span class="op">)</span></span>
+<span><span class="va">gen</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/get_generator.html">get_generator</a></span><span class="op">(</span>path <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">file_path</span>, <span class="va">file_path_2</span><span class="op">)</span>, <span class="co"># one entry for each class</span></span>
+<span>                     train_type <span class="op">=</span> <span class="st">"label_folder"</span>,</span>
+<span>                     batch_size <span class="op">=</span> <span class="fl">8</span>,</span>
+<span>                     maxlen <span class="op">=</span> <span class="fl">6</span>,</span>
+<span>                     vocabulary <span class="op">=</span> <span class="va">vocabulary</span>,</span>
+<span>                     vocabulary_label <span class="op">=</span> <span class="va">vocabulary_label</span><span class="op">)</span></span>
+<span></span>
 <span><span class="va">z</span> <span class="op">&lt;-</span> <span class="fu">gen</span><span class="op">(</span><span class="op">)</span></span>
 <span><span class="va">x</span> <span class="op">&lt;-</span> <span class="va">z</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span></span>
 <span><span class="va">y</span> <span class="op">&lt;-</span> <span class="va">z</span><span class="op">[[</span><span class="fl">2</span><span class="op">]</span><span class="op">]</span> </span>
@@ -417,13 +424,14 @@ mark.out {
 <code class="sourceCode R"><span><span class="va">csv_file</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/tempfile.html" class="external-link">tempfile</a></span><span class="op">(</span>fileext <span class="op">=</span> <span class="st">".csv"</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/utils/write.table.html" class="external-link">write.csv</a></span><span class="op">(</span><span class="va">df</span>, <span class="va">csv_file</span>, row.names <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span>
 <span></span>
-<span><span class="va">gen</span> <span class="op">&lt;-</span>  <span class="fu"><a href="../reference/get_generator.html">get_generator</a></span><span class="op">(</span>path <span class="op">=</span> <span class="va">file_path</span>,</span>
-<span>                      train_type <span class="op">=</span> <span class="st">"label_csv"</span>,</span>
-<span>                      batch_size <span class="op">=</span> <span class="fl">1</span>,</span>
-<span>                      maxlen <span class="op">=</span> <span class="fl">6</span>,</span>
-<span>                      target_from_csv <span class="op">=</span> <span class="va">csv_file</span>,</span>
-<span>                      vocabulary <span class="op">=</span> <span class="va">vocabulary</span>,</span>
-<span>                      vocabulary_label <span class="op">=</span> <span class="va">vocabulary_label</span><span class="op">)</span></span>
+<span><span class="va">gen</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/get_generator.html">get_generator</a></span><span class="op">(</span>path <span class="op">=</span> <span class="va">file_path</span>,</span>
+<span>                     train_type <span class="op">=</span> <span class="st">"label_csv"</span>,</span>
+<span>                     batch_size <span class="op">=</span> <span class="fl">1</span>,</span>
+<span>                     maxlen <span class="op">=</span> <span class="fl">6</span>,</span>
+<span>                     target_from_csv <span class="op">=</span> <span class="va">csv_file</span>,</span>
+<span>                     vocabulary <span class="op">=</span> <span class="va">vocabulary</span>,</span>
+<span>                     vocabulary_label <span class="op">=</span> <span class="va">vocabulary_label</span><span class="op">)</span></span>
+<span></span>
 <span><span class="va">z</span> <span class="op">&lt;-</span> <span class="fu">gen</span><span class="op">(</span><span class="op">)</span></span>
 <span><span class="va">x</span> <span class="op">&lt;-</span> <span class="va">z</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span><span class="op">[</span><span class="fl">1</span>,,<span class="op">]</span> </span>
 <span><span class="va">y</span> <span class="op">&lt;-</span> <span class="va">z</span><span class="op">[[</span><span class="fl">2</span><span class="op">]</span><span class="op">]</span> </span>
@@ -453,12 +461,13 @@ mark.out {
 <p><strong>“wavenet”</strong>: <span class="math inline">\(X =\)</span> <tt>abcdef</tt>, <span class="math inline">\(Y =\)</span> <tt>bcdefg</tt></p>
 <div class="sourceCode" id="cb22"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># target_right</span></span>
-<span><span class="va">gen</span> <span class="op">&lt;-</span>  <span class="fu"><a href="../reference/get_generator.html">get_generator</a></span><span class="op">(</span>path <span class="op">=</span> <span class="va">file_path</span>,</span>
-<span>                      train_type <span class="op">=</span> <span class="st">"lm"</span>,</span>
-<span>                      batch_size <span class="op">=</span> <span class="fl">1</span>,</span>
-<span>                      maxlen <span class="op">=</span> <span class="fl">6</span>,</span>
-<span>                      vocabulary <span class="op">=</span> <span class="va">vocabulary</span>,</span>
-<span>                      output_format <span class="op">=</span> <span class="st">"target_right"</span><span class="op">)</span></span>
+<span><span class="va">gen</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/get_generator.html">get_generator</a></span><span class="op">(</span>path <span class="op">=</span> <span class="va">file_path</span>,</span>
+<span>                     train_type <span class="op">=</span> <span class="st">"lm"</span>,</span>
+<span>                     batch_size <span class="op">=</span> <span class="fl">1</span>,</span>
+<span>                     maxlen <span class="op">=</span> <span class="fl">6</span>,</span>
+<span>                     vocabulary <span class="op">=</span> <span class="va">vocabulary</span>,</span>
+<span>                     output_format <span class="op">=</span> <span class="st">"target_right"</span><span class="op">)</span></span>
+<span></span>
 <span><span class="va">z</span> <span class="op">&lt;-</span> <span class="fu">gen</span><span class="op">(</span><span class="op">)</span></span>
 <span><span class="va">x</span> <span class="op">&lt;-</span> <span class="va">z</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span><span class="op">[</span><span class="fl">1</span>,,<span class="op">]</span> </span>
 <span><span class="va">y</span> <span class="op">&lt;-</span> <span class="va">z</span><span class="op">[[</span><span class="fl">2</span><span class="op">]</span><span class="op">]</span> </span>
@@ -478,12 +487,13 @@ mark.out {
 <span><span class="co">## [1,] 0 0 0 0 0 0 1 0 0</span></span></code></pre>
 <div class="sourceCode" id="cb26"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># target_middle_lstm</span></span>
-<span><span class="va">gen</span> <span class="op">&lt;-</span>  <span class="fu"><a href="../reference/get_generator.html">get_generator</a></span><span class="op">(</span>path <span class="op">=</span> <span class="va">file_path</span>,</span>
-<span>                      train_type <span class="op">=</span> <span class="st">"lm"</span>,</span>
-<span>                      batch_size <span class="op">=</span> <span class="fl">1</span>,</span>
-<span>                      maxlen <span class="op">=</span> <span class="fl">6</span>,</span>
-<span>                      vocabulary <span class="op">=</span> <span class="va">vocabulary</span>,</span>
-<span>                      output_format <span class="op">=</span> <span class="st">"target_middle_lstm"</span><span class="op">)</span></span>
+<span><span class="va">gen</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/get_generator.html">get_generator</a></span><span class="op">(</span>path <span class="op">=</span> <span class="va">file_path</span>,</span>
+<span>                     train_type <span class="op">=</span> <span class="st">"lm"</span>,</span>
+<span>                     batch_size <span class="op">=</span> <span class="fl">1</span>,</span>
+<span>                     maxlen <span class="op">=</span> <span class="fl">6</span>,</span>
+<span>                     vocabulary <span class="op">=</span> <span class="va">vocabulary</span>,</span>
+<span>                     output_format <span class="op">=</span> <span class="st">"target_middle_lstm"</span><span class="op">)</span></span>
+<span></span>
 <span><span class="va">z</span> <span class="op">&lt;-</span> <span class="fu">gen</span><span class="op">(</span><span class="op">)</span></span>
 <span><span class="va">x_1</span> <span class="op">&lt;-</span> <span class="va">z</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span><span class="op">[</span><span class="fl">1</span>,,<span class="op">]</span> </span>
 <span><span class="va">x_2</span> <span class="op">&lt;-</span> <span class="va">z</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span><span class="op">[[</span><span class="fl">2</span><span class="op">]</span><span class="op">]</span><span class="op">[</span><span class="fl">1</span>,,<span class="op">]</span> </span>
@@ -508,12 +518,13 @@ mark.out {
 <span><span class="co">## [1,] 0 0 0 1 0 0 0 0 0</span></span></code></pre>
 <div class="sourceCode" id="cb32"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># target_middle_cnn</span></span>
-<span><span class="va">gen</span> <span class="op">&lt;-</span>  <span class="fu"><a href="../reference/get_generator.html">get_generator</a></span><span class="op">(</span>path <span class="op">=</span> <span class="va">file_path</span>,</span>
-<span>                      train_type <span class="op">=</span> <span class="st">"lm"</span>,</span>
-<span>                      batch_size <span class="op">=</span> <span class="fl">1</span>,</span>
-<span>                      maxlen <span class="op">=</span> <span class="fl">6</span>,</span>
-<span>                      vocabulary <span class="op">=</span> <span class="va">vocabulary</span>,</span>
-<span>                      output_format <span class="op">=</span> <span class="st">"target_middle_cnn"</span><span class="op">)</span></span>
+<span><span class="va">gen</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/get_generator.html">get_generator</a></span><span class="op">(</span>path <span class="op">=</span> <span class="va">file_path</span>,</span>
+<span>                     train_type <span class="op">=</span> <span class="st">"lm"</span>,</span>
+<span>                     batch_size <span class="op">=</span> <span class="fl">1</span>,</span>
+<span>                     maxlen <span class="op">=</span> <span class="fl">6</span>,</span>
+<span>                     vocabulary <span class="op">=</span> <span class="va">vocabulary</span>,</span>
+<span>                     output_format <span class="op">=</span> <span class="st">"target_middle_cnn"</span><span class="op">)</span></span>
+<span></span>
 <span><span class="va">z</span> <span class="op">&lt;-</span> <span class="fu">gen</span><span class="op">(</span><span class="op">)</span></span>
 <span><span class="va">x</span> <span class="op">&lt;-</span> <span class="va">z</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span><span class="op">[</span><span class="fl">1</span>,,<span class="op">]</span></span>
 <span><span class="va">y</span> <span class="op">&lt;-</span> <span class="va">z</span><span class="op">[[</span><span class="fl">2</span><span class="op">]</span><span class="op">]</span></span>
@@ -533,12 +544,13 @@ mark.out {
 <span><span class="co">## [1,] 0 0 0 1 0 0 0 0 0</span></span></code></pre>
 <div class="sourceCode" id="cb36"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># wavenet</span></span>
-<span><span class="va">gen</span> <span class="op">&lt;-</span>  <span class="fu"><a href="../reference/get_generator.html">get_generator</a></span><span class="op">(</span>path <span class="op">=</span> <span class="va">file_path</span>,</span>
-<span>                      train_type <span class="op">=</span> <span class="st">"lm"</span>,</span>
-<span>                      batch_size <span class="op">=</span> <span class="fl">1</span>,</span>
-<span>                      maxlen <span class="op">=</span> <span class="fl">6</span>,</span>
-<span>                      vocabulary <span class="op">=</span> <span class="va">vocabulary</span>,</span>
-<span>                      output_format <span class="op">=</span> <span class="st">"wavenet"</span><span class="op">)</span></span>
+<span><span class="va">gen</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/get_generator.html">get_generator</a></span><span class="op">(</span>path <span class="op">=</span> <span class="va">file_path</span>,</span>
+<span>                     train_type <span class="op">=</span> <span class="st">"lm"</span>,</span>
+<span>                     batch_size <span class="op">=</span> <span class="fl">1</span>,</span>
+<span>                     maxlen <span class="op">=</span> <span class="fl">6</span>,</span>
+<span>                     vocabulary <span class="op">=</span> <span class="va">vocabulary</span>,</span>
+<span>                     output_format <span class="op">=</span> <span class="st">"wavenet"</span><span class="op">)</span></span>
+<span></span>
 <span><span class="va">z</span> <span class="op">&lt;-</span> <span class="fu">gen</span><span class="op">(</span><span class="op">)</span></span>
 <span><span class="va">x</span> <span class="op">&lt;-</span> <span class="va">z</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span><span class="op">[</span><span class="fl">1</span>,,<span class="op">]</span> </span>
 <span><span class="va">y</span> <span class="op">&lt;-</span> <span class="va">z</span><span class="op">[[</span><span class="fl">2</span><span class="op">]</span><span class="op">]</span><span class="op">[</span><span class="fl">1</span>,,<span class="op">]</span></span>
@@ -563,22 +575,18 @@ mark.out {
 <span><span class="co">## [6,] 0 0 0 0 0 0 1 0 0</span></span></code></pre>
 </div>
 <div class="section level3">
-<h3 id="maxlen">maxlen<a class="anchor" aria-label="anchor" href="#maxlen"></a>
-</h3>
-<p>The length of the input sequence.</p>
-</div>
-<div class="section level3">
 <h3 id="batch_size">batch_size<a class="anchor" aria-label="anchor" href="#batch_size"></a>
 </h3>
 <p>Number of samples in one batch.</p>
 <div class="sourceCode" id="cb40"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># target_right</span></span>
-<span><span class="va">gen</span> <span class="op">&lt;-</span>  <span class="fu"><a href="../reference/get_generator.html">get_generator</a></span><span class="op">(</span>path <span class="op">=</span> <span class="va">file_path</span>,</span>
-<span>                      train_type <span class="op">=</span> <span class="st">"lm"</span>,</span>
-<span>                      batch_size <span class="op">=</span> <span class="fl">7</span>,</span>
-<span>                      maxlen <span class="op">=</span> <span class="fl">6</span>,</span>
-<span>                      vocabulary <span class="op">=</span> <span class="va">vocabulary</span>,</span>
-<span>                      output_format <span class="op">=</span> <span class="st">"target_right"</span><span class="op">)</span></span>
+<span><span class="va">gen</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/get_generator.html">get_generator</a></span><span class="op">(</span>path <span class="op">=</span> <span class="va">file_path</span>,</span>
+<span>                     train_type <span class="op">=</span> <span class="st">"lm"</span>,</span>
+<span>                     batch_size <span class="op">=</span> <span class="fl">7</span>,</span>
+<span>                     maxlen <span class="op">=</span> <span class="fl">6</span>,</span>
+<span>                     vocabulary <span class="op">=</span> <span class="va">vocabulary</span>,</span>
+<span>                     output_format <span class="op">=</span> <span class="st">"target_right"</span><span class="op">)</span></span>
+<span></span>
 <span><span class="va">z</span> <span class="op">&lt;-</span> <span class="fu">gen</span><span class="op">(</span><span class="op">)</span></span>
 <span><span class="va">x</span> <span class="op">&lt;-</span> <span class="va">z</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span></span>
 <span><span class="va">y</span> <span class="op">&lt;-</span> <span class="va">z</span><span class="op">[[</span><span class="fl">2</span><span class="op">]</span><span class="op">]</span> </span>
@@ -611,6 +619,7 @@ mark.out {
 <span>                     vocabulary <span class="op">=</span> <span class="va">vocabulary</span>,</span>
 <span>                     step <span class="op">=</span> <span class="fl">3</span>, </span>
 <span>                     output_format <span class="op">=</span> <span class="st">"target_right"</span><span class="op">)</span></span>
+<span></span>
 <span><span class="va">z</span> <span class="op">&lt;-</span> <span class="fu">gen</span><span class="op">(</span><span class="op">)</span></span>
 <span><span class="va">x</span> <span class="op">&lt;-</span> <span class="va">z</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span><span class="op">[</span><span class="fl">1</span>,,<span class="op">]</span> <span class="co">#encodes abc</span></span>
 <span><span class="va">y</span> <span class="op">&lt;-</span> <span class="va">z</span><span class="op">[[</span><span class="fl">2</span><span class="op">]</span><span class="op">]</span> <span class="co"># encodes d</span></span>
@@ -647,14 +656,15 @@ mark.out {
 </h3>
 <p>If the sequence is too short to create a single sample, we can pad the sequence with zero-vectors. If <code>padding = FALSE</code> the generator will go to next file/ fasta entry until it finds a sequence long enough for a sample.</p>
 <div class="sourceCode" id="cb52"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">gen</span> <span class="op">&lt;-</span>  <span class="fu"><a href="../reference/get_generator.html">get_generator</a></span><span class="op">(</span>path <span class="op">=</span> <span class="va">file_path</span>,</span>
-<span>                      train_type <span class="op">=</span> <span class="st">"lm"</span>,</span>
-<span>                      batch_size <span class="op">=</span> <span class="fl">1</span>,</span>
-<span>                      maxlen <span class="op">=</span> <span class="fl">15</span>, <span class="co"># maxlen is longer than sequence</span></span>
-<span>                      vocabulary <span class="op">=</span> <span class="va">vocabulary</span>,</span>
-<span>                      step <span class="op">=</span> <span class="fl">3</span>,</span>
-<span>                      padding <span class="op">=</span> <span class="cn">TRUE</span>,</span>
-<span>                      output_format <span class="op">=</span> <span class="st">"target_right"</span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="va">gen</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/get_generator.html">get_generator</a></span><span class="op">(</span>path <span class="op">=</span> <span class="va">file_path</span>,</span>
+<span>                     train_type <span class="op">=</span> <span class="st">"lm"</span>,</span>
+<span>                     batch_size <span class="op">=</span> <span class="fl">1</span>,</span>
+<span>                     maxlen <span class="op">=</span> <span class="fl">15</span>, <span class="co"># maxlen is longer than sequence</span></span>
+<span>                     vocabulary <span class="op">=</span> <span class="va">vocabulary</span>,</span>
+<span>                     step <span class="op">=</span> <span class="fl">3</span>,</span>
+<span>                     padding <span class="op">=</span> <span class="cn">TRUE</span>,</span>
+<span>                     output_format <span class="op">=</span> <span class="st">"target_right"</span><span class="op">)</span></span>
+<span></span>
 <span><span class="va">z</span> <span class="op">&lt;-</span> <span class="fu">gen</span><span class="op">(</span><span class="op">)</span></span>
 <span><span class="va">x</span> <span class="op">&lt;-</span> <span class="va">z</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span><span class="op">[</span><span class="fl">1</span>,,<span class="op">]</span> </span>
 <span><span class="va">y</span> <span class="op">&lt;-</span> <span class="va">z</span><span class="op">[[</span><span class="fl">2</span><span class="op">]</span><span class="op">]</span> </span>
@@ -693,13 +703,13 @@ mark.out {
 <code class="sourceCode R"><span><span class="va">vocabulary_2</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"a"</span>, <span class="st">"b"</span>, <span class="st">"c"</span>, <span class="st">"d"</span>, <span class="st">"f"</span>, <span class="st">"g"</span>, <span class="st">"h"</span>, <span class="st">"i"</span><span class="op">)</span> <span class="co"># exclude "e" from vocabulary</span></span>
 <span></span>
 <span><span class="co"># zero</span></span>
-<span><span class="va">gen</span> <span class="op">&lt;-</span>  <span class="fu"><a href="../reference/get_generator.html">get_generator</a></span><span class="op">(</span>path <span class="op">=</span> <span class="va">file_path</span>,</span>
-<span>                      train_type <span class="op">=</span> <span class="st">"lm"</span>,</span>
-<span>                      batch_size <span class="op">=</span> <span class="fl">1</span>,</span>
-<span>                      maxlen <span class="op">=</span> <span class="fl">6</span>,</span>
-<span>                      vocabulary <span class="op">=</span> <span class="va">vocabulary_2</span>,</span>
-<span>                      output_format <span class="op">=</span> <span class="st">"target_right"</span>,</span>
-<span>                      ambiguous_nuc <span class="op">=</span> <span class="st">"zeros"</span><span class="op">)</span></span>
+<span><span class="va">gen</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/get_generator.html">get_generator</a></span><span class="op">(</span>path <span class="op">=</span> <span class="va">file_path</span>,</span>
+<span>                     train_type <span class="op">=</span> <span class="st">"lm"</span>,</span>
+<span>                     batch_size <span class="op">=</span> <span class="fl">1</span>,</span>
+<span>                     maxlen <span class="op">=</span> <span class="fl">6</span>,</span>
+<span>                     vocabulary <span class="op">=</span> <span class="va">vocabulary_2</span>,</span>
+<span>                     output_format <span class="op">=</span> <span class="st">"target_right"</span>,</span>
+<span>                     ambiguous_nuc <span class="op">=</span> <span class="st">"zeros"</span><span class="op">)</span></span>
 <span><span class="va">z</span> <span class="op">&lt;-</span> <span class="fu">gen</span><span class="op">(</span><span class="op">)</span></span>
 <span><span class="va">x</span> <span class="op">&lt;-</span> <span class="va">z</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span><span class="op">[</span><span class="fl">1</span>,,<span class="op">]</span> </span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/colnames.html" class="external-link">colnames</a></span><span class="op">(</span><span class="va">x</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="va">vocabulary_2</span></span>
@@ -716,13 +726,14 @@ mark.out {
 </ol>
 <div class="sourceCode" id="cb58"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># equal</span></span>
-<span><span class="va">gen</span> <span class="op">&lt;-</span>  <span class="fu"><a href="../reference/get_generator.html">get_generator</a></span><span class="op">(</span>path <span class="op">=</span> <span class="va">file_path</span>,</span>
-<span>                      train_type <span class="op">=</span> <span class="st">"lm"</span>,</span>
-<span>                      batch_size <span class="op">=</span> <span class="fl">1</span>,</span>
-<span>                      maxlen <span class="op">=</span> <span class="fl">6</span>,</span>
-<span>                      vocabulary <span class="op">=</span> <span class="va">vocabulary_2</span>,</span>
-<span>                      output_format <span class="op">=</span> <span class="st">"target_right"</span>,</span>
-<span>                      ambiguous_nuc <span class="op">=</span> <span class="st">"equal"</span><span class="op">)</span> </span>
+<span><span class="va">gen</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/get_generator.html">get_generator</a></span><span class="op">(</span>path <span class="op">=</span> <span class="va">file_path</span>,</span>
+<span>                    train_type <span class="op">=</span> <span class="st">"lm"</span>,</span>
+<span>                    batch_size <span class="op">=</span> <span class="fl">1</span>,</span>
+<span>                    maxlen <span class="op">=</span> <span class="fl">6</span>,</span>
+<span>                    vocabulary <span class="op">=</span> <span class="va">vocabulary_2</span>,</span>
+<span>                    output_format <span class="op">=</span> <span class="st">"target_right"</span>,</span>
+<span>                    ambiguous_nuc <span class="op">=</span> <span class="st">"equal"</span><span class="op">)</span> </span>
+<span></span>
 <span><span class="va">z</span> <span class="op">&lt;-</span> <span class="fu">gen</span><span class="op">(</span><span class="op">)</span></span>
 <span><span class="va">x</span> <span class="op">&lt;-</span> <span class="va">z</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span><span class="op">[</span><span class="fl">1</span>,,<span class="op">]</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/colnames.html" class="external-link">colnames</a></span><span class="op">(</span><span class="va">x</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="va">vocabulary_2</span></span>
@@ -739,13 +750,14 @@ mark.out {
 </ol>
 <div class="sourceCode" id="cb60"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># empirical</span></span>
-<span><span class="va">gen</span> <span class="op">&lt;-</span>  <span class="fu"><a href="../reference/get_generator.html">get_generator</a></span><span class="op">(</span>path <span class="op">=</span> <span class="va">file_path</span>,</span>
-<span>                      train_type <span class="op">=</span> <span class="st">"lm"</span>,</span>
-<span>                      batch_size <span class="op">=</span> <span class="fl">1</span>,</span>
-<span>                      maxlen <span class="op">=</span> <span class="fl">6</span>,</span>
-<span>                      vocabulary <span class="op">=</span> <span class="va">vocabulary_2</span>,</span>
-<span>                      output_format <span class="op">=</span> <span class="st">"target_right"</span>,</span>
-<span>                      ambiguous_nuc <span class="op">=</span> <span class="st">"empirical"</span><span class="op">)</span> </span>
+<span><span class="va">gen</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/get_generator.html">get_generator</a></span><span class="op">(</span>path <span class="op">=</span> <span class="va">file_path</span>,</span>
+<span>                     train_type <span class="op">=</span> <span class="st">"lm"</span>,</span>
+<span>                     batch_size <span class="op">=</span> <span class="fl">1</span>,</span>
+<span>                     maxlen <span class="op">=</span> <span class="fl">6</span>,</span>
+<span>                     vocabulary <span class="op">=</span> <span class="va">vocabulary_2</span>,</span>
+<span>                     output_format <span class="op">=</span> <span class="st">"target_right"</span>,</span>
+<span>                     ambiguous_nuc <span class="op">=</span> <span class="st">"empirical"</span><span class="op">)</span> </span>
+<span></span>
 <span><span class="va">z</span> <span class="op">&lt;-</span> <span class="fu">gen</span><span class="op">(</span><span class="op">)</span></span>
 <span><span class="va">x</span> <span class="op">&lt;-</span> <span class="va">z</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span><span class="op">[</span><span class="fl">1</span>,,<span class="op">]</span> </span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/colnames.html" class="external-link">colnames</a></span><span class="op">(</span><span class="va">x</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="va">vocabulary_2</span></span>
@@ -769,13 +781,14 @@ mark.out {
 </ol>
 <div class="sourceCode" id="cb62"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># discard</span></span>
-<span><span class="va">gen</span> <span class="op">&lt;-</span>  <span class="fu"><a href="../reference/get_generator.html">get_generator</a></span><span class="op">(</span>path <span class="op">=</span> <span class="va">file_path</span>,</span>
-<span>                      train_type <span class="op">=</span> <span class="st">"lm"</span>,</span>
-<span>                      batch_size <span class="op">=</span> <span class="fl">1</span>,</span>
-<span>                      maxlen <span class="op">=</span> <span class="fl">6</span>,</span>
-<span>                      vocabulary <span class="op">=</span> <span class="va">vocabulary_2</span>,</span>
-<span>                      output_format <span class="op">=</span> <span class="st">"target_right"</span>,</span>
-<span>                      ambiguous_nuc <span class="op">=</span> <span class="st">"discard"</span><span class="op">)</span> </span>
+<span><span class="va">gen</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/get_generator.html">get_generator</a></span><span class="op">(</span>path <span class="op">=</span> <span class="va">file_path</span>,</span>
+<span>                     train_type <span class="op">=</span> <span class="st">"lm"</span>,</span>
+<span>                     batch_size <span class="op">=</span> <span class="fl">1</span>,</span>
+<span>                     maxlen <span class="op">=</span> <span class="fl">6</span>,</span>
+<span>                     vocabulary <span class="op">=</span> <span class="va">vocabulary_2</span>,</span>
+<span>                     output_format <span class="op">=</span> <span class="st">"target_right"</span>,</span>
+<span>                     ambiguous_nuc <span class="op">=</span> <span class="st">"discard"</span><span class="op">)</span> </span>
+<span></span>
 <span><span class="va">z</span> <span class="op">&lt;-</span> <span class="fu">gen</span><span class="op">(</span><span class="op">)</span></span>
 <span><span class="va">x</span> <span class="op">&lt;-</span> <span class="va">z</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span><span class="op">[</span><span class="fl">1</span>,,<span class="op">]</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/colnames.html" class="external-link">colnames</a></span><span class="op">(</span><span class="va">x</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="va">vocabulary_2</span></span>
@@ -796,15 +809,16 @@ mark.out {
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span><span class="st">"sequence is "</span>, <span class="fu"><a href="https://rdrr.io/r/base/nchar.html" class="external-link">nchar</a></span><span class="op">(</span><span class="va">sequence</span><span class="op">)</span>, <span class="st">"characters long \n"</span><span class="op">)</span></span></code></pre></div>
 <pre><code><span><span class="co">## sequence is  12 characters long</span></span></code></pre>
 <div class="sourceCode" id="cb66"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">gen</span> <span class="op">&lt;-</span>  <span class="fu"><a href="../reference/get_generator.html">get_generator</a></span><span class="op">(</span>path <span class="op">=</span> <span class="va">file_path</span>,</span>
-<span>                      train_type <span class="op">=</span> <span class="st">"lm"</span>,</span>
-<span>                      batch_size <span class="op">=</span> <span class="fl">1</span>,</span>
-<span>                      maxlen <span class="op">=</span> <span class="fl">5</span>,</span>
-<span>                      seed <span class="op">=</span> <span class="fl">1</span>,</span>
-<span>                      vocabulary <span class="op">=</span> <span class="va">vocabulary</span>,</span>
-<span>                      output_format <span class="op">=</span> <span class="st">"target_right"</span>,</span>
-<span>                      <span class="co"># take random subsequence using 50% of sequence </span></span>
-<span>                      proportion_per_seq <span class="op">=</span> <span class="fl">0.5</span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="va">gen</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/get_generator.html">get_generator</a></span><span class="op">(</span>path <span class="op">=</span> <span class="va">file_path</span>,</span>
+<span>                     train_type <span class="op">=</span> <span class="st">"lm"</span>,</span>
+<span>                     batch_size <span class="op">=</span> <span class="fl">1</span>,</span>
+<span>                     maxlen <span class="op">=</span> <span class="fl">5</span>,</span>
+<span>                     seed <span class="op">=</span> <span class="fl">1</span>,</span>
+<span>                     vocabulary <span class="op">=</span> <span class="va">vocabulary</span>,</span>
+<span>                     output_format <span class="op">=</span> <span class="st">"target_right"</span>,</span>
+<span>                     <span class="co"># take random subsequence using 50% of sequence </span></span>
+<span>                     proportion_per_seq <span class="op">=</span> <span class="fl">0.5</span><span class="op">)</span></span>
+<span></span>
 <span><span class="va">z</span> <span class="op">&lt;-</span> <span class="fu">gen</span><span class="op">(</span><span class="op">)</span></span>
 <span><span class="va">x</span> <span class="op">&lt;-</span> <span class="va">z</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span><span class="op">[</span><span class="fl">1</span>, , <span class="op">]</span></span>
 <span><span class="va">y</span> <span class="op">&lt;-</span> <span class="va">z</span><span class="op">[[</span><span class="fl">2</span><span class="op">]</span><span class="op">]</span></span>
@@ -827,15 +841,16 @@ mark.out {
 </h3>
 <p>Only use fixed number of samples per file. Randomly choose which samples to use. (If <code>random_sampling = FALSE</code>, samples are consecutive.)</p>
 <div class="sourceCode" id="cb70"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">gen</span> <span class="op">&lt;-</span>  <span class="fu"><a href="../reference/get_generator.html">get_generator</a></span><span class="op">(</span>path <span class="op">=</span> <span class="va">file_path</span>,</span>
-<span>                      train_type <span class="op">=</span> <span class="st">"lm"</span>,</span>
-<span>                      batch_size <span class="op">=</span> <span class="fl">2</span>,</span>
-<span>                      maxlen <span class="op">=</span> <span class="fl">5</span>,</span>
-<span>                      step <span class="op">=</span> <span class="fl">1</span>,</span>
-<span>                      seed <span class="op">=</span> <span class="fl">3</span>,</span>
-<span>                      vocabulary <span class="op">=</span> <span class="va">vocabulary</span>,</span>
-<span>                      output_format <span class="op">=</span> <span class="st">"target_right"</span>,</span>
-<span>                      max_samples <span class="op">=</span> <span class="fl">2</span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="va">gen</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/get_generator.html">get_generator</a></span><span class="op">(</span>path <span class="op">=</span> <span class="va">file_path</span>,</span>
+<span>                     train_type <span class="op">=</span> <span class="st">"lm"</span>,</span>
+<span>                     batch_size <span class="op">=</span> <span class="fl">2</span>,</span>
+<span>                     maxlen <span class="op">=</span> <span class="fl">5</span>,</span>
+<span>                     step <span class="op">=</span> <span class="fl">1</span>,</span>
+<span>                     seed <span class="op">=</span> <span class="fl">3</span>,</span>
+<span>                     vocabulary <span class="op">=</span> <span class="va">vocabulary</span>,</span>
+<span>                     output_format <span class="op">=</span> <span class="st">"target_right"</span>,</span>
+<span>                     max_samples <span class="op">=</span> <span class="fl">2</span><span class="op">)</span></span>
+<span></span>
 <span><span class="va">z</span> <span class="op">&lt;-</span> <span class="fu">gen</span><span class="op">(</span><span class="op">)</span></span>
 <span><span class="va">x1</span> <span class="op">&lt;-</span> <span class="va">z</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span><span class="op">[</span><span class="fl">1</span>, , <span class="op">]</span></span>
 <span><span class="va">x2</span> <span class="op">&lt;-</span> <span class="va">z</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span><span class="op">[</span><span class="fl">2</span>, , <span class="op">]</span></span>
@@ -862,15 +877,16 @@ mark.out {
 </h3>
 <p>If you use <code>max_samples</code>, generator will randomly choose subset from all possible samples, but those samples are consecutive. With <code>random_sampling = TRUE</code>, samples are completely random.</p>
 <div class="sourceCode" id="cb74"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">gen</span> <span class="op">&lt;-</span>  <span class="fu"><a href="../reference/get_generator.html">get_generator</a></span><span class="op">(</span>path <span class="op">=</span> <span class="va">file_path</span>,</span>
-<span>                      train_type <span class="op">=</span> <span class="st">"lm"</span>,</span>
-<span>                      batch_size <span class="op">=</span> <span class="fl">2</span>,</span>
-<span>                      maxlen <span class="op">=</span> <span class="fl">5</span>,</span>
-<span>                      seed <span class="op">=</span> <span class="fl">66</span>,</span>
-<span>                      random_sampling <span class="op">=</span> <span class="cn">TRUE</span>,</span>
-<span>                      vocabulary <span class="op">=</span> <span class="va">vocabulary</span>,</span>
-<span>                      output_format <span class="op">=</span> <span class="st">"target_right"</span>,</span>
-<span>                      max_samples <span class="op">=</span> <span class="fl">2</span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="va">gen</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/get_generator.html">get_generator</a></span><span class="op">(</span>path <span class="op">=</span> <span class="va">file_path</span>,</span>
+<span>                     train_type <span class="op">=</span> <span class="st">"lm"</span>,</span>
+<span>                     batch_size <span class="op">=</span> <span class="fl">2</span>,</span>
+<span>                     maxlen <span class="op">=</span> <span class="fl">5</span>,</span>
+<span>                     seed <span class="op">=</span> <span class="fl">66</span>,</span>
+<span>                     random_sampling <span class="op">=</span> <span class="cn">TRUE</span>,</span>
+<span>                     vocabulary <span class="op">=</span> <span class="va">vocabulary</span>,</span>
+<span>                     output_format <span class="op">=</span> <span class="st">"target_right"</span>,</span>
+<span>                     max_samples <span class="op">=</span> <span class="fl">2</span><span class="op">)</span></span>
+<span></span>
 <span><span class="va">z</span> <span class="op">&lt;-</span> <span class="fu">gen</span><span class="op">(</span><span class="op">)</span></span>
 <span><span class="va">x1</span> <span class="op">&lt;-</span> <span class="va">z</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span><span class="op">[</span><span class="fl">1</span>, , <span class="op">]</span></span>
 <span><span class="va">x2</span> <span class="op">&lt;-</span> <span class="va">z</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span><span class="op">[</span><span class="fl">2</span>, , <span class="op">]</span></span>
@@ -897,13 +913,14 @@ mark.out {
 </h3>
 <p>Target length for language model. Default is 1; if &gt; 1 the target part of the generator output is a list of length <code>target_len</code>.</p>
 <div class="sourceCode" id="cb78"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">gen</span> <span class="op">&lt;-</span>  <span class="fu"><a href="../reference/get_generator.html">get_generator</a></span><span class="op">(</span>path <span class="op">=</span> <span class="va">file_path</span>,</span>
-<span>                      train_type <span class="op">=</span> <span class="st">"lm"</span>,</span>
-<span>                      batch_size <span class="op">=</span> <span class="fl">1</span>,</span>
-<span>                      target_len <span class="op">=</span> <span class="fl">3</span>, </span>
-<span>                      maxlen <span class="op">=</span> <span class="fl">5</span>,</span>
-<span>                      vocabulary <span class="op">=</span> <span class="va">vocabulary</span>,</span>
-<span>                      output_format <span class="op">=</span> <span class="st">"target_right"</span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="va">gen</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/get_generator.html">get_generator</a></span><span class="op">(</span>path <span class="op">=</span> <span class="va">file_path</span>,</span>
+<span>                     train_type <span class="op">=</span> <span class="st">"lm"</span>,</span>
+<span>                     batch_size <span class="op">=</span> <span class="fl">1</span>,</span>
+<span>                     target_len <span class="op">=</span> <span class="fl">3</span>, </span>
+<span>                     maxlen <span class="op">=</span> <span class="fl">5</span>,</span>
+<span>                     vocabulary <span class="op">=</span> <span class="va">vocabulary</span>,</span>
+<span>                     output_format <span class="op">=</span> <span class="st">"target_right"</span><span class="op">)</span></span>
+<span></span>
 <span><span class="va">z</span> <span class="op">&lt;-</span> <span class="fu">gen</span><span class="op">(</span><span class="op">)</span></span>
 <span><span class="va">x</span> <span class="op">&lt;-</span> <span class="va">z</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span><span class="op">[</span><span class="fl">1</span>, , <span class="op">]</span></span>
 <span><span class="va">y1</span> <span class="op">&lt;-</span> <span class="va">z</span><span class="op">[[</span><span class="fl">2</span><span class="op">]</span><span class="op">]</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span></span>
@@ -938,15 +955,16 @@ mark.out {
 </h3>
 <p>Encode target in language model not character wise but combine n characters to one target. <code>n_gram_stride</code> determines the frequency of the n-gram encoding.</p>
 <div class="sourceCode" id="cb86"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">gen</span> <span class="op">&lt;-</span>  <span class="fu"><a href="../reference/get_generator.html">get_generator</a></span><span class="op">(</span>path <span class="op">=</span> <span class="va">file_path</span>,</span>
-<span>                      train_type <span class="op">=</span> <span class="st">"lm"</span>,</span>
-<span>                      batch_size <span class="op">=</span> <span class="fl">1</span>,</span>
-<span>                      target_len <span class="op">=</span> <span class="fl">8</span>, </span>
-<span>                      n_gram <span class="op">=</span> <span class="fl">3</span>,</span>
-<span>                      n_gram_stride <span class="op">=</span> <span class="fl">2</span>,</span>
-<span>                      maxlen <span class="op">=</span> <span class="fl">4</span>,</span>
-<span>                      vocabulary <span class="op">=</span> <span class="va">vocabulary</span>,</span>
-<span>                      output_format <span class="op">=</span> <span class="st">"target_right"</span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="va">gen</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/get_generator.html">get_generator</a></span><span class="op">(</span>path <span class="op">=</span> <span class="va">file_path</span>,</span>
+<span>                     train_type <span class="op">=</span> <span class="st">"lm"</span>,</span>
+<span>                     batch_size <span class="op">=</span> <span class="fl">1</span>,</span>
+<span>                     target_len <span class="op">=</span> <span class="fl">8</span>, </span>
+<span>                     n_gram <span class="op">=</span> <span class="fl">3</span>,</span>
+<span>                     n_gram_stride <span class="op">=</span> <span class="fl">2</span>,</span>
+<span>                     maxlen <span class="op">=</span> <span class="fl">4</span>,</span>
+<span>                     vocabulary <span class="op">=</span> <span class="va">vocabulary</span>,</span>
+<span>                     output_format <span class="op">=</span> <span class="st">"target_right"</span><span class="op">)</span></span>
+<span></span>
 <span><span class="va">z</span> <span class="op">&lt;-</span> <span class="fu">gen</span><span class="op">(</span><span class="op">)</span></span>
 <span><span class="va">x</span> <span class="op">&lt;-</span> <span class="va">z</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span><span class="op">[</span><span class="fl">1</span>, , <span class="op">]</span></span>
 <span><span class="va">y1</span> <span class="op">&lt;-</span> <span class="va">z</span><span class="op">[[</span><span class="fl">2</span><span class="op">]</span><span class="op">]</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span></span>
@@ -974,13 +992,14 @@ mark.out {
 </h3>
 <p>Add noise to input. Must be a list that specifies noise distribution or NULL (no noise). List contains arguments <code>noise_type</code>: either <code>"normal"</code> or <code>"uniform"</code>. Optional arguments <code>sd</code> or <code>mean</code> if <code>noise_type</code> is <code>"normal"</code> (default is <code>sd=1</code> and <code>mean=0</code>) or <code>min</code>, <code>max</code> if <code>noise_type</code> is <code>"uniform"</code> (default is <code>min=0</code>, <code>max=1</code>).</p>
 <div class="sourceCode" id="cb91"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">gen</span> <span class="op">&lt;-</span>  <span class="fu"><a href="../reference/get_generator.html">get_generator</a></span><span class="op">(</span>path <span class="op">=</span> <span class="va">file_path</span>,</span>
-<span>                      train_type <span class="op">=</span> <span class="st">"lm"</span>,</span>
-<span>                      batch_size <span class="op">=</span> <span class="fl">1</span>,</span>
-<span>                      add_noise <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>noise_type <span class="op">=</span> <span class="st">"normal"</span>, mean <span class="op">=</span> <span class="fl">0</span>, sd <span class="op">=</span> <span class="fl">0.01</span><span class="op">)</span>,</span>
-<span>                      maxlen <span class="op">=</span> <span class="fl">5</span>,</span>
-<span>                      vocabulary <span class="op">=</span> <span class="va">vocabulary</span>,</span>
-<span>                      output_format <span class="op">=</span> <span class="st">"target_right"</span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="va">gen</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/get_generator.html">get_generator</a></span><span class="op">(</span>path <span class="op">=</span> <span class="va">file_path</span>,</span>
+<span>                     train_type <span class="op">=</span> <span class="st">"lm"</span>,</span>
+<span>                     batch_size <span class="op">=</span> <span class="fl">1</span>,</span>
+<span>                     add_noise <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>noise_type <span class="op">=</span> <span class="st">"normal"</span>, mean <span class="op">=</span> <span class="fl">0</span>, sd <span class="op">=</span> <span class="fl">0.01</span><span class="op">)</span>,</span>
+<span>                     maxlen <span class="op">=</span> <span class="fl">5</span>,</span>
+<span>                     vocabulary <span class="op">=</span> <span class="va">vocabulary</span>,</span>
+<span>                     output_format <span class="op">=</span> <span class="st">"target_right"</span><span class="op">)</span></span>
+<span></span>
 <span><span class="va">z</span> <span class="op">&lt;-</span> <span class="fu">gen</span><span class="op">(</span><span class="op">)</span></span>
 <span><span class="va">x</span> <span class="op">&lt;-</span> <span class="va">z</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span><span class="op">[</span><span class="fl">1</span>, , <span class="op">]</span></span>
 <span><span class="va">y</span> <span class="op">&lt;-</span> <span class="va">z</span><span class="op">[[</span><span class="fl">2</span><span class="op">]</span><span class="op">]</span></span>
@@ -1032,13 +1051,14 @@ mark.out {
 <code class="sourceCode R"><span><span class="va">df</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span>Sequence <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"AC"</span>, <span class="st">"AG"</span>, <span class="st">"AT"</span><span class="op">)</span>, Header <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste0</a></span><span class="op">(</span><span class="st">"header"</span>, <span class="fl">1</span><span class="op">:</span><span class="fl">3</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="va">fasta_path</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/tempfile.html" class="external-link">tempfile</a></span><span class="op">(</span>fileext <span class="op">=</span> <span class="st">".fasta"</span><span class="op">)</span></span>
 <span><span class="va">fasta_file</span> <span class="op">&lt;-</span> <span class="fu">microseq</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/microseq/man/readFasta.html" class="external-link">writeFasta</a></span><span class="op">(</span><span class="va">df</span>, <span class="va">fasta_path</span><span class="op">)</span></span>
-<span><span class="va">gen</span> <span class="op">&lt;-</span>  <span class="fu"><a href="../reference/get_generator.html">get_generator</a></span><span class="op">(</span>path <span class="op">=</span> <span class="va">fasta_path</span>,</span>
-<span>                      train_type <span class="op">=</span> <span class="st">"lm"</span>,</span>
-<span>                      batch_size <span class="op">=</span> <span class="fl">1</span>,</span>
-<span>                      maxlen <span class="op">=</span> <span class="fl">9</span>,</span>
-<span>                      vocabulary <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"A"</span>, <span class="st">"C"</span>, <span class="st">"G"</span>, <span class="st">"T"</span>, <span class="st">"Z"</span><span class="op">)</span>,</span>
-<span>                      concat_seq <span class="op">=</span> <span class="st">"ZZ"</span>,</span>
-<span>                      output_format <span class="op">=</span> <span class="st">"target_right"</span><span class="op">)</span></span>
+<span><span class="va">gen</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/get_generator.html">get_generator</a></span><span class="op">(</span>path <span class="op">=</span> <span class="va">fasta_path</span>,</span>
+<span>                     train_type <span class="op">=</span> <span class="st">"lm"</span>,</span>
+<span>                     batch_size <span class="op">=</span> <span class="fl">1</span>,</span>
+<span>                     maxlen <span class="op">=</span> <span class="fl">9</span>,</span>
+<span>                     vocabulary <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"A"</span>, <span class="st">"C"</span>, <span class="st">"G"</span>, <span class="st">"T"</span>, <span class="st">"Z"</span><span class="op">)</span>,</span>
+<span>                     concat_seq <span class="op">=</span> <span class="st">"ZZ"</span>,</span>
+<span>                     output_format <span class="op">=</span> <span class="st">"target_right"</span><span class="op">)</span></span>
+<span></span>
 <span><span class="va">z</span> <span class="op">&lt;-</span> <span class="fu">gen</span><span class="op">(</span><span class="op">)</span></span>
 <span><span class="va">x</span> <span class="op">&lt;-</span> <span class="va">z</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span><span class="op">[</span><span class="fl">1</span>, , <span class="op">]</span></span>
 <span><span class="va">y</span> <span class="op">&lt;-</span> <span class="va">z</span><span class="op">[[</span><span class="fl">2</span><span class="op">]</span><span class="op">]</span></span>
@@ -1076,8 +1096,7 @@ mark.out {
 <li>If <code>reshape_mode = "multi_input"</code>, generator will produce <code>samples_per_target</code> separate inputs, each of length <code>maxlen</code>.</li>
 <li>If <code>reshape_mode = "time_dist"</code>, generator will produce a 4D input array. The dimensions correspond to <code>(batch_size, samples_per_target, maxlen, length(vocabulary))</code>.<br>
 </li>
-<li>If <code>reshape_mode</code> is “concat”, generator will concatenate <code>samples_per_target</code> sequences of length <code>maxlen</code> to one long sequence;<br>
-</li>
+<li>If <code>reshape_mode</code> is <code>"concat"</code>, generator will concatenate <code>samples_per_target</code> sequences of length <code>maxlen</code> to one long sequence.</li>
 </ul>
 </li>
 <li>If <code>reshape_mode = "concat"</code>, there is an additional <code>buffer_len</code> argument: add new token between concatenated samples
@@ -1232,14 +1251,15 @@ mark.out {
 <code class="sourceCode R"><span><span class="va">df</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span>Sequence <span class="op">=</span> <span class="st">"ACAGAT"</span>, Header <span class="op">=</span> <span class="st">"header_1"</span>, Quality <span class="op">=</span> <span class="st">"!#*=?I"</span><span class="op">)</span></span>
 <span><span class="va">fastq_path</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/tempfile.html" class="external-link">tempfile</a></span><span class="op">(</span>fileext <span class="op">=</span> <span class="st">".fastq"</span><span class="op">)</span></span>
 <span><span class="va">fastq_file</span> <span class="op">&lt;-</span> <span class="fu">microseq</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/microseq/man/readFastq.html" class="external-link">writeFastq</a></span><span class="op">(</span><span class="va">df</span>, <span class="va">fastq_path</span><span class="op">)</span></span>
-<span><span class="va">gen</span> <span class="op">&lt;-</span>  <span class="fu"><a href="../reference/get_generator.html">get_generator</a></span><span class="op">(</span>path <span class="op">=</span> <span class="va">fastq_path</span>,</span>
-<span>                      train_type <span class="op">=</span> <span class="st">"lm"</span>,</span>
-<span>                      batch_size <span class="op">=</span> <span class="fl">1</span>,</span>
-<span>                      maxlen <span class="op">=</span> <span class="fl">5</span>,</span>
-<span>                      format <span class="op">=</span> <span class="st">"fastq"</span>,</span>
-<span>                      vocabulary <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"A"</span>, <span class="st">"C"</span>, <span class="st">"G"</span>, <span class="st">"T"</span><span class="op">)</span>,</span>
-<span>                      use_quality_score <span class="op">=</span> <span class="cn">TRUE</span>,</span>
-<span>                      output_format <span class="op">=</span> <span class="st">"target_right"</span><span class="op">)</span></span>
+<span><span class="va">gen</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/get_generator.html">get_generator</a></span><span class="op">(</span>path <span class="op">=</span> <span class="va">fastq_path</span>,</span>
+<span>                     train_type <span class="op">=</span> <span class="st">"lm"</span>,</span>
+<span>                     batch_size <span class="op">=</span> <span class="fl">1</span>,</span>
+<span>                     maxlen <span class="op">=</span> <span class="fl">5</span>,</span>
+<span>                     format <span class="op">=</span> <span class="st">"fastq"</span>,</span>
+<span>                     vocabulary <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"A"</span>, <span class="st">"C"</span>, <span class="st">"G"</span>, <span class="st">"T"</span><span class="op">)</span>,</span>
+<span>                     use_quality_score <span class="op">=</span> <span class="cn">TRUE</span>,</span>
+<span>                     output_format <span class="op">=</span> <span class="st">"target_right"</span><span class="op">)</span></span>
+<span></span>
 <span><span class="va">z</span> <span class="op">&lt;-</span> <span class="fu">gen</span><span class="op">(</span><span class="op">)</span></span>
 <span><span class="va">x</span> <span class="op">&lt;-</span> <span class="va">z</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span><span class="op">[</span><span class="fl">1</span>, , <span class="op">]</span></span>
 <span><span class="va">y</span> <span class="op">&lt;-</span> <span class="va">z</span><span class="op">[[</span><span class="fl">2</span><span class="op">]</span><span class="op">]</span></span>

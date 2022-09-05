@@ -17,7 +17,7 @@ integrated_gradients(
 \arguments{
 \item{m_steps}{Number of steps between baseline and original input.}
 
-\item{baseline_type}{Baseline sequence, either "zero" for all zeros or "shuffle" for random permutation of input_seq.}
+\item{baseline_type}{Baseline sequence, either \code{"zero"} for all zeros or \code{"shuffle"} for random permutation of \code{input_seq}.}
 
 \item{input_seq}{Input tensor.}
 
@@ -25,17 +25,17 @@ integrated_gradients(
 
 \item{model}{Model to compute gradient for.}
 
-\item{pred_stepwise}{Whether to do predictions with batch_size 1 rather than all at once. Can be used if
+\item{pred_stepwise}{Whether to do predictions with batch size 1 rather than all at once. Can be used if
 input is too big to handle at once. Only supported for single input layer.}
 
-\item{num_baseline_repeats}{Number of different baseline estimations if baseline_type is "shuffle" (estimate integrated
+\item{num_baseline_repeats}{Number of different baseline estimations if baseline_type is \code{"shuffle"} (estimate integrated
 gradient repeatedly for different shuffles). Final result is average of \code{num_baseline} single calculations.}
 }
 \description{
 Computes integrated gradients scores for model and an input sequence.
 This can be used to visualize what part of the input is import for the models decision.
-Code is R implementation of python code from here: https://www.tensorflow.org/tutorials/interpretability/integrated_gradients.
-Tensorflow implementation is based on this paper: https://arxiv.org/abs/1703.01365.
+Code is R implementation of python code from \href{https://www.tensorflow.org/tutorials/interpretability/integrated_gradients}{here}.
+Tensorflow implementation is based on this \href{https://arxiv.org/abs/1703.01365}{paper}.
 }
 \examples{
 model <- create_model_lstm_cnn(layer_lstm = 8, layer_dense = 3, maxlen = 20, verbose = FALSE)

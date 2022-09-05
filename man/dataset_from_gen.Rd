@@ -24,7 +24,7 @@ dataset_from_gen(
 )
 }
 \arguments{
-\item{output_path}{Output directory. Output files will be named output_path + file_name_start + x + ".rds" or ".pickle", where x is an index (from 1 to
+\item{output_path}{Output directory. Output files will be named \code{output_path} + \code{file_name_start} + x + ".rds" or ".pickle", where x is an index (from 1 to
 \code{iterations}) and file ending depends on \code{as_numpy_array} argument.}
 
 \item{output_format}{Determines shape of output tensor for language model.
@@ -37,7 +37,7 @@ Assume a sequence \code{"AACCGTA"}. Output correspond as follows
 \item \verb{"wavenet": X = "AACCGT", Y = "ACCGTA"}
 }}
 
-\item{path_corpus}{Input directory where .fasta files are located or path to single file ending with .fasta or .fastq
+\item{path_corpus}{Input directory where fasta files are located or path to single file ending with fasta or fastq
 (as specified in format argument). Can also be a list of directories and/or files.}
 
 \item{batch_size}{Number of samples in one batch.}
@@ -46,17 +46,17 @@ Assume a sequence \code{"AACCGTA"}. Output correspond as follows
 
 \item{step}{How often to take a sample.}
 
-\item{vocabulary}{Vector of allowed characters, character outside vocabulary get encoded as 0-vector.}
+\item{vocabulary}{Vector of allowed characters. Characters outside vocabulary get encoded as specified in \code{ambiguous_nuc}.}
 
-\item{as_numpy_array}{Store output as list of numpy arrays if TRUE (otherwise as R array).}
+\item{as_numpy_array}{Store output as list of numpy arrays if \code{TRUE} (otherwise as R array).}
 
 \item{shuffle}{Whether to shuffle samples within each batch.}
 
 \item{set_learning}{When you want to assign one label to set of samples. Only implemented for \code{train_type = "label_folder"}.
 Input is a list with the following parameters
 \itemize{
-\item \code{samples_per_target}: how many samples to use for one target
-\item \code{maxlen}: length of one sample
+\item \code{samples_per_target}: how many samples to use for one target.
+\item \code{maxlen}: length of one sample.
 \item \code{reshape_mode}: \verb{"time_dist", "multi_input"} or \code{"concat"}.
 \itemize{
 \item
@@ -64,15 +64,15 @@ If \code{reshape_mode} is \code{"multi_input"}, generator will produce \code{sam
 \code{samples_per_target} input layers).
 \item If reshape_mode is \code{"time_dist"}, generator will produce a 4D input array. The dimensions correspond to
 \verb{(batch_size, samples_per_target, maxlen, length(vocabulary))}.
-\item If reshape mode is \code{"concat"}, generator will concatenate \code{samples_per_target} sequences
-of length \code{maxlen} to one long sequence
+\item If \code{reshape_mode} is \code{"concat"}, generator will concatenate \code{samples_per_target} sequences
+of length \code{maxlen} to one long sequence.
 }
 \item If \code{reshape_mode} is \code{"concat"}, there is an additional \code{buffer_len}
 argument. If \code{buffer_len} is an integer, the subsequences are interspaced with \code{buffer_len} rows. The input length is
-(\code{maxlen} \eqn{*} \code{samples_per_target}) + \code{buffer_len} \eqn{*} (\code{samples_per_target} - 1)
+(\code{maxlen} \eqn{*} \code{samples_per_target}) + \code{buffer_len} \eqn{*} (\code{samples_per_target} - 1).
 }}
 
-\item{seed}{Sets seed for `set.seed`` function for reproducible results.}
+\item{seed}{Sets seed for \code{set.seed} function for reproducible results.}
 
 \item{file_name_start}{Start of output file names.}
 
@@ -105,11 +105,4 @@ dataset_from_gen(output_path = out_dir,
                  file_name_start = "batch_")
 
 list.files(out_dir)
-
-# read first batch
-z <- readRDS(list.files(out_dir, full.names = TRUE)[1])
-x <- z[[1]]
-y <- z[[2]]
-dim(x)
-dim(y)
 }

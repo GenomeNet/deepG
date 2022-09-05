@@ -12,9 +12,6 @@ create_model_lstm_cnn_time_dist(
   layer_dense = c(4),
   solver = "adam",
   learning_rate = 0.001,
-  use_multiple_gpus = FALSE,
-  merge_on_cpu = TRUE,
-  gpu_num = 2,
   vocabulary_size = 4,
   bidirectional = FALSE,
   stateful = FALSE,
@@ -50,17 +47,11 @@ create_model_lstm_cnn_time_dist(
 
 \item{layer_lstm}{Number of cells per network layer. Can be a scalar or vector.}
 
-\item{layer_dense}{Dense layers of size \code{layer_dense} after last LSTM or CNN layer (if no LSTM used).}
+\item{layer_dense}{Vector specifying number of neurons per dense layer after last LSTM or CNN layer (if no LSTM used).}
 
 \item{solver}{Optimization method, options are \verb{"adam", "adagrad", "rmsprop"} or \code{"sgd"}.}
 
 \item{learning_rate}{Learning rate for optimizer.}
-
-\item{use_multiple_gpus}{If true, multi_gpu_model() will be used based on gpu_num.}
-
-\item{merge_on_cpu}{True on default, false recommend if the server supports NVlink, only relevant if use.multiple.gpu is true.}
-
-\item{gpu_num}{Number of GPUs to be used, only relevant if multiple_gpu is true.}
 
 \item{vocabulary_size}{Number of unique character in vocabulary.}
 
@@ -90,7 +81,7 @@ create_model_lstm_cnn_time_dist(
 
 \item{zero_mask}{Boolean, whether to apply zero masking before LSTM layer. Only used if model does not use any CNN layers.}
 
-\item{label_smoothing}{Float in \link{0, 1}. If 0, no smoothing is applied. If > 0, loss between the predicted
+\item{label_smoothing}{Float in [0, 1]. If 0, no smoothing is applied. If > 0, loss between the predicted
 labels and a smoothed version of the true labels, where the smoothing squeezes the labels towards 0.5.
 The closer the argument is to 1 the more the labels get smoothed.}
 
@@ -99,7 +90,7 @@ If first label contains 5 percent wrong labels and second label no noise, then
 
 \code{label_noise_matrix <- matrix(c(0.95, 0.05, 0, 1), nrow = 2, byrow = TRUE )}}
 
-\item{last_layer_activation}{Either "sigmoid" or "softmax".}
+\item{last_layer_activation}{Either \code{"sigmoid"} or \code{"softmax"}.}
 
 \item{loss_fn}{Either \code{"categorical_crossentropy"} or \code{"binary_crossentropy"}. If \code{label_noise_matrix} given, will use custom \code{"noisy_loss"}.}
 
@@ -111,7 +102,7 @@ If first label contains 5 percent wrong labels and second label no noise, then
 
 \item{batch_norm_momentum}{Momentum for the moving mean and the moving variance.}
 
-\item{model_seed}{Set seed for model parameters in tensorflow, if not \code{NULL}.}
+\item{model_seed}{Set seed for model parameters in tensorflow if not \code{NULL}.}
 }
 \description{
 Creates a network consisting of an arbitrary number of CNN, LSTM and dense layers.
@@ -124,7 +115,7 @@ Input is a 4D tensor, where axis correspond to:
 }
 After LSTM/CNN part all representations get aggregated by summation.
 Can be used to make single prediction for combination of multiple input sequences. Architecture
-is equivalent to \code{\link[=create_model_lstm_cnn_multi_input]{create_model_lstm_cnn_multi_input()}}, but instead of multiple input layers with 3D input,
+is equivalent to \code{\link[=create_model_lstm_cnn_multi_input]{create_model_lstm_cnn_multi_input()}} but instead of multiple input layers with 3D input,
 input here in one 4D tensor.
 }
 \examples{

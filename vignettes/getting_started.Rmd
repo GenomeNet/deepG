@@ -93,13 +93,6 @@ maxlen <- 50
 model <- create_model_lstm_cnn(maxlen = maxlen,
                                layer_lstm = 16,
                                layer_dense = c(8, 2))
-
-# model <- create_model_lstm_cnn(maxlen = maxlen,
-#                                filters = c(8, 16),
-#                                kernel_size = c(8, 8),
-#                                pool_size = c(3, 3),
-#                                layer_lstm = 8,
-#                                layer_dense = c(4, 2))
 ```
 
 Next we can train the model using the `train_model` function. Function will internally build a data generator for training. 

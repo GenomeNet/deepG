@@ -14,7 +14,7 @@ predict_model_by_entry(
   step = 1,
   vocabulary = c("a", "c", "g", "t"),
   batch_size = 256,
-  padding = FALSE,
+  padding_maxlen = FALSE,
   output_type = "h5",
   model = NULL,
   mode = "lm",

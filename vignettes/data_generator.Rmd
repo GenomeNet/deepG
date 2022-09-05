@@ -38,7 +38,7 @@ mark.out {
 The most common use case for the deepG data generator is to extract samples from a collection of 
 fasta (or fastq) files.
 The generator will always return a list of length 2. The first element is the input $X$ and the second the target $Y$.
-We can differentiate between2 approaches
+We can differentiate between 2 approaches
 
 + **Language model**: Part of a sequence is the input and other part the target.
     + Example: Predict the next nucleotide given the previous 100 nucleotides. 
@@ -280,11 +280,13 @@ colnames(one_hot_sample) <- vocabulary
 one_hot_sample
 ```
 
+### maxlen 
 
+The length of the input sequence.
 
 ### vocabulary 
 
-The set of allowed character in a sequence. What happens with characters outside the vocabulary can be controlled with
+The set of allowed characters in a sequence. What happens to characters outside the vocabulary can be controlled with
 the `ambiguous_nuc` argument.
 
 ### train_type
@@ -320,12 +322,13 @@ Extract target from fasta header (fasta header is "label_1" in example file):
 ```{r warning = FALSE, message = FALSE}
 # get target from header
 vocabulary_label <- paste0("label_", 1:5)
-gen <-  get_generator(path = file_path,
-                      train_type = "label_header",
-                      batch_size = 1,
-                      maxlen = 6,
-                      vocabulary = vocabulary,
-                      vocabulary_label = vocabulary_label)
+gen <- get_generator(path = file_path,
+                     train_type = "label_header",
+                     batch_size = 1,
+                     maxlen = 6,
+                     vocabulary = vocabulary,
+                     vocabulary_label = vocabulary_label)
+
 z <- gen()
 x <- z[[1]][1,,] 
 y <- z[[2]] 
@@ -345,12 +348,13 @@ fasta_file <- microseq::writeFasta(df, file_path_2)
 
 # get target from folder
 vocabulary_label <- paste0("label_", 1:2)
-gen <-  get_generator(path = c(file_path, file_path_2), # one entry for each class
-                      train_type = "label_folder",
-                      batch_size = 8,
-                      maxlen = 6,
-                      vocabulary = vocabulary,
-                      vocabulary_label = vocabulary_label)
+gen <- get_generator(path = c(file_path, file_path_2), # one entry for each class
+                     train_type = "label_folder",
+                     batch_size = 8,
+                     maxlen = 6,
+                     vocabulary = vocabulary,
+                     vocabulary_label = vocabulary_label)
+
 z <- gen()
 x <- z[[1]]
 y <- z[[2]] 
@@ -379,13 +383,14 @@ df
 csv_file <- tempfile(fileext = ".csv")
 write.csv(df, csv_file, row.names = FALSE)
 
-gen <-  get_generator(path = file_path,
-                      train_type = "label_csv",
-                      batch_size = 1,
-                      maxlen = 6,
-                      target_from_csv = csv_file,
-                      vocabulary = vocabulary,
-                      vocabulary_label = vocabulary_label)
+gen <- get_generator(path = file_path,
+                     train_type = "label_csv",
+                     batch_size = 1,
+                     maxlen = 6,
+                     target_from_csv = csv_file,
+                     vocabulary = vocabulary,
+                     vocabulary_label = vocabulary_label)
+
 z <- gen()
 x <- z[[1]][1,,] 
 y <- z[[2]] 
@@ -412,12 +417,13 @@ target $Y$. Assume a sequence <tt>abcdefg</tt> and `maxlen = 6`. Output correspo
 
 ```{r warning = FALSE, message = FALSE}
 # target_right
-gen <-  get_generator(path = file_path,
-                      train_type = "lm",
-                      batch_size = 1,
-                      maxlen = 6,
-                      vocabulary = vocabulary,
-                      output_format = "target_right")
+gen <- get_generator(path = file_path,
+                     train_type = "lm",
+                     batch_size = 1,
+                     maxlen = 6,
+                     vocabulary = vocabulary,
+                     output_format = "target_right")
+
 z <- gen()
 x <- z[[1]][1,,] 
 y <- z[[2]] 
@@ -429,12 +435,13 @@ y # g
 
 ```{r warning = FALSE, message = FALSE}
 # target_middle_lstm
-gen <-  get_generator(path = file_path,
-                      train_type = "lm",
-                      batch_size = 1,
-                      maxlen = 6,
-                      vocabulary = vocabulary,
-                      output_format = "target_middle_lstm")
+gen <- get_generator(path = file_path,
+                     train_type = "lm",
+                     batch_size = 1,
+                     maxlen = 6,
+                     vocabulary = vocabulary,
+                     output_format = "target_middle_lstm")
+
 z <- gen()
 x_1 <- z[[1]][[1]][1,,] 
 x_2 <- z[[1]][[2]][1,,] 
@@ -449,12 +456,13 @@ y # d
 
 ```{r warning = FALSE, message = FALSE}
 # target_middle_cnn
-gen <-  get_generator(path = file_path,
-                      train_type = "lm",
-                      batch_size = 1,
-                      maxlen = 6,
-                      vocabulary = vocabulary,
-                      output_format = "target_middle_cnn")
+gen <- get_generator(path = file_path,
+                     train_type = "lm",
+                     batch_size = 1,
+                     maxlen = 6,
+                     vocabulary = vocabulary,
+                     output_format = "target_middle_cnn")
+
 z <- gen()
 x <- z[[1]][1,,]
 y <- z[[2]]
@@ -466,12 +474,13 @@ y # d
 
 ```{r warning = FALSE, message = FALSE}
 # wavenet
-gen <-  get_generator(path = file_path,
-                      train_type = "lm",
-                      batch_size = 1,
-                      maxlen = 6,
-                      vocabulary = vocabulary,
-                      output_format = "wavenet")
+gen <- get_generator(path = file_path,
+                     train_type = "lm",
+                     batch_size = 1,
+                     maxlen = 6,
+                     vocabulary = vocabulary,
+                     output_format = "wavenet")
+
 z <- gen()
 x <- z[[1]][1,,] 
 y <- z[[2]][1,,]
@@ -481,22 +490,19 @@ x # abcdef
 y # bcdefg
 ```
 
-### maxlen 
-
-The length of the input sequence.
-
 ### batch_size 
 
 Number of samples in one batch.
 
 ```{r warning = FALSE, message = FALSE}
 # target_right
-gen <-  get_generator(path = file_path,
-                      train_type = "lm",
-                      batch_size = 7,
-                      maxlen = 6,
-                      vocabulary = vocabulary,
-                      output_format = "target_right")
+gen <- get_generator(path = file_path,
+                     train_type = "lm",
+                     batch_size = 7,
+                     maxlen = 6,
+                     vocabulary = vocabulary,
+                     output_format = "target_right")
+
 z <- gen()
 x <- z[[1]]
 y <- z[[2]] 
@@ -532,6 +538,7 @@ gen <- get_generator(path = file_path,
                      vocabulary = vocabulary,
                      step = 3, 
                      output_format = "target_right")
+
 z <- gen()
 x <- z[[1]][1,,] #encodes abc
 y <- z[[2]] # encodes d
@@ -550,20 +557,20 @@ y
 ```
 
 
-
 ### padding
 
 If the sequence is too short to create a single sample, we can pad the sequence with zero-vectors. If `padding = FALSE` the generator will go to next file/ fasta entry until it finds a sequence long enough for a sample.
 
 ```{r warning = FALSE, message = FALSE}
-gen <-  get_generator(path = file_path,
-                      train_type = "lm",
-                      batch_size = 1,
-                      maxlen = 15, # maxlen is longer than sequence
-                      vocabulary = vocabulary,
-                      step = 3,
-                      padding = TRUE,
-                      output_format = "target_right")
+gen <- get_generator(path = file_path,
+                     train_type = "lm",
+                     batch_size = 1,
+                     maxlen = 15, # maxlen is longer than sequence
+                     vocabulary = vocabulary,
+                     step = 3,
+                     padding = TRUE,
+                     output_format = "target_right")
+
 z <- gen()
 x <- z[[1]][1,,] 
 y <- z[[2]] 
@@ -584,13 +591,13 @@ We have 4 options to handle this situation
 vocabulary_2 <- c("a", "b", "c", "d", "f", "g", "h", "i") # exclude "e" from vocabulary
 
 # zero
-gen <-  get_generator(path = file_path,
-                      train_type = "lm",
-                      batch_size = 1,
-                      maxlen = 6,
-                      vocabulary = vocabulary_2,
-                      output_format = "target_right",
-                      ambiguous_nuc = "zeros")
+gen <- get_generator(path = file_path,
+                     train_type = "lm",
+                     batch_size = 1,
+                     maxlen = 6,
+                     vocabulary = vocabulary_2,
+                     output_format = "target_right",
+                     ambiguous_nuc = "zeros")
 z <- gen()
 x <- z[[1]][1,,] 
 colnames(x) <- vocabulary_2
@@ -601,13 +608,14 @@ x # fifth row is zero vector
 
 ```{r warning = FALSE, message = FALSE}
 # equal
-gen <-  get_generator(path = file_path,
-                      train_type = "lm",
-                      batch_size = 1,
-                      maxlen = 6,
-                      vocabulary = vocabulary_2,
-                      output_format = "target_right",
-                      ambiguous_nuc = "equal") 
+gen <- get_generator(path = file_path,
+                    train_type = "lm",
+                    batch_size = 1,
+                    maxlen = 6,
+                    vocabulary = vocabulary_2,
+                    output_format = "target_right",
+                    ambiguous_nuc = "equal") 
+
 z <- gen()
 x <- z[[1]][1,,]
 colnames(x) <- vocabulary_2
@@ -618,13 +626,14 @@ x # fifth row is 1/8 for every entry
 
 ```{r warning = FALSE, message = FALSE}
 # empirical
-gen <-  get_generator(path = file_path,
-                      train_type = "lm",
-                      batch_size = 1,
-                      maxlen = 6,
-                      vocabulary = vocabulary_2,
-                      output_format = "target_right",
-                      ambiguous_nuc = "empirical") 
+gen <- get_generator(path = file_path,
+                     train_type = "lm",
+                     batch_size = 1,
+                     maxlen = 6,
+                     vocabulary = vocabulary_2,
+                     output_format = "target_right",
+                     ambiguous_nuc = "empirical") 
+
 z <- gen()
 x <- z[[1]][1,,] 
 colnames(x) <- vocabulary_2
@@ -635,13 +644,14 @@ x # fifth row is distribuation of file
 
 ```{r warning = FALSE, message = FALSE}
 # discard
-gen <-  get_generator(path = file_path,
-                      train_type = "lm",
-                      batch_size = 1,
-                      maxlen = 6,
-                      vocabulary = vocabulary_2,
-                      output_format = "target_right",
-                      ambiguous_nuc = "discard") 
+gen <- get_generator(path = file_path,
+                     train_type = "lm",
+                     batch_size = 1,
+                     maxlen = 6,
+                     vocabulary = vocabulary_2,
+                     output_format = "target_right",
+                     ambiguous_nuc = "discard") 
+
 z <- gen()
 x <- z[[1]][1,,]
 colnames(x) <- vocabulary_2
@@ -654,15 +664,16 @@ The `proportion_per_seq` argument gives the option to use a random subset instea
 
 ```{r warning = FALSE, message = FALSE}
 cat("sequence is ", nchar(sequence), "characters long \n")
-gen <-  get_generator(path = file_path,
-                      train_type = "lm",
-                      batch_size = 1,
-                      maxlen = 5,
-                      seed = 1,
-                      vocabulary = vocabulary,
-                      output_format = "target_right",
-                      # take random subsequence using 50% of sequence 
-                      proportion_per_seq = 0.5)
+gen <- get_generator(path = file_path,
+                     train_type = "lm",
+                     batch_size = 1,
+                     maxlen = 5,
+                     seed = 1,
+                     vocabulary = vocabulary,
+                     output_format = "target_right",
+                     # take random subsequence using 50% of sequence 
+                     proportion_per_seq = 0.5)
+
 z <- gen()
 x <- z[[1]][1, , ]
 y <- z[[2]]
@@ -677,15 +688,16 @@ y # i
 Only use fixed number of samples per file. Randomly choose which samples to use. (If `random_sampling = FALSE`, samples are consecutive.)
 
 ```{r warning = FALSE, message = FALSE}
-gen <-  get_generator(path = file_path,
-                      train_type = "lm",
-                      batch_size = 2,
-                      maxlen = 5,
-                      step = 1,
-                      seed = 3,
-                      vocabulary = vocabulary,
-                      output_format = "target_right",
-                      max_samples = 2)
+gen <- get_generator(path = file_path,
+                     train_type = "lm",
+                     batch_size = 2,
+                     maxlen = 5,
+                     step = 1,
+                     seed = 3,
+                     vocabulary = vocabulary,
+                     output_format = "target_right",
+                     max_samples = 2)
+
 z <- gen()
 x1 <- z[[1]][1, , ]
 x2 <- z[[1]][2, , ]
@@ -701,15 +713,16 @@ If you use `max_samples`, generator will randomly choose subset from all possibl
 samples are completely random.
 
 ```{r warning = FALSE, message = FALSE}
-gen <-  get_generator(path = file_path,
-                      train_type = "lm",
-                      batch_size = 2,
-                      maxlen = 5,
-                      seed = 66,
-                      random_sampling = TRUE,
-                      vocabulary = vocabulary,
-                      output_format = "target_right",
-                      max_samples = 2)
+gen <- get_generator(path = file_path,
+                     train_type = "lm",
+                     batch_size = 2,
+                     maxlen = 5,
+                     seed = 66,
+                     random_sampling = TRUE,
+                     vocabulary = vocabulary,
+                     output_format = "target_right",
+                     max_samples = 2)
+
 z <- gen()
 x1 <- z[[1]][1, , ]
 x2 <- z[[1]][2, , ]
@@ -724,13 +737,14 @@ x2 # defgh
 Target length for language model. Default is 1; if > 1 the target part of the generator output is a list of length `target_len`.
 
 ```{r warning = FALSE, message = FALSE}
-gen <-  get_generator(path = file_path,
-                      train_type = "lm",
-                      batch_size = 1,
-                      target_len = 3, 
-                      maxlen = 5,
-                      vocabulary = vocabulary,
-                      output_format = "target_right")
+gen <- get_generator(path = file_path,
+                     train_type = "lm",
+                     batch_size = 1,
+                     target_len = 3, 
+                     maxlen = 5,
+                     vocabulary = vocabulary,
+                     output_format = "target_right")
+
 z <- gen()
 x <- z[[1]][1, , ]
 y1 <- z[[2]][[1]]
@@ -752,15 +766,16 @@ Encode target in language model not character wise but combine n characters to o
 the n-gram encoding. 
 
 ```{r warning = FALSE, message = FALSE}
-gen <-  get_generator(path = file_path,
-                      train_type = "lm",
-                      batch_size = 1,
-                      target_len = 8, 
-                      n_gram = 3,
-                      n_gram_stride = 2,
-                      maxlen = 4,
-                      vocabulary = vocabulary,
-                      output_format = "target_right")
+gen <- get_generator(path = file_path,
+                     train_type = "lm",
+                     batch_size = 1,
+                     target_len = 8, 
+                     n_gram = 3,
+                     n_gram_stride = 2,
+                     maxlen = 4,
+                     vocabulary = vocabulary,
+                     output_format = "target_right")
+
 z <- gen()
 x <- z[[1]][1, , ]
 y1 <- z[[2]][[1]]
@@ -784,13 +799,14 @@ Optional arguments `sd` or `mean` if `noise_type` is `"normal"` (default is `sd=
 (default is `min=0`, `max=1`).  
 
 ```{r warning = FALSE, message = FALSE}
-gen <-  get_generator(path = file_path,
-                      train_type = "lm",
-                      batch_size = 1,
-                      add_noise = list(noise_type = "normal", mean = 0, sd = 0.01),
-                      maxlen = 5,
-                      vocabulary = vocabulary,
-                      output_format = "target_right")
+gen <- get_generator(path = file_path,
+                     train_type = "lm",
+                     batch_size = 1,
+                     add_noise = list(noise_type = "normal", mean = 0, sd = 0.01),
+                     maxlen = 5,
+                     vocabulary = vocabulary,
+                     output_format = "target_right")
+
 z <- gen()
 x <- z[[1]][1, , ]
 y <- z[[2]]
@@ -833,13 +849,14 @@ Use `concat_seq = ""` if you don't want to add a new token.
 df <- data.frame(Sequence = c("AC", "AG", "AT"), Header = paste0("header", 1:3))
 fasta_path <- tempfile(fileext = ".fasta")
 fasta_file <- microseq::writeFasta(df, fasta_path)
-gen <-  get_generator(path = fasta_path,
-                      train_type = "lm",
-                      batch_size = 1,
-                      maxlen = 9,
-                      vocabulary = c("A", "C", "G", "T", "Z"),
-                      concat_seq = "ZZ",
-                      output_format = "target_right")
+gen <- get_generator(path = fasta_path,
+                     train_type = "lm",
+                     batch_size = 1,
+                     maxlen = 9,
+                     vocabulary = c("A", "C", "G", "T", "Z"),
+                     concat_seq = "ZZ",
+                     output_format = "target_right")
+
 z <- gen()
 x <- z[[1]][1, , ]
 y <- z[[2]]
@@ -861,8 +878,8 @@ Input is a list with the following parameters
      + If `reshape_mode = "multi_input"`, generator will produce `samples_per_target` separate inputs, each of length `maxlen`. 
      + If `reshape_mode = "time_dist"`, generator will produce a 4D input array. The dimensions correspond to
        `(batch_size, samples_per_target, maxlen, length(vocabulary))`.   
-     +  If `reshape_mode` is "concat", generator will concatenate `samples_per_target` sequences
-        of length `maxlen` to one long sequence;  
+     +  If `reshape_mode` is `"concat"`, generator will concatenate `samples_per_target` sequences
+        of length `maxlen` to one long sequence.
 +   If `reshape_mode = "concat"`, there is an additional `buffer_len` argument: add new token between 
    concatenated samples
     + If `buffer_len` is an integer, the sub-sequences are inter spaced with `buffer_len` rows. The input length is
@@ -947,14 +964,15 @@ If `TRUE`, instead of one-hot encoding, use quality score of fastq file.
 df <- data.frame(Sequence = "ACAGAT", Header = "header_1", Quality = "!#*=?I")
 fastq_path <- tempfile(fileext = ".fastq")
 fastq_file <- microseq::writeFastq(df, fastq_path)
-gen <-  get_generator(path = fastq_path,
-                      train_type = "lm",
-                      batch_size = 1,
-                      maxlen = 5,
-                      format = "fastq",
-                      vocabulary = c("A", "C", "G", "T"),
-                      use_quality_score = TRUE,
-                      output_format = "target_right")
+gen <- get_generator(path = fastq_path,
+                     train_type = "lm",
+                     batch_size = 1,
+                     maxlen = 5,
+                     format = "fastq",
+                     vocabulary = c("A", "C", "G", "T"),
+                     use_quality_score = TRUE,
+                     output_format = "target_right")
+
 z <- gen()
 x <- z[[1]][1, , ]
 y <- z[[2]]

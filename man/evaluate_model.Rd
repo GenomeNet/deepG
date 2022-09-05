@@ -33,7 +33,7 @@ evaluate_model(
 )
 }
 \arguments{
-\item{path_input}{Input directory where fasta/fastq or rds files are located.}
+\item{path_input}{Input directory where fasta, fastq or rds files are located.}
 
 \item{model}{A keras model.}
 
@@ -49,9 +49,9 @@ evaluate_model(
 
 \item{number_batches}{How many batches to evaluate.}
 
-\item{format}{File format, "fasta", "fastq" or "rds".}
+\item{format}{File format, \code{"fasta"}, \code{"fastq"} or \code{"rds"}.}
 
-\item{mode}{Either "lm" for language model or "label_header", "label_csv" or "label_folder" for label classification.}
+\item{mode}{Either \code{"lm"} for language model or \code{"label_header"}, \code{"label_csv"} or \code{"label_folder"} for label classification.}
 
 \item{output_format}{Determines shape of output tensor for language model.
 Either \code{"target_right"}, \code{"target_middle_lstm"}, \code{"target_middle_cnn"} or \code{"wavenet"}.
@@ -66,43 +66,42 @@ Assume a sequence \code{"AACCGTA"}. Output correspond as follows
 \item{ambiguous_nuc}{How to handle nucleotides outside vocabulary, either \code{"zero"}, \code{"discard"}, \code{"empirical"} or \code{"equal"}.
 \itemize{
 \item If \code{"zero"}, input gets encoded as zero vector.
-\item If \code{"equal"}, input is \code{1/length(vocabulary)} \eqn{*} \code{length(vocabulary)}.
+\item If \code{"equal"}, input is repetition of \code{1/length(vocabulary)}.
 \item If \code{"discard"}, samples containing nucleotides outside vocabulary get discarded.
 \item If \code{"empirical"}, use nucleotide distribution of current file.
 }}
 
-\item{evaluate_all_files}{Boolean, if TRUE will iterate over all files in \code{path_input} once. \code{number_batches} will be overwritten.}
+\item{evaluate_all_files}{Boolean, if \code{TRUE} will iterate over all files in \code{path_input} once. \code{number_batches} will be overwritten.}
 
-\item{verbose}{Whether to show messages.}
+\item{verbose}{Boolean.}
 
-\item{max_iter}{Stop after max_iter number of iterations failed to produce a new batch.}
+\item{max_iter}{Stop after \code{max_iter} number of iterations failed to produce a new batch.}
 
 \item{target_from_csv}{Path to csv file with target mapping. One column should be called "file" and other entries in row are the targets.}
 
 \item{max_samples}{Maximum number of samples to use from one file. If not \code{NULL} and file has more than \code{max_samples} samples, will randomly choose a
 subset of \code{max_samples} samples.}
 
-\item{proportion_per_seq}{Numerical value between 0 and 1. Proportion of possible samples to take from one file. Takes samples from random subsequence.}
+\item{proportion_per_seq}{Numerical value between 0 and 1. Proportion of sequence to take samples from (use random subsequence).}
 
-\item{seed}{Sets seed for `set.seed`` function for reproducible results.}
+\item{seed}{Sets seed for \code{set.seed} function for reproducible results.}
 
-\item{auc}{Whether to include AUC metric. If output layer activation is "softmax", only possible for 2 targets. Computes the average if output layer has sigmoid
+\item{auc}{Whether to include AUC metric. If output layer activation is \code{"softmax"}, only possible for 2 targets. Computes the average if output layer has sigmoid
 activation and multiple targets.}
 
-\item{auprc}{Whether to include AUPRC metric. If output layer activation is "softmax", only possible for 2 targets. Computes the average if output layer has sigmoid
+\item{auprc}{Whether to include AUPRC metric. If output layer activation is \code{"softmax"}, only possible for 2 targets. Computes the average if output layer has sigmoid
 activation and multiple targets.}
 
 \item{path_pred_list}{Path to store list of predictions (output of output layers) and corresponding true labels as rds file.}
 
 \item{exact_num_samples}{Exact number of samples to evaluate. If you want to evaluate a number of samples not divisible by batch_size. Useful if you want
-to evaluate a data set exactly ones and know the number of samples already. Should be a vector if mode = "label_folder" (with same length as vocabulary_label)
+to evaluate a data set exactly ones and know the number of samples already. Should be a vector if \code{mode = "label_folder"} (with same length as \code{vocabulary_label})
 and else an integer.}
 
 \item{...}{Further generator options.}
 }
 \description{
-Returns evaluation metric like confusion matrix, loss, AUC, AUPRC, MAE, MSE (depending and output layer).
-Evaluates \code{batch_size} * \code{number_batches} samples.
+Returns evaluation metric like confusion matrix, loss, AUC, AUPRC, MAE, MSE (depending on output layer).
 }
 \examples{
 # create dummy data

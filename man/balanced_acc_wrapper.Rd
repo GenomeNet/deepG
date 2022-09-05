@@ -14,3 +14,20 @@ balanced_acc_wrapper(num_targets, cm_dir)
 \description{
 Compute balanced accuracy as additional score. Useful for imbalanced data.
 }
+\examples{
+
+y_true <- c(1,0,0,1,
+            0,1,0,0,
+            0,0,1,0) \%>\% matrix(ncol = 3)
+y_pred <- c(0.9,0.1,0.2,0.1,
+            0.05,0.7,0.2,0.0,
+            0.05,0.2,0.6,0.9) \%>\% matrix(ncol = 3)
+
+cm_dir <- tempfile() 
+dir.create(cm_dir)
+bal_acc_metric <- balanced_acc_wrapper(num_targets = 3L, cm_dir = cm_dir)
+bal_acc_metric$update_state(y_true, y_pred)
+bal_acc_metric$result()
+as.array(bal_acc_metric$cm)
+
+}

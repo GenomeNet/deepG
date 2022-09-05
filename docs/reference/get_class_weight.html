@@ -110,8 +110,9 @@ Outputs list of class relations. Can be used as input for <code>class_weigth</co
     <div id="arguments">
     <h2>Arguments</h2>
     <dl><dt>path</dt>
-<dd><p>Path to folder where individual or multiple FASTA or FASTQ files are located for training. If <code>train_type</code> is <code>label_folder</code>, should be a vector or list
-where each entry corresponds to a class. If <code>train_type</code> is not <code>label_folder</code>, can be a list of directories and/or single files.</p></dd>
+<dd><p>Path to training data. If <code>train_type</code> is <code>label_folder</code>, should be a vector or list
+where each entry corresponds to a class (list elements can be directories and/or individual files). If <code>train_type</code> is not <code>label_folder</code>,
+can be a single directory or file or a list of directories and/or files.</p></dd>
 
 
 <dt>vocabulary_label</dt>
@@ -140,8 +141,51 @@ with multiple inputs.</p></li>
 <li><p>If <code>"dummy_gen"</code>, generator creates random data once and repeatedly feeds these to model.</p></li>
 </ul></dd>
 
+
+<dt>csv_path</dt>
+<dd><p>If <code>train_type = "label_csv"</code>, path to csv file containing labels.</p></dd>
+
 </dl></div>
 
+    <div id="ref-examples">
+    <h2>Examples</h2>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co"># create dummy data</span></span></span>
+<span class="r-in"><span><span class="va">path_1</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/tempfile.html" class="external-link">tempfile</a></span><span class="op">(</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">path_2</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/tempfile.html" class="external-link">tempfile</a></span><span class="op">(</span><span class="op">)</span></span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="kw">for</span> <span class="op">(</span><span class="va">current_path</span> <span class="kw">in</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">path_1</span>, <span class="va">path_2</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span></span>
+<span class="r-in"><span>  </span></span>
+<span class="r-in"><span>  <span class="fu"><a href="https://rdrr.io/r/base/files2.html" class="external-link">dir.create</a></span><span class="op">(</span><span class="va">current_path</span><span class="op">)</span></span></span>
+<span class="r-in"><span>  <span class="co"># create twice as much data for first class</span></span></span>
+<span class="r-in"><span>  <span class="va">num_files</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/ifelse.html" class="external-link">ifelse</a></span><span class="op">(</span><span class="va">current_path</span> <span class="op">==</span> <span class="va">path_1</span>, <span class="fl">6</span>, <span class="fl">3</span><span class="op">)</span></span></span>
+<span class="r-in"><span>  <span class="fu"><a href="create_dummy_data.html">create_dummy_data</a></span><span class="op">(</span>file_path <span class="op">=</span> <span class="va">current_path</span>,</span></span>
+<span class="r-in"><span>                    num_files <span class="op">=</span> <span class="va">num_files</span>,</span></span>
+<span class="r-in"><span>                    seq_length <span class="op">=</span> <span class="fl">10</span>,</span></span>
+<span class="r-in"><span>                    num_seq <span class="op">=</span> <span class="fl">5</span>,</span></span>
+<span class="r-in"><span>                    vocabulary <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"a"</span>, <span class="st">"c"</span>, <span class="st">"g"</span>, <span class="st">"t"</span><span class="op">)</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="op">}</span></span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="va">class_weight</span> <span class="op">&lt;-</span> <span class="fu">get_class_weight</span><span class="op">(</span></span></span>
+<span class="r-in"><span>  path <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">path_1</span>, <span class="va">path_2</span><span class="op">)</span>,</span></span>
+<span class="r-in"><span>  vocabulary_label <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"A"</span>, <span class="st">"B"</span><span class="op">)</span>,</span></span>
+<span class="r-in"><span>  format <span class="op">=</span> <span class="st">"fasta"</span>,</span></span>
+<span class="r-in"><span>  file_proportion <span class="op">=</span> <span class="fl">1</span>,</span></span>
+<span class="r-in"><span>  train_type <span class="op">=</span> <span class="st">"label_folder"</span>,</span></span>
+<span class="r-in"><span>  csv_path <span class="op">=</span> <span class="cn">NULL</span><span class="op">)</span></span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="va">class_weight</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [[1]]</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] 1</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [[2]]</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> A </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-in"><span></span></span>
+</code></pre></div>
+    </div>
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">
     <nav id="toc" data-toggle="toc" class="sticky-top"><h2 data-toc-skip>Contents</h2>

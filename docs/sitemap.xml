@@ -91,6 +91,9 @@
     <loc>https://genomenet.github.io/deepG/reference/deepG.html</loc>
   </url>
   <url>
+    <loc>https://genomenet.github.io/deepG/reference/df_to_distribution_matrix.html</loc>
+  </url>
+  <url>
     <loc>https://genomenet.github.io/deepG/reference/early_stopping_cb.html</loc>
   </url>
   <url>
@@ -175,6 +178,9 @@
     <loc>https://genomenet.github.io/deepG/reference/heatmaps_integrated_grad.html</loc>
   </url>
   <url>
+    <loc>https://genomenet.github.io/deepG/reference/hello.html</loc>
+  </url>
+  <url>
     <loc>https://genomenet.github.io/deepG/reference/hyper_param_model_outside_cb.html</loc>
   </url>
   <url>
@@ -191,6 +197,9 @@
   </url>
   <url>
     <loc>https://genomenet.github.io/deepG/reference/interpolate_seq.html</loc>
+  </url>
+  <url>
+    <loc>https://genomenet.github.io/deepG/reference/load_model_self_genomenet.html</loc>
   </url>
   <url>
     <loc>https://genomenet.github.io/deepG/reference/load_prediction.html</loc>
@@ -244,10 +253,16 @@
     <loc>https://genomenet.github.io/deepG/reference/predict_with_n_gram.html</loc>
   </url>
   <url>
+    <loc>https://genomenet.github.io/deepG/reference/quality_to_probability.html</loc>
+  </url>
+  <url>
     <loc>https://genomenet.github.io/deepG/reference/reduce_lr_cb.html</loc>
   </url>
   <url>
     <loc>https://genomenet.github.io/deepG/reference/remove_add_layers.html</loc>
+  </url>
+  <url>
+    <loc>https://genomenet.github.io/deepG/reference/remove_checkpoints.html</loc>
   </url>
   <url>
     <loc>https://genomenet.github.io/deepG/reference/reset_states_cb.html</loc>

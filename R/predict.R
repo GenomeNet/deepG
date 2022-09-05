@@ -1,19 +1,21 @@
 #' Make prediction for nucleotide sequence or entries in fasta/fastq file
 #'
 #' @description Removes layers (optional) from pretrained model and calculates states of fasta/fastq file or nucleotide sequence.
-#' Writes states to h5/csv file. To access the content of h5 output use \code{load_predictions} function.
+#' Writes states to h5 or csv file (access content of h5 output with \code{\link{load_predictions}} function).
+#' There are several options on how to process an input file:
 #' \itemize{
-#' \item If `"one_seq"` computes prediction for sequence argument or fasta/fastq file.
+#' \item If `"one_seq"`, computes prediction for sequence argument or fasta/fastq file.
 #' Combines fasta entries in file to one sequence. This means predictor sequences can contain elements from more than one fasta entry.
-#' \item If `"by_entry"` will output a separate file for each fasta/fastq entry.
-#' Names of output files are: output_dir + "Nr" + i + filename + output_type, where i is the number of the fasta entry.
-#' \item If `"by_entry_one_file"`, will store prediction for all fasta entry in one h5 file.
-#' \item If `"one_pred_per_entry"` will make one prediction for each entry by either picking random sample for long sequences
+#' \item If `"by_entry"`, will output a separate file for each fasta/fastq entry.
+#' Names of output files are: `output_dir` + "Nr" + i + `filename` + `output_type`, where i is the number of the fasta entry.
+#' \item If `"by_entry_one_file"`, will store prediction for all fasta entries in one h5 file.
+#' \item If `"one_pred_per_entry"`, will make one prediction for each entry by either picking random sample for long sequences
 #' or pad sequence for short sequences.
 #' }
 #' @param output_format Either `"one_seq"`, `"by_entry"`, `"by_entry_one_file"`, `"one_pred_per_entry"`.
 #' @param output_type `"h5"` or `"csv"`. If `output_format`` is `"by_entries_one_file", "one_pred_per_entry"` can only be `"h5"`.
 #' @param return_states Return predictions as data frame. Only supported for output_format `"one_seq"`.
+#' @param verbose Boolean.
 #' @inheritParams predict_model_one_seq
 #' @inheritParams predict_model_by_entry
 #' @inheritParams predict_model_by_entry_one_file
@@ -41,7 +43,7 @@
 #' @export
 predict_model <- function(output_format = "one_seq", model = NULL, layer_name = NULL, sequence = NULL, path_input = NULL,
                           round_digits = 2, filename = "states.h5", step = 1, vocabulary = c("a", "c", "g", "t"),
-                          batch_size = 256, verbose = TRUE, return_states = FALSE, padding = FALSE, output_type = "h5",
+                          batch_size = 256, verbose = TRUE, return_states = FALSE, padding_maxlen = FALSE, output_type = "h5",
                           path_model = NULL, mode = "lm", lm_format = "target_right", output_dir = NULL,
                           format = "fasta", include_seq = TRUE, reverse_complement_encoding = FALSE) {
   
@@ -60,7 +62,7 @@ predict_model <- function(output_format = "one_seq", model = NULL, layer_name = 
   if (output_format == "one_seq") {
     output_list <- predict_model_one_seq(path_model = path_model, layer_name = layer_name, sequence = sequence, path_input = path_input,
                                          round_digits = round_digits, filename = filename, step = step, vocabulary = vocabulary,
-                                         batch_size = batch_size, verbose = verbose, return_states = return_states, padding = padding,
+                                         batch_size = batch_size, verbose = verbose, return_states = return_states, padding_maxlen = padding_maxlen,
                                          output_type = output_type, model = model, mode = mode, lm_format = lm_format,
                                          format = format, include_seq = include_seq, reverse_complement_encoding = reverse_complement_encoding)
     return(output_list)
@@ -69,7 +71,7 @@ predict_model <- function(output_format = "one_seq", model = NULL, layer_name = 
   if (output_format == "by_entry") {
     predict_model_by_entry(path_model = path_model, layer_name = layer_name, path_input = path_input,
                            round_digits = round_digits, filename = filename, step = step, vocabulary = vocabulary,
-                           batch_size = batch_size, verbose = verbose, padding = padding,
+                           batch_size = batch_size, verbose = verbose, padding_maxlen = padding_maxlen,
                            output_type = output_type, model = model, mode = mode, lm_format = lm_format,
                            output_dir = output_dir, format = format, include_seq = include_seq,
                            reverse_complement_encoding = reverse_complement_encoding)
@@ -78,7 +80,7 @@ predict_model <- function(output_format = "one_seq", model = NULL, layer_name = 
   if (output_format == "by_entry_one_file") {
     predict_model_by_entry_one_file(path_model = path_model, layer_name = layer_name, path_input = path_input,
                                     round_digits = round_digits, filename = filename, step = step, vocabulary = vocabulary,
-                                    batch_size = batch_size, verbose = verbose, padding = padding,
+                                    batch_size = batch_size, verbose = verbose, padding_maxlen = padding_maxlen,
                                     model = model, mode = mode, lm_format = lm_format, format = format,
                                     include_seq = include_seq, reverse_complement_encoding = reverse_complement_encoding)
   }
@@ -113,9 +115,8 @@ predict_model <- function(output_format = "one_seq", model = NULL, layer_name = 
 #' @param vocabulary Vector of allowed characters, character outside vocabulary get encoded as 0-vector.
 #' @param return_states Logical scalar, return states matrix.
 #' @param verbose Whether to print model before and after removing layers.
-#' @param padding Logical scalar, generate states for first maxlen nucleotides by
-#' padding beginning of sequence with 0-vectors.
-#' @param output_type Either `"h5"`` or `"csv"`.
+#' @param padding_maxlen Boolean, whether to pad input with maxlen 0-vectors. (First prediction is for tensor of zeros)  
+#' @param output_type Either `"h5"` or `"csv"`.
 #' @param model A keras model. If model and path_model are not NULL, model will be used for inference.
 #' @param mode Either `"lm"` for language model or `"label"` for label classification.
 #' @param format Either `"fasta"` or `"fastq"`.
@@ -123,7 +124,7 @@ predict_model <- function(output_format = "one_seq", model = NULL, layer_name = 
 #' @keywords internal
 predict_model_one_seq <- function(path_model = NULL, layer_name = NULL, sequence = NULL, path_input = NULL, round_digits = 2,
                                   filename = "states.h5", step = 1, vocabulary = c("a", "c", "g", "t"), batch_size = 256, verbose = TRUE,
-                                  return_states = FALSE, padding = FALSE, output_type = "h5", model = NULL, mode = "lm", lm_format = "target_right",
+                                  return_states = FALSE, padding_maxlen = FALSE, output_type = "h5", model = NULL, mode = "lm", lm_format = "target_right",
                                   format = "fasta", include_seq = TRUE, reverse_complement_encoding = FALSE) {
   
   stopifnot(mode %in% c("lm", "label"))
@@ -150,7 +151,7 @@ predict_model_one_seq <- function(path_model = NULL, layer_name = NULL, sequence
   
   if (is.null(layer_name)) {
     layer_name <- model$output_names
-    message(paste("layer_name not specified. Using layer", layer_name))
+    if (verbose) message(paste("layer_name not specified. Using layer", layer_name))
   }
   
   if (!is.null(sequence) && (!missing(sequence) & sequence != "")) {
@@ -184,7 +185,7 @@ predict_model_one_seq <- function(path_model = NULL, layer_name = NULL, sequence
     maxlen <- maxlen_1 + maxlen_2
   }
   
-  if (padding) {
+  if (padding_maxlen) {
     seq <- paste0(paste(rep("0", maxlen), collapse = ""), seq)
   }
   
@@ -223,7 +224,7 @@ predict_model_one_seq <- function(path_model = NULL, layer_name = NULL, sequence
   tokSeq <- keras::texts_to_sequences(tokenizer, seq)[[1]] - 1
   
   if (mode == "lm") {
-    if (padding) {
+    if (padding_maxlen) {
       if (target_middle) {
         pos_arg <- start_indices - maxlen_2 + 1
       } else {
@@ -237,7 +238,7 @@ predict_model_one_seq <- function(path_model = NULL, layer_name = NULL, sequence
       }
     }
   } else {
-    if (padding) {
+    if (padding_maxlen) {
       pos_arg <- start_indices - 1
     } else {
       pos_arg <- start_indices + maxlen - 1
@@ -245,7 +246,7 @@ predict_model_one_seq <- function(path_model = NULL, layer_name = NULL, sequence
   }
   
   if (include_seq) {
-    if (!padding) {
+    if (!padding_maxlen) {
       output_seq <- seq
     } else {
       output_seq <- substr(seq, maxlen + 1, nchar(seq))
@@ -320,13 +321,13 @@ predict_model_one_seq <- function(path_model = NULL, layer_name = NULL, sequence
       } else {
         # add column with target position for lm or end position for label classification
         if (mode == "lm") {
-          if (padding) {
+          if (padding_maxlen) {
             target_position <- subsetStartInd
           } else {
             target_position <- subsetStartInd + maxlen
           }
         } else {
-          if (padding) {
+          if (padding_maxlen) {
             target_position <- subsetStartInd - 1
           } else {
             target_position <- subsetStartInd + maxlen - 1
@@ -351,7 +352,7 @@ predict_model_one_seq <- function(path_model = NULL, layer_name = NULL, sequence
       } else {
         # add column with target position for lm or end position for label classification
         if (mode == "lm") {
-          if (padding) {
+          if (padding_maxlen) {
             if (target_middle) {
               target_position <- subsetStartInd - maxlen_2 + 1
             } else {
@@ -365,7 +366,7 @@ predict_model_one_seq <- function(path_model = NULL, layer_name = NULL, sequence
             }
           }
         } else {
-          if (padding) {
+          if (padding_maxlen) {
             target_position <- subsetStartInd - 1
           } else {
             target_position <- subsetStartInd + maxlen - 1
@@ -414,7 +415,7 @@ predict_model_one_seq <- function(path_model = NULL, layer_name = NULL, sequence
 #' @keywords internal
 predict_model_by_entry <- function(path_model = NULL, layer_name = NULL, path_input, round_digits = 2,
                                    filename = "states.h5", output_dir, step = 1, vocabulary = c("a", "c", "g", "t"),
-                                   batch_size = 256, padding = FALSE, output_type = "h5", model = NULL, mode = "lm",
+                                   batch_size = 256, padding_maxlen = FALSE, output_type = "h5", model = NULL, mode = "lm",
                                    lm_format = "target_right", format = "fasta", reverse_complement_encoding = FALSE,
                                    verbose = FALSE, include_seq = FALSE) {
   
@@ -458,12 +459,12 @@ predict_model_by_entry <- function(path_model = NULL, layer_name = NULL, path_in
     
     if (i > 1) verbose <- FALSE
     # skip entry if too short
-    if ((nchar(df[i, "seq"]) < maxlen + 1) & !padding) next
+    if ((nchar(df[i, "seq"]) < maxlen + 1) & !padding_maxlen) next
     predict_model_one_seq(path_model = path_model, layer_name = layer_name, sequence = df[i, "seq"],
                           round_digits = round_digits, path_input = path_input,
                           filename = paste0(output_dir, "/", filename, "_nr_", as.character(i), ".", output_type),
                           step = step, vocabulary = vocabulary, batch_size = batch_size,
-                          verbose = verbose, padding = padding, output_type = output_type, mode = mode,
+                          verbose = verbose, padding_maxlen = padding_maxlen, output_type = output_type, mode = mode,
                           lm_format = lm_format, model = model, include_seq = include_seq,
                           reverse_complement_encoding = reverse_complement_encoding)
   }
@@ -477,7 +478,7 @@ predict_model_by_entry <- function(path_model = NULL, layer_name = NULL, path_in
 #' @keywords internal
 predict_model_by_entry_one_file <- function(path_model, path_input, round_digits = 2, filename = "states.h5",
                                             step = 1,  vocabulary = c("a", "c", "g", "t"), batch_size = 256, layer_name = NULL,
-                                            padding = FALSE, verbose = TRUE, model = NULL, mode = "lm", lm_format = lm_format,
+                                            padding_maxlen = FALSE, verbose = TRUE, model = NULL, mode = "lm", lm_format = lm_format,
                                             format = "fasta", include_seq = TRUE, reverse_complement_encoding = FALSE) {
   
   stopifnot(mode %in% c("lm", "label"))
@@ -551,10 +552,10 @@ predict_model_by_entry_one_file <- function(path_model, path_input, round_digits
     temp_file <- tempfile(fileext = ".h5")
     if (i > 1) verbose <- FALSE
     # skip entry if too short
-    if ((nchar(df[i, "seq"]) < maxlen + 1) & !padding) next
+    if ((nchar(df[i, "seq"]) < maxlen + 1) & !padding_maxlen) next
     output_list <- predict_model_one_seq(path_model = path_model, layer_name = layer_name, sequence = df$seq[i], path_input = path_input,
                                          round_digits = round_digits, filename = temp_file, step = step, vocabulary = vocabulary,
-                                         batch_size = batch_size, verbose = verbose, return_states = TRUE, padding = padding,
+                                         batch_size = batch_size, verbose = verbose, return_states = TRUE, padding_maxlen = padding_maxlen,
                                          output_type = "h5", model = model, mode = mode, lm_format = lm_format,
                                          format = format, include_seq = include_seq, reverse_complement_encoding = reverse_complement_encoding)
     
@@ -596,7 +597,7 @@ predict_model_one_pred_per_entry <- function(model = NULL, layer_name = NULL, pa
   
   if (is.null(layer_name)) {
     layer_name <- model$output_names
-    message(paste("layer_name not specified. Using layer", layer_name))
+    if (verbose) message(paste("layer_name not specified. Using layer", layer_name))
   }
   
   # load model and sequence/file
@@ -721,6 +722,7 @@ predict_model_one_pred_per_entry <- function(model = NULL, layer_name = NULL, pa
 #' @param rows Range of rows to read. If `NULL` read everything.
 #' @param get_target_positions Return position of corresponding targets if `TRUE`.
 #' @param get_seq Return nucleotide sequence if `TRUE`.
+#' @param verbose Boolean.
 #' @examples
 #' # make prediction for single sequence and write to h5 file
 #' model <- create_model_lstm_cnn(maxlen = 20, layer_lstm = 8, layer_dense = 2, verbose = FALSE)
@@ -873,14 +875,16 @@ load_prediction <- function(h5_path, rows = NULL, verbose = TRUE,
 #' @param states_path Folder containing state files or a single file with same ending as `file_type`.
 #' @param label_names Names of predicted classes.
 #' @param file_type `"h5"` or `"csv"`.
-#' @param df A states data frame. Ignores states_dir if not `NULL`.
+#' @param df A states data frame. Ignore `states_dir` argument if not `NULL`.
 #' @examples 
-#' m <- matrix(runif(20*3), ncol = 3)
-#' m <- m/rowSums(m)
+#' m <- c(0.9,  0.1, 0.2, 0.01,
+#'        0.05, 0.7, 0.2, 0,
+#'        0.05, 0.2, 0.6, 0.99) %>% matrix(ncol = 3)
+#' 
 #' label_names <- paste0("class_", 1:3)
 #' df <- as.data.frame(m)
 #' pred_summary <- summarize_states(label_names = label_names, df = df)
-#' t(pred_summary) 
+#' t(pred_summary)
 #' @export
 summarize_states <- function(states_path = NULL, label_names = NULL, file_type = "h5", df = NULL) {
   

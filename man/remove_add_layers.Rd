@@ -21,7 +21,7 @@ remove_add_layers(
 )
 }
 \arguments{
-\item{model}{A keras model. If model and path_model are both not NULL, path_model will be used.}
+\item{model}{A keras model.}
 
 \item{layer_name}{Name of last layer to use from old model.}
 
@@ -40,13 +40,13 @@ has multiple output layers.}
 
 \item{freeze_base_model}{Whether to freeze all weights before new dense layers.}
 
-\item{compile}{Boolean, whether the new model is compiled or not}
+\item{compile}{Boolean, whether to compile the new model.}
 
 \item{learning_rate}{Learning rate if \code{compile = TRUE}, default learning rate of the old model}
 
 \item{solver}{Optimization method, options are \verb{"adam", "adagrad", "rmsprop"} or \code{"sgd"}.}
 
-\item{model_seed}{Set seed for model parameters in tensorflow, if not \code{NULL}.}
+\item{model_seed}{Set seed for model parameters in tensorflow if not \code{NULL}.}
 }
 \description{
 Function takes a model as input and removes all layers after a certain layer, specified in \code{layer_name} argument.

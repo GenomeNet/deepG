@@ -28,9 +28,9 @@ generator_rds(
 \item{max_samples}{Maximum number of samples to use from one file. If not \code{NULL} and file has more than \code{max_samples} samples, will randomly choose a
 subset of \code{max_samples} samples.}
 
-\item{proportion_per_seq}{Numerical value between 0 and 1. Proportion of possible samples to take from one file. Takes samples from random subsequence.}
+\item{proportion_per_seq}{Numerical value between 0 and 1. Proportion of sequence to take samples from (use random subsequence).}
 
-\item{reverse_complement}{Logical, for every new file decide randomly to use original data or its reverse complement.}
+\item{reverse_complement}{Boolean, for every new file decide randomly to use original data or its reverse complement.}
 
 \item{sample_by_file_size}{Sample new file weighted by file size (bigger files more likely).}
 
@@ -41,7 +41,7 @@ subset of \code{max_samples} samples.}
 \verb{(AACC), (CCGG), (GGTT)}; for \code{n_gram_stride = 4} generator encodes \verb{(AACC), (GGTT)}.}
 
 \item{add_noise}{\code{NULL} or list of arguments. If not \code{NULL}, list must contain the following arguments: \code{noise_type} can be \code{"normal"} or \code{"uniform"};
-optional arguments \code{sd} or \code{mean} if noise_type is \code{"normal"} (default is \code{sd=1} and \code{mean=0}) or \verb{min, max} if noise_type is \code{"uniform"}
+optional arguments \code{sd} or \code{mean} if noise_type is \code{"normal"} (default is \code{sd=1} and \code{mean=0}) or \verb{min, max} if \code{noise_type} is \code{"uniform"}
 (default is \verb{min=0, max=1}).}
 }
 \description{

@@ -1,14 +1,14 @@
 #' F1 metric
 #' 
-#' Compute F1 metric. If loss is "categorical_crossentropy", number of targets must be 2. If
-#' loss is "binary_crossentropy" and number of targets > 1, will flatten y_true and y_pred matrices 
+#' Compute F1 metric. If loss is `"categorical_crossentropy"`, number of targets must be 2. If
+#' loss is `"binary_crossentropy"` and number of targets > 1, will flatten `y_true` and `y_pred` matrices 
 #' to a single vector (rather than computing separate F1 scores for each class).
 #'
 #'@param num_targets Size of model output.
 #'@param loss Loss function of model.
 #'@examples 
 #' y_true <- c(1,0,0,1,1,0,1,0,0)  
-#' y_pred <- c(0.9,0.1,0.1,0.9,0.1,0.1,0.9,0.1,0.1)
+#' y_pred <-  c(0.9,0.05,0.05,0.9,0.05,0.05,0.9,0.05,0.05)
 #'
 #' f1_metric <- f1_wrapper(3L, "binary_crossentropy")
 #' f1_metric$update_state(y_true, y_pred)
@@ -94,10 +94,25 @@ f1_wrapper <- function(num_targets = 2, loss = "binary_crossentropy") {
 #'
 #' Compute balanced accuracy as additional score. Useful for imbalanced data.
 #'
-#'@param num_targets Number of targets.
-#'@param cm_dir Directory of confusion matrix used to compute balanced accuracy.
+#' @param num_targets Number of targets.
+#' @param cm_dir Directory of confusion matrix used to compute balanced accuracy.
+#' @examples 
+#' 
+#' y_true <- c(1,0,0,1,
+#'             0,1,0,0,
+#'             0,0,1,0) %>% matrix(ncol = 3)
+#' y_pred <- c(0.9,0.1,0.2,0.1,
+#'             0.05,0.7,0.2,0.0,
+#'             0.05,0.2,0.6,0.9) %>% matrix(ncol = 3)
+#' 
+#' cm_dir <- tempfile() 
+#' dir.create(cm_dir)
+#' bal_acc_metric <- balanced_acc_wrapper(num_targets = 3L, cm_dir = cm_dir)
+#' bal_acc_metric$update_state(y_true, y_pred)
+#' bal_acc_metric$result()
+#' as.array(bal_acc_metric$cm)
 #'
-#'@export
+#' @export
 balanced_acc_wrapper <- function(num_targets, cm_dir) {
   balanced_acc_stateful <- reticulate::PyClass("balanced_acc",
                                                inherit = tensorflow::tf$keras$metrics$Metric,
@@ -173,11 +188,11 @@ balanced_acc_wrapper <- function(num_targets, cm_dir) {
 #' Compute AUC score as additional metric. If model has several output neurons with binary crossentropy loss, will use the average score.
 #'
 #' @param model_output_size Number of neurons in model output layer.
-#' @param loss Loss function of model, for which metric will be applied to; must be "binary_crossentropy"
-#' or "categorical_crossentropy".
+#' @param loss Loss function of model, for which metric will be applied to; must be `"binary_crossentropy"`
+#' or `"categorical_crossentropy"`.
 #' @examples 
 #' y_true <- c(1,0,0,1,1,0,1,0,0) %>% matrix(ncol = 3)
-#' y_pred <- c(0.9,0.1,0.1,0.9,0.1,0.1,0.9,0.1,0.1) %>% matrix(ncol = 3)
+#' y_pred <- c(0.9,0.05,0.05,0.9,0.05,0.05,0.9,0.05,0.05) %>% matrix(ncol = 3)
 #' 
 #' auc_metric <- auc_wrapper(3L, "binary_crossentropy")
 #' 
@@ -232,11 +247,12 @@ auc_wrapper <- function(model_output_size,
 #' 
 #' Implements approach from this [paper](https://arxiv.org/abs/1609.03683) and code from 
 #' [here](https://github.com/giorgiop/loss-correction/blob/15a79de3c67c31907733392085c333547c2f2b16/loss.py#L16-L21). 
+#' Can be used if labeled data contains noise, i.e. some of the data is labeled wrong.
 #'
 #' @param noise_matrix Matrix of noise distribution.
 #' @importFrom magrittr "%>%"
 #' @examples 
-#' # If first label contains 5\% wrong labels and second label no noise
+#' # If first label contains 5% wrong labels and second label no noise
 #' noise_matrix <- matrix(c(0.95, 0.05, 0, 1), nrow = 2, byrow = TRUE)
 #' noisy_loss <- noisy_loss_wrapper(noise_matrix)
 #' @export

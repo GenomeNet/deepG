@@ -7,14 +7,15 @@
 heatmaps_integrated_grad(integrated_grads, input_seq)
 }
 \arguments{
-\item{integrated_grads}{Output of \code{integrated_gradients} function}
+\item{integrated_grads}{Matrix of integrated gradient scores (output of \code{\link{integrated_gradients}} function).}
 
 \item{input_seq}{Input sequence for model. Should be the same as \code{input_seq} input for corresponding
-\code{\link{integrated_gradients}} call that computed input for \code{integrated_grads} argument.
-model <- create_model_lstm_cnn(layer_lstm = 8, layer_dense = 3, maxlen = 20)}
+\code{\link{integrated_gradients}} call that computed input for \code{integrated_grads} argument.}
 }
 \description{
-Creates a heatmap from output of \code{\link{integrated_gradients}} function.
+Creates a heatmap from output of \code{\link{integrated_gradients}} function. The first row contains
+the column-wise absolut sums of IG scores and the second row the sums. Rows 3 to 6 contain the IG scores for each
+position and each nucleotide. The last row contains nucleotide information.
 }
 \examples{
 model <- create_model_lstm_cnn(layer_lstm = 8, layer_dense = 3, maxlen = 20, verbose = FALSE)

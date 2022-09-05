@@ -119,7 +119,7 @@ You can freeze all the weights of the pruned model by setting <code>freeze_base_
     <div id="arguments">
     <h2>Arguments</h2>
     <dl><dt>model</dt>
-<dd><p>A keras model. If model and path_model are both not NULL, path_model will be used.</p></dd>
+<dd><p>A keras model.</p></dd>
 
 
 <dt>layer_name</dt>
@@ -156,7 +156,7 @@ has multiple output layers.</p></dd>
 
 
 <dt>compile</dt>
-<dd><p>Boolean, whether the new model is compiled or not</p></dd>
+<dd><p>Boolean, whether to compile the new model.</p></dd>
 
 
 <dt>learning_rate</dt>
@@ -168,7 +168,7 @@ has multiple output layers.</p></dd>
 
 
 <dt>model_seed</dt>
-<dd><p>Set seed for model parameters in tensorflow, if not <code>NULL</code>.</p></dd>
+<dd><p>Set seed for model parameters in tensorflow if not <code>NULL</code>.</p></dd>
 
 </dl></div>
 
@@ -193,11 +193,11 @@ has multiple output layers.</p></dd>
 <span class="r-in"><span>                                                 <span class="st">"out_3_classification"</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="op">)</span> </span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Original model: "</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Model: "model_27"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Model: "model_28"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> ________________________________________________________________________________</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  Layer (type)                       Output Shape                    Param #     </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> ================================================================================</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  input_18 (InputLayer)              [(None, 50, 4)]                 0           </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  input_19 (InputLayer)              [(None, 50, 4)]                 0           </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  lstm_21 (LSTM)                     (None, 50, 64)                  17664       </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  lstm_22 (LSTM)                     (None, 64)                      33024       </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  dense_27 (Dense)                   (None, 32)                      2080        </span>
@@ -208,13 +208,13 @@ has multiple output layers.</p></dd>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Non-trainable params: 0</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> ________________________________________________________________________________</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "New model: "</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Model: "model_29"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Model: "model_30"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> ________________________________________________________________________________</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  Layer (type)         Output Shape   Param #  Connected to           Trainable  </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> ================================================================================</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  input_18 (InputLayer  [(None, 50, 4  0       []                     N          </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  input_19 (InputLayer  [(None, 50, 4  0       []                     N          </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  )                    )]                                                        </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  lstm_21 (LSTM)       (None, 50, 64  17664    ['input_18[0][0]']     N          </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  lstm_21 (LSTM)       (None, 50, 64  17664    ['input_19[0][0]']     N          </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>                       )                                                         </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  lstm_22 (LSTM)       (None, 64)     33024    ['lstm_21[0][0]']      N          </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  dense_27 (Dense)     (None, 32)     2080     ['lstm_22[0][0]']      N          </span>
@@ -233,7 +233,7 @@ has multiple output layers.</p></dd>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Trainable params: 2,335</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Non-trainable params: 52,768</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> ________________________________________________________________________________</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> input_18 trainable: </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> input_19 trainable: </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> lstm_21 trainable: FALSE </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> lstm_22 trainable: FALSE </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> dense_27 trainable: FALSE </span>

@@ -7,12 +7,9 @@
 #' @param dropout_lstm Fraction of the units to drop for inputs.
 #' @param recurrent_dropout_lstm Fraction of the units to drop for recurrent state.
 #' @param layer_lstm Number of cells per network layer. Can be a scalar or vector.
-#' @param layer_dense Dense layers of size `layer_dense` after last LSTM or CNN layer (if no LSTM used).
+#' @param layer_dense Vector specifying number of neurons per dense layer after last LSTM or CNN layer (if no LSTM used).
 #' @param solver Optimization method, options are `"adam", "adagrad", "rmsprop"` or `"sgd"`.
 #' @param learning_rate Learning rate for optimizer.
-#' @param use_multiple_gpus If true, multi_gpu_model() will be used based on gpu_num.
-#' @param gpu_num Number of GPUs to be used, only relevant if multiple_gpu is true.
-#' @param merge_on_cpu True on default, false recommend if the server supports NVlink, only relevant if use.multiple.gpu is true.
 #' @param bidirectional Use bidirectional wrapper for lstm layers.
 #' @param vocabulary_size Number of unique character in vocabulary.
 #' @param stateful Boolean. Whether to use stateful LSTM layer.
@@ -27,29 +24,29 @@
 #' @param gap Whether to apply global average pooling after last CNN layer.
 #' @param use_bias Boolean. Usage of bias for CNN layers.
 #' @param residual_block Boolean. If true, the residual connections are used in CNN. It is not used in the first convolutional layer.
-#' @param residual_block_length Integer. Determines how many convolutional layers (or triplets when size_reduction_1D_conv is TRUE) exist
-#  between the legs of a residual connection. e.g. if the length kernel_size/filters is 7 and residual_block_length is 2, there are 1+(7-1)*2 convolutional
-#  layers in the model when size_reduction_1Dconv is FALSE and 1+(7-1)*2*3 convolutional layers when size_reduction_1Dconv is TRUE.
-#' @param size_reduction_1Dconv Boolean. When TRUE, the number of filters in the convolutional layers is reduced to 1/4 of the number of filters of
+#' @param residual_block_length Integer. Determines how many convolutional layers (or triplets when `size_reduction_1D_conv` is `TRUE`) exist
+#  between the legs of a residual connection. e.g. if the `length kernel_size/filters` is 7 and `residual_block_length` is 2, there are 1+(7-1)*2 convolutional
+#  layers in the model when `size_reduction_1Dconv` is FALSE and 1+(7-1)*2*3 convolutional layers when `size_reduction_1Dconv` is TRUE.
+#' @param size_reduction_1Dconv Boolean. When `TRUE`, the number of filters in the convolutional layers is reduced to 1/4 of the number of filters of
 #  the original layer by a convolution layer with kernel size 1, and number of filters are increased back to the original value by a convolution layer
 #  with kernel size 1 after the convolution with original kernel size with reduced number of filters.
 #' @param label_input Integer or `NULL`. If not `NULL`, adds additional input layer of \code{label_input} size.
 #' @param zero_mask Boolean, whether to apply zero masking before LSTM layer. Only used if model does not use any CNN layers.
-#' @param label_smoothing Float in [0, 1]. If 0, no smoothing is applied. If > 0, loss between the predicted
+#' @param label_smoothing Float in \[0, 1\]. If 0, no smoothing is applied. If > 0, loss between the predicted
 #' labels and a smoothed version of the true labels, where the smoothing squeezes the labels towards 0.5.
 #' The closer the argument is to 1 the more the labels get smoothed.
 #' @param label_noise_matrix Matrix of label noises. Every row stands for one class and columns for percentage of labels in that class.
 #' If first label contains 5 percent wrong labels and second label no noise, then
 #' 
 #' \code{label_noise_matrix <- matrix(c(0.95, 0.05, 0, 1), nrow = 2, byrow = TRUE )}
-#' @param last_layer_activation Either "sigmoid" or "softmax".
+#' @param last_layer_activation Either `"sigmoid"` or `"softmax"`.
 #' @param loss_fn Either `"categorical_crossentropy"` or `"binary_crossentropy"`. If `label_noise_matrix` given, will use custom `"noisy_loss"`.
 #' @param num_output_layers Number of output layers.
 #' @param auc_metric Whether to add AUC metric.
 #' @param f1_metric Whether to add F1 metric.
 #' @param bal_acc Whether to add balanced accuracy.
 #' @param batch_norm_momentum Momentum for the moving mean and the moving variance.
-#' @param model_seed Set seed for model parameters in tensorflow, if not `NULL`.
+#' @param model_seed Set seed for model parameters in tensorflow if not `NULL`.
 #' @examples 
 #' create_model_lstm_cnn(
 #'   maxlen = 500,
@@ -67,20 +64,17 @@ create_model_lstm_cnn <- function(
   recurrent_dropout_lstm = 0,
   layer_lstm = NULL,
   layer_dense = c(4),
+  kernel_size = NULL,
+  filters = NULL,
+  strides = NULL,
+  pool_size = NULL,
   solver = "adam",
   learning_rate = 0.001,
-  use_multiple_gpus = FALSE,
-  merge_on_cpu = TRUE,
-  gpu_num = 2,
   vocabulary_size = 4,
   bidirectional = FALSE,
   stateful = FALSE,
   batch_size = NULL,
   compile = TRUE,
-  kernel_size = NULL,
-  filters = NULL,
-  strides = NULL,
-  pool_size = NULL,
   padding = "same",
   dilation_rate = NULL,
   gap = FALSE,
@@ -408,7 +402,6 @@ create_model_lstm_cnn <- function(
     }
   }
   
-  # print model layout to screen, should be done before multi_gpu_model
   if (!is.null(label_input)) {
     label_inputs <- list()
     for (i in 1:length(label_input)) {
@@ -425,12 +418,6 @@ create_model_lstm_cnn <- function(
     } else {
       model <- keras::keras_model(inputs = input_tensor, outputs = output_list)
     }
-  }
-  
-  if (use_multiple_gpus) {
-    model <- keras::multi_gpu_model(model,
-                                    gpus = gpu_num,
-                                    cpu_merge = merge_on_cpu)
   }
   
   optimizer <- set_optimizer(solver, learning_rate) 
@@ -477,8 +464,8 @@ create_model_lstm_cnn <- function(
     if (loss_fn == "binary_crossentropy") {
       smooth_loss <- tensorflow::tf$losses$BinaryCrossentropy(label_smoothing = label_smoothing, name = "smooth_loss")
     }
-      model %>% keras::compile(loss = smooth_loss,
-                               optimizer = optimizer, metrics = model_metrics)
+    model %>% keras::compile(loss = smooth_loss,
+                             optimizer = optimizer, metrics = model_metrics)
   } else if (!is.null(label_noise_matrix)) {
     row_sums <- rowSums(label_noise_matrix)
     if (!all(row_sums == 1)) {
@@ -537,29 +524,34 @@ create_model_lstm_cnn <- function(
 
 #' Create wavenet model
 #'
-#' Create network architecture as described [here](https://arxiv.org/abs/1609.03499) 
-#'
+#' Create network architecture as described [here](https://arxiv.org/abs/1609.03499). Implementation 
+#' uses code from [here](https://github.com/r-tensorflow/wavenet).
+#' 
 #' @inheritParams wavenet::wavenet
 #' @inheritParams create_model_lstm_cnn
+#' @examples 
+#' 
+#' model <- create_model_wavenet(residual_blocks = 2^rep(1:4, 2), maxlen = 1000)
+#' 
 #' @export
 create_model_wavenet <- function(filters = 16, kernel_size = 2, residual_blocks, maxlen,
                                  input_tensor = NULL, initial_kernel_size = 32, initial_filters = 32,
                                  output_channels = 4, output_activation = "softmax", solver = "adam",
                                  learning_rate = 0.001, compile = TRUE, verbose = TRUE, model_seed = NULL) {
-
+  
   if (!is.null(model_seed)) tensorflow::tf$random$set_seed(model_seed)
-
+  
   model <- wavenet::wavenet(filters = filters, kernel_size = kernel_size, residual_blocks = residual_blocks,
                             input_shape = list(maxlen, output_channels), input_tensor = input_tensor, initial_kernel_size = initial_kernel_size,
                             initial_filters = initial_filters, output_channels = output_channels, output_activation = "softmax")
-
+  
   optimizer <- set_optimizer(solver, learning_rate)
-
+  
   if (compile) {
     model %>% keras::compile(loss = "categorical_crossentropy",
                              optimizer = optimizer, metrics = c("acc"))
   }
-
+  
   argg <- c(as.list(environment()))
   argg["model"] <- NULL
   argg["optimizer"] <- NULL
@@ -574,7 +566,7 @@ create_model_wavenet <- function(filters = 16, kernel_size = 2, residual_blocks,
 #'
 #' @description
 #' Creates a network consisting of an arbitrary number of CNN, LSTM and dense layers.
-#' Function creates two sub networks consisting each of an (optional) CNN layer followed by an arbitrary number of LSTM layers. Afterwards the last LSTM layers
+#' Function creates two sub networks consisting each of (optional) CNN layers followed by an arbitrary number of LSTM layers. Afterwards the last LSTM layers
 #' get concatenated and followed by one or more dense layers. Last layer is a dense layer.
 #' Network tries to predict target in the middle of a sequence. If input is AACCTAAGG, input tensors should correspond to x1 = AACC, x2 = GGAA and y = T.
 #' @inheritParams create_model_lstm_cnn
@@ -596,9 +588,6 @@ create_model_lstm_cnn_target_middle <- function(
   layer_lstm = 128,
   solver = "adam",
   learning_rate = 0.001,
-  use_multiple_gpus = FALSE,
-  merge_on_cpu = TRUE,
-  gpu_num = 2,
   vocabulary_size = 4,
   bidirectional = FALSE,
   stateful = FALSE,
@@ -884,7 +873,7 @@ create_model_lstm_cnn_target_middle <- function(
     }
   }
   
-  # print model layout to screen, should be done before multi_gpu_model
+  # print model layout to screen
   if (!is.null(label_input)) {
     label_inputs <- list()
     for (i in 1:length(label_input)) {
@@ -893,12 +882,6 @@ create_model_lstm_cnn_target_middle <- function(
     model <- keras::keras_model(inputs = c(label_inputs, input_tensor_1, input_tensor_2), outputs = output_tensor)
   } else {
     model <- keras::keras_model(inputs = list(input_tensor_1, input_tensor_2), outputs = output_tensor)
-  }
-  
-  if (use_multiple_gpus) {
-    model <- keras::multi_gpu_model(model,
-                                    gpus = gpu_num,
-                                    cpu_merge = merge_on_cpu)
   }
   
   # choose optimization method
@@ -1073,7 +1056,7 @@ get_hyper_param <- function(model) {
 #'
 #' @inheritParams create_model_lstm_cnn
 #' @param layer_name Name of last layer to use from old model.
-#' @param model A keras model. If model and path_model are both not NULL, path_model will be used.
+#' @param model A keras model. 
 #' @param dense_layers List of vectors specifying number of units for each dense layer. If this is a list of length > 1, model
 #' has multiple output layers.
 #' @param last_activation List of activations for last entry for each list entry from \code{dense_layers}. Either `"softmax"`, `"sigmoid"` or `"linear"`.
@@ -1082,7 +1065,7 @@ get_hyper_param <- function(model) {
 #' @param verbose Boolean.
 #' @param dropout List of vectors with dropout rates for each new dense layer.
 #' @param freeze_base_model Whether to freeze all weights before new dense layers.
-#' @param compile Boolean, whether the new model is compiled or not
+#' @param compile Boolean, whether to compile the new model.
 #' @param learning_rate Learning rate if `compile = TRUE`, default learning rate of the old model
 #' @examples
 #' model_1 <- create_model_lstm_cnn(layer_lstm = c(64, 64),
@@ -1252,15 +1235,18 @@ remove_add_layers <- function(model = NULL,
 
 #' Merge two models
 #' 
-#' Combine two models at certain layers and add dense layers afterwards.
+#' Combine two models at certain layers and add dense layer(s) afterwards.
 #'
-#' @param models List of two models
+#' @param models List of two models.
 #' @param layer_names Vector of length 2 with names of layers to merge.
+#' @param freeze_base_model Boolean vector of length 2. Whether to freeze weights of individual models.
 #' @inheritParams create_model_lstm_cnn
 #' @examples
-#' model_1 <- create_model_lstm_cnn(layer_lstm = c(64, 64), maxlen = 50, layer_dense = c(32, 4), verbose = FALSE)
-#' model_2 <- create_model_lstm_cnn(layer_lstm = c(32), maxlen = 40, layer_dense = c(8, 2), verbose = FALSE)
-#' # get name of second to last layers
+#' model_1 <- create_model_lstm_cnn(layer_lstm = c(64, 64), maxlen = 50, layer_dense = c(32, 4),
+#'                                  verbose = FALSE)
+#' model_2 <- create_model_lstm_cnn(layer_lstm = c(32), maxlen = 40, 
+#'                                  layer_dense = c(8, 2), verbose = FALSE)
+#' # get names of second to last layers
 #' num_layers_1 <- length(model_1$get_config()$layers)
 #' layer_name_1 <- model_1$get_config()$layers[[num_layers_1 - 1]]$name
 #' num_layers_2 <- length(model_2$get_config()$layers)
@@ -1345,7 +1331,7 @@ check_layer_name <- function(model, layer_name) {
 #' }
 #' After LSTM/CNN part all representations get aggregated by summation.
 #' Can be used to make single prediction for combination of multiple input sequences. Architecture
-#' is equivalent to [create_model_lstm_cnn_multi_input()], but instead of multiple input layers with 3D input, 
+#' is equivalent to [create_model_lstm_cnn_multi_input()] but instead of multiple input layers with 3D input, 
 #' input here in one 4D tensor.  
 #'     
 #' @inheritParams create_model_lstm_cnn
@@ -1370,9 +1356,6 @@ create_model_lstm_cnn_time_dist <- function(
   layer_dense = c(4),
   solver = "adam",
   learning_rate = 0.001,
-  use_multiple_gpus = FALSE,
-  merge_on_cpu = TRUE,
-  gpu_num = 2,
   vocabulary_size = 4,
   bidirectional = FALSE,
   stateful = FALSE,
@@ -1578,12 +1561,6 @@ create_model_lstm_cnn_time_dist <- function(
     model <- keras::keras_model(inputs = input_tensor, outputs = output_list)
   }
   
-  if (use_multiple_gpus) {
-    model <- keras::multi_gpu_model(model,
-                                    gpus = gpu_num,
-                                    cpu_merge = merge_on_cpu)
-  }
-  
   # choose optimization method
   optimizer <- set_optimizer(solver, learning_rate) 
   
@@ -1687,9 +1664,6 @@ create_model_lstm_cnn_multi_input <- function(
   layer_dense = c(4),
   solver = "adam",
   learning_rate = 0.001,
-  use_multiple_gpus = FALSE,
-  merge_on_cpu = TRUE,
-  gpu_num = 2,
   vocabulary_size = 4,
   bidirectional = FALSE,
   batch_size = NULL,
@@ -1878,16 +1852,7 @@ create_model_lstm_cnn_multi_input <- function(
   }
   
   y <- y %>% keras::layer_dense(units = num_targets, activation = last_layer_activation)
-  
-  # print model layout to screen, should be done before multi_gpu_model
-  
   model <- keras::keras_model(inputs = input_list, outputs = y)
-  
-  if (use_multiple_gpus) {
-    model <- keras::multi_gpu_model(model,
-                                    gpus = gpu_num,
-                                    cpu_merge = merge_on_cpu)
-  }
   
   # choose optimization method
   optimizer <- set_optimizer(solver, learning_rate) 
@@ -1969,7 +1934,7 @@ create_model_lstm_cnn_multi_input <- function(
 #' use CNN and LSTM layers.
 #'
 #' @param model A keras model.
-#' @param input_shape The new input shape vector (without batch_size).
+#' @param input_shape The new input shape vector (without batch size).
 #' @examples 
 #' model_1 <-  create_model_lstm_cnn(
 #'   maxlen = 50,
@@ -1979,7 +1944,8 @@ create_model_lstm_cnn_multi_input <- function(
 #'   layer_lstm = c(32),
 #'   verbose = FALSE,
 #'   layer_dense = c(64, 2))
-#' reshape_input(model_1, input_shape = c(120, 4)) 
+#' model <- reshape_input(model_1, input_shape = c(120, 4))
+#' model
 #' @export
 reshape_input <- function(model, input_shape) {
   
@@ -2324,6 +2290,8 @@ set_optimizer <- function(solver = "adam", learning_rate = 0.01) {
 
 #' Get activation functions of output layers
 #' 
+#' Get activation functions of output layers.
+#' 
 #' @param model A keras model.
 #' @examples 
 #' model <-  create_model_lstm_cnn(
@@ -2350,7 +2318,7 @@ get_output_activations <- function(model) {
 
 # temporary fix for metric bugs
 manage_metrics <- function(model) {
-
+  
   dummy_gen <- generator_dummy(model,batch_size = 1)
   z <- dummy_gen()
   suppressMessages(

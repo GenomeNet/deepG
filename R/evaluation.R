@@ -1,28 +1,28 @@
 #' Evaluates a trained model on fasta, fastq or rds files
 #'
-#' Returns evaluation metric like confusion matrix, loss, AUC, AUPRC, MAE, MSE (depending and output layer).
-#' Evaluates \code{batch_size} * \code{number_batches} samples.
+#' Returns evaluation metric like confusion matrix, loss, AUC, AUPRC, MAE, MSE (depending on output layer).
 #'
 #' @inheritParams generator_fasta_lm
 #' @inheritParams generator_fasta_label_folder
 #' @inheritParams generator_fasta_label_header_csv
-#' @param path_input Input directory where fasta/fastq or rds files are located.
+#' @param path_input Input directory where fasta, fastq or rds files are located.
 #' @param model A keras model.
 #' @param batch_size Number of samples per batch.
 #' @param step How often to take a sample.
 #' @param vocabulary Vector of allowed characters. Character outside vocabulary get encoded as specified in ambiguous_nuc.
 #' @param vocabulary_label List of labels for targets of each output layer.
 #' @param number_batches How many batches to evaluate.
-#' @param format File format, "fasta", "fastq" or "rds".
-#' @param mode Either "lm" for language model or "label_header", "label_csv" or "label_folder" for label classification.
-#' @param evaluate_all_files Boolean, if TRUE will iterate over all files in \code{path_input} once. \code{number_batches} will be overwritten.
-#' @param auc Whether to include AUC metric. If output layer activation is "softmax", only possible for 2 targets. Computes the average if output layer has sigmoid
+#' @param format File format, `"fasta"`, `"fastq"` or `"rds"`.
+#' @param mode Either `"lm"` for language model or `"label_header"`, `"label_csv"` or `"label_folder"` for label classification.
+#' @param verbose Boolean.
+#' @param evaluate_all_files Boolean, if `TRUE` will iterate over all files in \code{path_input} once. \code{number_batches} will be overwritten.
+#' @param auc Whether to include AUC metric. If output layer activation is `"softmax"`, only possible for 2 targets. Computes the average if output layer has sigmoid
 #' activation and multiple targets.
-#' @param auprc Whether to include AUPRC metric. If output layer activation is "softmax", only possible for 2 targets. Computes the average if output layer has sigmoid
+#' @param auprc Whether to include AUPRC metric. If output layer activation is `"softmax"`, only possible for 2 targets. Computes the average if output layer has sigmoid
 #' activation and multiple targets.
 #' @param path_pred_list Path to store list of predictions (output of output layers) and corresponding true labels as rds file. 
 #' @param exact_num_samples Exact number of samples to evaluate. If you want to evaluate a number of samples not divisible by batch_size. Useful if you want
-#' to evaluate a data set exactly ones and know the number of samples already. Should be a vector if mode = "label_folder" (with same length as vocabulary_label)
+#' to evaluate a data set exactly ones and know the number of samples already. Should be a vector if `mode = "label_folder"` (with same length as `vocabulary_label`)
 #' and else an integer.
 #' @param ... Further generator options.
 #' @examples
@@ -368,7 +368,7 @@ evaluate_model <- function(path_input,
     }
     
     if (activations[i] == "linear") {
-      eval_list[[i]] <- evaluate_linear(y = y_list[[i]], y_conf = y_conf_list[[i]], label_names = vocabulary_label[[i]])
+      eval_list[[i]] <- evaluate_linear(y_true = y_list[[i]], y_pred = y_conf_list[[i]], label_names = vocabulary_label[[i]])
     }
     
   }
@@ -500,9 +500,10 @@ evaluate_softmax <- function(y, y_conf, auc = FALSE, auprc = FALSE, label_names 
 #' @param auc Whether to include AUC metric.
 #' @param auprc Whether to include AUPRC metric. 
 #' @examples
-#' y <- matrix(sample(c(0, 1), 12, replace = TRUE), ncol = 3)
-#' y_conf <- matrix(runif(n = 12), ncol = 3)
+#' y <- matrix(sample(c(0, 1), 30, replace = TRUE), ncol = 3)
+#' y_conf <- matrix(runif(n = 30), ncol = 3)
 #' evaluate_sigmoid(y, y_conf, auc = TRUE, auprc = TRUE)
+#' 
 #' @export    
 evaluate_sigmoid <- function(y, y_conf, auc = FALSE, auprc = FALSE, label_names = NULL) {
   
@@ -534,8 +535,15 @@ evaluate_sigmoid <- function(y, y_conf, auc = FALSE, auprc = FALSE, label_names 
     for (i in 1:length(auc_vector)) {
       auc_vector[i] <- auc_list[[i]]$auc
     }
+    
+    na_count <- sum(is.na(auc_vector))
+    if (na_count > 0) {
+      message(paste(sum(na_count), ifelse(na_count > 1, "columns", "column"),
+                    "removed from AUC evaluation since they contain only one label"))
+    }
+    AUC <- mean(auc_vector, na.rm = TRUE)
   } else {
-    auc_list <- NULL
+    AUC <- NULL
   }
   
   if (auprc) {
@@ -546,16 +554,17 @@ evaluate_sigmoid <- function(y, y_conf, auc = FALSE, auprc = FALSE, label_names 
     for (i in 1:length(auprc_vector)) {
       auprc_vector[i] <- auprc_list[[i]]$auc.integral
     }
+    AUPRC <- mean(auprc_vector, na.rm = TRUE) 
   } else {
-    auprc_list <- NULL
+    AUPRC <- NULL
   }
   
   return(list(accuracy = acc,
               binary_crossentropy_loss = loss,
               #loss_per_class = loss_per_class,
               #accuracy_per_class = class_acc,
-              AUC = mean(auc_vector),
-              AUPRC = mean(auprc_vector)))
+              AUC = AUC,
+              AUPRC = AUPRC))
   
 }
 
@@ -566,19 +575,20 @@ evaluate_sigmoid <- function(y, y_conf, auc = FALSE, auprc = FALSE, label_names 
 #' 
 #' @inheritParams evaluate_model
 #' @inheritParams evaluate_softmax
-#' @param y_true Matrix of true labels
+#' @param y_true Matrix of true labels.
+#' @param y_pred Matrix of predictions.
 #' @examples 
 #' y_true <- matrix(rnorm(n = 12), ncol = 3)
-#' y_conf <- matrix(rnorm(n = 12), ncol = 3)
-#' evaluate_linear(y_true, y_conf)
+#' y_pred <- matrix(rnorm(n = 12), ncol = 3)
+#' evaluate_linear(y_true, y_pred)
 #' @export    
-evaluate_linear <- function(y_true, y_conf, label_names = NULL) {
+evaluate_linear <- function(y_true, y_pred, label_names = NULL) {
   
   loss_per_class_mse <- list()
   loss_per_class_mae <- list()
   for (i in 1:ncol(y_true)) {
-    mse_loss_class <- tensorflow::tf$keras$losses$mean_squared_error(y_true[ ,i], y_conf[ , i])
-    mae_loss_class <- tensorflow::tf$keras$losses$mean_absolute_error(y_true[ ,i], y_conf[ , i])
+    mse_loss_class <- tensorflow::tf$keras$losses$mean_squared_error(y_true[ ,i], y_pred[ , i])
+    mae_loss_class <- tensorflow::tf$keras$losses$mean_absolute_error(y_true[ ,i], y_pred[ , i])
     loss_per_class_mse[[i]] <- mse_loss_class$numpy()
     loss_per_class_mae[[i]] <- mae_loss_class$numpy()
   }
@@ -592,7 +602,7 @@ evaluate_linear <- function(y_true, y_conf, label_names = NULL) {
 #' Plot ROC
 #' 
 #' Compute ROC and AUC from target and prediction matrix and plot ROC. Target/prediction matrix should 
-#' have one column if is output of layer with sigmoid activation and two columns for softmax activation. 
+#' have one column if output of layer with sigmoid activation and two columns for softmax activation. 
 #' 
 #' @inheritParams evaluate_softmax
 #' @inheritParams evaluate_linear

@@ -137,8 +137,8 @@
 
 
 <dt>run_name</dt>
-<dd><p>Name of the run. Name will be used to identify output from callbacks. If <code>NULL</code>, will use date as run name. If name already present, will add "<em>2" to name
-or "</em>x + 1" if name ends with integer x.</p></dd>
+<dd><p>Name of the run. Name will be used to identify output from callbacks. If <code>NULL</code>, will use date as run name.
+If name already present, will add <code>"_2"</code> to name or <code>"_{x+1}"</code> if name ends with <code>_x</code>, where <code>x</code> is some integer.</p></dd>
 
 
 <dt>train_type</dt>
@@ -157,8 +157,9 @@ with multiple inputs.</p></li>
 
 
 <dt>path</dt>
-<dd><p>Path to folder where individual or multiple FASTA or FASTQ files are located for training. If <code>train_type</code> is <code>label_folder</code>, should be a vector or list
-where each entry corresponds to a class. If <code>train_type</code> is not <code>label_folder</code>, can be a list of directories and/or single files.</p></dd>
+<dd><p>Path to training data. If <code>train_type</code> is <code>label_folder</code>, should be a vector or list
+where each entry corresponds to a class (list elements can be directories and/or individual files). If <code>train_type</code> is not <code>label_folder</code>,
+can be a single directory or file or a list of directories and/or files.</p></dd>
 
 
 <dt>train_val_ratio</dt>
@@ -176,15 +177,15 @@ into train/validation data.</p></dd>
 
 
 <dt>max_queue_size</dt>
-<dd><p>Queue on fit().</p></dd>
+<dd><p>Maximum size for the generator queue.</p></dd>
 
 
 <dt>lr_plateau_factor</dt>
-<dd><p>Factor of decreasing learning_rate when plateau is reached.</p></dd>
+<dd><p>Factor of decreasing learning rate when plateau is reached.</p></dd>
 
 
 <dt>patience</dt>
-<dd><p>Number of epochs waiting for decrease in val_loss before reducing learning_rate.</p></dd>
+<dd><p>Number of epochs waiting for decrease in validation loss before reducing learning rate.</p></dd>
 
 
 <dt>cooldown</dt>
@@ -209,7 +210,7 @@ will run for (<code>epochs</code> - <code>initial_epochs</code>) rounds and not 
 
 
 <dt>vocabulary</dt>
-<dd><p>Vector of allowed characters. Character outside vocabulary get encoded as specified in <code>ambiguous_nuc</code>.</p></dd>
+<dd><p>Vector of allowed characters. Characters outside vocabulary get encoded as specified in <code>ambiguous_nuc</code>.</p></dd>
 
 
 <dt>shuffle_input</dt>
@@ -222,11 +223,11 @@ will run for (<code>epochs</code> - <code>initial_epochs</code>) rounds and not 
 
 
 <dt>file_limit</dt>
-<dd><p>Integer or <code>NULL</code>. If integer, use only specified of number randomly sampled files for training. Ignored if greater than number of files in <code>path</code>.</p></dd>
+<dd><p>Integer or <code>NULL</code>. If integer, use only specified number of randomly sampled files for training. Ignored if greater than number of files in <code>path</code>.</p></dd>
 
 
 <dt>reverse_complement</dt>
-<dd><p>Logical, for every new file decide randomly to use original data or its reverse complement.</p></dd>
+<dd><p>Boolean, for every new file decide randomly to use original data or its reverse complement.</p></dd>
 
 </dl></div>
 

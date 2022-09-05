@@ -9,7 +9,7 @@ reshape_input(model, input_shape)
 \arguments{
 \item{model}{A keras model.}
 
-\item{input_shape}{The new input shape vector (without batch_size).}
+\item{input_shape}{The new input shape vector (without batch size).}
 }
 \description{
 Replace first layer of model with new input layer of different shape. Only works for sequential models that
@@ -24,5 +24,6 @@ model_1 <-  create_model_lstm_cnn(
   layer_lstm = c(32),
   verbose = FALSE,
   layer_dense = c(64, 2))
-reshape_input(model_1, input_shape = c(120, 4)) 
+model <- reshape_input(model_1, input_shape = c(120, 4))
+model
 }

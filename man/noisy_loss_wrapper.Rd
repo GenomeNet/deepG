@@ -12,9 +12,10 @@ noisy_loss_wrapper(noise_matrix)
 \description{
 Implements approach from this \href{https://arxiv.org/abs/1609.03683}{paper} and code from
 \href{https://github.com/giorgiop/loss-correction/blob/15a79de3c67c31907733392085c333547c2f2b16/loss.py#L16-L21}{here}.
+Can be used if labeled data contains noise, i.e. some of the data is labeled wrong.
 }
 \examples{
-# If first label contains 5\\% wrong labels and second label no noise
+# If first label contains 5\% wrong labels and second label no noise
 noise_matrix <- matrix(c(0.95, 0.05, 0, 1), nrow = 2, byrow = TRUE)
 noisy_loss <- noisy_loss_wrapper(noise_matrix)
 }

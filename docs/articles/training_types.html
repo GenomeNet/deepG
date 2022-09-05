@@ -162,11 +162,11 @@ mark.out {
 <div class="section level3">
 <h3 id="create-dummy-data">Create dummy data<a class="anchor" aria-label="anchor" href="#create-dummy-data"></a>
 </h3>
-<p>To test the different language model options, we create a simple dummy data set consisting of a repetition of the sequence “AAACCCGGGTTTAAACCC…”.</p>
+<p>To test the different language model options, we create a simple dummy data set consisting of a repetition of the sequence <tt>AAACCCGGGTTTAAACCC…</tt>.</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">vocabulary</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"A"</span>, <span class="st">"C"</span>, <span class="st">"G"</span>, <span class="st">"T"</span><span class="op">)</span></span>
 <span><span class="va">base_seq</span> <span class="op">&lt;-</span> <span class="st">"AAACCCGGGTTT"</span></span>
-<span><span class="va">full_seq</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="va">base_seq</span>, <span class="fl">50</span><span class="op">)</span> <span class="op"><a href="../reference/pipe.html">%&gt;%</a></span> <span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste</a></span><span class="op">(</span>collapse <span class="op">=</span> <span class="st">""</span><span class="op">)</span></span>
+<span><span class="va">full_seq</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/strrep.html" class="external-link">strrep</a></span><span class="op">(</span><span class="va">base_seq</span>, <span class="fl">50</span><span class="op">)</span></span>
 <span><span class="va">df</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span>Header <span class="op">=</span> <span class="st">"header"</span>, Sequence <span class="op">=</span> <span class="va">full_seq</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># create training fasta file</span></span>
@@ -205,16 +205,15 @@ mark.out {
 <span><span class="co">## ________________________________________________________________________________</span></span></code></pre>
 <p>Next we have to specify the location of our training and validation data and the output format of the data generator</p>
 <div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">hist</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/train_model.html">train_model</a></span><span class="op">(</span>train_type <span class="op">=</span> <span class="st">"lm"</span>, <span class="co"># running a language model </span></span>
+<code class="sourceCode R"><span><span class="va">hist</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/train_model.html">train_model</a></span><span class="op">(</span>train_type <span class="op">=</span> <span class="st">"lm"</span>, <span class="co"># running a language model</span></span>
+<span>                    output_format <span class="op">=</span> <span class="st">"target_right"</span>, <span class="co"># predict target at end of sequence</span></span>
 <span>                    model <span class="op">=</span> <span class="va">model</span>,</span>
 <span>                    path <span class="op">=</span> <span class="va">train_dir</span>,</span>
 <span>                    path_val <span class="op">=</span> <span class="va">val_dir</span>,</span>
 <span>                    steps_per_epoch <span class="op">=</span> <span class="fl">5</span>, <span class="co"># use 5 batches per epoch</span></span>
 <span>                    train_val_ratio <span class="op">=</span> <span class="fl">0.2</span>, <span class="co"># use 20% of samples for validation compared to train</span></span>
 <span>                    batch_size <span class="op">=</span> <span class="fl">16</span>,</span>
-<span>                    epochs <span class="op">=</span> <span class="fl">4</span>, </span>
-<span>                    output_format <span class="op">=</span> <span class="st">"target_right"</span> <span class="co"># predict target at end of sequence </span></span>
-<span><span class="op">)</span></span>
+<span>                    epochs <span class="op">=</span> <span class="fl">4</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">hist</span><span class="op">)</span></span></code></pre></div>
 <p><img src="training_types_files/figure-html/unnamed-chunk-7-1.png" width="700"></p>
 </div>
@@ -230,7 +229,7 @@ mark.out {
 <span>  layer_lstm <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">8</span><span class="op">)</span>,</span>
 <span>  layer_dense <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">4</span><span class="op">)</span>,</span>
 <span>  learning_rate <span class="op">=</span> <span class="fl">0.1</span>,</span>
-<span>  vocabulary_size <span class="op">=</span> <span class="fl">4</span> <span class="co"># text consists of A,C,G,T</span></span>
+<span>  vocabulary_size <span class="op">=</span> <span class="fl">4</span> </span>
 <span><span class="op">)</span></span></code></pre></div>
 <pre><code><span><span class="co">## Model: "model_1"</span></span>
 <span><span class="co">## ________________________________________________________________________________</span></span>
@@ -250,16 +249,15 @@ mark.out {
 <span><span class="co">## ________________________________________________________________________________</span></span></code></pre>
 <p>The <code>train_model</code> call is identical to the previous model, except we have to change the output format of the generator by setting <code>output_format = "target_middle_lstm"</code>. This reverses the order of the sequence after the target.</p>
 <div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">hist</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/train_model.html">train_model</a></span><span class="op">(</span>train_type <span class="op">=</span> <span class="st">"lm"</span>, <span class="co"># running a language model </span></span>
+<code class="sourceCode R"><span><span class="va">hist</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/train_model.html">train_model</a></span><span class="op">(</span>train_type <span class="op">=</span> <span class="st">"lm"</span>, <span class="co"># running a language model</span></span>
+<span>                    output_format <span class="op">=</span> <span class="st">"target_middle_lstm"</span>, <span class="co"># predict target at end of sequence </span></span>
 <span>                    model <span class="op">=</span> <span class="va">model</span>,</span>
 <span>                    path <span class="op">=</span> <span class="va">train_dir</span>,</span>
 <span>                    path_val <span class="op">=</span> <span class="va">val_dir</span>,</span>
 <span>                    steps_per_epoch <span class="op">=</span> <span class="fl">5</span>, <span class="co"># use 5 batches per epoch</span></span>
 <span>                    train_val_ratio <span class="op">=</span> <span class="fl">0.2</span>, <span class="co"># use 20% of samples for validation compared to train</span></span>
 <span>                    batch_size <span class="op">=</span> <span class="fl">16</span>,</span>
-<span>                    epochs <span class="op">=</span> <span class="fl">4</span>, </span>
-<span>                    output_format <span class="op">=</span> <span class="st">"target_middle_lstm"</span> <span class="co"># predict target at end of sequence </span></span>
-<span><span class="op">)</span></span>
+<span>                    epochs <span class="op">=</span> <span class="fl">4</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">hist</span><span class="op">)</span></span></code></pre></div>
 <p><img src="training_types_files/figure-html/unnamed-chunk-9-1.png" width="700"></p>
 </div>
@@ -267,7 +265,7 @@ mark.out {
 <div class="section level2">
 <h2 id="label-classification">Label classification<a class="anchor" aria-label="anchor" href="#label-classification"></a>
 </h2>
-<p>With label classification, we describe the task of mapping a label to a sequence. For example: given the sequence , does the sequence belong to a viral or bacterial genome?</p>
+<p>With label classification, we describe the task of mapping a label to a sequence. For example: given the input <tt>ACGACCG</tt>, does the sequence belong to a viral or bacterial genome?</p>
 <p>deepG offers three options to map a label to a sequence</p>
 <ol style="list-style-type: decimal">
 <li><p>the label gets read from the fasta header</p></li>
@@ -277,7 +275,7 @@ mark.out {
 <div class="section level3">
 <h3 id="create-dummy-data-1">Create dummy data<a class="anchor" aria-label="anchor" href="#create-dummy-data-1"></a>
 </h3>
-<p>To test label classification, we create a simple dummy data set. One class consists of random sequences using just “A” and “C” and second class uses just “G” and “T”.</p>
+<p>To test label classification, we create a simple dummy data set. One class consists of random sequences using just <tt>A</tt> and <tt>C</tt> and second class uses just <tt>G</tt> and <tt>T</tt>.</p>
 <div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># create training fasta files</span></span>
 <span><span class="va">train_dir_1</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/tempfile.html" class="external-link">tempfile</a></span><span class="op">(</span><span class="op">)</span></span>
@@ -375,10 +373,10 @@ mark.out {
 <span><span class="op">)</span></span></code></pre></div>
 <pre><code><span><span class="co">## </span></span>
 <span><span class="co">## Final epoch (plot to see history):</span></span>
-<span><span class="co">##             loss: 0.03052</span></span>
+<span><span class="co">##             loss: 0.00122</span></span>
 <span><span class="co">##     balanced_acc: 1</span></span>
 <span><span class="co">##              acc: 1</span></span>
-<span><span class="co">##         val_loss: 0.0009713</span></span>
+<span><span class="co">##         val_loss: 0.00008419</span></span>
 <span><span class="co">## val_balanced_acc: 1</span></span>
 <span><span class="co">##          val_acc: 1</span></span>
 <span><span class="co">##               lr: 0.1</span></span></code></pre>
@@ -412,10 +410,10 @@ mark.out {
 <span><span class="op">)</span></span></code></pre></div>
 <pre><code><span><span class="co">## </span></span>
 <span><span class="co">## Final epoch (plot to see history):</span></span>
-<span><span class="co">##             loss: 0.00002662</span></span>
+<span><span class="co">##             loss: 0.00000715</span></span>
 <span><span class="co">##     balanced_acc: 1</span></span>
 <span><span class="co">##              acc: 1</span></span>
-<span><span class="co">##         val_loss: 0.00001043</span></span>
+<span><span class="co">##         val_loss: 0.000003755</span></span>
 <span><span class="co">## val_balanced_acc: 1</span></span>
 <span><span class="co">##          val_acc: 1</span></span>
 <span><span class="co">##               lr: 0.1</span></span></code></pre>
@@ -461,6 +459,98 @@ mark.out {
 <span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">hist</span><span class="op">)</span></span></code></pre></div>
 <p><img src="training_types_files/figure-html/unnamed-chunk-15-1.png" width="700"></p>
+</div>
+<div class="section level3">
+<h3 id="training-with-rds-files">Training with rds files<a class="anchor" aria-label="anchor" href="#training-with-rds-files"></a>
+</h3>
+<p>We can also use rds files files as input, where the data must already be preprocessed. We may use the <code>dataset_from_gen</code> function to create rds files from fasta files.</p>
+<div class="sourceCode" id="cb22"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">rds_folder_train</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/tempfile.html" class="external-link">tempfile</a></span><span class="op">(</span><span class="op">)</span></span>
+<span><span class="va">rds_folder_val</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/tempfile.html" class="external-link">tempfile</a></span><span class="op">(</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/files2.html" class="external-link">dir.create</a></span><span class="op">(</span><span class="va">rds_folder_train</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/files2.html" class="external-link">dir.create</a></span><span class="op">(</span><span class="va">rds_folder_val</span><span class="op">)</span></span>
+<span></span>
+<span><span class="kw">for</span> <span class="op">(</span><span class="va">data_type</span> <span class="kw">in</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"train"</span>, <span class="st">"val"</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span>
+<span>  </span>
+<span>  <span class="kw">if</span> <span class="op">(</span><span class="va">data_type</span> <span class="op">==</span> <span class="st">"train"</span><span class="op">)</span> <span class="op">{</span></span>
+<span>    <span class="va">output_path</span> <span class="op">&lt;-</span> <span class="va">rds_folder_train</span></span>
+<span>    <span class="va">path_corpus</span> <span class="op">&lt;-</span> <span class="va">train_dir</span></span>
+<span>  <span class="op">}</span> <span class="kw">else</span> <span class="op">{</span></span>
+<span>    <span class="va">output_path</span> <span class="op">&lt;-</span> <span class="va">rds_folder_val</span></span>
+<span>    <span class="va">path_corpus</span> <span class="op">&lt;-</span> <span class="va">val_dir</span></span>
+<span>  <span class="op">}</span></span>
+<span>  </span>
+<span>  <span class="fu"><a href="../reference/dataset_from_gen.html">dataset_from_gen</a></span><span class="op">(</span>output_path <span class="op">=</span> <span class="va">output_path</span>,</span>
+<span>                   iterations <span class="op">=</span> <span class="fl">25</span>, <span class="co"># create 25 rds files </span></span>
+<span>                   train_type <span class="op">=</span> <span class="st">"label_folder"</span>,</span>
+<span>                   path_corpus <span class="op">=</span> <span class="va">path_corpus</span>, </span>
+<span>                   batch_size <span class="op">=</span> <span class="fl">128</span>,</span>
+<span>                   maxlen <span class="op">=</span> <span class="fl">5</span>,</span>
+<span>                   step <span class="op">=</span> <span class="fl">5</span>,</span>
+<span>                   vocabulary <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"a"</span>, <span class="st">"c"</span>, <span class="st">"g"</span>, <span class="st">"t"</span><span class="op">)</span>,</span>
+<span>                   file_name_start <span class="op">=</span> <span class="st">"batch_"</span><span class="op">)</span></span>
+<span>  </span>
+<span><span class="op">}</span></span></code></pre></div>
+<p>We created 25 files for training and validation with preprocessed data.</p>
+<div class="sourceCode" id="cb23"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">train_files</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.files.html" class="external-link">list.files</a></span><span class="op">(</span><span class="va">rds_folder_train</span>, full.names <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/basename.html" class="external-link">basename</a></span><span class="op">(</span><span class="va">train_files</span><span class="op">)</span></span></code></pre></div>
+<pre><code><span><span class="co">##  [1] "batch_1.rds"  "batch_10.rds" "batch_11.rds" "batch_12.rds" "batch_13.rds"</span></span>
+<span><span class="co">##  [6] "batch_14.rds" "batch_15.rds" "batch_16.rds" "batch_17.rds" "batch_18.rds"</span></span>
+<span><span class="co">## [11] "batch_19.rds" "batch_2.rds"  "batch_20.rds" "batch_21.rds" "batch_22.rds"</span></span>
+<span><span class="co">## [16] "batch_23.rds" "batch_24.rds" "batch_25.rds" "batch_3.rds"  "batch_4.rds" </span></span>
+<span><span class="co">## [21] "batch_5.rds"  "batch_6.rds"  "batch_7.rds"  "batch_8.rds"  "batch_9.rds"</span></span></code></pre>
+<div class="sourceCode" id="cb25"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">example_batch</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/readRDS.html" class="external-link">readRDS</a></span><span class="op">(</span><span class="va">train_files</span><span class="op">[</span><span class="fl">1</span><span class="op">]</span><span class="op">)</span></span>
+<span><span class="va">x</span> <span class="op">&lt;-</span> <span class="va">example_batch</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span></span>
+<span><span class="va">y</span> <span class="op">&lt;-</span> <span class="va">example_batch</span><span class="op">[[</span><span class="fl">2</span><span class="op">]</span><span class="op">]</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/dim.html" class="external-link">dim</a></span><span class="op">(</span><span class="va">x</span><span class="op">)</span></span></code></pre></div>
+<pre><code><span><span class="co">## [1] 128   5   4</span></span></code></pre>
+<div class="sourceCode" id="cb27"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/dim.html" class="external-link">dim</a></span><span class="op">(</span><span class="va">y</span><span class="op">)</span></span></code></pre></div>
+<pre><code><span><span class="co">## [1] 128   2</span></span></code></pre>
+<div class="sourceCode" id="cb29"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">x</span><span class="op">[</span><span class="fl">1</span>,,<span class="op">]</span></span></code></pre></div>
+<pre><code><span><span class="co">##      [,1] [,2] [,3] [,4]</span></span>
+<span><span class="co">## [1,]    0    1    0    0</span></span>
+<span><span class="co">## [2,]    0    1    0    0</span></span>
+<span><span class="co">## [3,]    0    1    0    0</span></span>
+<span><span class="co">## [4,]    1    0    0    0</span></span>
+<span><span class="co">## [5,]    1    0    0    0</span></span></code></pre>
+<div class="sourceCode" id="cb31"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">y</span><span class="op">[</span><span class="fl">1</span>,<span class="op">]</span></span></code></pre></div>
+<pre><code><span><span class="co">## [1] 1 0</span></span></code></pre>
+<p>We can now use these files for training.</p>
+<div class="sourceCode" id="cb33"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">model</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/create_model_lstm_cnn.html">create_model_lstm_cnn</a></span><span class="op">(</span></span>
+<span>  maxlen <span class="op">=</span> <span class="fl">5</span>,</span>
+<span>  layer_lstm <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">8</span><span class="op">)</span>,</span>
+<span>  learning_rate <span class="op">=</span> <span class="fl">0.1</span>,</span>
+<span>  layer_dense <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">2</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
+<pre><code><span><span class="co">## Model: "model_3"</span></span>
+<span><span class="co">## ________________________________________________________________________________</span></span>
+<span><span class="co">##  Layer (type)                       Output Shape                    Param #     </span></span>
+<span><span class="co">## ================================================================================</span></span>
+<span><span class="co">##  input_5 (InputLayer)               [(None, 5, 4)]                  0           </span></span>
+<span><span class="co">##  lstm_4 (LSTM)                      (None, 8)                       416         </span></span>
+<span><span class="co">##  dense_3 (Dense)                    (None, 2)                       18          </span></span>
+<span><span class="co">## ================================================================================</span></span>
+<span><span class="co">## Total params: 434</span></span>
+<span><span class="co">## Trainable params: 434</span></span>
+<span><span class="co">## Non-trainable params: 0</span></span>
+<span><span class="co">## ________________________________________________________________________________</span></span></code></pre>
+<div class="sourceCode" id="cb35"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">hist</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/train_model.html">train_model</a></span><span class="op">(</span>train_type <span class="op">=</span> <span class="st">"label_rds"</span>,</span>
+<span>                    model <span class="op">=</span> <span class="va">model</span>,</span>
+<span>                    path <span class="op">=</span> <span class="va">rds_folder_train</span>,</span>
+<span>                    path_val <span class="op">=</span> <span class="va">rds_folder_val</span>,</span>
+<span>                    steps_per_epoch <span class="op">=</span> <span class="fl">5</span>,</span>
+<span>                    format <span class="op">=</span> <span class="st">"rds"</span>,</span>
+<span>                    batch_size <span class="op">=</span> <span class="fl">8</span>,</span>
+<span>                    epochs <span class="op">=</span> <span class="fl">2</span><span class="op">)</span></span>
+<span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">hist</span><span class="op">)</span></span></code></pre></div>
+<p><img src="training_types_files/figure-html/unnamed-chunk-18-1.png" width="700"></p>
 </div>
 </div>
   </div>

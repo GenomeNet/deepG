@@ -29,21 +29,21 @@ neural networks as well as data processing.
 
   - **Data (pre-) processing**
       - Different options to encode fasta/fastq file (one-hot encoding,
-        coverage or quality score encoding)
-      - Different options to handle ambiguous nucleotides
-      - Create data generator to handle large collections of files
+        coverage or quality score encoding).
+      - Different options to handle ambiguous nucleotides.
+      - Create data generator to handle large collections of files.
   - **Deep learning architectures**
-      - Create network architectures with single function call
-      - Custom loss and metric functions available
+      - Create network architectures with single function call.
+      - Custom loss and metric functions available.
   - **Model training**
-      - Automatically create model/data pipeline
+      - Automatically create model/data pipeline.
   - **Visualizing training progress**
-      - Visualize training progress and metrics in tensorboard  
+      - Visualize training progress and metrics in tensorboard.  
   - **Model evaluation**
-      - Evaluate trained models
+      - Evaluate trained models.
   - **Model interpretability**
       - Use Integrated Gradient to visualize relationship of model’s
-        predictions with regard to its input
+        predictions with regard to its input.
 
 ## Installation
 
@@ -62,8 +62,8 @@ devtools::install_github("GenomeNet/deepG")
 
 ## Usage
 
-See the package website at <https://genomenet.github.io/deepG/> for
-documentation and example
+See the package website at <https://deepg.de> for documentation and
+example
 code.
 
 <!-- ## Examples  -->

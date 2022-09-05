@@ -120,7 +120,7 @@ batch.</p>
     <div id="arguments">
     <h2>Arguments</h2>
     <dl><dt>output_path</dt>
-<dd><p>Output directory. Output files will be named output_path + file_name_start + x + ".rds" or ".pickle", where x is an index (from 1 to
+<dd><p>Output directory. Output files will be named <code>output_path</code> + <code>file_name_start</code> + x + ".rds" or ".pickle", where x is an index (from 1 to
 <code>iterations</code>) and file ending depends on <code>as_numpy_array</code> argument.</p></dd>
 
 
@@ -135,7 +135,7 @@ Assume a sequence <code>"AACCGTA"</code>. Output correspond as follows</p><ul><l
 
 
 <dt>path_corpus</dt>
-<dd><p>Input directory where .fasta files are located or path to single file ending with .fasta or .fastq
+<dd><p>Input directory where fasta files are located or path to single file ending with fasta or fastq
 (as specified in format argument). Can also be a list of directories and/or files.</p></dd>
 
 
@@ -152,11 +152,11 @@ Assume a sequence <code>"AACCGTA"</code>. Output correspond as follows</p><ul><l
 
 
 <dt>vocabulary</dt>
-<dd><p>Vector of allowed characters, character outside vocabulary get encoded as 0-vector.</p></dd>
+<dd><p>Vector of allowed characters. Characters outside vocabulary get encoded as specified in <code>ambiguous_nuc</code>.</p></dd>
 
 
 <dt>as_numpy_array</dt>
-<dd><p>Store output as list of numpy arrays if TRUE (otherwise as R array).</p></dd>
+<dd><p>Store output as list of numpy arrays if <code>TRUE</code> (otherwise as R array).</p></dd>
 
 
 <dt>shuffle</dt>
@@ -165,23 +165,23 @@ Assume a sequence <code>"AACCGTA"</code>. Output correspond as follows</p><ul><l
 
 <dt>set_learning</dt>
 <dd><p>When you want to assign one label to set of samples. Only implemented for <code>train_type = "label_folder"</code>.
-Input is a list with the following parameters</p><ul><li><p><code>samples_per_target</code>: how many samples to use for one target</p></li>
-<li><p><code>maxlen</code>: length of one sample</p></li>
+Input is a list with the following parameters</p><ul><li><p><code>samples_per_target</code>: how many samples to use for one target.</p></li>
+<li><p><code>maxlen</code>: length of one sample.</p></li>
 <li><p><code>reshape_mode</code>: <code>"time_dist", "multi_input"</code> or <code>"concat"</code>.</p><ul><li><p>If <code>reshape_mode</code> is <code>"multi_input"</code>, generator will produce <code>samples_per_target</code> separate inputs, each of length <code>maxlen</code> (model should have
 <code>samples_per_target</code> input layers).</p></li>
 <li><p>If reshape_mode is <code>"time_dist"</code>, generator will produce a 4D input array. The dimensions correspond to
 <code>(batch_size, samples_per_target, maxlen, length(vocabulary))</code>.</p></li>
-<li><p>If reshape mode is <code>"concat"</code>, generator will concatenate <code>samples_per_target</code> sequences
-of length <code>maxlen</code> to one long sequence</p></li>
+<li><p>If <code>reshape_mode</code> is <code>"concat"</code>, generator will concatenate <code>samples_per_target</code> sequences
+of length <code>maxlen</code> to one long sequence.</p></li>
 </ul></li>
 <li><p>If <code>reshape_mode</code> is <code>"concat"</code>, there is an additional <code>buffer_len</code>
 argument. If <code>buffer_len</code> is an integer, the subsequences are interspaced with <code>buffer_len</code> rows. The input length is
-(<code>maxlen</code> \(*\) <code>samples_per_target</code>) + <code>buffer_len</code> \(*\) (<code>samples_per_target</code> - 1)</p></li>
+(<code>maxlen</code> \(*\) <code>samples_per_target</code>) + <code>buffer_len</code> \(*\) (<code>samples_per_target</code> - 1).</p></li>
 </ul></dd>
 
 
 <dt>seed</dt>
-<dd><p>Sets seed for `set.seed`` function for reproducible results.</p></dd>
+<dd><p>Sets seed for <code>set.seed</code> function for reproducible results.</p></dd>
 
 
 <dt>file_name_start</dt>
@@ -219,15 +219,6 @@ argument. If <code>buffer_len</code> is an integer, the subsequences are intersp
 <span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/base/list.files.html" class="external-link">list.files</a></span><span class="op">(</span><span class="va">out_dir</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  [1] "batch_1.rds"  "batch_10.rds" "batch_2.rds"  "batch_3.rds"  "batch_4.rds" </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  [6] "batch_5.rds"  "batch_6.rds"  "batch_7.rds"  "batch_8.rds"  "batch_9.rds" </span>
-<span class="r-in"><span></span></span>
-<span class="r-in"><span><span class="co"># read first batch</span></span></span>
-<span class="r-in"><span><span class="va">z</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/readRDS.html" class="external-link">readRDS</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/list.files.html" class="external-link">list.files</a></span><span class="op">(</span><span class="va">out_dir</span>, full.names <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span><span class="op">[</span><span class="fl">1</span><span class="op">]</span><span class="op">)</span></span></span>
-<span class="r-in"><span><span class="va">x</span> <span class="op">&lt;-</span> <span class="va">z</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span></span></span>
-<span class="r-in"><span><span class="va">y</span> <span class="op">&lt;-</span> <span class="va">z</span><span class="op">[[</span><span class="fl">2</span><span class="op">]</span><span class="op">]</span></span></span>
-<span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/base/dim.html" class="external-link">dim</a></span><span class="op">(</span><span class="va">x</span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] 32  5  4</span>
-<span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/base/dim.html" class="external-link">dim</a></span><span class="op">(</span><span class="va">y</span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] 32  4</span>
 </code></pre></div>
     </div>
   </div>

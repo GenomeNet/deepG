@@ -18,7 +18,7 @@ summarize_states(
 
 \item{file_type}{\code{"h5"} or \code{"csv"}.}
 
-\item{df}{A states data frame. Ignores states_dir if not \code{NULL}.}
+\item{df}{A states data frame. Ignore \code{states_dir} argument if not \code{NULL}.}
 }
 \description{
 Create summary data frame for confidence predictions over 1 or several state files or a data frame.
@@ -27,10 +27,12 @@ i.e. each rows should sum to 1 and have nonnegative entries.
 Output data frame contains average confidence scores, max score and percentage of votes for each class.
 }
 \examples{
-m <- matrix(runif(20*3), ncol = 3)
-m <- m/rowSums(m)
+m <- c(0.9,  0.1, 0.2, 0.01,
+       0.05, 0.7, 0.2, 0,
+       0.05, 0.2, 0.6, 0.99) \%>\% matrix(ncol = 3)
+
 label_names <- paste0("class_", 1:3)
 df <- as.data.frame(m)
 pred_summary <- summarize_states(label_names = label_names, df = df)
-t(pred_summary) 
+t(pred_summary)
 }

@@ -13,8 +13,8 @@ crispr_sample
 \description{
 Example training dataset consisting of a sequence of nucleotides of CRISPR loci
 Filtered for unambiguous characters and contains only characters in the vocabulary {A,G,G,T
-}
-Can be loaded to workspace via data(crispr_sample)
+}.
+Can be loaded to workspace via \code{data(crispr_sample)}.
 }
 \references{
 \url{http://github.com/philippmuench}

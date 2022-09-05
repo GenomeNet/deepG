@@ -108,8 +108,9 @@
     <div id="arguments">
     <h2>Arguments</h2>
     <dl><dt>path</dt>
-<dd><p>Path to folder where individual or multiple FASTA or FASTQ files are located for training. If <code>train_type</code> is <code>label_folder</code>, should be a vector or list
-where each entry corresponds to a class. If <code>train_type</code> is not <code>label_folder</code>, can be a list of directories and/or single files.</p></dd>
+<dd><p>Path to training data. If <code>train_type</code> is <code>label_folder</code>, should be a vector or list
+where each entry corresponds to a class (list elements can be directories and/or individual files). If <code>train_type</code> is not <code>label_folder</code>,
+can be a single directory or file or a list of directories and/or files.</p></dd>
 
 
 <dt>vocabulary_label</dt>
@@ -137,6 +138,10 @@ with multiple inputs.</p></li>
 (targets are last <code>target_len</code> nucleotides of each sequence).</p></li>
 <li><p>If <code>"dummy_gen"</code>, generator creates random data once and repeatedly feeds these to model.</p></li>
 </ul></dd>
+
+
+<dt>csv_path</dt>
+<dd><p>If <code>train_type = "label_csv"</code>, path to csv file containing labels.</p></dd>
 
 </dl></div>
 

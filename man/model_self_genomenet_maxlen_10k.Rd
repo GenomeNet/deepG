@@ -12,8 +12,8 @@ model_self_genomenet_maxlen_10k
 }
 \description{
 Serialized keras model for "bacteria", "virus-no-phage","virus-phage" classification.
-Can be loaded to workspace via data(self_genomenet_model_maxlen_10k)
-Use keras::unserialize_model to transform to keras model or load with
-load_model_self_genomenet(maxlen = 10000) function call.
+Can be loaded to workspace via \code{data(self_genomenet_model_maxlen_10k)}
+Use \code{keras::unserialize_model} to transform to keras model or load with
+\code{load_model_self_genomenet(maxlen = 10000)} function call.
 }
 \keyword{datasets}

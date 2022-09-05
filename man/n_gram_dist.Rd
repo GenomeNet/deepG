@@ -38,7 +38,7 @@ temp_dir <- tempfile()
 dir.create(temp_dir)
 create_dummy_data(file_path = temp_dir,
                   num_files = 3,
-                  seq_length = 8,
+                  seq_length = 80,
                   vocabulary = c("A", "C", "G", "T"),
                   num_seq = 2)
 

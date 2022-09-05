@@ -11,8 +11,8 @@ Large character of 4.64 MB
 ecoli
 }
 \description{
-E. coli genome for evaluation
-Can be loaded to workspace via data(ecoli)
+E. coli genome for evaluation.
+Can be loaded to workspace via \code{data(ecoli)}.
 }
 \references{
 \url{https://science.sciencemag.org/content/277/5331/1453.long}

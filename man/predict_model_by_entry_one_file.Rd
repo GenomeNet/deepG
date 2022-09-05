@@ -13,7 +13,7 @@ predict_model_by_entry_one_file(
   vocabulary = c("a", "c", "g", "t"),
   batch_size = 256,
   layer_name = NULL,
-  padding = FALSE,
+  padding_maxlen = FALSE,
   verbose = TRUE,
   model = NULL,
   mode = "lm",

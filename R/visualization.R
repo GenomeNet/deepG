@@ -100,17 +100,17 @@ integral_approximation <- function(gradients) {
 #' 
 #' Computes integrated gradients scores for model and an input sequence.
 #' This can be used to visualize what part of the input is import for the models decision.
-#' Code is R implementation of python code from here: https://www.tensorflow.org/tutorials/interpretability/integrated_gradients.
-#' Tensorflow implementation is based on this paper: https://arxiv.org/abs/1703.01365.
+#' Code is R implementation of python code from [here](https://www.tensorflow.org/tutorials/interpretability/integrated_gradients).
+#' Tensorflow implementation is based on this [paper](https://arxiv.org/abs/1703.01365).
 #' 
-#' @param baseline_type Baseline sequence, either "zero" for all zeros or "shuffle" for random permutation of input_seq.
+#' @param baseline_type Baseline sequence, either `"zero"` for all zeros or `"shuffle"` for random permutation of `input_seq`.
 #' @param m_steps Number of steps between baseline and original input.
 #' @param input_seq Input tensor.
 #' @param target_class_idx Index of class to compute gradient for
 #' @param model Model to compute gradient for.
-#' @param pred_stepwise Whether to do predictions with batch_size 1 rather than all at once. Can be used if
+#' @param pred_stepwise Whether to do predictions with batch size 1 rather than all at once. Can be used if
 #' input is too big to handle at once. Only supported for single input layer.
-#' @param num_baseline_repeats Number of different baseline estimations if baseline_type is "shuffle" (estimate integrated
+#' @param num_baseline_repeats Number of different baseline estimations if baseline_type is `"shuffle"` (estimate integrated
 #' gradient repeatedly for different shuffles). Final result is average of \code{num_baseline} single calculations.
 #' @examples 
 #' model <- create_model_lstm_cnn(layer_lstm = 8, layer_dense = 3, maxlen = 20, verbose = FALSE)
@@ -272,12 +272,13 @@ gradients_stepwise <- function(model = model, baseline_seq, target_class_idx,
 
 #' Heatmap of integrated gradient scores
 #' 
-#' Creates a heatmap from output of \code{\link{integrated_gradients}} function.
+#' Creates a heatmap from output of \code{\link{integrated_gradients}} function. The first row contains 
+#' the column-wise absolut sums of IG scores and the second row the sums. Rows 3 to 6 contain the IG scores for each 
+#' position and each nucleotide. The last row contains nucleotide information.
 #'
-#' @param integrated_grads Output of \code{integrated_gradients} function
+#' @param integrated_grads Matrix of integrated gradient scores (output of \code{\link{integrated_gradients}} function).
 #' @param input_seq Input sequence for model. Should be the same as \code{input_seq} input for corresponding
 #' \code{\link{integrated_gradients}} call that computed input for \code{integrated_grads} argument.
-#' model <- create_model_lstm_cnn(layer_lstm = 8, layer_dense = 3, maxlen = 20)
 #' @examples 
 #' model <- create_model_lstm_cnn(layer_lstm = 8, layer_dense = 3, maxlen = 20, verbose = FALSE)
 #' random_seq <- sample(0:3, 20, replace = TRUE)

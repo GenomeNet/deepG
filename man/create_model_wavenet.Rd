@@ -50,8 +50,14 @@ then it's used as the dilation rate of each residual block.}
 
 \item{compile}{Whether to compile the model.}
 
-\item{model_seed}{Set seed for model parameters in tensorflow, if not \code{NULL}.}
+\item{model_seed}{Set seed for model parameters in tensorflow if not \code{NULL}.}
 }
 \description{
-Create network architecture as described \href{https://arxiv.org/abs/1609.03499}{here}
+Create network architecture as described \href{https://arxiv.org/abs/1609.03499}{here}. Implementation
+uses code from \href{https://github.com/r-tensorflow/wavenet}{here}.
+}
+\examples{
+
+model <- create_model_wavenet(residual_blocks = 2^rep(1:4, 2), maxlen = 1000)
+
 }

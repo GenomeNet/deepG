@@ -13,7 +13,7 @@
 #' dir.create(temp_dir)
 #' create_dummy_data(file_path = temp_dir,
 #'                   num_files = 3,
-#'                   seq_length = 8,
+#'                   seq_length = 80,
 #'                   vocabulary = c("A", "C", "G", "T"),
 #'                   num_seq = 2)
 #' 
@@ -142,13 +142,13 @@ df_to_distribution_matrix <- function(freq_df, vocabulary = c("A", "C", "G", "T"
   dist_matrix[ , vocabulary]
 }
 
-#' predict the next nucleotide using n-gram
+#' Predict the next nucleotide using n-gram
 #'
 #' @inheritParams generator_fasta_lm
 #' @param path_input Path to folder containing fasta files or single fasta file.
-#' @param distribution_matrix Output of \code{n_gram_dist} function.
-#' @param default_pred Either character from vocabulary or "random". Will be used as prediction if certain n-gram did not appear before.
-#' If "random" assign random prediction.
+#' @param distribution_matrix A data frame containing frequency of next nucleotide given the previous n nucleotides (output of \code{\link{n_gram_dist}} function).
+#' @param default_pred Either character from vocabulary or `"random"`. Will be used as prediction if certain n-gram did not appear before.
+#' If `"random"` assign random prediction.
 #' @param vocabulary Vector of allowed characters, samples outside vocabulary get discarded.
 #' @param file_sample If integer, size of random sample of files in \code{path_input}.
 #' @param return_data_frames Boolean, whether to return data frame with input, predictions, target position and true target.

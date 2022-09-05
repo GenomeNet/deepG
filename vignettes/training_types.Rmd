@@ -58,12 +58,12 @@ target $Y$. Assume a sequence <tt>abcdefg</tt> and `maxlen = 6`. Output correspo
 
 ### Create dummy data
 
-To test the different language model options, we create a simple dummy data set consisting of a repetition of the sequence "AAACCCGGGTTTAAACCC...". 
+To test the different language model options, we create a simple dummy data set consisting of a repetition of the sequence <tt>AAACCCGGGTTTAAACCC...</tt>. 
 
 ```{r warning = FALSE}
 vocabulary <- c("A", "C", "G", "T")
 base_seq <- "AAACCCGGGTTT"
-full_seq <- rep(base_seq, 50) %>% paste(collapse = "")
+full_seq <- strrep(base_seq, 50)
 df <- data.frame(Header = "header", Sequence = full_seq)
 
 # create training fasta file
@@ -94,16 +94,15 @@ model <- create_model_lstm_cnn(
 Next we have to specify the location of our training and validation data and the output format of the data generator    
 
 ```{r warning = FALSE, message = FALSE}
-hist <- train_model(train_type = "lm", # running a language model 
+hist <- train_model(train_type = "lm", # running a language model
+                    output_format = "target_right", # predict target at end of sequence
                     model = model,
                     path = train_dir,
                     path_val = val_dir,
                     steps_per_epoch = 5, # use 5 batches per epoch
                     train_val_ratio = 0.2, # use 20% of samples for validation compared to train
                     batch_size = 16,
-                    epochs = 4, 
-                    output_format = "target_right" # predict target at end of sequence 
-)
+                    epochs = 4)
 plot(hist)
 ```
 
@@ -125,23 +124,22 @@ model <- create_model_lstm_cnn_target_middle(
   layer_lstm = c(8),
   layer_dense = c(4),
   learning_rate = 0.1,
-  vocabulary_size = 4 # text consists of A,C,G,T
+  vocabulary_size = 4 
 )
 ```
 
 The `train_model` call is identical to the previous model, except we have to change the output format of the generator by setting `output_format = "target_middle_lstm"`. This reverses the order of the sequence after the target.  
 
 ```{r warning = FALSE, message = FALSE}
-hist <- train_model(train_type = "lm", # running a language model 
+hist <- train_model(train_type = "lm", # running a language model
+                    output_format = "target_middle_lstm", # predict target at end of sequence 
                     model = model,
                     path = train_dir,
                     path_val = val_dir,
                     steps_per_epoch = 5, # use 5 batches per epoch
                     train_val_ratio = 0.2, # use 20% of samples for validation compared to train
                     batch_size = 16,
-                    epochs = 4, 
-                    output_format = "target_middle_lstm" # predict target at end of sequence 
-)
+                    epochs = 4)
 plot(hist)
 ```
 
@@ -149,7 +147,7 @@ plot(hist)
 ## Label classification
 
 With label classification, we describe the task of mapping a label to a sequence. 
-For example: given the sequence \texttt{ACGACCG}, does the sequence belong to a viral or bacterial genome?
+For example: given the input <tt>ACGACCG</tt>, does the sequence belong to a viral or bacterial genome?
 
 deepG offers three options to map a label to a sequence 
 
@@ -162,8 +160,8 @@ deepG offers three options to map a label to a sequence
 
 ### Create dummy data
 
-To test label classification, we create a simple dummy data set. One class consists of random sequences using just "A" and "C" and second class
-uses just "G" and "T".
+To test label classification, we create a simple dummy data set. One class consists of random sequences using just <tt>A</tt> and <tt>C</tt> and second class
+uses just <tt>G</tt> and <tt>T</tt>.
 
 ```{r warning = FALSE}
 # create training fasta files
@@ -303,6 +301,76 @@ hist <- train_model(train_type = "label_csv",
                     path_val = val_dir,
                     steps_per_epoch = 5,
                     train_val_ratio = 0.2,
+                    batch_size = 8,
+                    epochs = 2)
+
+plot(hist)
+```
+
+### Training with rds files
+
+We can also use rds files files as input, where the data must already be preprocessed. 
+We may use the `dataset_from_gen` function to create rds files from fasta files.
+
+```{r warning = FALSE, message = FALSE}
+rds_folder_train <- tempfile()
+rds_folder_val <- tempfile()
+dir.create(rds_folder_train)
+dir.create(rds_folder_val)
+
+for (data_type in c("train", "val")) {
+  
+  if (data_type == "train") {
+    output_path <- rds_folder_train
+    path_corpus <- train_dir
+  } else {
+    output_path <- rds_folder_val
+    path_corpus <- val_dir
+  }
+  
+  dataset_from_gen(output_path = output_path,
+                   iterations = 25, # create 25 rds files 
+                   train_type = "label_folder",
+                   path_corpus = path_corpus, 
+                   batch_size = 128,
+                   maxlen = 5,
+                   step = 5,
+                   vocabulary = c("a", "c", "g", "t"),
+                   file_name_start = "batch_")
+  
+}
+```
+
+We created 25 files for training and validation with preprocessed data. 
+
+```{r warning = FALSE, message = FALSE}
+train_files <- list.files(rds_folder_train, full.names = TRUE)
+basename(train_files)
+
+example_batch <- readRDS(train_files[1])
+x <- example_batch[[1]]
+y <- example_batch[[2]]
+dim(x)
+dim(y)
+x[1,,]
+y[1,]
+```
+
+We can now use these files for training.
+
+```{r warning = FALSE, message = FALSE}
+model <- create_model_lstm_cnn(
+  maxlen = 5,
+  layer_lstm = c(8),
+  learning_rate = 0.1,
+  layer_dense = c(2))
+
+hist <- train_model(train_type = "label_rds",
+                    model = model,
+                    path = rds_folder_train,
+                    path_val = rds_folder_val,
+                    steps_per_epoch = 5,
+                    format = "rds",
                     batch_size = 8,
                     epochs = 2)
 

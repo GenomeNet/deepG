@@ -29,34 +29,34 @@
 #' \item  If `"dummy_gen"`, generator creates random data once and repeatedly feeds these to model.
 #' }
 #' @param model A keras model.
-#' @param path Path to folder where individual or multiple FASTA or FASTQ files are located for training. If \code{train_type} is \code{label_folder}, should be a vector or list
-#' where each entry corresponds to a class. If \code{train_type} is not \code{label_folder}, can be a list of directories and/or single files.
-#' @param path_val Path to folder where individual or multiple FASTA or FASTQ files are located for validation. If \code{train_type} is \code{label_folder}, should be a vector
-#' containing a path for each class. If \code{train_type} is not \code{label_folder}, can be a list of directories and/or files.
-#' @param dataset List of training data, holding training samples in RAM instead of using generator. Should be list with two entries called `"X"` and `"Y"`.
-#' @param dataset_val List of validation data. Should be list with two entries. Should be list with two entries called `"X"` and `"Y"`.
+#' @param path Path to training data. If \code{train_type} is \code{label_folder}, should be a vector or list
+#' where each entry corresponds to a class (list elements can be directories and/or individual files). If \code{train_type} is not \code{label_folder}, 
+#' can be a single directory or file or a list of directories and/or files.
+#' @param path_val Path to validation data. See `path` argument for details.
+#' @param dataset List of training data holding training samples in RAM instead of using generator. Should be list with two entries called `"X"` and `"Y"`.
+#' @param dataset_val List of validation data. Should have two entries called `"X"` and `"Y"`.
 #' @param path_checkpoint Path to checkpoints folder or `NULL`. If `NULL`, checkpoints don't get stored.
-#' @param path_log Path to directory to write training scores. File name is `run_name` + `".csv"`. No output if path_log is `NULL`.
+#' @param path_log Path to directory to write training scores. File name is `run_name` + `".csv"`. No output if `NULL`.
 #' @param train_val_ratio For generator defines the fraction of batches that will be used for validation (compared to size of training data), i.e. one validation iteration
 #' processes \code{batch_size} \eqn{*} \code{steps_per_epoch} \eqn{*} \code{train_val_ratio} samples. If you use dataset instead of generator and \code{dataset_val} is `NULL`, splits \code{dataset}
 #' into train/validation data.
-#' @param run_name Name of the run. Name will be used to identify output from callbacks. If `NULL`, will use date as run name. If name already present, will add "_2" to name
-#' or "_{x + 1}" if name ends with integer x. 
+#' @param run_name Name of the run. Name will be used to identify output from callbacks. If `NULL`, will use date as run name. 
+#' If name already present, will add `"_2"` to name or `"_{x+1}"` if name ends with `_x`, where `x` is some integer. 
 #' @param batch_size Number of samples used for one network update.
 #' @param epochs Number of iterations.
-#' @param max_queue_size Queue on fit().
+#' @param max_queue_size Maximum size for the generator queue.
 #' @param reduce_lr_on_plateau Whether to use learning rate scheduler.
-#' @param lr_plateau_factor Factor of decreasing learning_rate when plateau is reached.
-#' @param patience Number of epochs waiting for decrease in val_loss before reducing learning_rate.
+#' @param lr_plateau_factor Factor of decreasing learning rate when plateau is reached.
+#' @param patience Number of epochs waiting for decrease in validation loss before reducing learning rate.
 #' @param cooldown Number of epochs without changing learning rate.
 #' @param steps_per_epoch Number of training batches per epoch.
 #' @param step Frequency of sampling steps.
 #' @param shuffle_file_order Boolean, whether to go through files sequentially or shuffle beforehand.
-#' @param vocabulary Vector of allowed characters. Character outside vocabulary get encoded as specified in \code{ambiguous_nuc}.
+#' @param vocabulary Vector of allowed characters. Characters outside vocabulary get encoded as specified in \code{ambiguous_nuc}.
 #' @param initial_epoch Epoch at which to start training. Note that network
 #' will run for (\code{epochs} - \code{initial_epochs}) rounds and not \code{epochs} rounds.
 #' @param path_tensorboard Path to tensorboard directory or `NULL`. If `NULL`, training not tracked on tensorboard.
-#' @param save_best_only Only save model that improved on best val_loss score.
+#' @param save_best_only Only save model that improved on best validation loss score.
 #' @param save_weights_only Whether to save weights only.
 #' @param seed Sets seed for reproducible results.
 #' @param shuffle_input Whether to shuffle entries in file.
@@ -65,7 +65,7 @@
 #' @param path_file_log Write name of files used for training to csv file if path is specified.
 #' @param vocabulary_label Character vector of possible targets. Targets outside \code{vocabulary_label} will get discarded if
 #' \code{train_type = "label_header"}.
-#' @param file_limit Integer or `NULL`. If integer, use only specified of number randomly sampled files for training. Ignored if greater than number of files in \code{path}.
+#' @param file_limit Integer or `NULL`. If integer, use only specified number of randomly sampled files for training. Ignored if greater than number of files in \code{path}.
 #' @param reverse_complement_encoding Whether to use both original sequence and reverse complement as two input sequences.
 #' @param output_format Determines shape of output tensor for language model.
 #' Either `"target_right"`, `"target_middle_lstm"`, `"target_middle_cnn"` or `"wavenet"`.
@@ -84,7 +84,7 @@
 #' @param validation_only_after_training Whether to skip validation during training and only do one validation iteration after training.
 #' @param skip_amb_nuc Threshold of ambiguous nucleotides to accept in fasta entry. Complete entry will get discarded otherwise.
 #' @param class_weight List of weights for output. Order should correspond to \code{vocabulary_label}.
-#' You can use \code{get_class_weight} function to estimates class weights:
+#' You can use \code{\link{get_class_weight}} function to estimate class weights:
 #' 
 #' \code{class_weights <- get_class_weights(path = path, train_type = train_type)}
 #' 
@@ -99,8 +99,8 @@
 #' @param set_learning When you want to assign one label to set of samples. Only implemented for `train_type = "label_folder"`.
 #' Input is a list with the following parameters 
 #' \itemize{
-#' \item `samples_per_target`: how many samples to use for one target
-#' \item `maxlen`: length of one sample
+#' \item `samples_per_target`: how many samples to use for one target.
+#' \item `maxlen`: length of one sample.
 #' \item `reshape_mode`: `"time_dist", "multi_input"` or `"concat"`. 
 #' \itemize{
 #' \item
@@ -108,19 +108,17 @@
 #' `samples_per_target` input layers).
 #' \item If reshape_mode is `"time_dist"`, generator will produce a 4D input array. The dimensions correspond to
 #' `(batch_size, samples_per_target, maxlen, length(vocabulary))`.
-#' \item If reshape mode is `"concat"`, generator will concatenate `samples_per_target` sequences
-#' of length `maxlen` to one long sequence
+#' \item If `reshape_mode` is `"concat"`, generator will concatenate `samples_per_target` sequences
+#' of length `maxlen` to one long sequence.
 #' }
 #' \item If `reshape_mode` is `"concat"`, there is an additional `buffer_len`
 #' argument. If `buffer_len` is an integer, the subsequences are interspaced with `buffer_len` rows. The input length is
-#' (`maxlen` \eqn{*} `samples_per_target`) + `buffer_len` \eqn{*} (`samples_per_target` - 1)
+#' (`maxlen` \eqn{*} `samples_per_target`) + `buffer_len` \eqn{*} (`samples_per_target` - 1).
 #' }
-#' @param n_gram Encode n nucleotides at once. Can be used for language model for target encoding (not input yet)
-#' or for input sequence for label training.
+#' @param n_gram Encode n nucleotides at once. Can be used for language model for target encoding.
 #' @param n_gram_stride Step size for n-gram encoding. For AACCGGTT with `n-gram = 4` and `n_gram_stride = 2`, generator encodes
 #' `(AACC), (CCGG), (GGTT)`; for `n_gram_stride = 4` generator encodes `(AACC), (GGTT)`.
 #' @examples
-#' \dontrun{
 #' # create dummy data
 #' path_train_1 <- tempfile()
 #' path_train_2 <- tempfile()
@@ -151,7 +149,7 @@
 #'                     step = 5,
 #'                     format = "fasta",
 #'                     vocabulary_label = c("label_1", "label_2"))
-#' }                     
+#'  
 #' @export
 train_model <- function(train_type = "lm",
                         model = NULL,

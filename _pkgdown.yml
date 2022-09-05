@@ -58,6 +58,7 @@ reference:
   - function_args_cb
   - validation_after_training_cb
   - reset_states_cb
+  - remove_checkpoints
 - title: Metrics and Losses
   contents:
   - noisy_loss_wrapper
@@ -107,7 +108,5 @@ reference:
   contents: create_dummy_data
 - title: Session Management
   contents:
-  - end_gpu_session
-  - startGPUSession
   - deepG
 

@@ -2,7 +2,7 @@
 % Please edit documentation in R/n_gram.R
 \name{predict_with_n_gram}
 \alias{predict_with_n_gram}
-\title{predict the next nucleotide using n-gram}
+\title{Predict the next nucleotide using n-gram}
 \usage{
 predict_with_n_gram(
   path_input,
@@ -18,10 +18,10 @@ predict_with_n_gram(
 \arguments{
 \item{path_input}{Path to folder containing fasta files or single fasta file.}
 
-\item{distribution_matrix}{Output of \code{n_gram_dist} function.}
+\item{distribution_matrix}{A data frame containing frequency of next nucleotide given the previous n nucleotides (output of \code{\link{n_gram_dist}} function).}
 
-\item{default_pred}{Either character from vocabulary or "random". Will be used as prediction if certain n-gram did not appear before.
-If "random" assign random prediction.}
+\item{default_pred}{Either character from vocabulary or \code{"random"}. Will be used as prediction if certain n-gram did not appear before.
+If \code{"random"} assign random prediction.}
 
 \item{vocabulary}{Vector of allowed characters, samples outside vocabulary get discarded.}
 
@@ -34,7 +34,7 @@ If "random" assign random prediction.}
 \item{step}{How often to take a sample.}
 }
 \description{
-predict the next nucleotide using n-gram
+Predict the next nucleotide using n-gram
 }
 \examples{
 # create dummy fasta files

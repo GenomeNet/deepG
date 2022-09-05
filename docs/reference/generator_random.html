@@ -158,7 +158,7 @@ Assume a sequence <code>"AACCGTA"</code>. Output correspond as follows</p><ul><l
 
 
 <dt>seed</dt>
-<dd><p>Sets seed for `set.seed`` function for reproducible results.</p></dd>
+<dd><p>Sets seed for <code>set.seed</code> function for reproducible results.</p></dd>
 
 
 <dt>format</dt>
@@ -166,12 +166,13 @@ Assume a sequence <code>"AACCGTA"</code>. Output correspond as follows</p><ul><l
 
 
 <dt>reverse_complement</dt>
-<dd><p>Logical, for every new file decide randomly to use original data or its reverse complement.</p></dd>
+<dd><p>Boolean, for every new file decide randomly to use original data or its reverse complement.</p></dd>
 
 
 <dt>path</dt>
-<dd><p>Path to folder where individual or multiple FASTA or FASTQ files are located for training. If <code>train_type</code> is <code>label_folder</code>, should be a vector or list
-where each entry corresponds to a class. If <code>train_type</code> is not <code>label_folder</code>, can be a list of directories and/or single files.</p></dd>
+<dd><p>Path to training data. If <code>train_type</code> is <code>label_folder</code>, should be a vector or list
+where each entry corresponds to a class (list elements can be directories and/or individual files). If <code>train_type</code> is not <code>label_folder</code>,
+can be a single directory or file or a list of directories and/or files.</p></dd>
 
 
 <dt>batch_size</dt>
@@ -184,7 +185,7 @@ where each entry corresponds to a class. If <code>train_type</code> is not <code
 
 <dt>ambiguous_nuc</dt>
 <dd><p>How to handle nucleotides outside vocabulary, either <code>"zero"</code>, <code>"discard"</code>, <code>"empirical"</code> or <code>"equal"</code>.</p><ul><li><p>If <code>"zero"</code>, input gets encoded as zero vector.</p></li>
-<li><p>If <code>"equal"</code>, input is <code>1/length(vocabulary)</code> \(*\) <code>length(vocabulary)</code>.</p></li>
+<li><p>If <code>"equal"</code>, input is repetition of <code>1/length(vocabulary)</code>.</p></li>
 <li><p>If <code>"discard"</code>, samples containing nucleotides outside vocabulary get discarded.</p></li>
 <li><p>If <code>"empirical"</code>, use nucleotide distribution of current file.</p></li>
 </ul></dd>
@@ -195,7 +196,7 @@ where each entry corresponds to a class. If <code>train_type</code> is not <code
 
 
 <dt>vocabulary</dt>
-<dd><p>Vector of allowed characters, character outside vocabulary get encoded as 0-vector.</p></dd>
+<dd><p>Vector of allowed characters. Characters outside vocabulary get encoded as specified in <code>ambiguous_nuc</code>.</p></dd>
 
 
 <dt>n_gram</dt>
@@ -231,13 +232,13 @@ subset of <code>max_samples</code> samples.</p></dd>
 
 <dt>target_split</dt>
 <dd><p>If target gets read from csv file, list of names to divide target tensor into list of tensors.
-Example: if csv file has header names <code>"file", "label_1", "label_2", "label_3"</code> und <code>target_split = list(c("label_1", "label_2"), "label_3")</code>,
+Example: if csv file has header names <code>"file", "label_1", "label_2", "label_3"</code> and <code>target_split = list(c("label_1", "label_2"), "label_3")</code>,
 this will divide target matrix to list of length 2, where the first element contains columns named <code>"label_1"</code> and <code>"label_2"</code> and the
 second entry contains the column named <code>"label_3"</code>.</p></dd>
 
 
 <dt>max_iter</dt>
-<dd><p>Stop after max_iter number of iterations failed to produce a new batch.</p></dd>
+<dd><p>Stop after <code>max_iter</code> number of iterations failed to produce a new batch.</p></dd>
 
 
 <dt>verbose</dt>
@@ -246,18 +247,18 @@ second entry contains the column named <code>"label_3"</code>.</p></dd>
 
 <dt>set_learning</dt>
 <dd><p>When you want to assign one label to set of samples. Only implemented for <code>train_type = "label_folder"</code>.
-Input is a list with the following parameters</p><ul><li><p><code>samples_per_target</code>: how many samples to use for one target</p></li>
-<li><p><code>maxlen</code>: length of one sample</p></li>
+Input is a list with the following parameters</p><ul><li><p><code>samples_per_target</code>: how many samples to use for one target.</p></li>
+<li><p><code>maxlen</code>: length of one sample.</p></li>
 <li><p><code>reshape_mode</code>: <code>"time_dist", "multi_input"</code> or <code>"concat"</code>.</p><ul><li><p>If <code>reshape_mode</code> is <code>"multi_input"</code>, generator will produce <code>samples_per_target</code> separate inputs, each of length <code>maxlen</code> (model should have
 <code>samples_per_target</code> input layers).</p></li>
 <li><p>If reshape_mode is <code>"time_dist"</code>, generator will produce a 4D input array. The dimensions correspond to
 <code>(batch_size, samples_per_target, maxlen, length(vocabulary))</code>.</p></li>
-<li><p>If reshape mode is <code>"concat"</code>, generator will concatenate <code>samples_per_target</code> sequences
-of length <code>maxlen</code> to one long sequence</p></li>
+<li><p>If <code>reshape_mode</code> is <code>"concat"</code>, generator will concatenate <code>samples_per_target</code> sequences
+of length <code>maxlen</code> to one long sequence.</p></li>
 </ul></li>
 <li><p>If <code>reshape_mode</code> is <code>"concat"</code>, there is an additional <code>buffer_len</code>
 argument. If <code>buffer_len</code> is an integer, the subsequences are interspaced with <code>buffer_len</code> rows. The input length is
-(<code>maxlen</code> \(*\) <code>samples_per_target</code>) + <code>buffer_len</code> \(*\) (<code>samples_per_target</code> - 1)</p></li>
+(<code>maxlen</code> \(*\) <code>samples_per_target</code>) + <code>buffer_len</code> \(*\) (<code>samples_per_target</code> - 1).</p></li>
 </ul></dd>
 
 
@@ -270,12 +271,12 @@ argument. If <code>buffer_len</code> is an integer, the subsequences are intersp
 
 
 <dt>proportion_entries</dt>
-<dd><p>Proportion of fasta entries to keep. For example, if fasta file has 50 entries and proportion_entries = 0.1,
+<dd><p>Proportion of fasta entries to keep. For example, if fasta file has 50 entries and <code>proportion_entries = 0.1</code>,
 will randomly select 5 entries.</p></dd>
 
 
 <dt>concat_seq</dt>
-<dd><p>Character string or <code>NULL</code>. If not <code>NULL</code> all entries from file get concatenated to one sequence with concat_seq string between them.
+<dd><p>Character string or <code>NULL</code>. If not <code>NULL</code> all entries from file get concatenated to one sequence with <code>concat_seq</code> string between them.
 Example: If 1.entry AACC, 2. entry TTTG and <code>concat_seq = "ZZZ"</code> this becomes AACCZZZTTTG.</p></dd>
 
 </dl></div>

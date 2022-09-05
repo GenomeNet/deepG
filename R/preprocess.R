@@ -5,13 +5,10 @@
 #'
 #' @inheritParams generator_fasta_lm
 #' @param sequence Sequence of integers.
-#' @param maxlen Length of one sample
 #' @param start_ind Start positions of samples in \code{sequence}.
 #' @param ambiguous_nuc How to handle nucleotides outside vocabulary, either `"zero"`, `"empirical"` or `"equal"`.
 #' See \code{\link{train_model}}. Note that `"discard"` option is not available for this function.
 #' @param nuc_dist Nucleotide distribution.
-#' @param use_quality Use quality scores.
-#' @param use_coverage Whether to use coverage encoding. 
 #' @param max_cov Biggest coverage value. Only applies if `use_coverage = TRUE`.
 #' @param cov_vector Vector of coverage values associated to the input. 
 #' @param adjust_start_ind Whether to shift values in \code{start_ind} to start at 1: for example (5,11,25) becomes (1,7,21).
@@ -406,6 +403,16 @@ seq_encoding_label <- function(sequence = NULL, maxlen, vocabulary, start_ind, a
 #' @param step Distance between samples from one entry in \code{seq_vector}.
 #' @param train_mode Either `"lm"` for language model or `"label"` for label classification. 
 #' @param discard_amb_nuc Whether to discard all samples that contain characters outside vocabulary.
+#' @examples 
+#' seq_vector <- c("AAACCCNNNGGGTTT")
+#' get_start_ind(
+#'   seq_vector = seq_vector,
+#'   length_vector = nchar(seq_vector),
+#'   maxlen = 4,
+#'   step = 2,
+#'   train_mode = "label",
+#'   discard_amb_nuc = TRUE,
+#'   vocabulary = c("A", "C", "G", "T"))
 #' @export
 get_start_ind <- function(seq_vector, length_vector, maxlen,
                           step, train_mode = "label", discard_amb_nuc = FALSE, vocabulary = c("A", "C", "G", "T")) {
@@ -559,6 +566,36 @@ remove_amb_nuc_entries <- function(fasta.file, skip_amb_nuc, pattern) {
 #' @inheritParams generator_fasta_label_header_csv
 #' @inheritParams train_model
 #' @param file_proportion Proportion of files to randomly sample for estimating class distributions.
+#' @param csv_path If `train_type = "label_csv"`, path to csv file containing labels.
+#' @examples 
+#' 
+#' # create dummy data
+#' path_1 <- tempfile()
+#' path_2 <- tempfile()
+#' 
+#' for (current_path in c(path_1, path_2)) {
+#'   
+#'   dir.create(current_path)
+#'   # create twice as much data for first class
+#'   num_files <- ifelse(current_path == path_1, 6, 3)
+#'   create_dummy_data(file_path = current_path,
+#'                     num_files = num_files,
+#'                     seq_length = 10,
+#'                     num_seq = 5,
+#'                     vocabulary = c("a", "c", "g", "t"))
+#' }
+#' 
+#' 
+#' class_weight <- get_class_weight(
+#'   path = c(path_1, path_2),
+#'   vocabulary_label = c("A", "B"),
+#'   format = "fasta",
+#'   file_proportion = 1,
+#'   train_type = "label_folder",
+#'   csv_path = NULL)
+#' 
+#' class_weight
+#' 
 #' @export
 get_class_weight <- function(path,
                              vocabulary_label = NULL,
@@ -635,7 +672,7 @@ count_nuc <- function(path,
           fasta.file <- microseq::readFastq(i)
         }
         freq <- sum(nchar(fasta.file$Sequence))
-        classes[i] <- classes[i] + freq
+        classes[j] <- classes[j] + freq
       }
     }
   }
@@ -980,10 +1017,11 @@ get_coverage_concat <- function(fasta.file, concat_seq) {
 
 #' Reshape tensors for set learning
 #' 
-#' Reshape input x and target y. Aggregates multiple samples from x and y into single input/target batches  
+#' Reshape input x and target y. Aggregates multiple samples from x and y into single input/target batches.  
 #' 
+#' @param x 3D input tensor.
+#' @param y 2D target tensor.
 #' @param samples_per_target How many samples to use for one target
-#' @param maxlen Length of one sample.
 #' @param reshape_mode `"time_dist", "multi_input"` or `"concat"` 
 #' \itemize{
 #' \item If `"multi_input"`, will produce `samples_per_target` separate inputs, each of length `maxlen`.
@@ -991,29 +1029,37 @@ get_coverage_concat <- function(fasta.file, concat_seq) {
 #' `(new_batch_size, samples_per_target, maxlen, length(vocabulary))`.
 #' \item If `"concat"`, will concatenate `samples_per_target` sequences of length `maxlen` to one long sequence
 #' }
-#' @param buffer_len Only applies if `reshape_mode = "concat"`. If `buffer_len` is an integer, the subsequences are interspaced with `buffer_len` rows. The input length is
-#' (`maxlen` \eqn{*} `samples_per_target`) + `buffer_len` \eqn{*} (`samples_per_target` - 1)
+#' @param buffer_len Only applies if `reshape_mode = "concat"`. If `buffer_len` is an integer, the subsequences are interspaced with `buffer_len` rows. The reshaped x has
+#' new maxlen: (`maxlen` \eqn{*} `samples_per_target`) + `buffer_len` \eqn{*} (`samples_per_target` - 1).
 #' @param new_batch_size Size of first axis of input/targets after reshaping.
-#' @param voc_len Size of vocabulary.
-#' @param concat_maxlen Length of sequence after concatenation. Only applies if `reshape_mode = "concat"`.
+#' @param check_y Check if entries in `y` are consistent with reshape strategy (same label when aggregating).   
 #' 
-#' @inheritParams generator_initialize
-#' @inheritParams generator_fasta_label_folder_wrapper
 #' @export
 reshape_tensor <- function(x, y, new_batch_size,
                            samples_per_target,
-                           batch_size, path, voc_len,
                            buffer_len = NULL,
-                           maxlen, reshape_mode = "time_dist",
-                           concat_maxlen = NULL) {
+                           reshape_mode = "time_dist",
+                           check_y = FALSE) {
   
-  # TODO: set concat_maxlen, batch_size and voc_len inside function
-  # Add stop conditions
+  # TODO: Add stop conditions (summarize y)
+  
+  batch_size <- dim(x)[1]
+  maxlen <- dim(x)[2]
+  voc_len <- dim(x)[3]
+  num_classes <- dim(y)[2]
+  
+  if (check_y) {
+    targets <- apply(y, 1, which.max)
+    test_y_dist <- all(targets == rep(1:num_classes, each = batch_size/num_classes))
+    if (!test_y_dist) {
+      stop("y must have same number of samples for each class")
+    }
+  }
   
   if (reshape_mode == "time_dist") {
     
     x_new <- array(0, dim = c(new_batch_size, samples_per_target, maxlen, voc_len))
-    y_new <- array(0, dim = c(new_batch_size, length(path)))
+    y_new <- array(0, dim = c(new_batch_size, num_classes))
     for (i in 1:new_batch_size) {
       index <- (1:samples_per_target) + (i-1)*samples_per_target
       x_new[i, , , ] <- x[index, , ]
@@ -1036,13 +1082,18 @@ reshape_tensor <- function(x, y, new_batch_size,
   
   if (reshape_mode == "concat") {
     
-    x_new <- array(0, dim = c(new_batch_size, concat_maxlen, voc_len))
-    y_new <- array(0, dim = c(new_batch_size, length(path)))
     use_buffer <- !is.null(buffer_len) && buffer_len > 0
     if (use_buffer) {
       buffer_tensor <- array(0, dim = c(buffer_len, voc_len))
       buffer_tensor[ , voc_len] <- 1
+      concat_maxlen <- (maxlen * samples_per_target) + (buffer_len * (samples_per_target - 1))
+    } else {
+      concat_maxlen <- maxlen * samples_per_target 
     }
+    
+    x_new <- array(0, dim = c(new_batch_size, concat_maxlen, voc_len))
+    y_new <- array(0, dim = c(new_batch_size, num_classes))
+   
     
     for (i in 1:new_batch_size) {
       index <- (1:samples_per_target) + (i-1)*samples_per_target

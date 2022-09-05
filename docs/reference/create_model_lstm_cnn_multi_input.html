@@ -109,9 +109,6 @@ Implements approach as described <a href="https://arxiv.org/abs/1703.06114" clas
 <span>  layer_dense <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">4</span><span class="op">)</span>,</span>
 <span>  solver <span class="op">=</span> <span class="st">"adam"</span>,</span>
 <span>  learning_rate <span class="op">=</span> <span class="fl">0.001</span>,</span>
-<span>  use_multiple_gpus <span class="op">=</span> <span class="cn">FALSE</span>,</span>
-<span>  merge_on_cpu <span class="op">=</span> <span class="cn">TRUE</span>,</span>
-<span>  gpu_num <span class="op">=</span> <span class="fl">2</span>,</span>
 <span>  vocabulary_size <span class="op">=</span> <span class="fl">4</span>,</span>
 <span>  bidirectional <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  batch_size <span class="op">=</span> <span class="cn">NULL</span>,</span>
@@ -158,7 +155,7 @@ Implements approach as described <a href="https://arxiv.org/abs/1703.06114" clas
 
 
 <dt>layer_dense</dt>
-<dd><p>Dense layers of size <code>layer_dense</code> after last LSTM or CNN layer (if no LSTM used).</p></dd>
+<dd><p>Vector specifying number of neurons per dense layer after last LSTM or CNN layer (if no LSTM used).</p></dd>
 
 
 <dt>solver</dt>
@@ -167,18 +164,6 @@ Implements approach as described <a href="https://arxiv.org/abs/1703.06114" clas
 
 <dt>learning_rate</dt>
 <dd><p>Learning rate for optimizer.</p></dd>
-
-
-<dt>use_multiple_gpus</dt>
-<dd><p>If true, multi_gpu_model() will be used based on gpu_num.</p></dd>
-
-
-<dt>merge_on_cpu</dt>
-<dd><p>True on default, false recommend if the server supports NVlink, only relevant if use.multiple.gpu is true.</p></dd>
-
-
-<dt>gpu_num</dt>
-<dd><p>Number of GPUs to be used, only relevant if multiple_gpu is true.</p></dd>
 
 
 <dt>vocabulary_size</dt>
@@ -234,7 +219,7 @@ Implements approach as described <a href="https://arxiv.org/abs/1703.06114" clas
 
 
 <dt>label_smoothing</dt>
-<dd><p>Float in 0, 1. If 0, no smoothing is applied. If &gt; 0, loss between the predicted
+<dd><p>Float in [0, 1]. If 0, no smoothing is applied. If &gt; 0, loss between the predicted
 labels and a smoothed version of the true labels, where the smoothing squeezes the labels towards 0.5.
 The closer the argument is to 1 the more the labels get smoothed.</p></dd>
 
@@ -246,7 +231,7 @@ If first label contains 5 percent wrong labels and second label no noise, then</
 
 
 <dt>last_layer_activation</dt>
-<dd><p>Either "sigmoid" or "softmax".</p></dd>
+<dd><p>Either <code>"sigmoid"</code> or <code>"softmax"</code>.</p></dd>
 
 
 <dt>loss_fn</dt>
@@ -270,7 +255,7 @@ If first label contains 5 percent wrong labels and second label no noise, then</
 
 
 <dt>model_seed</dt>
-<dd><p>Set seed for model parameters in tensorflow, if not <code>NULL</code>.</p></dd>
+<dd><p>Set seed for model parameters in tensorflow if not <code>NULL</code>.</p></dd>
 
 </dl></div>
 

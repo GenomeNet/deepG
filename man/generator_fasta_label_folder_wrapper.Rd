@@ -30,8 +30,8 @@ generator_fasta_label_folder_wrapper(
 \item{set_learning}{When you want to assign one label to set of samples. Only implemented for \code{train_type = "label_folder"}.
 Input is a list with the following parameters
 \itemize{
-\item \code{samples_per_target}: how many samples to use for one target
-\item \code{maxlen}: length of one sample
+\item \code{samples_per_target}: how many samples to use for one target.
+\item \code{maxlen}: length of one sample.
 \item \code{reshape_mode}: \verb{"time_dist", "multi_input"} or \code{"concat"}.
 \itemize{
 \item
@@ -39,12 +39,12 @@ If \code{reshape_mode} is \code{"multi_input"}, generator will produce \code{sam
 \code{samples_per_target} input layers).
 \item If reshape_mode is \code{"time_dist"}, generator will produce a 4D input array. The dimensions correspond to
 \verb{(batch_size, samples_per_target, maxlen, length(vocabulary))}.
-\item If reshape mode is \code{"concat"}, generator will concatenate \code{samples_per_target} sequences
-of length \code{maxlen} to one long sequence
+\item If \code{reshape_mode} is \code{"concat"}, generator will concatenate \code{samples_per_target} sequences
+of length \code{maxlen} to one long sequence.
 }
 \item If \code{reshape_mode} is \code{"concat"}, there is an additional \code{buffer_len}
 argument. If \code{buffer_len} is an integer, the subsequences are interspaced with \code{buffer_len} rows. The input length is
-(\code{maxlen} \eqn{*} \code{samples_per_target}) + \code{buffer_len} \eqn{*} (\code{samples_per_target} - 1)
+(\code{maxlen} \eqn{*} \code{samples_per_target}) + \code{buffer_len} \eqn{*} (\code{samples_per_target} - 1).
 }}
 }
 \description{

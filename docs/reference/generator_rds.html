@@ -136,11 +136,11 @@ subset of <code>max_samples</code> samples.</p></dd>
 
 
 <dt>proportion_per_seq</dt>
-<dd><p>Numerical value between 0 and 1. Proportion of possible samples to take from one file. Takes samples from random subsequence.</p></dd>
+<dd><p>Numerical value between 0 and 1. Proportion of sequence to take samples from (use random subsequence).</p></dd>
 
 
 <dt>reverse_complement</dt>
-<dd><p>Logical, for every new file decide randomly to use original data or its reverse complement.</p></dd>
+<dd><p>Boolean, for every new file decide randomly to use original data or its reverse complement.</p></dd>
 
 
 <dt>sample_by_file_size</dt>
@@ -159,7 +159,7 @@ subset of <code>max_samples</code> samples.</p></dd>
 
 <dt>add_noise</dt>
 <dd><p><code>NULL</code> or list of arguments. If not <code>NULL</code>, list must contain the following arguments: <code>noise_type</code> can be <code>"normal"</code> or <code>"uniform"</code>;
-optional arguments <code>sd</code> or <code>mean</code> if noise_type is <code>"normal"</code> (default is <code>sd=1</code> and <code>mean=0</code>) or <code>min, max</code> if noise_type is <code>"uniform"</code>
+optional arguments <code>sd</code> or <code>mean</code> if noise_type is <code>"normal"</code> (default is <code>sd=1</code> and <code>mean=0</code>) or <code>min, max</code> if <code>noise_type</code> is <code>"uniform"</code>
 (default is <code>min=0, max=1</code>).</p></dd>
 
 </dl></div>

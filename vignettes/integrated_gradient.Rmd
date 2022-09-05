@@ -211,8 +211,8 @@ for (i in 1:20) {
   nt_index_new <- which.max(ig[row_index, ])
   new_row[nt_index_new] <- 1
   high_gc_seq_one_hot_changed[1, row_index, ] <- new_row
-  cat("At position", row_index, "changing", vocabulary[nt_index_old], "to", vocabulary[nt_index_new], "\n")
-
+  cat("At position", row_index, "changing", vocabulary[nt_index_old],
+      "to", vocabulary[nt_index_new], "\n")
   pred <- predict(model, high_gc_seq_one_hot_changed, verbose = 0)
   pred_list[[i + 1]] <- pred 
  

@@ -111,7 +111,7 @@ h5 file also contains sequence and positions of targets corresponding to states.
 <span>  batch_size <span class="op">=</span> <span class="fl">256</span>,</span>
 <span>  verbose <span class="op">=</span> <span class="cn">TRUE</span>,</span>
 <span>  return_states <span class="op">=</span> <span class="cn">FALSE</span>,</span>
-<span>  padding <span class="op">=</span> <span class="cn">FALSE</span>,</span>
+<span>  padding_maxlen <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  output_type <span class="op">=</span> <span class="st">"h5"</span>,</span>
 <span>  model <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  mode <span class="op">=</span> <span class="st">"lm"</span>,</span>
@@ -168,13 +168,12 @@ h5 file also contains sequence and positions of targets corresponding to states.
 <dd><p>Logical scalar, return states matrix.</p></dd>
 
 
-<dt>padding</dt>
-<dd><p>Logical scalar, generate states for first maxlen nucleotides by
-padding beginning of sequence with 0-vectors.</p></dd>
+<dt>padding_maxlen</dt>
+<dd><p>Boolean, whether to pad input with maxlen 0-vectors. (First prediction is for tensor of zeros)</p></dd>
 
 
 <dt>output_type</dt>
-<dd><p>Either <code>"h5"`` or </code>"csv"`.</p></dd>
+<dd><p>Either <code>"h5"</code> or <code>"csv"</code>.</p></dd>
 
 
 <dt>model</dt>

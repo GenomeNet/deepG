@@ -65,14 +65,15 @@ Assume a sequence \code{"AACCGTA"}. Output correspond as follows
 \item \verb{"wavenet": X = "AACCGT", Y = "ACCGTA"}
 }}
 
-\item{seed}{Sets seed for `set.seed`` function for reproducible results.}
+\item{seed}{Sets seed for \code{set.seed} function for reproducible results.}
 
 \item{format}{File format, either \code{"fasta"} or \code{"fastq"}.}
 
-\item{reverse_complement}{Logical, for every new file decide randomly to use original data or its reverse complement.}
+\item{reverse_complement}{Boolean, for every new file decide randomly to use original data or its reverse complement.}
 
-\item{path}{Path to folder where individual or multiple FASTA or FASTQ files are located for training. If \code{train_type} is \code{label_folder}, should be a vector or list
-where each entry corresponds to a class. If \code{train_type} is not \code{label_folder}, can be a list of directories and/or single files.}
+\item{path}{Path to training data. If \code{train_type} is \code{label_folder}, should be a vector or list
+where each entry corresponds to a class (list elements can be directories and/or individual files). If \code{train_type} is not \code{label_folder},
+can be a single directory or file or a list of directories and/or files.}
 
 \item{batch_size}{Number of samples in one batch.}
 
@@ -81,14 +82,14 @@ where each entry corresponds to a class. If \code{train_type} is not \code{label
 \item{ambiguous_nuc}{How to handle nucleotides outside vocabulary, either \code{"zero"}, \code{"discard"}, \code{"empirical"} or \code{"equal"}.
 \itemize{
 \item If \code{"zero"}, input gets encoded as zero vector.
-\item If \code{"equal"}, input is \code{1/length(vocabulary)} \eqn{*} \code{length(vocabulary)}.
+\item If \code{"equal"}, input is repetition of \code{1/length(vocabulary)}.
 \item If \code{"discard"}, samples containing nucleotides outside vocabulary get discarded.
 \item If \code{"empirical"}, use nucleotide distribution of current file.
 }}
 
 \item{padding}{Whether to pad sequences too short for one sample with zeros.}
 
-\item{vocabulary}{Vector of allowed characters, character outside vocabulary get encoded as 0-vector.}
+\item{vocabulary}{Vector of allowed characters. Characters outside vocabulary get encoded as specified in \code{ambiguous_nuc}.}
 
 \item{n_gram}{Integer, encode target not nucleotide wise but combine n nucleotides at once. For example for \verb{n=2, "AA" ->  (1, 0,..., 0),}
 \verb{"AC" ->  (0, 1, 0,..., 0), "TT" -> (0,..., 0, 1)}, where the one-hot vectors have length \code{length(vocabulary)^n}.}
@@ -108,19 +109,19 @@ subset of \code{max_samples} samples.}
 \item{target_from_csv}{Path to csv file with target mapping. One column should be called "file" and other entries in row are the targets.}
 
 \item{target_split}{If target gets read from csv file, list of names to divide target tensor into list of tensors.
-Example: if csv file has header names \verb{"file", "label_1", "label_2", "label_3"} und \code{target_split = list(c("label_1", "label_2"), "label_3")},
+Example: if csv file has header names \verb{"file", "label_1", "label_2", "label_3"} and \code{target_split = list(c("label_1", "label_2"), "label_3")},
 this will divide target matrix to list of length 2, where the first element contains columns named \code{"label_1"} and \code{"label_2"} and the
 second entry contains the column named \code{"label_3"}.}
 
-\item{max_iter}{Stop after max_iter number of iterations failed to produce a new batch.}
+\item{max_iter}{Stop after \code{max_iter} number of iterations failed to produce a new batch.}
 
 \item{verbose}{Whether to show messages.}
 
 \item{set_learning}{When you want to assign one label to set of samples. Only implemented for \code{train_type = "label_folder"}.
 Input is a list with the following parameters
 \itemize{
-\item \code{samples_per_target}: how many samples to use for one target
-\item \code{maxlen}: length of one sample
+\item \code{samples_per_target}: how many samples to use for one target.
+\item \code{maxlen}: length of one sample.
 \item \code{reshape_mode}: \verb{"time_dist", "multi_input"} or \code{"concat"}.
 \itemize{
 \item
@@ -128,22 +129,22 @@ If \code{reshape_mode} is \code{"multi_input"}, generator will produce \code{sam
 \code{samples_per_target} input layers).
 \item If reshape_mode is \code{"time_dist"}, generator will produce a 4D input array. The dimensions correspond to
 \verb{(batch_size, samples_per_target, maxlen, length(vocabulary))}.
-\item If reshape mode is \code{"concat"}, generator will concatenate \code{samples_per_target} sequences
-of length \code{maxlen} to one long sequence
+\item If \code{reshape_mode} is \code{"concat"}, generator will concatenate \code{samples_per_target} sequences
+of length \code{maxlen} to one long sequence.
 }
 \item If \code{reshape_mode} is \code{"concat"}, there is an additional \code{buffer_len}
 argument. If \code{buffer_len} is an integer, the subsequences are interspaced with \code{buffer_len} rows. The input length is
-(\code{maxlen} \eqn{*} \code{samples_per_target}) + \code{buffer_len} \eqn{*} (\code{samples_per_target} - 1)
+(\code{maxlen} \eqn{*} \code{samples_per_target}) + \code{buffer_len} \eqn{*} (\code{samples_per_target} - 1).
 }}
 
 \item{shuffle_input}{Whether to shuffle entries in every fasta/fastq file before extracting samples.}
 
 \item{reverse_complement_encoding}{Whether to use both original sequence and reverse complement as two input sequences.}
 
-\item{proportion_entries}{Proportion of fasta entries to keep. For example, if fasta file has 50 entries and proportion_entries = 0.1,
+\item{proportion_entries}{Proportion of fasta entries to keep. For example, if fasta file has 50 entries and \code{proportion_entries = 0.1},
 will randomly select 5 entries.}
 
-\item{concat_seq}{Character string or \code{NULL}. If not \code{NULL} all entries from file get concatenated to one sequence with concat_seq string between them.
+\item{concat_seq}{Character string or \code{NULL}. If not \code{NULL} all entries from file get concatenated to one sequence with \code{concat_seq} string between them.
 Example: If 1.entry AACC, 2. entry TTTG and \code{concat_seq = "ZZZ"} this becomes AACCZZZTTTG.}
 }
 \description{
