@@ -25,3 +25,4 @@ input is too big to handle at once.}
 \description{
 Compute gradients
 }
+\keyword{internal}

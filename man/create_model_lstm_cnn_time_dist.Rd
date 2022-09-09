@@ -2,7 +2,7 @@
 % Please edit documentation in R/create_model.R
 \name{create_model_lstm_cnn_time_dist}
 \alias{create_model_lstm_cnn_time_dist}
-\title{Creates LSTM/CNN network that can multiple samples for one target}
+\title{Creates LSTM/CNN network for combining multiple sequences}
 \usage{
 create_model_lstm_cnn_time_dist(
   maxlen = 50,
@@ -37,7 +37,8 @@ create_model_lstm_cnn_time_dist(
   f1_metric = FALSE,
   samples_per_target,
   batch_norm_momentum = 0.99,
-  verbose = TRUE
+  verbose = TRUE,
+  model_seed = NULL
 )
 }
 \arguments{
@@ -108,7 +109,30 @@ If first label contains 5 percent wrong labels and second label no noise, then
 \item{samples_per_target}{Number of samples to combine for one target.}
 
 \item{batch_norm_momentum}{Momentum for the moving mean and the moving variance.}
+
+\item{model_seed}{Set seed for model parameters in tensorflow, if not NULL.}
 }
 \description{
-Creates LSTM/CNN network that can multiple samples for one target
+Creates a network consisting of an arbitrary number of CNN, LSTM and dense layers.
+Input is a 4D tensor, where axis correspond to:
+\enumerate{
+   \item batch size
+   \item number of samples in one batch
+   \item length of one sample
+   \item size of vocabulary
+}
+After LSTM/CNN part all representations get aggregated by summation.
+Can be used to make single prediction for combination of multiple input sequences.
+}
+\examples{
+create_model_lstm_cnn_time_dist(
+  maxlen = 50,
+  vocabulary_size = 4,
+  samples_per_target = 7,
+  kernel_size = c(10, 10),
+  filters = c(64, 128),
+  pool_size = c(2, 2),
+  layer_lstm = c(32),
+  layer_dense = c(64, 2),
+  learning_rate = 0.001)
 }

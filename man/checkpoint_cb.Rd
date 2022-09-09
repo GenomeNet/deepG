@@ -14,3 +14,4 @@ checkpoint_cb(filepath_checkpoints, save_weights_only, save_best_only)
 \description{
 Checkpoint callback
 }
+\keyword{internal}

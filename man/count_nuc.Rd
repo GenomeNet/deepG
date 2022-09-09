@@ -25,3 +25,4 @@ count_nuc(
 \description{
 Count nucleotides per class
 }
+\keyword{internal}

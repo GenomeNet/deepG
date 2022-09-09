@@ -2741,7 +2741,6 @@ generator_rds <- function(rds_folder, batch_size, path_file_log = NULL,
                           n_gram = NULL, n_gram_stride = 1,
                           add_noise = NULL) {
   
-  
   is_lm <- !is.null(target_len)
   
   if (!is.null(n_gram) & is_lm && (target_len < n_gram)) {
@@ -2756,7 +2755,7 @@ generator_rds <- function(rds_folder, batch_size, path_file_log = NULL,
     tryCatch(
       expr = {
         if (sample_by_file_size) {
-          file_prob <- file.info(fasta.files)$size/sum(file.info(fasta.files)$size)
+          file_prob <- file.info(rds_files)$size/sum(file.info(rds_files)$size)
           file_index <- sample(1:num_files, size = 1, prob = file_prob)
         } else {
           file_prob <- NULL
@@ -2764,20 +2763,13 @@ generator_rds <- function(rds_folder, batch_size, path_file_log = NULL,
           file_index <- 1
         }
         rds_file <- readRDS(rds_files[file_index])
+        read_success <- TRUE
       },
       error = function(e){ 
-        # choose random file, if previous read not successful
-        file_index <- sample(setdiff(1:num_files, file_index), size = 1)
-        rds_file <- readRDS(rds_files[file_index])
-      },
-      warning = function(w){
-      },
-      finally = {
-        read_success <- TRUE
+        
       }
     )
   }
-  
   
   # if (sample_by_file_size) {
   #   file_prob <- file.info(fasta.files)$size/sum(file.info(fasta.files)$size)
@@ -2852,16 +2844,10 @@ generator_rds <- function(rds_folder, batch_size, path_file_log = NULL,
                   }
                 }
                 rds_file <<- readRDS(rds_files[file_index])
+                read_success <- TRUE
               },
               error = function(e){ 
-                # choose random file, if previous read not successful
-                file_index <- sample(setdiff(1:num_files, file_index), size = 1)
-                rds_file <<- readRDS(rds_files[file_index])
-              },
-              warning = function(w){
-              },
-              finally = {
-                read_success <- TRUE
+                
               }
             )
           }

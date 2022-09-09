@@ -18,6 +18,7 @@ dataset_from_gen(
   shuffle = FALSE,
   set_learning = NULL,
   seed = NULL,
+  file_name_start = "batch_",
   random_sampling,
   ...
 )

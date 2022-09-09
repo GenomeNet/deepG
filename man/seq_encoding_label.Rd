@@ -5,7 +5,7 @@
 \title{Encodes integer sequence for label classification.}
 \usage{
 seq_encoding_label(
-  sequence,
+  sequence = NULL,
   maxlen,
   vocabulary,
   start_ind,
@@ -15,9 +15,12 @@ seq_encoding_label(
   quality_vector = NULL,
   use_coverage = FALSE,
   max_cov = NULL,
+  adjust_start_ind = TRUE,
+  discard_amb_nt = FALSE,
   cov_vector = NULL,
   n_gram = NULL,
-  n_gram_stride = 1
+  n_gram_stride = 1,
+  char_sequence = NULL
 )
 }
 \arguments{
@@ -40,4 +43,27 @@ if "equal" input is 1/length(vocabulary) x length(vocabulary). If "discard" samp
 }
 \description{
 Helper function for \code{\link{generator_fasta_label_header_csv}}, returns encoding for integer sequence.
+}
+\examples{
+# use integer sequence as input
+x <- seq_encoding_label(sequence = c(1,0,5,1,3,4,3,1,4,1,2),
+                        maxlen = 5,
+                        vocabulary = c("a", "c", "g", "t"),
+                        start_ind = c(1,3),
+                        ambiguous_nuc = "equal")
+
+x[1,,] # 1,0,5,1,3
+
+x[2,,] # 5,1,3,4,
+
+# use character string as input
+x <- seq_encoding_label(maxlen = 5,
+                        vocabulary = c("a", "c", "g", "t"),
+                        start_ind = c(1,3),
+                        ambiguous_nuc = "equal",
+                        char_sequence = "ACTaaTNTNaZ")
+
+x[1,,] # actaa
+
+x[2,,] # taatn
 }

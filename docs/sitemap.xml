@@ -1,99 +1,372 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
-    <loc>https://hiddengenome.github.io/deepG//index.html</loc>
+    <loc>/404.html</loc>
   </url>
   <url>
-    <loc>https://hiddengenome.github.io/deepG//reference/calculateStepsPerEpoch.html</loc>
+    <loc>/LICENSE-text.html</loc>
   </url>
   <url>
-    <loc>https://hiddengenome.github.io/deepG//reference/crispr_full.html</loc>
+    <loc>/articles/data_generator.html</loc>
   </url>
   <url>
-    <loc>https://hiddengenome.github.io/deepG//reference/crispr_sample.html</loc>
+    <loc>/articles/index.html</loc>
   </url>
   <url>
-    <loc>https://hiddengenome.github.io/deepG//reference/deepG.html</loc>
+    <loc>/articles/training_types.html</loc>
   </url>
   <url>
-    <loc>https://hiddengenome.github.io/deepG//reference/ecoli.html</loc>
+    <loc>/authors.html</loc>
   </url>
   <url>
-    <loc>https://hiddengenome.github.io/deepG//reference/ecoliCustomScalar.html</loc>
+    <loc>/index.html</loc>
   </url>
   <url>
-    <loc>https://hiddengenome.github.io/deepG//reference/ecoliEvaluation.html</loc>
+    <loc>/reference/add_noise_tensor.html</loc>
   </url>
   <url>
-    <loc>https://hiddengenome.github.io/deepG//reference/ecoli_small.html</loc>
+    <loc>/reference/auc_wrapper.html</loc>
   </url>
   <url>
-    <loc>https://hiddengenome.github.io/deepG//reference/end_gpu_session.html</loc>
+    <loc>/reference/balanced_acc_wrapper.html</loc>
   </url>
   <url>
-    <loc>https://hiddengenome.github.io/deepG//reference/extractCellFromStates.html</loc>
+    <loc>/reference/calculateStepsPerEpoch.html</loc>
   </url>
   <url>
-    <loc>https://hiddengenome.github.io/deepG//reference/fastaFileGenerator.html</loc>
+    <loc>/reference/check_layer_name.html</loc>
   </url>
   <url>
-    <loc>https://hiddengenome.github.io/deepG//reference/generateStatesFromFolder.html</loc>
+    <loc>/reference/checkpoint_cb.html</loc>
   </url>
   <url>
-    <loc>https://hiddengenome.github.io/deepG//reference/getStates.html</loc>
+    <loc>/reference/cm_perc.html</loc>
   </url>
   <url>
-    <loc>https://hiddengenome.github.io/deepG//reference/getStatesFromFasta.html</loc>
+    <loc>/reference/compute_gradients.html</loc>
   </url>
   <url>
-    <loc>https://hiddengenome.github.io/deepG//reference/getVocabulary.html</loc>
+    <loc>/reference/conf_matrix_cb.html</loc>
   </url>
   <url>
-    <loc>https://hiddengenome.github.io/deepG//reference/messagef.html</loc>
+    <loc>/reference/count_nuc.html</loc>
   </url>
   <url>
-    <loc>https://hiddengenome.github.io/deepG//reference/parenthesis.html</loc>
+    <loc>/reference/create_dummy_data.html</loc>
   </url>
   <url>
-    <loc>https://hiddengenome.github.io/deepG//reference/plotTsne.html</loc>
+    <loc>/reference/create_model_genomenet.html</loc>
   </url>
   <url>
-    <loc>https://hiddengenome.github.io/deepG//reference/predictNextNucleotide.html</loc>
+    <loc>/reference/create_model_lstm_cnn.html</loc>
   </url>
   <url>
-    <loc>https://hiddengenome.github.io/deepG//reference/prediction-class.html</loc>
+    <loc>/reference/create_model_lstm_cnn_multi_input.html</loc>
   </url>
   <url>
-    <loc>https://hiddengenome.github.io/deepG//reference/preprocessFasta.html</loc>
+    <loc>/reference/create_model_lstm_cnn_target_middle.html</loc>
   </url>
   <url>
-    <loc>https://hiddengenome.github.io/deepG//reference/preprocessSemiRedundant.html</loc>
+    <loc>/reference/create_model_lstm_cnn_time_dist.html</loc>
   </url>
   <url>
-    <loc>https://hiddengenome.github.io/deepG//reference/print.tf.version.html</loc>
+    <loc>/reference/crispr_full.html</loc>
   </url>
   <url>
-    <loc>https://hiddengenome.github.io/deepG//reference/replaceChar.html</loc>
+    <loc>/reference/crispr_sample.html</loc>
   </url>
   <url>
-    <loc>https://hiddengenome.github.io/deepG//reference/sequenceToArray.html</loc>
+    <loc>/reference/dataset_from_gen.html</loc>
   </url>
   <url>
-    <loc>https://hiddengenome.github.io/deepG//reference/skip_if_no_keras.html</loc>
+    <loc>/reference/deepG.html</loc>
   </url>
   <url>
-    <loc>https://hiddengenome.github.io/deepG//reference/splitSequence.html</loc>
+    <loc>/reference/df_to_distribution_matrix.html</loc>
   </url>
   <url>
-    <loc>https://hiddengenome.github.io/deepG//reference/startGPUSession.html</loc>
+    <loc>/reference/early_stopping_cb.html</loc>
   </url>
   <url>
-    <loc>https://hiddengenome.github.io/deepG//reference/trainNetwork.html</loc>
+    <loc>/reference/early_stopping_time_cb.html</loc>
   </url>
   <url>
-    <loc>https://hiddengenome.github.io/deepG//reference/writeDict.html</loc>
+    <loc>/reference/ecoli.html</loc>
   </url>
   <url>
-    <loc>https://hiddengenome.github.io/deepG//reference/writeHdf5.html</loc>
+    <loc>/reference/ecoliCustomScalar.html</loc>
+  </url>
+  <url>
+    <loc>/reference/ecoliEvaluation.html</loc>
+  </url>
+  <url>
+    <loc>/reference/ecoli_small.html</loc>
+  </url>
+  <url>
+    <loc>/reference/end_gpu_session.html</loc>
+  </url>
+  <url>
+    <loc>/reference/evaluate_linear.html</loc>
+  </url>
+  <url>
+    <loc>/reference/evaluate_model.html</loc>
+  </url>
+  <url>
+    <loc>/reference/evaluate_sigmoid.html</loc>
+  </url>
+  <url>
+    <loc>/reference/evaluate_softmax.html</loc>
+  </url>
+  <url>
+    <loc>/reference/extractCellFromStates.html</loc>
+  </url>
+  <url>
+    <loc>/reference/f1_wrapper.html</loc>
+  </url>
+  <url>
+    <loc>/reference/fastaFileGenerator.html</loc>
+  </url>
+  <url>
+    <loc>/reference/function_args_cb.html</loc>
+  </url>
+  <url>
+    <loc>/reference/generateStatesFromFolder.html</loc>
+  </url>
+  <url>
+    <loc>/reference/generateStatesromFolder.html</loc>
+  </url>
+  <url>
+    <loc>/reference/generator_dummy.html</loc>
+  </url>
+  <url>
+    <loc>/reference/generator_fasta_label_folder.html</loc>
+  </url>
+  <url>
+    <loc>/reference/generator_fasta_label_folder_wrapper.html</loc>
+  </url>
+  <url>
+    <loc>/reference/generator_fasta_label_header_csv.html</loc>
+  </url>
+  <url>
+    <loc>/reference/generator_fasta_lm.html</loc>
+  </url>
+  <url>
+    <loc>/reference/generator_initialize.html</loc>
+  </url>
+  <url>
+    <loc>/reference/generator_random.html</loc>
+  </url>
+  <url>
+    <loc>/reference/generator_rds.html</loc>
+  </url>
+  <url>
+    <loc>/reference/getStates.html</loc>
+  </url>
+  <url>
+    <loc>/reference/getStatesFromFasta.html</loc>
+  </url>
+  <url>
+    <loc>/reference/getVocabulary.html</loc>
+  </url>
+  <url>
+    <loc>/reference/get_class_weight.html</loc>
+  </url>
+  <url>
+    <loc>/reference/get_generator.html</loc>
+  </url>
+  <url>
+    <loc>/reference/get_hyper_param.html</loc>
+  </url>
+  <url>
+    <loc>/reference/get_optimizer.html</loc>
+  </url>
+  <url>
+    <loc>/reference/get_output_activations.html</loc>
+  </url>
+  <url>
+    <loc>/reference/get_run_name.html</loc>
+  </url>
+  <url>
+    <loc>/reference/get_start_ind.html</loc>
+  </url>
+  <url>
+    <loc>/reference/gradients_stepwise.html</loc>
+  </url>
+  <url>
+    <loc>/reference/heatmaps_integrated_grad.html</loc>
+  </url>
+  <url>
+    <loc>/reference/hello.html</loc>
+  </url>
+  <url>
+    <loc>/reference/hyper_param_model_outside_cb.html</loc>
+  </url>
+  <url>
+    <loc>/reference/hyper_param_with_model_cb.html</loc>
+  </url>
+  <url>
+    <loc>/reference/index.html</loc>
+  </url>
+  <url>
+    <loc>/reference/int_to_n_gram.html</loc>
+  </url>
+  <url>
+    <loc>/reference/integrated_gradients.html</loc>
+  </url>
+  <url>
+    <loc>/reference/interpolate_seq.html</loc>
+  </url>
+  <url>
+    <loc>/reference/load_model_self_genomenet.html</loc>
+  </url>
+  <url>
+    <loc>/reference/load_prediction.html</loc>
+  </url>
+  <url>
+    <loc>/reference/log_cb.html</loc>
+  </url>
+  <url>
+    <loc>/reference/merge_models.html</loc>
+  </url>
+  <url>
+    <loc>/reference/messagef.html</loc>
+  </url>
+  <url>
+    <loc>/reference/model_self_genomenet_maxlen_10k.html</loc>
+  </url>
+  <url>
+    <loc>/reference/model_self_genomenet_maxlen_150.html</loc>
+  </url>
+  <url>
+    <loc>/reference/n_gram_dist.html</loc>
+  </url>
+  <url>
+    <loc>/reference/n_gram_of_matrix.html</loc>
+  </url>
+  <url>
+    <loc>/reference/noisy_loss_wrapper.html</loc>
+  </url>
+  <url>
+    <loc>/reference/parenthesis.html</loc>
+  </url>
+  <url>
+    <loc>/reference/plotTsne.html</loc>
+  </url>
+  <url>
+    <loc>/reference/plot_roc.html</loc>
+  </url>
+  <url>
+    <loc>/reference/predictNextNucleotide.html</loc>
+  </url>
+  <url>
+    <loc>/reference/predict_model.html</loc>
+  </url>
+  <url>
+    <loc>/reference/predict_model_by_entry.html</loc>
+  </url>
+  <url>
+    <loc>/reference/predict_model_by_entry_one_file.html</loc>
+  </url>
+  <url>
+    <loc>/reference/predict_model_one_pred_per_entry.html</loc>
+  </url>
+  <url>
+    <loc>/reference/predict_model_one_seq.html</loc>
+  </url>
+  <url>
+    <loc>/reference/predict_with_n_gram.html</loc>
+  </url>
+  <url>
+    <loc>/reference/prediction-class.html</loc>
+  </url>
+  <url>
+    <loc>/reference/preprocessFasta.html</loc>
+  </url>
+  <url>
+    <loc>/reference/preprocessSemiRedundant.html</loc>
+  </url>
+  <url>
+    <loc>/reference/print.tf.version.html</loc>
+  </url>
+  <url>
+    <loc>/reference/quality_to_probability.html</loc>
+  </url>
+  <url>
+    <loc>/reference/reduce_lr_cb.html</loc>
+  </url>
+  <url>
+    <loc>/reference/remove_add_layers.html</loc>
+  </url>
+  <url>
+    <loc>/reference/remove_checkpoints.html</loc>
+  </url>
+  <url>
+    <loc>/reference/replaceChar.html</loc>
+  </url>
+  <url>
+    <loc>/reference/reset_states_cb.html</loc>
+  </url>
+  <url>
+    <loc>/reference/reshape_input.html</loc>
+  </url>
+  <url>
+    <loc>/reference/reshape_tensor.html</loc>
+  </url>
+  <url>
+    <loc>/reference/seq_encoding_label.html</loc>
+  </url>
+  <url>
+    <loc>/reference/seq_encoding_lm.html</loc>
+  </url>
+  <url>
+    <loc>/reference/sequenceToArray.html</loc>
+  </url>
+  <url>
+    <loc>/reference/skip_if_no_keras.html</loc>
+  </url>
+  <url>
+    <loc>/reference/slice_tensor.html</loc>
+  </url>
+  <url>
+    <loc>/reference/splitSequence.html</loc>
+  </url>
+  <url>
+    <loc>/reference/split_fasta.html</loc>
+  </url>
+  <url>
+    <loc>/reference/startGPUSession.html</loc>
+  </url>
+  <url>
+    <loc>/reference/start_ind_ignore_amb.html</loc>
+  </url>
+  <url>
+    <loc>/reference/start_ind_ignore_amb_single_seq.html</loc>
+  </url>
+  <url>
+    <loc>/reference/summarize_states.html</loc>
+  </url>
+  <url>
+    <loc>/reference/tensorboard_cb.html</loc>
+  </url>
+  <url>
+    <loc>/reference/tensorboard_complete_cb.html</loc>
+  </url>
+  <url>
+    <loc>/reference/trainNetwork.html</loc>
+  </url>
+  <url>
+    <loc>/reference/train_model.html</loc>
+  </url>
+  <url>
+    <loc>/reference/tsneFromStates.html</loc>
+  </url>
+  <url>
+    <loc>/reference/validation_after_training_cb.html</loc>
+  </url>
+  <url>
+    <loc>/reference/writeDict.html</loc>
+  </url>
+  <url>
+    <loc>/reference/writeHdf5.html</loc>
   </url>
 </urlset>

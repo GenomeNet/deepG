@@ -2,7 +2,7 @@
 % Please edit documentation in R/callbacks.R
 \name{early_stopping_time_cb}
 \alias{early_stopping_time_cb}
-\title{Stop training after specified time}
+\title{Stop training callback}
 \usage{
 early_stopping_time_cb(stop_time = NULL)
 }
@@ -10,5 +10,5 @@ early_stopping_time_cb(stop_time = NULL)
 \item{stop_time}{Time in seconds after which to stop training.}
 }
 \description{
-Stop training after specified time
+Stop training after specified time.
 }

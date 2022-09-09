@@ -113,12 +113,13 @@ second entry contains the column named "label_3".}
 
 \item{file_filter}{Vector of file names to use from path_corpus.}
 
-\item{use_coverage}{Integer or NULL. If not NULL, use coverage as encoding rather than one-hot encoding and normalize .}
+\item{use_coverage}{Integer or NULL. If not NULL, use coverage as encoding rather than one-hot encoding and normalize.
+Coverage information must be contained a fasta header: there must be a string "cov_n" in the header, where n is some integer.}
 
 \item{proportion_entries}{Proportion of fasta entries to keep. For example, if fasta file has 50 entries and proportion_entries = 0.1,
 will randomly select 5 entries.}
 
-\item{sample_by_file_size}{Sample new file weighted by file size (possible to repeatedly sample the same file).}
+\item{sample_by_file_size}{Sample new file weighted by file size (bigger files more likely).}
 
 \item{n_gram}{Integer, encode target not nucleotide wise but combine n nucleotides at once. For example for n=2, "AA" ->  (1, 0,..., 0),
 "AC" ->  (0, 1, 0,..., 0), "TT" -> (0,..., 0, 1), where the one-hot vectors have length length(vocabulary)^n.}

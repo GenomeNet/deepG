@@ -42,7 +42,8 @@ create_model_lstm_cnn(
   f1_metric = FALSE,
   bal_acc = TRUE,
   verbose = TRUE,
-  batch_norm_momentum = 0.99
+  batch_norm_momentum = 0.99,
+  model_seed = NULL
 )
 }
 \arguments{
@@ -123,8 +124,21 @@ If first label contains 5 percent wrong labels and second label no noise, then
 \item{bal_acc}{Whether to add balanced accuracy.}
 
 \item{batch_norm_momentum}{Momentum for the moving mean and the moving variance.}
+
+\item{model_seed}{Set seed for model parameters in tensorflow, if not NULL.}
 }
 \description{
 Creates a network consisting of an arbitrary number of CNN, LSTM and dense layers.
 Last layer is a dense layer with default softmax activation.
+}
+\examples{
+create_model_lstm_cnn(
+  maxlen = 500,
+  vocabulary_size = 4,
+  kernel_size = c(8, 8, 8),
+  filters = c(16, 32, 64),
+  pool_size = c(3, 3, 3),
+  layer_lstm = c(32, 64),
+  layer_dense = c(128, 4),
+  learning_rate = 0.001)
 }
