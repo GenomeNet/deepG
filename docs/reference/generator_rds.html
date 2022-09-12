@@ -164,6 +164,47 @@ optional arguments <code>sd</code> or <code>mean</code> if noise_type is <code>"
 
 </dl></div>
 
+    <div id="ref-examples">
+    <h2>Examples</h2>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="co"># create 3 rds files</span></span></span>
+<span class="r-in"><span><span class="va">rds_folder</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/tempfile.html" class="external-link">tempfile</a></span><span class="op">(</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/base/files2.html" class="external-link">dir.create</a></span><span class="op">(</span><span class="va">rds_folder</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">batch_size</span> <span class="op">&lt;-</span> <span class="fl">7</span></span></span>
+<span class="r-in"><span><span class="va">maxlen</span> <span class="op">&lt;-</span> <span class="fl">11</span></span></span>
+<span class="r-in"><span><span class="va">voc_len</span> <span class="op">&lt;-</span> <span class="fl">4</span></span></span>
+<span class="r-in"><span><span class="kw">for</span> <span class="op">(</span><span class="va">i</span> <span class="kw">in</span> <span class="fl">1</span><span class="op">:</span><span class="fl">3</span><span class="op">)</span> <span class="op">{</span></span></span>
+<span class="r-in"><span>  <span class="va">x</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/sample.html" class="external-link">sample</a></span><span class="op">(</span><span class="fl">0</span><span class="op">:</span><span class="op">(</span><span class="va">voc_len</span><span class="op">-</span><span class="fl">1</span><span class="op">)</span>, <span class="va">maxlen</span><span class="op">*</span><span class="va">batch_size</span>, replace <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></span>
+<span class="r-in"><span>  <span class="va">x</span> <span class="op">&lt;-</span> <span class="fu">keras</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/keras/man/to_categorical.html" class="external-link">to_categorical</a></span><span class="op">(</span><span class="va">x</span>, num_classes <span class="op">=</span> <span class="va">voc_len</span><span class="op">)</span></span></span>
+<span class="r-in"><span>  <span class="va">x</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/array.html" class="external-link">array</a></span><span class="op">(</span><span class="va">x</span>, dim <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">batch_size</span>, <span class="va">maxlen</span>, <span class="va">voc_len</span><span class="op">)</span><span class="op">)</span></span></span>
+<span class="r-in"><span>  <span class="va">y</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/sample.html" class="external-link">sample</a></span><span class="op">(</span><span class="fl">0</span><span class="op">:</span><span class="fl">2</span>, <span class="va">batch_size</span> ,replace <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></span>
+<span class="r-in"><span>  <span class="va">y</span> <span class="op">&lt;-</span> <span class="fu">keras</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/keras/man/to_categorical.html" class="external-link">to_categorical</a></span><span class="op">(</span><span class="va">y</span>, num_classes <span class="op">=</span> <span class="fl">3</span><span class="op">)</span></span></span>
+<span class="r-in"><span>  <span class="va">xy_list</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="va">x</span>, <span class="va">y</span><span class="op">)</span></span></span>
+<span class="r-in"><span>  <span class="va">file_name</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste0</a></span><span class="op">(</span><span class="va">rds_folder</span>, <span class="st">"/file_"</span>, <span class="va">i</span>, <span class="st">".rds"</span><span class="op">)</span></span></span>
+<span class="r-in"><span>  <span class="fu"><a href="https://rdrr.io/r/base/readRDS.html" class="external-link">saveRDS</a></span><span class="op">(</span><span class="va">xy_list</span>, <span class="va">file_name</span><span class="op">)</span> </span></span>
+<span class="r-in"><span><span class="op">}</span></span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co"># create generator</span></span></span>
+<span class="r-in"><span><span class="va">gen</span> <span class="op">&lt;-</span> <span class="fu">generator_rds</span><span class="op">(</span><span class="va">rds_folder</span>, batch_size <span class="op">=</span> <span class="fl">2</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">z</span> <span class="op">&lt;-</span> <span class="fu">gen</span><span class="op">(</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">x</span> <span class="op">&lt;-</span> <span class="va">z</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span></span></span>
+<span class="r-in"><span><span class="va">y</span> <span class="op">&lt;-</span> <span class="va">z</span><span class="op">[[</span><span class="fl">2</span><span class="op">]</span><span class="op">]</span></span></span>
+<span class="r-in"><span><span class="va">x</span><span class="op">[</span><span class="fl">1</span>, , <span class="op">]</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>       [,1] [,2] [,3] [,4]</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [1,]    1    0    0    0</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [2,]    0    1    0    0</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [3,]    1    0    0    0</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [4,]    0    0    0    1</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [5,]    1    0    0    0</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [6,]    0    0    0    1</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [7,]    0    0    0    1</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [8,]    0    1    0    0</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [9,]    0    0    1    0</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [10,]    0    1    0    0</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [11,]    1    0    0    0</span>
+<span class="r-in"><span><span class="va">y</span><span class="op">[</span><span class="fl">1</span>, <span class="op">]</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] 0 0 1</span>
+</code></pre></div>
+    </div>
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">
     <nav id="toc" data-toggle="toc" class="sticky-top"><h2 data-toc-skip>Contents</h2>

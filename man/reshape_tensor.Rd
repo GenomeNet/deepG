@@ -39,3 +39,27 @@ new maxlen: (\code{maxlen} \eqn{*} \code{samples_per_target}) + \code{buffer_len
 \description{
 Reshape input x and target y. Aggregates multiple samples from x and y into single input/target batches.
 }
+\examples{
+# create dummy data
+batch_size <- 8
+maxlen <- 11
+voc_len <- 4 
+x <- sample(0:(voc_len-1), maxlen*batch_size, replace = TRUE)
+x <- keras::to_categorical(x, num_classes = voc_len)
+x <- array(x, dim = c(batch_size, maxlen, voc_len))
+y <- rep(0:1, each = batch_size/2)
+y <- keras::to_categorical(y, num_classes = 2)
+y
+
+# reshape data for multi input model
+reshaped_data <- reshape_tensor(
+  x = x,
+  y = y,
+  new_batch_size = 2,
+  samples_per_target = 4,
+  reshape_mode = "multi_input")
+
+length(reshaped_data[[1]])
+dim(reshaped_data[[1]][[1]])
+reshaped_data[[2]]
+}

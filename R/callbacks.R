@@ -205,8 +205,8 @@ tensorboard_cb <- function(path_tensorboard, run_name) {
 #' 
 #' Print \code{\link{train_model}} call in tensorboard "TEXT" tab.
 #' 
-#' @inheritParams train_model
 #' @param argumentList List of function arguments.
+#' @param path_tensorboard Path to tensorboard directory. 
 #' @param run_name Name of training run.
 #' @export
 function_args_cb <- function(argumentList, path_tensorboard, run_name) {

@@ -2195,7 +2195,7 @@ generator_fasta_label_folder <- function(path_corpus,
   }
 }
 
-#' Initializes generators defined by \code{\link{generator_fasta_label_folder}} function
+#' Initializes generators defined by \code{generator_fasta_label_folder} function
 #'
 #' Initializes generators defined by \code{\link{generator_fasta_label_folder}} function. Targets get encoded in order of directories.
 #' Number of classes is given by length of \code{directories}.
@@ -2612,7 +2612,6 @@ generator_fasta_label_folder_wrapper <- function(val, new_batch_size = NULL,
 #' y <- z[[2]]
 #' dim(x)
 #' dim(y)
-#' predict(model, x)   
 #' @export
 generator_dummy <- function(model, batch_size) {
   
@@ -2671,6 +2670,31 @@ generator_dummy <- function(model, batch_size) {
 #' 
 #' @inheritParams generator_fasta_label_header_csv
 #' @param rds_folder Path to input files.
+#' @examples 
+#' # create 3 rds files
+#' rds_folder <- tempfile()
+#' dir.create(rds_folder)
+#' batch_size <- 7
+#' maxlen <- 11
+#' voc_len <- 4
+#' for (i in 1:3) {
+#'   x <- sample(0:(voc_len-1), maxlen*batch_size, replace = TRUE)
+#'   x <- keras::to_categorical(x, num_classes = voc_len)
+#'   x <- array(x, dim = c(batch_size, maxlen, voc_len))
+#'   y <- sample(0:2, batch_size ,replace = TRUE)
+#'   y <- keras::to_categorical(y, num_classes = 3)
+#'   xy_list <- list(x, y)
+#'   file_name <- paste0(rds_folder, "/file_", i, ".rds")
+#'   saveRDS(xy_list, file_name) 
+#' }
+#' 
+#' # create generator
+#' gen <- generator_rds(rds_folder, batch_size = 2)
+#' z <- gen()
+#' x <- z[[1]]
+#' y <- z[[2]]
+#' x[1, , ]
+#' y[1, ]
 #' @export
 generator_rds <- function(rds_folder, batch_size, path_file_log = NULL,
                           max_samples = NULL,
@@ -2710,16 +2734,6 @@ generator_rds <- function(rds_folder, batch_size, path_file_log = NULL,
       }
     )
   }
-  
-  # if (sample_by_file_size) {
-  #   file_prob <- file.info(fasta.files)$size/sum(file.info(fasta.files)$size)
-  #   file_index <- sample(1:num_files, size = 1, prob = file_prob)
-  # } else {
-  #   file_prob <- NULL
-  #   rds_files <- sample(rds_files)
-  #   file_index <- 1
-  # }
-  # rds_file <- readRDS(rds_files[file_index])
   
   if (is.list(rds_file)) {
     x_complete <- rds_file[[1]]
@@ -2791,17 +2805,6 @@ generator_rds <- function(rds_folder, batch_size, path_file_log = NULL,
               }
             )
           }
-          
-          # if (sample_by_file_size) {
-          #   file_index <<- sample(1:num_files, size = 1, prob = file_prob)
-          # } else {
-          #   file_index <<- file_index + 1
-          #   if (file_index > num_files) {
-          #     file_index <<- 1
-          #     rds_files <<- sample(rds_files)
-          #   }
-          # }
-          # rds_file <<- readRDS(rds_files[file_index])
           
           x_complete <<- rds_file[[1]]
           x_dim <<- dim(x_complete)
@@ -3563,7 +3566,7 @@ get_generator <- function(path = NULL,
 #' @param as_numpy_array Store output as list of numpy arrays if `TRUE` (otherwise as R array). 
 #' @param shuffle Whether to shuffle samples within each batch.
 #' @param file_name_start Start of output file names.
-#' @param ... further generator options.
+#' @param ... further generator options. See \code{\link{get_generator}}.
 #' @examples 
 #' # create dummy fasta files
 #' temp_dir <- tempfile()

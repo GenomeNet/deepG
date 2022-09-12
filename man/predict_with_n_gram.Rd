@@ -34,7 +34,7 @@ If \code{"random"} assign random prediction.}
 \item{step}{How often to take a sample.}
 }
 \description{
-Predict the next nucleotide using n-gram
+Predict the next nucleotide using n-gram.
 }
 \examples{
 # create dummy fasta files
@@ -50,7 +50,6 @@ m <- n_gram_dist(path_input = temp_dir,
                  n = 3,
                  step = 1,
                  nuc_dist = FALSE)
-
 
 # use distribution matrix to make predictions for one file
 predictions <- predict_with_n_gram(path_input = list.files(temp_dir, full.names = TRUE)[1], 

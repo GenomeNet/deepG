@@ -2,7 +2,7 @@
 % Please edit documentation in R/create_model.R
 \name{create_model_lstm_cnn_multi_input}
 \alias{create_model_lstm_cnn_multi_input}
-\title{Creates LSTM/CNN network that can process multiple samples for one target}
+\title{Create LSTM/CNN network that can process multiple samples for one target}
 \usage{
 create_model_lstm_cnn_multi_input(
   maxlen = 50,

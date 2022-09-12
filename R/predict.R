@@ -189,8 +189,13 @@ predict_model_one_seq <- function(path_model = NULL, layer_name = NULL, sequence
     seq <- paste0(paste(rep("0", maxlen), collapse = ""), seq)
   }
   
+  # if (padding & (nchar(seq) < maxlen)) {
+  #   seq <- paste0(paste(rep("0", nchar(seq) - maxlen), collapse = ""), seq)
+  # }
+  
   if (nchar(seq) < maxlen) {
-    stop("Input sequence is shorter than maxlen. Set padding = TRUE to pad sequence to bigger size.")
+    stop("Input sequence is shorter than maxlen. Set padding_maxlen = TRUE to pad sequence to bigger size.")
+    #stop("Input sequence is shorter than maxlen. Set padding_maxlen or padding to TRUE to pad sequence to bigger size.")
   }
   
   # start of samples
@@ -884,7 +889,7 @@ load_prediction <- function(h5_path, rows = NULL, verbose = TRUE,
 #' label_names <- paste0("class_", 1:3)
 #' df <- as.data.frame(m)
 #' pred_summary <- summarize_states(label_names = label_names, df = df)
-#' t(pred_summary)
+#' pred_summary
 #' @export
 summarize_states <- function(states_path = NULL, label_names = NULL, file_type = "h5", df = NULL) {
   
@@ -931,8 +936,7 @@ summarize_states <- function(states_path = NULL, label_names = NULL, file_type =
     stopifnot(ncol(df) == num_labels)
     
     names(df) <- c(label_names)
-    #title <- str_remove(basename(state_file), ".", file_type)
-    
+
     mean_vector <- vector("numeric", num_labels)
     max_vector <- vector("numeric", num_labels)
     mean_df <- data.frame(matrix(0, nrow = 1, ncol = num_labels))

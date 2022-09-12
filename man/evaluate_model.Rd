@@ -98,7 +98,7 @@ activation and multiple targets.}
 to evaluate a data set exactly ones and know the number of samples already. Should be a vector if \code{mode = "label_folder"} (with same length as \code{vocabulary_label})
 and else an integer.}
 
-\item{...}{Further generator options.}
+\item{...}{Further generator options. See \code{\link{get_generator}}.}
 }
 \description{
 Returns evaluation metric like confusion matrix, loss, AUC, AUPRC, MAE, MSE (depending on output layer).

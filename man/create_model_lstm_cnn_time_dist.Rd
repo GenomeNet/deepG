@@ -2,7 +2,7 @@
 % Please edit documentation in R/create_model.R
 \name{create_model_lstm_cnn_time_dist}
 \alias{create_model_lstm_cnn_time_dist}
-\title{Creates LSTM/CNN network for combining multiple sequences}
+\title{Create LSTM/CNN network for combining multiple sequences}
 \usage{
 create_model_lstm_cnn_time_dist(
   maxlen = 50,

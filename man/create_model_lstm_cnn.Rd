@@ -2,7 +2,7 @@
 % Please edit documentation in R/create_model.R
 \name{create_model_lstm_cnn}
 \alias{create_model_lstm_cnn}
-\title{Creates LSTM/CNN network}
+\title{Create LSTM/CNN network}
 \usage{
 create_model_lstm_cnn(
   maxlen = 50,

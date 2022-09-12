@@ -2,7 +2,7 @@
 % Please edit documentation in R/generators.R
 \name{generator_initialize}
 \alias{generator_initialize}
-\title{Initializes generators defined by \code{\link{generator_fasta_label_folder}} function}
+\title{Initializes generators defined by \code{generator_fasta_label_folder} function}
 \usage{
 generator_initialize(
   directories,

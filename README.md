@@ -27,7 +27,7 @@ Health*
 The package offers several functions to create, train and evaluate
 neural networks as well as data processing.
 
-  - **Data (pre-) processing**
+  - **Data processing**
       - Different options to encode fasta/fastq file (one-hot encoding,
         coverage or quality score encoding).
       - Different options to handle ambiguous nucleotides.

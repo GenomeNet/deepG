@@ -9,7 +9,7 @@ function_args_cb(argumentList, path_tensorboard, run_name)
 \arguments{
 \item{argumentList}{List of function arguments.}
 
-\item{path_tensorboard}{Path to tensorboard directory or \code{NULL}. If \code{NULL}, training not tracked on tensorboard.}
+\item{path_tensorboard}{Path to tensorboard directory.}
 
 \item{run_name}{Name of training run.}
 }

@@ -1,4 +1,4 @@
-#' @title Creates LSTM/CNN network
+#' @title Create LSTM/CNN network
 #'
 #' @description Creates a network consisting of an arbitrary number of CNN, LSTM and dense layers.
 #' Last layer is a dense layer.
@@ -524,7 +524,7 @@ create_model_lstm_cnn <- function(
 
 #' Create wavenet model
 #'
-#' Create network architecture as described [here](https://arxiv.org/abs/1609.03499). Implementation 
+#' Creates network architecture as described [here](https://arxiv.org/abs/1609.03499). Implementation 
 #' uses code from [here](https://github.com/r-tensorflow/wavenet).
 #' 
 #' @inheritParams wavenet::wavenet
@@ -1319,7 +1319,7 @@ check_layer_name <- function(model, layer_name) {
 }
 
 
-#' @title Creates LSTM/CNN network for combining multiple sequences 
+#' @title Create LSTM/CNN network for combining multiple sequences 
 #' 
 #' @description Creates a network consisting of an arbitrary number of CNN, LSTM and dense layers.
 #' Input is a 4D tensor, where axis correspond to:
@@ -1635,7 +1635,7 @@ create_model_lstm_cnn_time_dist <- function(
 }
 
 
-#' @title Creates LSTM/CNN network that can process multiple samples for one target
+#' @title Create LSTM/CNN network that can process multiple samples for one target
 #'
 #' @description Creates a network consisting of an arbitrary number of CNN, LSTM and dense layers with multiple 
 #' input layers. After LSTM/CNN part all representations get aggregated by summation. 

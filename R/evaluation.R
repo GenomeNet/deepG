@@ -24,7 +24,7 @@
 #' @param exact_num_samples Exact number of samples to evaluate. If you want to evaluate a number of samples not divisible by batch_size. Useful if you want
 #' to evaluate a data set exactly ones and know the number of samples already. Should be a vector if `mode = "label_folder"` (with same length as `vocabulary_label`)
 #' and else an integer.
-#' @param ... Further generator options.
+#' @param ... Further generator options. See \code{\link{get_generator}}.
 #' @examples
 #' # create dummy data
 #' path_input <- tempfile()

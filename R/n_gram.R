@@ -144,6 +144,8 @@ df_to_distribution_matrix <- function(freq_df, vocabulary = c("A", "C", "G", "T"
 
 #' Predict the next nucleotide using n-gram
 #'
+#' Predict the next nucleotide using n-gram. 
+#'
 #' @inheritParams generator_fasta_lm
 #' @param path_input Path to folder containing fasta files or single fasta file.
 #' @param distribution_matrix A data frame containing frequency of next nucleotide given the previous n nucleotides (output of \code{\link{n_gram_dist}} function).
@@ -167,7 +169,6 @@ df_to_distribution_matrix <- function(freq_df, vocabulary = c("A", "C", "G", "T"
 #'                  n = 3,
 #'                  step = 1,
 #'                  nuc_dist = FALSE)
-#' 
 #' 
 #' # use distribution matrix to make predictions for one file
 #' predictions <- predict_with_n_gram(path_input = list.files(temp_dir, full.names = TRUE)[1], 

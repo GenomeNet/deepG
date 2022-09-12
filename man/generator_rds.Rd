@@ -50,3 +50,29 @@ list of length 2 (input/target) or of length 1 (for language model).
 If \code{target_len} is not NULL will take the last \code{target_len} entries of
 the first list element as targets and the rest as input.
 }
+\examples{
+# create 3 rds files
+rds_folder <- tempfile()
+dir.create(rds_folder)
+batch_size <- 7
+maxlen <- 11
+voc_len <- 4
+for (i in 1:3) {
+  x <- sample(0:(voc_len-1), maxlen*batch_size, replace = TRUE)
+  x <- keras::to_categorical(x, num_classes = voc_len)
+  x <- array(x, dim = c(batch_size, maxlen, voc_len))
+  y <- sample(0:2, batch_size ,replace = TRUE)
+  y <- keras::to_categorical(y, num_classes = 3)
+  xy_list <- list(x, y)
+  file_name <- paste0(rds_folder, "/file_", i, ".rds")
+  saveRDS(xy_list, file_name) 
+}
+
+# create generator
+gen <- generator_rds(rds_folder, batch_size = 2)
+z <- gen()
+x <- z[[1]]
+y <- z[[2]]
+x[1, , ]
+y[1, ]
+}

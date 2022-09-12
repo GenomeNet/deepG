@@ -53,7 +53,7 @@ then it's used as the dilation rate of each residual block.}
 \item{model_seed}{Set seed for model parameters in tensorflow if not \code{NULL}.}
 }
 \description{
-Create network architecture as described \href{https://arxiv.org/abs/1609.03499}{here}. Implementation
+Creates network architecture as described \href{https://arxiv.org/abs/1609.03499}{here}. Implementation
 uses code from \href{https://github.com/r-tensorflow/wavenet}{here}.
 }
 \examples{

@@ -76,7 +76,7 @@ argument. If \code{buffer_len} is an integer, the subsequences are interspaced w
 
 \item{file_name_start}{Start of output file names.}
 
-\item{...}{further generator options.}
+\item{...}{further generator options. See \code{\link{get_generator}}.}
 }
 \description{
 Repeatedly generate samples with data generator and store output. Creates a separate rds or pickle file in \code{output_path} for each

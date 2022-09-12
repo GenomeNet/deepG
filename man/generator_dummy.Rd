@@ -25,5 +25,4 @@ x <- z[[1]]
 y <- z[[2]]
 dim(x)
 dim(y)
-predict(model, x)   
 }

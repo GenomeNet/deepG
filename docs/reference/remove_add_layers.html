@@ -193,54 +193,54 @@ has multiple output layers.</p></dd>
 <span class="r-in"><span>                                                 <span class="st">"out_3_classification"</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="op">)</span> </span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Original model: "</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Model: "model_28"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Model: "model_30"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> ________________________________________________________________________________</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  Layer (type)                       Output Shape                    Param #     </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> ================================================================================</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  input_19 (InputLayer)              [(None, 50, 4)]                 0           </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  lstm_21 (LSTM)                     (None, 50, 64)                  17664       </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  lstm_22 (LSTM)                     (None, 64)                      33024       </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  dense_27 (Dense)                   (None, 32)                      2080        </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  dense_28 (Dense)                   (None, 4)                       132         </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  input_20 (InputLayer)              [(None, 50, 4)]                 0           </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  lstm_22 (LSTM)                     (None, 50, 64)                  17664       </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  lstm_23 (LSTM)                     (None, 64)                      33024       </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  dense_28 (Dense)                   (None, 32)                      2080        </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  dense_29 (Dense)                   (None, 4)                       132         </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> ================================================================================</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Total params: 52,900</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Trainable params: 52,900</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Non-trainable params: 0</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> ________________________________________________________________________________</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "New model: "</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Model: "model_30"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Model: "model_32"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> ________________________________________________________________________________</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  Layer (type)         Output Shape   Param #  Connected to           Trainable  </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> ================================================================================</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  input_19 (InputLayer  [(None, 50, 4  0       []                     N          </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  input_20 (InputLayer  [(None, 50, 4  0       []                     N          </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  )                    )]                                                        </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  lstm_21 (LSTM)       (None, 50, 64  17664    ['input_19[0][0]']     N          </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  lstm_22 (LSTM)       (None, 50, 64  17664    ['input_20[0][0]']     N          </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>                       )                                                         </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  lstm_22 (LSTM)       (None, 64)     33024    ['lstm_21[0][0]']      N          </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  dense_27 (Dense)     (None, 32)     2080     ['lstm_22[0][0]']      N          </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  dense_29 (Dense)     (None, 32)     1056     ['dense_27[0][0]']     Y          </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  dense_30 (Dense)     (None, 16)     528      ['dense_29[0][0]']     Y          </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  dense_31 (Dense)     (None, 8)      264      ['dense_27[0][0]']     Y          </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  dense_32 (Dense)     (None, 12)     396      ['dense_27[0][0]']     Y          </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  out_1_binary_classsi  (None, 1)     17       ['dense_30[0][0]']     Y          </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  lstm_23 (LSTM)       (None, 64)     33024    ['lstm_22[0][0]']      N          </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  dense_28 (Dense)     (None, 32)     2080     ['lstm_23[0][0]']      N          </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  dense_30 (Dense)     (None, 32)     1056     ['dense_28[0][0]']     Y          </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  dense_31 (Dense)     (None, 16)     528      ['dense_30[0][0]']     Y          </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  dense_32 (Dense)     (None, 8)      264      ['dense_28[0][0]']     Y          </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  dense_33 (Dense)     (None, 12)     396      ['dense_28[0][0]']     Y          </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  out_1_binary_classsi  (None, 1)     17       ['dense_31[0][0]']     Y          </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  fication (Dense)                                                               </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  out_2_regression (De  (None, 1)     9        ['dense_31[0][0]']     Y          </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  out_2_regression (De  (None, 1)     9        ['dense_32[0][0]']     Y          </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  nse)                                                                           </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  out_3_classification  (None, 5)     65       ['dense_32[0][0]']     Y          </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  out_3_classification  (None, 5)     65       ['dense_33[0][0]']     Y          </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   (Dense)                                                                       </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> ================================================================================</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Total params: 55,103</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Trainable params: 2,335</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Non-trainable params: 52,768</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> ________________________________________________________________________________</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> input_19 trainable: </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> lstm_21 trainable: FALSE </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> input_20 trainable: </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> lstm_22 trainable: FALSE </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> dense_27 trainable: FALSE </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> dense_29 trainable: TRUE </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> lstm_23 trainable: FALSE </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> dense_28 trainable: FALSE </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> dense_30 trainable: TRUE </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> dense_31 trainable: TRUE </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> dense_32 trainable: TRUE </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> dense_33 trainable: TRUE </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> out_1_binary_classsification trainable: TRUE </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> out_2_regression trainable: TRUE </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> out_3_classification trainable: TRUE </span>

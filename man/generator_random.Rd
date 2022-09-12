@@ -42,7 +42,7 @@ generator_random(
 \item If \code{"label_header"}, class will be read from fasta headers.
 \item If \code{"label_folder"}, class will be read from folder, i.e. all files in one folder must belong to the same class.
 \item If \code{"label_csv"}, targets are read from a csv file. This file should have one column named "file". The targets then correspond to entries in that row (except "file"
-column). Example: if we are currently working with a file called "a.fasta", there should be a row in our csv file\tabular{lll}{
+column). Example: if we are currently working with a file called "a.fasta" and coresponding label is "label_1", there should be a row in our csv file\tabular{lll}{
    file \tab label_1 \tab label_2 \cr
    "a.fasta" \tab 1 \tab 0 \cr
 }

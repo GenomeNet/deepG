@@ -1033,15 +1033,35 @@ get_coverage_concat <- function(fasta.file, concat_seq) {
 #' new maxlen: (`maxlen` \eqn{*} `samples_per_target`) + `buffer_len` \eqn{*} (`samples_per_target` - 1).
 #' @param new_batch_size Size of first axis of input/targets after reshaping.
 #' @param check_y Check if entries in `y` are consistent with reshape strategy (same label when aggregating).   
+#' @examples 
+#' # create dummy data
+#' batch_size <- 8
+#' maxlen <- 11
+#' voc_len <- 4 
+#' x <- sample(0:(voc_len-1), maxlen*batch_size, replace = TRUE)
+#' x <- keras::to_categorical(x, num_classes = voc_len)
+#' x <- array(x, dim = c(batch_size, maxlen, voc_len))
+#' y <- rep(0:1, each = batch_size/2)
+#' y <- keras::to_categorical(y, num_classes = 2)
+#' y
 #' 
+#' # reshape data for multi input model
+#' reshaped_data <- reshape_tensor(
+#'   x = x,
+#'   y = y,
+#'   new_batch_size = 2,
+#'   samples_per_target = 4,
+#'   reshape_mode = "multi_input")
+#' 
+#' length(reshaped_data[[1]])
+#' dim(reshaped_data[[1]][[1]])
+#' reshaped_data[[2]]
 #' @export
 reshape_tensor <- function(x, y, new_batch_size,
                            samples_per_target,
                            buffer_len = NULL,
                            reshape_mode = "time_dist",
                            check_y = FALSE) {
-  
-  # TODO: Add stop conditions (summarize y)
   
   batch_size <- dim(x)[1]
   maxlen <- dim(x)[2]
