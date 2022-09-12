@@ -16,7 +16,7 @@
 #' \item If `"label_header"`, class will be read from fasta headers.
 #' \item If `"label_folder"`, class will be read from folder, i.e. all files in one folder must belong to the same class. 
 #' \item If `"label_csv"`, targets are read from a csv file. This file should have one column named "file". The targets then correspond to entries in that row (except "file"
-#' column). Example: if we are currently working with a file called "a.fasta", there should be a row in our csv file 
+#' column). Example: if we are currently working with a file called "a.fasta" and coresponding label is "label_1", there should be a row in our csv file  
 #' 
 #'  |  file       | label_1 | label_2 | 
 #'  |   ---       |   ---   |  ---    |   
