@@ -33,7 +33,7 @@ mark.out {
 
 ```
 
-# Introduction 
+## Introduction 
 
 The goal of the deepG package is to speed up the development of bioinformatical tools for sequence classification, homology detection and other bioinformatical tasks. 
 The package offers several functions for
