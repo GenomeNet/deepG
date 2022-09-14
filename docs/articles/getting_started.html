@@ -254,20 +254,20 @@ mark.out {
 <span><span class="co">## [[1]]$confusion_matrix</span></span>
 <span><span class="co">##             Truth</span></span>
 <span><span class="co">## Prediction   high_gc equal_dist</span></span>
-<span><span class="co">##   high_gc        387          1</span></span>
-<span><span class="co">##   equal_dist      12        398</span></span>
+<span><span class="co">##   high_gc        388          2</span></span>
+<span><span class="co">##   equal_dist      11        397</span></span>
 <span><span class="co">## </span></span>
 <span><span class="co">## [[1]]$accuracy</span></span>
 <span><span class="co">## [1] 0.9837093</span></span>
 <span><span class="co">## </span></span>
 <span><span class="co">## [[1]]$categorical_crossentropy_loss</span></span>
-<span><span class="co">## [1] 0.08368492</span></span>
+<span><span class="co">## [1] 0.1159862</span></span>
 <span><span class="co">## </span></span>
 <span><span class="co">## [[1]]$AUC</span></span>
-<span><span class="co">## [1] 0.9990138</span></span>
+<span><span class="co">## [1] 0.9986369</span></span>
 <span><span class="co">## </span></span>
 <span><span class="co">## [[1]]$AUPRC</span></span>
-<span><span class="co">## [1] 0.9990114</span></span></code></pre>
+<span><span class="co">## [1] 0.9986236</span></span></code></pre>
 <p>We can check where our model made mistakes for the sequence with high GC content.</p>
 <div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">high_gc_file</span> <span class="op">&lt;-</span> <span class="fu">microseq</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/microseq/man/readFasta.html" class="external-link">readFasta</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/list.files.html" class="external-link">list.files</a></span><span class="op">(</span><span class="va">val_1_dir</span>, full.names <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span><span class="op">[</span><span class="fl">1</span><span class="op">]</span><span class="op">)</span></span>
@@ -302,7 +302,7 @@ mark.out {
 <span><span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">pred_df</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"high_gc_conf"</span>, <span class="st">"equal_dist_conf"</span>, <span class="st">"sample_end_position"</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">pred_df</span><span class="op">)</span></span></code></pre></div>
 <pre><code><span><span class="co">##   high_gc_conf equal_dist_conf sample_end_position</span></span>
-<span><span class="co">## 1         0.93            0.07                  50</span></span>
+<span><span class="co">## 1         0.95            0.05                  50</span></span>
 <span><span class="co">## 2         0.97            0.03                  75</span></span>
 <span><span class="co">## 3         0.97            0.03                 100</span></span>
 <span><span class="co">## 4         0.96            0.04                 125</span></span>
@@ -312,17 +312,17 @@ mark.out {
 <code class="sourceCode R"><span><span class="va">wrong_pred</span> <span class="op">&lt;-</span> <span class="va">pred_df</span> <span class="op"><a href="../reference/pipe.html">%&gt;%</a></span> <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">high_gc_conf</span> <span class="op">&lt;</span> <span class="fl">0.5</span><span class="op">)</span></span>
 <span><span class="va">wrong_pred</span></span></code></pre></div>
 <pre><code><span><span class="co">##    high_gc_conf equal_dist_conf sample_end_position</span></span>
-<span><span class="co">## 1          0.10            0.90                 800</span></span>
-<span><span class="co">## 2          0.13            0.87                1150</span></span>
-<span><span class="co">## 3          0.08            0.92                1950</span></span>
-<span><span class="co">## 4          0.06            0.94                2700</span></span>
-<span><span class="co">## 5          0.12            0.88                3000</span></span>
-<span><span class="co">## 6          0.09            0.91                3700</span></span>
-<span><span class="co">## 7          0.33            0.67                4425</span></span>
-<span><span class="co">## 8          0.17            0.83                4675</span></span>
-<span><span class="co">## 9          0.14            0.86                7875</span></span>
-<span><span class="co">## 10         0.10            0.90                8225</span></span>
-<span><span class="co">## 11         0.34            0.66                9900</span></span></code></pre>
+<span><span class="co">## 1          0.18            0.82                 800</span></span>
+<span><span class="co">## 2          0.28            0.72                1150</span></span>
+<span><span class="co">## 3          0.14            0.86                1950</span></span>
+<span><span class="co">## 4          0.13            0.87                2700</span></span>
+<span><span class="co">## 5          0.28            0.72                3000</span></span>
+<span><span class="co">## 6          0.14            0.86                3700</span></span>
+<span><span class="co">## 7          0.40            0.60                4425</span></span>
+<span><span class="co">## 8          0.33            0.67                4675</span></span>
+<span><span class="co">## 9          0.30            0.70                7875</span></span>
+<span><span class="co">## 10         0.17            0.83                8225</span></span>
+<span><span class="co">## 11         0.41            0.59                9925</span></span></code></pre>
 <div class="sourceCode" id="cb20"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw">if</span> <span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">nrow</a></span><span class="op">(</span><span class="va">wrong_pred</span><span class="op">)</span> <span class="op">==</span> <span class="fl">0</span><span class="op">)</span> <span class="op">{</span></span>
 <span>  <span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="st">"All predictions for high GC content class correct"</span><span class="op">)</span></span>
@@ -348,7 +348,7 @@ mark.out {
 <span><span class="co">##  [8] "ATCCCGCATTCGCCGACGTCTCCACAGGAGGATCAGCGGGTCCGGGGCGA"</span></span>
 <span><span class="co">##  [9] "CTACGGAACGTGGCTCCGAGCATCGGCGCATCGGCATGTGTCTGCCGGCG"</span></span>
 <span><span class="co">## [10] "GGCGGGCCCTTCAATTCTATAAGCGACGCCGCCCTTGTCTGACGCTGGGC"</span></span>
-<span><span class="co">## [11] "TGGCCGTCGCGCTCCGGAGCCGTCACACCGGCGTACCTGTTATAAAGTCG"</span></span></code></pre>
+<span><span class="co">## [11] "CACCGGCGTACCTGTTATAAAGTCGCCCGCGCTCCCCCGGGCGCACCACG"</span></span></code></pre>
 <p>We can check the nucleotide distribution of those sequences</p>
 <div class="sourceCode" id="cb22"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">l</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="op">)</span></span>
@@ -368,7 +368,7 @@ mark.out {
 <span><span class="co">##  [8,] 0.18 0.34 0.34 0.14</span></span>
 <span><span class="co">##  [9,] 0.14 0.32 0.36 0.18</span></span>
 <span><span class="co">## [10,] 0.14 0.34 0.30 0.22</span></span>
-<span><span class="co">## [11,] 0.16 0.34 0.30 0.20</span></span></code></pre>
+<span><span class="co">## [11,] 0.16 0.44 0.26 0.14</span></span></code></pre>
 <div class="sourceCode" id="cb24"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">df</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span>distribution <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/vector.html" class="external-link">as.vector</a></span><span class="op">(</span><span class="va">dist_matrix</span><span class="op">)</span>,</span>
 <span>                 nt <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/factor.html" class="external-link">factor</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="va">vocabulary</span>, each <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">nrow</a></span><span class="op">(</span><span class="va">dist_matrix</span><span class="op">)</span><span class="op">)</span><span class="op">)</span>,</span>
