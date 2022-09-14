@@ -926,10 +926,7 @@ summarize_states <- function(states_path = NULL, label_names = NULL, file_type =
     stopifnot(ncol(df) == num_labels)
     
     names(df) <- c(label_names)
-    #title <- str_remove(basename(state_file), ".", file_type)
     
-    mean_vector <- vector("numeric", num_labels)
-    max_vector <- vector("numeric", num_labels)
     mean_df <- data.frame(matrix(0, nrow = 1, ncol = num_labels))
     names(mean_df) <- paste0("mean_conf_", label_names)
     max_df <- data.frame(matrix(0, nrow = 1, ncol = num_labels))
@@ -945,8 +942,8 @@ summarize_states <- function(states_path = NULL, label_names = NULL, file_type =
     votes_df <- data.frame(matrix(vote_perc, nrow = 1, ncol = num_labels))
     names(votes_df) <- paste0("vote_perc_", label_names)
     
-    mean_prediction <- label_names[which.max(mean_vector)]
-    max_prediction <- label_names[which.max(max_vector)]
+    mean_prediction <- label_names[which.max(unlist(mean_df))]
+    max_prediction <- label_names[which.max(unlist(max_df))]
     vote_prediction <- label_names[which.max(vote_perc)]
     
     if (is.null(states_path)) {
@@ -964,4 +961,3 @@ summarize_states <- function(states_path = NULL, label_names = NULL, file_type =
   summary_df <- data.table::rbindlist(summary_list)
   return(summary_df)
 }
-
