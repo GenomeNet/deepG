@@ -76,9 +76,9 @@ f1_wrapper <- function(num_targets = 2, loss = "binary_crossentropy") {
                                          return(f1)
                                        },
                                        
-                                       reset_state = function(self) {
-                                         self$rc$reset_state()
-                                         self$pr$reset_state()
+                                       reset_states = function(self) {
+                                         self$rc$reset_states()
+                                         self$pr$reset_states()
                                          #self$f1_score$assign(0)
                                          NULL
                                        }
@@ -143,7 +143,7 @@ balanced_acc_wrapper <- function(num_targets, cm_dir) {
                                                    return(balanced_acc)
                                                  },
                                                  
-                                                 reset_state = function(self) {
+                                                 reset_states = function(self) {
                                                    self$store_cm()
                                                    self$count <- self$count + 1
                                                    self$cm$assign_sub(self$cm)
