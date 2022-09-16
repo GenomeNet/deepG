@@ -786,6 +786,10 @@ load_prediction <- function(h5_path, rows = NULL, verbose = TRUE,
       }
     }
     
+    if (is.null(dim(states))) {
+      states <- matrix(states, nrow = 1)
+    }
+    
     contains_seq <- FALSE
     if (get_seq) {
       if ("sequence" %in% names(h5_file)) {
@@ -833,6 +837,9 @@ load_prediction <- function(h5_path, rows = NULL, verbose = TRUE,
       
       entry_name <- entry_names[i]
       states <- h5_file[["states"]][[entry_name]][ , ]
+      if (is.null(dim(states))) {
+        states <- matrix(states, nrow = 1)
+      }
       
       if (get_seq) {
         sequence <- h5_file[["sequence"]][[entry_name]][ ]
@@ -844,6 +851,11 @@ load_prediction <- function(h5_path, rows = NULL, verbose = TRUE,
       
       if (!complete) {
         states <- states[rows, ]
+        
+        if (is.null(dim(states))) {
+          states <- matrix(states, nrow = 1)
+        }
+        
         if (get_target_positions) {
           targetPos <- hdf5r::h5attr(read_states, target_name)[rows]
         }
