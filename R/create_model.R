@@ -2362,3 +2362,87 @@ get_output_activations <- function(model) {
   }
   return(act_vec)
 }
+
+
+#' Load checkpoint 
+#' 
+#' Load checkpoint from directory.
+#' 
+#' @inheritParams create_model_lstm_cnn
+#' @param cp_path A directory containing checkpoints or a single checkpoint file. 
+#' If a directory, choose checkpoint based on `cp_filter` or `ep_index`.
+#' @param cp_filter Condition to choose checkpoint if `cp_path` is a directory.
+#' Either "acc" for bast validation accuracy, "loss" for best validation loss or "last_ep" for last epoch.
+#' @param ep_index Load checkpoint from specific epoch number.
+#' @param verbose Whether to print choosen checkpoint path
+#' @export
+load_cp <- function(cp_path, cp_filter = NULL, ep_index = NULL, compile = FALSE,
+                    learning_rate = 0.01, solver = "adam", metrics = c("acc"),
+                    loss = "categorical_crossentropy", verbose = TRUE) {
+  
+  if (!is.null(cp_filter)) {
+    stopifnot(cp_filter %in% c("acc", "loss", "last_ep"))
+    if (!is.null(ep_index)) stop("Only one of cp_filter or ep_index arguments can be used.
+                                  Set one of them to NULL.")
+  } 
+  
+  is_directory <- dir.exists(cp_path)
+  if (is_directory) {
+    cps <- list.files(cp_path, full.names = TRUE)
+    files_basename <- basename(cps)
+    stopifnot(xor(is.null(cp_filter), is.null(ep_index)))
+  } else {
+    stopifnot(file.exists(cp_path))
+    cp <- cp_path
+    model <- keras::load_model_hdf5(cp, compile = FALSE)
+  } 
+  
+  if (is_directory & !is.null(cp_filter)) {
+    
+    #TODO: check if multiple checkpoints have same best score
+    
+    if (cp_filter == "acc") {
+      acc_scores <- files_basename %>% stringr::str_extract("acc\\d++\\.\\d++") %>% 
+        stringr::str_remove("acc") %>% as.numeric()
+      rank_order <- order(acc_scores, decreasing = TRUE)
+    }
+    
+    if (cp_filter == "loss") {
+      loss_scores <- files_basename %>% stringr::str_extract("loss\\d++\\.\\d++") %>% 
+        stringr::str_remove("loss") %>% as.numeric()
+      rank_order <- order(loss_scores)
+    }
+    
+    if (cp_filter == "last_ep") {
+      ep_scores <- files_basename %>% stringr::str_extract("Ep\\.\\d++") %>% 
+        stringr::str_remove("Ep\\.") %>% as.numeric()
+      rank_order <- order(ep_scores, decreasing = TRUE)
+    }
+    
+    index <- which(rank_order == 1)
+  }
+  
+  if (is_directory & !is.null(ep_index)) {
+    ep_scores <- files_basename %>% stringr::str_extract("Ep\\.\\d++") %>% 
+      stringr::str_remove("Ep\\.") %>% as.numeric()
+    index <- which(ep_scores == ep_index)
+  }
+  
+  if (is_directory) {
+    cp <- cps[index]
+    model <- keras::load_model_hdf5(cp, compile = FALSE)
+  }
+  
+  if (verbose) {
+    cat("Using checkpoint", cp)
+  }
+  
+  if (compile) {
+    optimizer <- set_optimizer(solver, learning_rate) 
+    model %>% keras::compile(loss = loss,
+                             optimizer = optimizer, metrics = metrics)
+  } 
+  
+  return(model)
+  
+}
