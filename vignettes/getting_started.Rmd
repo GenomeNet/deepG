@@ -187,3 +187,14 @@ ggplot(df, aes(fill=nt, y=distribution, x=nt)) +
     geom_bar(position="dodge", stat="identity")  + facet_wrap(~sample_id)
 ```
   
+Finally, we may want to aggregate all predictions, we made for the sequence.
+We can do this using the `summarize_states` function. The function returns 
+the mean confidence, the maximum prediction and the vote percentages (percentage of predictions per class).
+
+```{r warning = FALSE}
+label_names <- c("high_gc", "equal_dist")
+pred_summary <- summarize_states(label_names = label_names, df = pred_df[, 1:2])
+print(pred_summary)
+```
+
+
