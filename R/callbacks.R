@@ -914,26 +914,28 @@ remove_checkpoints <- function(cp_dir, metric = "acc", best_n = 1, ask_before_re
     stop("Directory is empty")
   }
   files_basename <- basename(files)
+  num_cp <- length(files)
   
   if (metric == "acc") {
     acc_scores <- files_basename %>% stringr::str_extract("acc\\d++\\.\\d++") %>% 
       stringr::str_remove("acc") %>% as.numeric()
-    rank_order <- order(acc_scores, decreasing = TRUE)
+    rank_order <- rank(acc_scores, ties.method = "last")
+    index <- rank_order > (num_cp - best_n)
   }
   
   if (metric == "loss") {
     loss_scores <- files_basename %>% stringr::str_extract("loss\\d++\\.\\d++") %>% 
       stringr::str_remove("loss") %>% as.numeric()
-    rank_order <- order(loss_scores)
+    rank_order <- rank(loss_scores, ties.method = "last")
+    index <- rank_order <= best_n
   }
   
   if (metric == "last_ep") {
     ep_scores <- files_basename %>% stringr::str_extract("Ep\\.\\d++") %>% 
       stringr::str_remove("Ep\\.") %>% as.numeric()
-    rank_order <- order(ep_scores, decreasing = TRUE)
+    rank_order <- rank(ep_scores)
+    index <- rank_order > (num_cp - best_n)
   }
-  
-  index <- rank_order <= best_n
   
   if (ask_before_remove) {
     cat("Deleting", sum(!index), paste0(ifelse(sum(!index) == 1, "file", "files") , "."),
