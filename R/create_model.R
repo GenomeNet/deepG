@@ -2399,27 +2399,25 @@ load_cp <- function(cp_path, cp_filter = NULL, ep_index = NULL, compile = FALSE,
   
   if (is_directory & !is.null(cp_filter)) {
     
-    #TODO: check if multiple checkpoints have same best score
-    
     if (cp_filter == "acc") {
       acc_scores <- files_basename %>% stringr::str_extract("acc\\d++\\.\\d++") %>% 
         stringr::str_remove("acc") %>% as.numeric()
-      rank_order <- order(acc_scores, decreasing = TRUE)
+      # use later epoch for ties
+      index <- which.max(rank(acc_scores, ties.method = "last"))
     }
     
     if (cp_filter == "loss") {
       loss_scores <- files_basename %>% stringr::str_extract("loss\\d++\\.\\d++") %>% 
         stringr::str_remove("loss") %>% as.numeric()
-      rank_order <- order(loss_scores)
+      index <- which.min(rank(loss_scores, ties.method = "last"))
     }
     
     if (cp_filter == "last_ep") {
       ep_scores <- files_basename %>% stringr::str_extract("Ep\\.\\d++") %>% 
         stringr::str_remove("Ep\\.") %>% as.numeric()
-      rank_order <- order(ep_scores, decreasing = TRUE)
+      index <- which.max(ep_scores)
     }
     
-    index <- which(rank_order == 1)
   }
   
   if (is_directory & !is.null(ep_index)) {
