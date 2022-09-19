@@ -248,7 +248,7 @@ train_model <- function(train_type = "lm",
       #if (train_type == "lm") stop("Concatenation not implemented for language model")
     }
     
-    # train train_val_ratio via csv file
+    # train/val split via csv file
     if (!is.null(train_val_split_csv)) {
       if (train_type == "label_folder") {
         stop('train_val_split_csv not implemented for train_type = "label_folder"')
