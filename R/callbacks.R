@@ -203,11 +203,9 @@ tensorboard_cb <- function(path_tensorboard, run_name) {
 
 #' Function arguments callback
 #' 
-#' Print \code{\link{train_model}} call in tensorboard "TEXT" tab.
+#' Print train_model call in text field of tensorboard.
 #' 
-#' @param argumentList List of function arguments.
-#' @param path_tensorboard Path to tensorboard directory. 
-#' @param run_name Name of training run.
+#' @inheritParams train_model
 #' @export
 function_args_cb <- function(argumentList, path_tensorboard, run_name) {
   
@@ -279,7 +277,7 @@ tensorboard_complete_cb <- function(default_arguments, model, path_tensorboard, 
   l[[2]] <- tensorboard_cb(path_tensorboard = path_tensorboard, run_name = run_name)
   l[[3]] <- function_args_cb(argumentList = argumentList, path_tensorboard = path_tensorboard, run_name = run_name)
   
-  if (train_with_gen & count_files & train_type != "dummy_gen") {
+  if (train_with_gen & count_files) {
     
     proportion_training_files_cb <- reticulate::PyClass("proportion_training_files_cb",
                                                         inherit = tensorflow::tf$keras$callbacks$Callback,
@@ -480,21 +478,19 @@ validation_after_training_cb <- function(gen.val, validation_steps) {
 
 #' Confusion matrix callback.
 #' 
-#' Create a confusion matrix to display in tensorboard "IMAGES" tab. 
+#' Create a confusion matrix to display under tensorboard images. 
 #'
-#' @param path_tensorboard Path to tensorboard directory 
+#' @inheritParams train_model
 #' @param confMatLabels Names of classes.
 #' @param cm_dir Directory that contains confusion matrix files.
-#' @param total_epochs Number of total training epochs.
-#' @param run_name Name of training run.
 #' @export
-conf_matrix_cb <- function(path_tensorboard, run_name, confMatLabels, cm_dir, total_epochs) {
+conf_matrix_cb <- function(path_tensorboard, run_name, confMatLabels, cm_dir) {
   
   conf_matrix_cb_py_class <- reticulate::PyClass("conf_matrix_cb",
                                                  inherit = tensorflow::tf$keras$callbacks$Callback,
                                                  list(
                                                    
-                                                   `__init__` = function(self, cm_dir, path_tensorboard, run_name, confMatLabels, graphics = "png", total_epochs) {
+                                                   `__init__` = function(self, cm_dir, path_tensorboard, run_name, confMatLabels, graphics = "png") {
                                                      self$cm_dir <- cm_dir
                                                      self$path_tensorboard <- path_tensorboard
                                                      self$run_name <- run_name
@@ -502,10 +498,10 @@ conf_matrix_cb <- function(path_tensorboard, run_name, confMatLabels, cm_dir, to
                                                      self$plot_path_val <- tempfile(pattern = "", fileext = paste0(".", graphics))
                                                      self$confMatLabels <- confMatLabels
                                                      self$epoch <- 0
-                                                     self$total_epochs <- total_epochs
                                                      self$train_images <- NULL
                                                      self$val_images <- NULL
                                                      self$graphics <- graphics
+                                                     self$epoch <- 0
                                                      self$text_size <- NULL
                                                      self$round_dig <- 3
                                                      if (length(confMatLabels) < 8) {
@@ -517,7 +513,7 @@ conf_matrix_cb <- function(path_tensorboard, run_name, confMatLabels, cm_dir, to
                                                    
                                                    on_epoch_begin = function(self, epoch, logs) {
                                                      suppressMessages(library(yardstick))
-                                                     if (epoch > 0 & epoch < self$total_epochs) {
+                                                     if (epoch > 0) {
                                                        
                                                        cm_train <- readRDS(file.path(self$cm_dir, paste0("cm_train_", epoch-1, ".rds")))
                                                        cm_val <- readRDS(file.path(self$cm_dir, paste0("cm_val_", epoch, ".rds")))
@@ -607,17 +603,9 @@ conf_matrix_cb <- function(path_tensorboard, run_name, confMatLabels, cm_dir, to
                                                    on_train_end = function(self, logs) {
                                                      
                                                      epoch <- self$epoch + 1
-                                                     cm_train <- readRDS(file.path(self$cm_dir, paste0("cm_train_", epoch-1, ".rds")))
-                                                     #cm_val <- readRDS(file.path(self$cm_dir, paste0("cm_val_", epoch, ".rds")))
-                                                     # extract last val confusion metric from custom metric
-                                                     for (i in 1:length(model$metrics)) {
-                                                       if (model$metrics[[i]]$name == "balanced_acc") {
-                                                         bal_acc_index <- i
-                                                         break
-                                                       }
-                                                     }
-                                                     cm_val <- as.array(model$metrics[[bal_acc_index]]$cm)
                                                      
+                                                     cm_train <- readRDS(file.path(self$cm_dir, paste0("cm_train_", epoch-1, ".rds")))
+                                                     cm_val <- readRDS(file.path(self$cm_dir, paste0("cm_val_", epoch, ".rds")))
                                                      if (self$cm_display_percentage) {
                                                        cm_train <- cm_perc(cm_train, self$round_dig)
                                                        cm_val <- cm_perc(cm_val, self$round_dig)
@@ -702,12 +690,255 @@ conf_matrix_cb <- function(path_tensorboard, run_name, confMatLabels, cm_dir, to
   conf_matrix_cb_py_class(path_tensorboard = path_tensorboard,
                           run_name = run_name,
                           confMatLabels = confMatLabels,
-                          cm_dir = cm_dir,
-                          total_epochs = total_epochs)
+                          cm_dir = cm_dir)
+}
+
+#' Loss function for label noise
+#' 
+#' Implements approach from https://arxiv.org/abs/1609.03683 and code from 
+#' https://github.com/giorgiop/loss-correction/blob/15a79de3c67c31907733392085c333547c2f2b16/loss.py#L16-L21 
+#'
+#' @param noise_matrix Matrix of noise distribution.
+#' If first label contains 5\% wrong labels and second label no noise, then
+#' \code{noise_matrix <- matrix(c(0.95, 0.05, 0, 1), nrow = 2, byrow = TRUE)}.
+#' @export
+noisy_loss_wrapper <- function(noise_matrix) {
+  inverted_noise_matrix <- solve(noise_matrix)
+  inverted_noise_matrix <- tensorflow::tf$cast(inverted_noise_matrix, dtype = "float32")
+  noisy_loss <- function(y_true, y_pred) {
+    y_pred <- y_pred / keras::k_sum(y_pred, axis = -1, keepdims = TRUE)
+    y_pred <- keras::k_clip(y_pred, tensorflow::tf$keras$backend$epsilon(), 1.0 - tensorflow::tf$keras$backend$epsilon())
+    loss <- -1 * keras::k_sum(keras::k_dot(y_true, inverted_noise_matrix) * keras::k_log(y_pred), axis=-1)
+    return(loss)
+  }
+  noisy_loss
+}
+
+#' Balanced accuracy metric
+#'
+#' Compute balanced accuracy as additional score. Useful for imbalanced data.
+#'
+#'@param num_targets Number of targets.
+#'@param cm_dir Directory of confusion matrix used to compute balanced accuracy.
+#'@export
+balanced_acc_wrapper <- function(num_targets, cm_dir) {
+  balanced_acc_stateful <- reticulate::PyClass("balanced_acc",
+                                               inherit = tensorflow::tf$keras$metrics$Metric,
+                                               list(
+                                                 
+                                                 `__init__` = function(self, num_targets, cm_dir) {
+                                                   super()$`__init__`(name = "balanced_acc")
+                                                   self$num_targets <- num_targets
+                                                   self$cm_dir <- cm_dir
+                                                   self$count <- 0
+                                                   self$cm <- self$add_weight(name = "cm_matrix", shape = c(num_targets, num_targets), initializer="zeros")
+                                                   NULL
+                                                 },
+                                                 
+                                                 update_state = function(self, y_true, y_pred, sample_weight = NULL) {
+                                                   self$cm$assign_add(self$compute_cm(y_true, y_pred))
+                                                   NULL
+                                                 },
+                                                 
+                                                 result = function(self) {
+                                                   balanced_acc <- self$compute_balanced_acc()
+                                                   self$store_cm()
+                                                   return(balanced_acc)
+                                                 },
+                                                 
+                                                 compute_cm = function(self, y_true, y_pred) {
+                                                   labels <- tensorflow::tf$math$argmax(y_true, axis = 1L)
+                                                   predictions <- tensorflow::tf$math$argmax(y_pred, axis = 1L)
+                                                   current_cm <- tensorflow::tf$math$confusion_matrix(
+                                                     labels = labels, predictions = predictions,
+                                                     dtype = "float32", num_classes = self$num_targets)
+                                                   current_cm <- tensorflow::tf$transpose(current_cm)
+                                                   return(current_cm)
+                                                 },
+                                                 
+                                                 compute_balanced_acc = function(self) {
+                                                   diag <- tensorflow::tf$linalg$diag_part(self$cm)
+                                                   col_sums <- tensorflow::tf$math$reduce_sum(self$cm, axis=0L)
+                                                   average_per_class <- tensorflow::tf$math$divide(diag, col_sums)
+                                                   nan_index <- tensorflow::tf$math$logical_not(tensorflow::tf$math$is_nan(average_per_class))
+                                                   average_per_class <- tensorflow::tf$boolean_mask(average_per_class, nan_index)
+                                                   acc_sum <- tensorflow::tf$math$reduce_sum(average_per_class)
+                                                   balanced_acc <- tensorflow::tf$math$divide(acc_sum, tensorflow::tf$math$count_nonzero(col_sums, dtype= "float32"))
+                                                   return(balanced_acc)
+                                                 },
+                                                 
+                                                 reset_states = function(self) {
+                                                   self$count <- self$count + 1
+                                                   self$cm$assign_sub(self$cm)
+                                                   NULL
+                                                 },
+                                                 
+                                                 store_cm = function(self) {
+                                                   if (self$count %% 2 == 0) {
+                                                     file_name <- file.path(self$cm_dir, paste0("cm_val_", floor(self$count/2), ".rds"))
+                                                   } else {
+                                                     file_name <- file.path(self$cm_dir, paste0("cm_train_", floor(self$count/2), ".rds"))
+                                                   }
+                                                   saveRDS(keras::k_eval(self$cm), file_name)
+                                                   NULL
+                                                 }
+                                                 
+                                               ))
+  return(balanced_acc_stateful(num_targets = num_targets, cm_dir = cm_dir))
+}
+
+#' F1 metric
+#' 
+#' Compute F1 metric as additional score. 
+#'
+#'@param num_targets Size of model output.
+#'@export
+f1_wrapper <- function(num_targets = 2) {
+  f1_stateful <- reticulate::PyClass("f1",
+                                     inherit = tensorflow::tf$keras$metrics$Metric,
+                                     list(
+                                       
+                                       `__init__` = function(self, num_targets) {
+                                         super()$`__init__`(name = "f1")
+                                         self$num_targets <- num_targets
+                                         self$f1_score <- 0
+                                         self$cm <- self$add_weight(name = "cm_matrix", shape = c(num_targets, num_targets), initializer="zeros")
+                                         NULL
+                                       },
+                                       
+                                       update_state = function(self, y_true, y_pred, sample_weight = NULL) {
+                                         self$cm$assign_add(self$compute_cm(y_true, y_pred))
+                                         NULL
+                                       },
+                                       
+                                       result = function(self) {
+                                         self$f1_score <- self$compute_f1()
+                                         return(self$f1_score)
+                                       },
+                                       
+                                       compute_cm = function(self, y_true, y_pred) {
+                                         labels <- tensorflow::tf$math$argmax(y_true, axis = 1L)
+                                         predictions <- tensorflow::tf$math$argmax(y_pred, axis = 1L)
+                                         current_cm <- tensorflow::tf$math$confusion_matrix(
+                                           labels = labels, predictions = predictions,
+                                           dtype = "float32", num_classes = self$num_targets)
+                                         current_cm <- tensorflow::tf$transpose(current_cm)
+                                         return(current_cm)
+                                       },
+                                       
+                                       compute_f1 = function(self) {
+                                         diag <- tensorflow::tf$linalg$diag_part(self$cm)
+                                         precision <- diag/(tensorflow::tf$reduce_sum(self$cm, 0L) + tensorflow::tf$constant(1e-15))
+                                         recall <- diag/(tensorflow::tf$reduce_sum(self$cm, 1L) + tensorflow::tf$constant(1e-15))
+                                         f1 = (2 * precision * recall)/(precision + recall + tensorflow::tf$constant(1e-15))
+                                         return(f1)
+                                       },
+                                       
+                                       reset_states = function(self) {
+                                         self$cm$assign_sub(self$cm)
+                                         NULL
+                                       }
+                                       
+                                     ))
+  return(f1_stateful(num_targets = num_targets))
+}
+
+#' Mean AUC score 
+#'
+#' Compute AUC score as additional metric. If model has several output neurons with binary crossentroy loss, will use the average score. 
+#'
+#' @param model_output_size Number of neurons in model output layer.
+#' @param loss Loss function of model, for which metric will be applied to; must be "binary_crossentropy"
+#' or "catergorical_crossentropy".
+#' @export
+auc_wrapper <- function(model_output_size,
+                        loss = "binary_crossentropy") {
+  
+  stopifnot(loss %in% c("binary_crossentropy", "categorical_crossentropy"))
+  if (loss == "categorical_crossentropy" & model_output_size != 2) {
+    stop("Output size must be two, when loss is catergorical_crossentropy")
+  }
+  metric_name <- ifelse(loss == "binary_crossentropy" & model_output_size > 1,
+                        "mean_AUC", "AUC")
+  
+  auc_stateful <- reticulate::PyClass("AUC",
+                                      inherit = tensorflow::tf$keras$metrics$Metric,
+                                      list(
+                                        
+                                        `__init__` = function(self, model_output_size, loss, metric_name) {
+                                          super()$`__init__`(name = metric_name)
+                                          self$model_output_size <- model_output_size
+                                          self$loss <- loss
+                                          if (loss == "binary_crossentropy") {
+                                            self$auc_scores <- self$add_weight(name = "auc_vector", shape = c(1, model_output_size), initializer="zeros")
+                                            self$auc_score <-  self$add_weight(name = "auc_score", initializer="zeros")
+                                            self$auc_list <- vector("list", model_output_size)
+                                            for (i in 1:model_output_size) {
+                                              assign(paste0("m_", i), tensorflow::tf$keras$metrics$AUC())
+                                            }
+                                            parse_text <- purrr::map(1:model_output_size, ~parse(text = paste0("m_", .x)))
+                                            self$auc_list <- purrr::map(1:model_output_size, ~eval(parse_text[[.x]]))
+                                            self$shape <- c(1L, as.integer(self$model_output_size))
+                                          } else {
+                                            self$auc_scores <- self$add_weight(name = "auc_vector", shape = c(1, 1), initializer="zeros")
+                                            self$auc_score <-  self$add_weight(name = "auc_score", initializer="zeros")
+                                            self$auc_list <- vector("list", 1)
+                                            assign(paste0("m_", 1), tensorflow::tf$keras$metrics$AUC())
+                                            parse_text <- purrr::map(1, ~parse(text = paste0("m_", .x)))
+                                            self$auc_list <- purrr::map(1, ~eval(parse_text[[.x]]))
+                                            self$shape <- c(1L, 1L)
+                                          }
+                                          NULL
+                                        },
+                                        
+                                        update_state = function(self, y_true, y_pred, sample_weight = NULL) {
+                                          self$compute_auc(y_true, y_pred)
+                                          current_auc_list <- vector("list", length(self$auc_list))
+                                          current_auc_list <-  purrr::map(1:length(self$auc_list),
+                                                                          ~self$auc_list[[.x - 1]]$result())
+                                          current_auc <- unlist(current_auc_list)
+                                          current_auc <- tensorflow::tf$reshape(tensor = current_auc, shape = self$shape)
+                                          self$auc_scores$assign(current_auc)
+                                          NULL
+                                        },
+                                        
+                                        result = function(self) {
+                                          self$auc_score$assign(tensorflow::tf$math$reduce_mean(self$auc_scores))
+                                          return(self$auc_score)
+                                        },
+                                        
+                                        compute_auc = function(self, y_true, y_pred) {
+                                          
+                                          if (self$loss == "binary_crossentropy") {
+                                            if (self$model_output_size > 1) {
+                                              purrr::map(0:(length(self$auc_list) - 1),
+                                                         ~self$auc_list[[.x]]$update_state(y_true[ , .x+1], y_pred[ , .x+1]))
+                                            } else {
+                                              self$auc_list[[0]]$update_state(y_true, y_pred)
+                                            }
+                                            
+                                          } else {
+                                            y_true_temp <- y_true[ , 1]
+                                            y_pred_temp <- tensorflow::tf$math$argmax(y_pred, axis = 1L)
+                                            self$auc_list[[0]]$update_state(y_true_temp, y_pred_temp)
+                                          }
+                                          NULL
+                                        },
+                                        
+                                        reset_states = function(self) {
+                                          purrr::map(0:(length(self$auc_list) - 1),
+                                                     ~self$auc_list[[.x]]$reset_states())
+                                          self$auc_scores$assign_sub(self$auc_scores)
+                                          NULL
+                                        }
+                                        
+                                      ))
+  
+  return(auc_stateful(model_output_size = model_output_size, loss = loss, metric_name = metric_name))
 }
 
 
-get_callbacks <- function(default_arguments, path_tensorboard, run_name, train_type,
+get_callbacks <- function(default_arguments , model, path_tensorboard, run_name, train_type,
                           path_model, path, train_val_ratio, batch_size, epochs, format,
                           max_queue_size, lr_plateau_factor, patience, cooldown, path_checkpoint,
                           steps_per_epoch, step, shuffle_file_order, initial_epoch, vocabulary,
@@ -715,8 +946,8 @@ get_callbacks <- function(default_arguments, path_tensorboard, run_name, train_t
                           file_limit, reverse_complement, wavenet_format,  cnn_format,
                           create_model_function = NULL, vocabulary_size, gen_cb, argumentList,
                           maxlen, labelGen, labelByFolder, vocabulary_label_size, tb_images,
-                          target_middle, path_file_log, proportion_per_seq, n_gram,
-                          train_val_split_csv, model = NULL,
+                          target_middle, path_file_log, proportion_per_seq,
+                          train_val_split_csv, n_gram,
                           skip_amb_nuc, max_samples, proportion_entries, path_log, output,
                           train_with_gen, random_sampling, reduce_lr_on_plateau,
                           save_weights_only, save_best_only, reset_states, early_stopping_time,
@@ -769,9 +1000,6 @@ get_callbacks <- function(default_arguments, path_tensorboard, run_name, train_t
   if (output$tensorboard) {
     
     # add balanced acc score
-    
-    # initialize metrics, temporary fix
-    model <- manage_metrics(model)
     metrics <- model$metrics
     if (train_with_gen) {
       num_targets <- ifelse(train_type == "lm", length(vocabulary), length(vocabulary_label))
@@ -790,7 +1018,7 @@ get_callbacks <- function(default_arguments, path_tensorboard, run_name, train_t
           dir.create(cm_dir)
           model$cm_dir <- cm_dir
         }
-        metrics <- c(metrics, balanced_acc_wrapper(num_targets = as.integer(num_targets), cm_dir = model$cm_dir))
+        metrics <- c(metrics, balanced_acc_wrapper(num_targets = num_targets, cm_dir = model$cm_dir))
       }
     }
     
@@ -876,8 +1104,7 @@ get_callbacks <- function(default_arguments, path_tensorboard, run_name, train_t
     }
     
     model %>% keras::compile(loss = model$loss,
-                             optimizer = model$optimizer, metrics = metrics[-1])
-    model <- manage_metrics(model)
+                             optimizer = model$optimizer, metrics = metrics)
     
     if (length(confMatLabels) > 16) {
       message("Cannot display confusion matrix with more than 16 labels.")
@@ -886,8 +1113,7 @@ get_callbacks <- function(default_arguments, path_tensorboard, run_name, train_t
       callbacks <- c(callbacks, conf_matrix_cb(path_tensorboard = path_tensorboard,
                                                run_name = run_name,
                                                confMatLabels = confMatLabels,
-                                               cm_dir = model$cm_dir,
-                                               total_epochs = epochs))
+                                               cm_dir = model$cm_dir))
       callback_names <- c(callback_names, "conf_matrix")
     }
   }
@@ -897,10 +1123,11 @@ get_callbacks <- function(default_arguments, path_tensorboard, run_name, train_t
 
 #' Remove checkpoints
 #' 
-#' Keep only specified number of best checkpoints, based on some condition (accuracy, loss or epoch number).
+#' Remove all but n 'best' checkpoints, based on some condition. Condition can be 
+#' accuracy, loss or epoch number.
 #' 
 #' @param cp_dir Directory containing checkpoints.
-#' @param metric Either `"acc"`, `"loss"` or `"last_ep"`. Condition which checkpoint to keep.
+#' @param metric Either `"acc"`, `"loss"` or `"last_ep"`. Condition which checkpoints to keep.
 #' @param best_n Number of checkpoints to keep.
 #' @param ask_before_remove Whether to show files to keep before deleting rest.
 #'  
@@ -909,6 +1136,8 @@ remove_checkpoints <- function(cp_dir, metric = "acc", best_n = 1, ask_before_re
   
   stopifnot(metric %in% c("acc", "loss", "last_ep"))
   stopifnot(dir.exists(cp_dir))
+  stopifnot(best_n >= 1)
+  
   files <- list.files(cp_dir, full.names = TRUE)
   if (length(files) == 0) {
     stop("Directory is empty")
@@ -917,6 +1146,9 @@ remove_checkpoints <- function(cp_dir, metric = "acc", best_n = 1, ask_before_re
   num_cp <- length(files)
   
   if (metric == "acc") {
+    if (!all(stringr::str_detect(files_basename, "acc"))) {
+      stop("No accuracy information in checkpoint names ('acc' string), use other metric.")
+    }
     acc_scores <- files_basename %>% stringr::str_extract("acc\\d++\\.\\d++") %>% 
       stringr::str_remove("acc") %>% as.numeric()
     rank_order <- rank(acc_scores, ties.method = "last")
@@ -924,6 +1156,9 @@ remove_checkpoints <- function(cp_dir, metric = "acc", best_n = 1, ask_before_re
   }
   
   if (metric == "loss") {
+    if (!all(stringr::str_detect(files_basename, "loss"))) {
+      stop("No loss information in checkpoint names ('loss' string), use other metric.")
+    }
     loss_scores <- files_basename %>% stringr::str_extract("loss\\d++\\.\\d++") %>% 
       stringr::str_remove("loss") %>% as.numeric()
     rank_order <- rank(loss_scores, ties.method = "last")
