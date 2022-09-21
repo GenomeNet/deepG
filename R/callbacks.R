@@ -1123,10 +1123,11 @@ get_callbacks <- function(default_arguments , model, path_tensorboard, run_name,
 
 #' Remove checkpoints
 #' 
-#' Remove all but one checkpoint, based on some condition.
+#' Remove all but n 'best' checkpoints, based on some condition. Condition can be 
+#' accuracy, loss or epoch number.
 #' 
 #' @param cp_dir Directory containing checkpoints.
-#' @param metric Either `"acc"`, `"loss"` or `"last_ep"`. Condition which checkpoint to keep.
+#' @param metric Either `"acc"`, `"loss"` or `"last_ep"`. Condition which checkpoints to keep.
 #' @param best_n Number of checkpoints to keep.
 #' @param ask_before_remove Whether to show files to keep before deleting rest.
 #'  
@@ -1135,6 +1136,8 @@ remove_checkpoints <- function(cp_dir, metric = "acc", best_n = 1, ask_before_re
   
   stopifnot(metric %in% c("acc", "loss", "last_ep"))
   stopifnot(dir.exists(cp_dir))
+  stopifnot(best_n >= 1)
+  
   files <- list.files(cp_dir, full.names = TRUE)
   if (length(files) == 0) {
     stop("Directory is empty")
@@ -1143,6 +1146,9 @@ remove_checkpoints <- function(cp_dir, metric = "acc", best_n = 1, ask_before_re
   num_cp <- length(files)
   
   if (metric == "acc") {
+    if (!all(stringr::str_detect(files_basename, "acc"))) {
+      stop("No accuracy information in checkpoint names ('acc' string), use other metric.")
+    }
     acc_scores <- files_basename %>% stringr::str_extract("acc\\d++\\.\\d++") %>% 
       stringr::str_remove("acc") %>% as.numeric()
     rank_order <- rank(acc_scores, ties.method = "last")
@@ -1150,6 +1156,9 @@ remove_checkpoints <- function(cp_dir, metric = "acc", best_n = 1, ask_before_re
   }
   
   if (metric == "loss") {
+    if (!all(stringr::str_detect(files_basename, "loss"))) {
+      stop("No loss information in checkpoint names ('loss' string), use other metric.")
+    }
     loss_scores <- files_basename %>% stringr::str_extract("loss\\d++\\.\\d++") %>% 
       stringr::str_remove("loss") %>% as.numeric()
     rank_order <- rank(loss_scores, ties.method = "last")

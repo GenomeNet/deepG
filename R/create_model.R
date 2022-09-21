@@ -2366,7 +2366,8 @@ get_output_activations <- function(model) {
 
 #' Load checkpoint 
 #' 
-#' Load checkpoint from directory.
+#' Load checkpoint from directory. Chooses best checkpoint based on some condition. Condition
+#' can be best accuracy, best loss, last epoch number or a specified epoch number.
 #' 
 #' @inheritParams create_model_lstm_cnn
 #' @param cp_path A directory containing checkpoints or a single checkpoint file. 
@@ -2400,6 +2401,9 @@ load_cp <- function(cp_path, cp_filter = NULL, ep_index = NULL, compile = FALSE,
   if (is_directory & !is.null(cp_filter)) {
     
     if (cp_filter == "acc") {
+      if (!all(stringr::str_detect(files_basename, "acc"))) {
+        stop("No accuracy information in checkpoint names ('acc' string), use other metric.")
+      }
       acc_scores <- files_basename %>% stringr::str_extract("acc\\d++\\.\\d++") %>% 
         stringr::str_remove("acc") %>% as.numeric()
       # use later epoch for ties
@@ -2407,6 +2411,9 @@ load_cp <- function(cp_path, cp_filter = NULL, ep_index = NULL, compile = FALSE,
     }
     
     if (cp_filter == "loss") {
+      if (!all(stringr::str_detect(files_basename, "loss"))) {
+        stop("No loss information in checkpoint names ('loss' string), use other metric.")
+      }
       loss_scores <- files_basename %>% stringr::str_extract("loss\\d++\\.\\d++") %>% 
         stringr::str_remove("loss") %>% as.numeric()
       index <- which.min(rank(loss_scores, ties.method = "last"))
