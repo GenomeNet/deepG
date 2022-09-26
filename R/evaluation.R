@@ -316,7 +316,9 @@ evaluate_model <- function(path_input,
       
       y_conf_list[[count]] <- y_conf
       if (batch_size == 1 | (!is.null(index) && length(index == 1))) {
-        y_list[[count]] <- matrix(y, ncol = ncol(y_conf))
+        col_num <- ncol(y_conf)
+        if (is.na(col_num)) col_num <- length(y_conf)
+        y_list[[count]] <- matrix(y, ncol = col_num)
       } else {
         y_list[[count]] <- y
       }
