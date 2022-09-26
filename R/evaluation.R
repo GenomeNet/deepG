@@ -328,11 +328,11 @@ evaluate_model <- function(path_input,
           if (length(index) == 1) {
             if (is.list(y_conf)) {
               for (m in 1:length(y_conf)) {
-                y_conf[[m]] <- matrix(y_conf[[m]], ncol = length(y_conf[[m]]))
+                y_conf[[m]] <- array(as.array(y_conf[[m]]), dim = c(1, length(y_conf[[m]])))
                 y[[m]] <- matrix(y[[m]], ncol = length(y[[m]]))
               }
             } else {
-              y_conf <- matrix(y_conf, ncol = length(y_conf))
+              y_conf <- array(as.array(y_conf), dim = c(1, length(y_conf)))
               y <- matrix(y, ncol = length(y))
             }
           }
