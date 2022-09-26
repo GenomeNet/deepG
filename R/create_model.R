@@ -2424,7 +2424,7 @@ load_cp <- function(cp_path, cp_filter = NULL, ep_index = NULL, compile = FALSE,
   }
   
   if (verbose) {
-    cat("Using checkpoint", cp)
+    cat("Using checkpoint", cp, "\n")
   }
   
   if (compile) {

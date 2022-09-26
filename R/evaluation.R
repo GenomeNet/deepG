@@ -125,6 +125,9 @@ evaluate_model <- function(path_input,
         }
         index <- basename(files) %in% csv_file$file
         files <- files[index]
+        if (length(files) == 0) {
+          stop("No files from path_input have label in target_from_csv file.")
+        }
       }
       
       for (file in files) {
@@ -316,7 +319,9 @@ evaluate_model <- function(path_input,
       
       y_conf_list[[count]] <- y_conf
       if (batch_size == 1 | (!is.null(index) && length(index == 1))) {
-        y_list[[count]] <- matrix(y, ncol = ncol(y_conf))
+        col_num <- ncol(y_conf)
+        if (is.na(col_num)) col_num <- length(y_conf)
+        y_list[[count]] <- matrix(y, ncol = col_num)
       } else {
         y_list[[count]] <- y
       }

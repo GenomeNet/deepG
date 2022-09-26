@@ -20,6 +20,7 @@
 #' @inheritParams predict_model_by_entry
 #' @inheritParams predict_model_by_entry_one_file
 #' @inheritParams predict_model_one_pred_per_entry
+#' @param ... Further arguments for sequence encoding with \code{\link{seq_encoding_label}}.
 #' @examples
 #' # make prediction for single sequence and write to h5 file
 #' model <- create_model_lstm_cnn(maxlen = 20, layer_lstm = 8, layer_dense = 2, verbose = FALSE)
@@ -43,9 +44,11 @@
 #' @export
 predict_model <- function(output_format = "one_seq", model = NULL, layer_name = NULL, sequence = NULL, path_input = NULL,
                           round_digits = 2, filename = "states.h5", step = 1, vocabulary = c("a", "c", "g", "t"),
-                          batch_size = 256, verbose = TRUE, return_states = FALSE, padding_maxlen = FALSE, output_type = "h5",
+                          batch_size = 256, verbose = TRUE, return_states = FALSE, padding_maxlen = FALSE,
+                          output_type = "h5", padding = FALSE,
                           path_model = NULL, mode = "lm", lm_format = "target_right", output_dir = NULL,
-                          format = "fasta", include_seq = TRUE, reverse_complement_encoding = FALSE) {
+                          format = "fasta", include_seq = TRUE, reverse_complement_encoding = FALSE,
+                          ambiguous_nuc = "zero", ...) {
   
   stopifnot(output_format %in% c("one_seq", "by_entry", "by_entry_one_file", "one_pred_per_entry"))
   if (output_format %in% c("by_entry_one_file", "one_pred_per_entry") & output_type == "csv") {
@@ -62,9 +65,11 @@ predict_model <- function(output_format = "one_seq", model = NULL, layer_name = 
   if (output_format == "one_seq") {
     output_list <- predict_model_one_seq(path_model = path_model, layer_name = layer_name, sequence = sequence, path_input = path_input,
                                          round_digits = round_digits, filename = filename, step = step, vocabulary = vocabulary,
-                                         batch_size = batch_size, verbose = verbose, return_states = return_states, padding_maxlen = padding_maxlen,
+                                         batch_size = batch_size, verbose = verbose, return_states = return_states, 
+                                         padding_maxlen = padding_maxlen, padding = padding,
                                          output_type = output_type, model = model, mode = mode, lm_format = lm_format,
-                                         format = format, include_seq = include_seq, reverse_complement_encoding = reverse_complement_encoding)
+                                         format = format, include_seq = include_seq, ambiguous_nuc = ambiguous_nuc,
+                                         reverse_complement_encoding = reverse_complement_encoding, ...)
     return(output_list)
   }
   
@@ -74,7 +79,8 @@ predict_model <- function(output_format = "one_seq", model = NULL, layer_name = 
                            batch_size = batch_size, verbose = verbose, padding_maxlen = padding_maxlen,
                            output_type = output_type, model = model, mode = mode, lm_format = lm_format,
                            output_dir = output_dir, format = format, include_seq = include_seq,
-                           reverse_complement_encoding = reverse_complement_encoding)
+                           ambiguous_nuc = ambiguous_nuc, padding = padding,
+                           reverse_complement_encoding = reverse_complement_encoding, ...)
   }
   
   if (output_format == "by_entry_one_file") {
@@ -82,7 +88,8 @@ predict_model <- function(output_format = "one_seq", model = NULL, layer_name = 
                                     round_digits = round_digits, filename = filename, step = step, vocabulary = vocabulary,
                                     batch_size = batch_size, verbose = verbose, padding_maxlen = padding_maxlen,
                                     model = model, mode = mode, lm_format = lm_format, format = format,
-                                    include_seq = include_seq, reverse_complement_encoding = reverse_complement_encoding)
+                                    ambiguous_nuc = ambiguous_nuc, padding = padding,
+                                    include_seq = include_seq, reverse_complement_encoding = reverse_complement_encoding, ...)
   }
   
   if (output_format == "one_pred_per_entry") {
@@ -92,7 +99,8 @@ predict_model <- function(output_format = "one_seq", model = NULL, layer_name = 
     predict_model_one_pred_per_entry(path_model = path_model, layer_name = layer_name, path_input = path_input,
                                      round_digits = round_digits, filename = filename, vocabulary = vocabulary,
                                      batch_size = batch_size, verbose = verbose, model = model, format = format,
-                                     reverse_complement_encoding = reverse_complement_encoding)
+                                     ambiguous_nuc = ambiguous_nuc,
+                                     reverse_complement_encoding = reverse_complement_encoding, ...)
   }
   
 }
@@ -104,6 +112,7 @@ predict_model <- function(output_format = "one_seq", model = NULL, layer_name = 
 #' Function combines fasta entries in file to one sequence. This means predictor sequences can contain elements from more than one fasta entry.
 #' h5 file also contains sequence and positions of targets corresponding to states.
 #'
+#' @inheritParams generator_fasta_lm
 #' @param path_model Path to a pretrained model.
 #' @param layer_name Name of layer to get output from. If `NULL`, will use the last layer.
 #' @param path_input Path to fasta file.
@@ -114,6 +123,7 @@ predict_model <- function(output_format = "one_seq", model = NULL, layer_name = 
 #' @param filename Filename to store states in. No file output if argument is `NULL`.
 #' @param vocabulary Vector of allowed characters, character outside vocabulary get encoded as 0-vector.
 #' @param return_states Logical scalar, return states matrix.
+#' @param ambiguous_nuc `"zero"` or `"equal"`. 
 #' @param verbose Whether to print model before and after removing layers.
 #' @param padding_maxlen Boolean, whether to pad input with maxlen 0-vectors. (First prediction is for tensor of zeros)  
 #' @param output_type Either `"h5"` or `"csv"`.
@@ -121,14 +131,17 @@ predict_model <- function(output_format = "one_seq", model = NULL, layer_name = 
 #' @param mode Either `"lm"` for language model or `"label"` for label classification.
 #' @param format Either `"fasta"` or `"fastq"`.
 #' @param include_seq Whether to include input sequence in h5 file.
-#' @keywords internal
+#' @param ... Further arguments for sequence encoding with \code{\link{seq_encoding_label}}.
 predict_model_one_seq <- function(path_model = NULL, layer_name = NULL, sequence = NULL, path_input = NULL, round_digits = 2,
                                   filename = "states.h5", step = 1, vocabulary = c("a", "c", "g", "t"), batch_size = 256, verbose = TRUE,
-                                  return_states = FALSE, padding_maxlen = FALSE, output_type = "h5", model = NULL, mode = "lm", lm_format = "target_right",
-                                  format = "fasta", include_seq = TRUE, reverse_complement_encoding = FALSE) {
+                                  return_states = FALSE, padding_maxlen = FALSE,  target_len = 1,
+                                  output_type = "h5", model = NULL, mode = "lm", lm_format = "target_right",
+                                  ambiguous_nuc = "zero", padding = FALSE, format = "fasta", output_dir = NULL,
+                                  include_seq = TRUE, reverse_complement_encoding = FALSE, ...) {
   
   stopifnot(mode %in% c("lm", "label"))
   stopifnot(output_type %in% c("h5", "csv"))
+  stopifnot(!padding_maxlen > !padding)
   file_output <- !is.null(filename)
   if (!file_output) {
     if (!return_states) stop("If filename is NULL, return_states must be TRUE; otherwise function produces no output.")
@@ -142,7 +155,16 @@ predict_model_one_seq <- function(path_model = NULL, layer_name = NULL, sequence
       stop("reverse_complement_encoding only implemented for A,C,G,T vocabulary")
     }
   }
-  tokenizer <- keras::fit_text_tokenizer(keras::text_tokenizer(char_level = TRUE, lower = TRUE, oov_token = "0"), vocabulary)
+  
+  # token for ambiguous nucleotides
+  for (i in letters) {
+    if (!(i %in% stringr::str_to_lower(vocabulary))) {
+      amb_nuc_token <- i
+      break
+    }
+  }
+  
+  tokenizer <- keras::fit_text_tokenizer(keras::text_tokenizer(char_level = TRUE, lower = TRUE, oov_token = "0"), c(vocabulary, amb_nuc_token))
   
   # load model and sequence/file
   if (is.null(model)) {
@@ -155,7 +177,7 @@ predict_model_one_seq <- function(path_model = NULL, layer_name = NULL, sequence
   }
   
   if (!is.null(sequence) && (!missing(sequence) & sequence != "")) {
-    seq <- sequence %>% stringr::str_to_lower()
+    nt_seq <- sequence %>% stringr::str_to_lower()
   } else {
     if (format == "fasta") {
       fasta.file <- microseq::readFasta(path_input)
@@ -168,8 +190,13 @@ predict_model_one_seq <- function(path_model = NULL, layer_name = NULL, sequence
       text_2 <- "Use 'by_entry' or 'by_entry_one_file' output_format to evaluate them separately."
       message(paste0(text_1, text_2))
     }
-    seq <- paste(fasta.file$Sequence, collapse = "") %>% stringr::str_to_lower()
+    nt_seq <- paste(fasta.file$Sequence, collapse = "") %>% stringr::str_to_lower()
   }
+  
+  # tokenize ambiguous nt
+  pattern <- paste0("[^", paste0(vocabulary, collapse = ""), "]")
+  nt_seq <- stringr::str_replace_all(string = nt_seq, pattern = pattern, amb_nuc_token)
+  
   
   # extract maxlen
   target_middle <- ifelse(mode == "lm" && (lm_format %in% c("target_middle_lstm", "target_middle_cnn")), TRUE, FALSE)
@@ -185,27 +212,26 @@ predict_model_one_seq <- function(path_model = NULL, layer_name = NULL, sequence
     maxlen <- maxlen_1 + maxlen_2
   }
   
+  total_seq_len <- ifelse(mode == "lm", maxlen + target_len, maxlen)
+  
+  # pad seq
+  unpadded_seq_len <- nchar(nt_seq)
+  pad_len <- 0
   if (padding_maxlen) {
-    seq <- paste0(paste(rep("0", maxlen), collapse = ""), seq)
+    pad_len <- maxlen
   }
+  if (padding & (nchar(nt_seq) < maxlen)) {
+    pad_len <- maxlen - nchar(nt_seq)
+  }
+  nt_seq <- paste0(strrep("0", pad_len), nt_seq)
   
-  # if (padding & (nchar(seq) < maxlen)) {
-  #   seq <- paste0(paste(rep("0", nchar(seq) - maxlen), collapse = ""), seq)
-  # }
-  
-  if (nchar(seq) < maxlen) {
-    stop("Input sequence is shorter than maxlen. Set padding_maxlen = TRUE to pad sequence to bigger size.")
-    #stop("Input sequence is shorter than maxlen. Set padding_maxlen or padding to TRUE to pad sequence to bigger size.")
+  if (nchar(nt_seq) < maxlen) {
+    stop("Input sequence is shorter than maxlen. Set padding_maxlen or padding to TRUE to pad sequence to bigger size.")
   }
   
   # start of samples
-  if (mode == "lm") {
-    numberPotentialSamples <- ceiling((nchar(seq) - maxlen)/step)
-    start_indices <- (0:(numberPotentialSamples - 1) * step) + 1
-  } else {
-    numberPotentialSamples <- ceiling((nchar(seq) - maxlen + 1)/step)
-    start_indices <- (0:(numberPotentialSamples - 1) * step) + 1
-  }
+  start_indices <- seq(1, nchar(nt_seq) - maxlen + 1, by = step)
+  num_samples <- length(start_indices)
   
   check_layer_name(model, layer_name)
   model <- tensorflow::tf$keras$Model(model$input, model$get_layer(layer_name)$output)
@@ -225,183 +251,89 @@ predict_model_one_seq <- function(path_model = NULL, layer_name = NULL, sequence
   }
   
   # tokenize sequence
-  tokSeq <- stringr::str_to_lower(seq)
-  tokSeq <- keras::texts_to_sequences(tokenizer, seq)[[1]] - 1
+  nt_seq <- stringr::str_to_lower(nt_seq)
+  tokSeq <- keras::texts_to_sequences(tokenizer, nt_seq)[[1]] - 1
   
-  if (mode == "lm") {
-    if (padding_maxlen) {
-      if (target_middle) {
-        pos_arg <- start_indices - maxlen_2 + 1
-      } else {
-        pos_arg <- start_indices
-      }
-    } else {
-      if (target_middle) {
-        pos_arg <- start_indices + maxlen_1
-      } else {
-        pos_arg <- start_indices + maxlen
-      }
-    }
-  } else {
-    if (padding_maxlen) {
-      pos_arg <- start_indices - 1
-    } else {
-      pos_arg <- start_indices + maxlen - 1
-    }
-  }
+  # seq end position
+  pos_arg <- start_indices + maxlen - pad_len - 1
   
   if (include_seq) {
-    if (!padding_maxlen) {
-      output_seq <- seq
-    } else {
-      output_seq <- substr(seq, maxlen + 1, nchar(seq))
-    }
+    output_seq <- substr(nt_seq, pad_len + 1, nchar(nt_seq))
   }
   
+  # create h5 file to store states
   if (output_type == "h5") {
-    # create h5 file to store states
     h5_file <- hdf5r::H5File$new(filename, mode = "w")
     h5_file[["multi_entries"]] <- FALSE
-    #if (!missing(path_input) & !(is.null(path_input))) h5_file[["fasta_file"]] <- path_input
-    if (mode == "lm") {
-      h5_file[["target_position"]] <- pos_arg
-    } else {
-      h5_file[["sample_end_position"]] <- pos_arg
-    }
+    h5_file[["sample_end_position"]] <- pos_arg
     if (include_seq) h5_file[["sequence"]] <- output_seq
-    h5_file[["states"]] <- array(0, dim = c(0, layer.size))
-    writer <- h5_file[["states"]]
   }
   
   number_batches <- ceiling(length(start_indices)/batch_size)
+  pred_list <- vector("list", number_batches)
+  col_names <- c(as.character(1:layer.size), "sample_end_position")
   
-  row <- 1
+  # subset input for target middle
+  if (mode == "lm" && lm_format %in% c("target_middle_lstm", "target_middle_cnn")) {
+    index_x_1 <- 1:ceiling((total_seq_len - target_len)/2)
+    index_x_2 <- (max(index_x_1) + target_len + 1) : total_seq_len
+  } 
+  
   for (i in 1:number_batches) {
-    # last entry might be shorter than batch_size
-    if (i == number_batches) {
-      subsetStartInd <- start_indices[((i-1) * batch_size + 1) : length(start_indices)]
-      if (mode == "lm") {
-        subsetSeq <- tokSeq[subsetStartInd[1]: (subsetStartInd[length(subsetStartInd)] + maxlen)]
-      } else {
-        subsetSeq <- tokSeq[subsetStartInd[1]: (subsetStartInd[length(subsetStartInd)] + maxlen - 1)]
+    
+    index_start <- ((i - 1) * batch_size) + 1
+    index_end <- min(c(num_samples + 1, index_start + batch_size)) - 1
+    index <- index_start : index_end 
+    
+    x <- seq_encoding_label(sequence = tokSeq, 
+                            maxlen = maxlen, vocabulary = vocabulary,
+                            start_ind = start_indices[index],
+                            ambiguous_nuc = ambiguous_nuc,
+                            tokenizer = NULL,
+                            adjust_start_ind = FALSE,
+                            ...)
+    #print(x[1,,])
+    
+    if (mode == "lm" && lm_format == "target_middle_lstm") {
+      x1 <- x[ , index_x_1, ]
+      x2 <- x[ , index_x_2, ]
+      x2 <- x2[ , dim(x)[2]:1, ] # reverse order
+      
+      if (length(index_x_1) == 1) {
+        x1 <- array(x1, dim = c(1, dim(x1)))
       }
-    } else {
-      subsetStartInd <- start_indices[((i-1) * batch_size + 1) : (i*batch_size)]
-      subsetSeq <- tokSeq[subsetStartInd[1] : (subsetStartInd[length(subsetStartInd)] + maxlen)]
-    }
-    
-    if (mode == "lm") {
-      input <- seq_encoding_lm(sequence = subsetSeq, maxlen = maxlen, vocabulary = vocabulary, start_ind = subsetStartInd,
-                               output_format = lm_format, adjust_start_ind = TRUE)[[1]]
-    } else {
-      input <- seq_encoding_label(sequence = subsetSeq, maxlen = maxlen, vocabulary = vocabulary, start_ind = subsetStartInd,
-                                  adjust_start_ind = TRUE)
-    }
-    
-    if (target_middle) {
-      current_batch_size <- dim(input[[1]])[1]
-    } else {
-      current_batch_size <- dim(input)[1]
-    }
-    
-    if (reverse_complement_encoding) {
-      x_1 <- input
-      x_2 <- array(x_1[ , (dim(x_1)[2]):1, 4:1], dim = dim(x_1))
-      input <- list(x_1, x_2)
-    }
-    
-    activations <- keras::predict_on_batch(object = model, x = input)
-    activations <- as.array(activations)
-    # some layers give predictions for every char in sequence,
-    # since return_sequences = TRUE, filter last prediction
-    if (length(dim(activations)) == 3) {
-      activations <- activations[ , maxlen, ]
-    }
-    # last entry might be shorter
-    if (i == number_batches) {
-      numRemainingSamples <- length(start_indices) - row + 1
-      activation_batch <- matrix(round(activations[1:numRemainingSamples, ], digits = round_digits), ncol = ncol(activations))
-      if (output_type == "h5") {
-        writer[row:(row + numRemainingSamples - 1), ] <- activation_batch
-      } else {
-        # add column with target position for lm or end position for label classification
-        if (mode == "lm") {
-          if (padding_maxlen) {
-            target_position <- subsetStartInd
-          } else {
-            target_position <- subsetStartInd + maxlen
-          }
-        } else {
-          if (padding_maxlen) {
-            target_position <- subsetStartInd - 1
-          } else {
-            target_position <- subsetStartInd + maxlen - 1
-          }
-        }
-        activation_batch <- cbind(activation_batch, target_position)
-        if (i == 1) {
-          if (mode == "lm") {
-            col.names <- c(as.character(1:layer.size), "target position")
-          } else {
-            col.names <- c(as.character(1:layer.size), "sample_end_position")
-          }
-          write.table(x = activation_batch, file = filename, col.names = col.names, row.names = FALSE, append = FALSE)
-        } else {
-          write.table(x = activation_batch, file = filename, col.names = FALSE, row.names = FALSE, append = TRUE)
-        }
+      if (length(index_x_2) == 1) {
+        x2 <- array(x2, dim = c(1, dim(x2)))
       }
+      
+      x <- list(x1, x2)
+    } 
+    
+    if (mode == "lm" && lm_format == "target_middle_cnn") {
+      x <- x[ , c(index_x_1, index_x_2), ]
+    } 
+    
+    pred_list[[i]] <- predict(model, x, verbose = 0)
+    
+  }
+  
+  states <- do.call(rbind, pred_list)
+  
+  if (file_output) {
+    if (output_type == "h5") {
+      h5_file[["states"]] <- states
+      h5_file$close_all()
     } else {
-      activation_batch <- round(activations, digits = round_digits)
-      if (output_type == "h5") {
-        writer[row:(row + current_batch_size - 1), ] <-  activation_batch
-      } else {
-        # add column with target position for lm or end position for label classification
-        if (mode == "lm") {
-          if (padding_maxlen) {
-            if (target_middle) {
-              target_position <- subsetStartInd - maxlen_2 + 1
-            } else {
-              target_position <- subsetStartInd
-            }
-          } else {
-            if (target_middle) {
-              target_position <- subsetStartInd + maxlen_1
-            } else {
-              target_position <- subsetStartInd + maxlen
-            }
-          }
-        } else {
-          if (padding_maxlen) {
-            target_position <- subsetStartInd - 1
-          } else {
-            target_position <- subsetStartInd + maxlen - 1
-          }
-        }
-        activation_batch <- cbind(activation_batch, target_position)
-        if (i == 1) {
-          if (mode == "lm") {
-            col.names <- c(as.character(1:layer.size), "target position")
-          } else {
-            col.names <- c(as.character(1:layer.size), "sample_end_position")
-          }
-          write.table(x = activation_batch, file = filename, col.names = col.names, row.names = FALSE, append = FALSE)
-        } else {
-          write.table(x = activation_batch, file = filename, col.names = FALSE, row.names = FALSE, append = TRUE)
-        }
-      }
-      row <- row + current_batch_size
+      col_names <- paste0("N", 1:ncol(states))
+      colnames(states) <- col_names 
+      write.csv(x = states, file = filename, row.names = FALSE)
     }
   }
-  if (return_states & (output_type == "h5")) states <- writer[ , ]
-  if (return_states & (output_type == "csv")) states <- read.table(filename, header = TRUE)
-  if (output_type == "h5") h5_file$close_all()
-  if (!file_output) file.remove(filename)
   
   if (return_states) {
     output_list <- list()
     output_list$states <- states
-    if (mode == "lm") output_list$target_position <- pos_arg
-    if (mode == "label") output_list$sample_end_position <- pos_arg
+    output_list$sample_end_position <- pos_arg
     if (include_seq) output_list$sequence <- output_seq
     return(output_list)
   } else {
@@ -419,12 +351,16 @@ predict_model_one_seq <- function(path_model = NULL, layer_name = NULL, sequence
 #' @param output_dir Path to folder, where to write output.
 #' @keywords internal
 predict_model_by_entry <- function(path_model = NULL, layer_name = NULL, path_input, round_digits = 2,
-                                   filename = "states.h5", output_dir, step = 1, vocabulary = c("a", "c", "g", "t"),
+                                   filename = "states.h5", output_dir = NULL, step = 1, vocabulary = c("a", "c", "g", "t"),
                                    batch_size = 256, padding_maxlen = FALSE, output_type = "h5", model = NULL, mode = "lm",
                                    lm_format = "target_right", format = "fasta", reverse_complement_encoding = FALSE,
-                                   verbose = FALSE, include_seq = FALSE) {
+                                   padding = FALSE,
+                                   verbose = FALSE, include_seq = FALSE, ambiguous_nuc = "zero", ...) {
   
   stopifnot(mode %in% c("lm", "label"))
+  stopifnot(!is.null(filename))
+  stopifnot(!is.null(output_dir))
+  
   if (endsWith(filename, paste0(".", output_type))) {
     filename <- stringr::str_remove(filename, paste0(".", output_type, "$"))
     filename <- basename(filename)
@@ -463,15 +399,20 @@ predict_model_by_entry <- function(path_model = NULL, layer_name = NULL, path_in
   for (i in 1:nrow(df)) {
     
     if (i > 1) verbose <- FALSE
+    
     # skip entry if too short
-    if ((nchar(df[i, "seq"]) < maxlen + 1) & !padding_maxlen) next
+    if ((nchar(df[i, "seq"]) < maxlen) & !(padding_maxlen | padding)) next
+    
+    current_file <- paste0(output_dir, "/", filename, "_nr_", as.character(i), ".", output_type)
+    print(current_file)
     predict_model_one_seq(path_model = path_model, layer_name = layer_name, sequence = df[i, "seq"],
                           round_digits = round_digits, path_input = path_input,
-                          filename = paste0(output_dir, "/", filename, "_nr_", as.character(i), ".", output_type),
+                          filename = current_file,
                           step = step, vocabulary = vocabulary, batch_size = batch_size,
                           verbose = verbose, padding_maxlen = padding_maxlen, output_type = output_type, mode = mode,
                           lm_format = lm_format, model = model, include_seq = include_seq,
-                          reverse_complement_encoding = reverse_complement_encoding)
+                          padding = padding,
+                          ambiguous_nuc = "zero", reverse_complement_encoding = reverse_complement_encoding)
   }
 }
 
@@ -483,8 +424,9 @@ predict_model_by_entry <- function(path_model = NULL, layer_name = NULL, path_in
 #' @keywords internal
 predict_model_by_entry_one_file <- function(path_model, path_input, round_digits = 2, filename = "states.h5",
                                             step = 1,  vocabulary = c("a", "c", "g", "t"), batch_size = 256, layer_name = NULL,
-                                            padding_maxlen = FALSE, verbose = TRUE, model = NULL, mode = "lm", lm_format = lm_format,
-                                            format = "fasta", include_seq = TRUE, reverse_complement_encoding = FALSE) {
+                                            padding_maxlen = FALSE, verbose = TRUE, model = NULL, mode = "lm", 
+                                            lm_format = lm_format, padding = padding,
+                                            format = "fasta", include_seq = TRUE, reverse_complement_encoding = FALSE, ...) {
   
   stopifnot(mode %in% c("lm", "label"))
   # if (endsWith(filename, paste0(".", output_type))) {
@@ -544,11 +486,7 @@ predict_model_by_entry_one_file <- function(path_model, path_input, round_digits
   h5_file <- hdf5r::H5File$new(filename, mode = "w")
   h5_file[["multi_entries"]] <- TRUE
   states.grp <- h5_file$create_group("states")
-  if (mode == "lm") {
-    target_position.grp <- h5_file$create_group("target_position")
-  } else {
-    sample_end_position.grp <- h5_file$create_group("sample_end_position")
-  }
+  sample_end_position.grp <- h5_file$create_group("sample_end_position")
   if (include_seq) seq.grp <- h5_file$create_group("sequence")
   
   for (i in 1:nrow(df)) {
@@ -561,8 +499,9 @@ predict_model_by_entry_one_file <- function(path_model, path_input, round_digits
     output_list <- predict_model_one_seq(path_model = path_model, layer_name = layer_name, sequence = df$seq[i], path_input = path_input,
                                          round_digits = round_digits, filename = temp_file, step = step, vocabulary = vocabulary,
                                          batch_size = batch_size, verbose = verbose, return_states = TRUE, padding_maxlen = padding_maxlen,
-                                         output_type = "h5", model = model, mode = mode, lm_format = lm_format,
-                                         format = format, include_seq = include_seq, reverse_complement_encoding = reverse_complement_encoding)
+                                         output_type = "h5", model = model, mode = mode, lm_format = lm_format, ambiguous_nuc = "zero",
+                                         padding = padding, format = format, include_seq = include_seq,
+                                         reverse_complement_encoding = reverse_complement_encoding)
     
     
     states.grp[[seq_name]] <- output_list$states
@@ -583,10 +522,11 @@ predict_model_by_entry_one_file <- function(path_model, path_input, round_digits
 #'
 #' @inheritParams predict_model_one_seq
 #' @keywords internal
-
 predict_model_one_pred_per_entry <- function(model = NULL, layer_name = NULL, path_input, round_digits = 2, format = "fasta",
-                                             filename = "states.h5", vocabulary = c("a", "c", "g", "t"), batch_size = 256, verbose = TRUE,
-                                             return_states = FALSE, path_model = NULL, reverse_complement_encoding = FALSE, include_seq = FALSE) {
+                                             ambiguous_nuc = "zero", filename = "states.h5", padding = padding,
+                                             vocabulary = c("a", "c", "g", "t"), batch_size = 256, verbose = TRUE,
+                                             return_states = FALSE, path_model = NULL, reverse_complement_encoding = FALSE, 
+                                             include_seq = FALSE, ...) {
   
   file_type <- "h5"
   stopifnot(batch_size > 0)
@@ -682,7 +622,7 @@ predict_model_one_pred_per_entry <- function(model = NULL, layer_name = NULL, pa
       char_seq <- nucSeq[string_start_index : string_end_index] %>% paste(collapse = "") 
       if (i == 1) start_ind <- seq(1, nchar(char_seq), maxlen)
       one_hot_batch <- seq_encoding_label(sequence = NULL, maxlen = maxlen, vocabulary = vocabulary,
-                                          start_ind = start_ind, ambiguous_nuc = "zero", nuc_dist = NULL,
+                                          start_ind = start_ind, ambiguous_nuc = ambiguous_nuc, nuc_dist = NULL,
                                           use_quality = FALSE, quality_vector = NULL, use_coverage = FALSE, max_cov = NULL,
                                           cov_vector = NULL, n_gram = NULL, n_gram_stride = 1, char_sequence = char_seq,
                                           tokenizer = tokenizer, adjust_start_ind = TRUE) 
@@ -725,7 +665,7 @@ predict_model_one_pred_per_entry <- function(model = NULL, layer_name = NULL, pa
 #'
 #' @param h5_path Path to h5 file.
 #' @param rows Range of rows to read. If `NULL` read everything.
-#' @param get_target_positions Return position of corresponding targets if `TRUE`.
+#' @param get_sample_position Return position of sample corresponding to state if `TRUE`.
 #' @param get_seq Return nucleotide sequence if `TRUE`.
 #' @param verbose Boolean.
 #' @examples
@@ -738,8 +678,8 @@ predict_model_one_pred_per_entry <- function(model = NULL, layer_name = NULL, pa
 #'               sequence = sequence, filename = output_file, mode = "label")
 #' load_prediction(h5_path = output_file)
 #' @export
-load_prediction <- function(h5_path, rows = NULL, verbose = TRUE,
-                            get_target_positions = FALSE, get_seq = FALSE) {
+load_prediction <- function(h5_path, rows = NULL, verbose = FALSE,
+                            get_sample_position = FALSE, get_seq = FALSE) {
   
   if (is.null(rows)) complete <- TRUE
   h5_file <- hdf5r::H5File$new(h5_path, mode = "r")
@@ -754,8 +694,8 @@ load_prediction <- function(h5_path, rows = NULL, verbose = TRUE,
   }
   train_mode <- ifelse("target_position" %in% names(h5_file), "lm", "label")
   
-  if (get_target_positions & !any(c("sample_end_position", "target_position") %in% names(h5_file))) {
-    get_target_positions <- FALSE
+  if (get_sample_position & !any(c("sample_end_position", "target_position") %in% names(h5_file))) {
+    get_sample_position <- FALSE
     message("File does not contain target positions.")
   }
   
@@ -763,7 +703,7 @@ load_prediction <- function(h5_path, rows = NULL, verbose = TRUE,
     
     read_states <- h5_file[["states"]]
     
-    if (get_target_positions) {
+    if (get_sample_position) {
       if (train_mode == "label") {
         read_targetPos <- h5_file[["sample_end_position"]]
       } else {
@@ -776,12 +716,12 @@ load_prediction <- function(h5_path, rows = NULL, verbose = TRUE,
     }
     if (complete) {
       states <- read_states[ , ]
-      if (get_target_positions) {
+      if (get_sample_position) {
         targetPos <- read_targetPos[ ]
       }
     } else {
       states <- read_states[rows, ]
-      if (get_target_positions) {
+      if (get_sample_position) {
         targetPos <- read_targetPos[rows]
       }
     }
@@ -803,7 +743,7 @@ load_prediction <- function(h5_path, rows = NULL, verbose = TRUE,
     
     h5_file$close_all()
     output_list <- list(states = states)
-    if (get_target_positions) {
+    if (get_sample_position) {
       if (train_mode == "label") {
         output_list$sample_end_position <- targetPos
       } else {
@@ -824,7 +764,7 @@ load_prediction <- function(h5_path, rows = NULL, verbose = TRUE,
       cat("file contains", number_entries, "entries \n")
     }
     
-    if (get_target_positions) {
+    if (get_sample_position) {
       target_name <- ifelse("target_position" %in% names(h5_file), "target_position", "sample_end_position")
     }
     
@@ -845,7 +785,7 @@ load_prediction <- function(h5_path, rows = NULL, verbose = TRUE,
         sequence <- h5_file[["sequence"]][[entry_name]][ ]
       }
       
-      if (get_target_positions) {
+      if (get_sample_position) {
         targetPos <- h5_file[[target_name]][[entry_name]][ ]
       }
       
@@ -856,12 +796,12 @@ load_prediction <- function(h5_path, rows = NULL, verbose = TRUE,
           states <- matrix(states, nrow = 1)
         }
         
-        if (get_target_positions) {
+        if (get_sample_position) {
           targetPos <- hdf5r::h5attr(read_states, target_name)[rows]
         }
       }
       
-      if (get_target_positions) {
+      if (get_sample_position) {
         if (train_mode == "label") {
           l <- list(states = states, sample_end_position = targetPos)
         } else {
@@ -929,7 +869,7 @@ summarize_states <- function(states_path = NULL, label_names = NULL, file_type =
     
     if (is.null(df)) {
       if (file_type == "h5") {
-        df <- load_prediction(h5_path = state_file, get_target_positions = FALSE, verbose = FALSE)
+        df <- load_prediction(h5_path = state_file, get_sample_position = FALSE, verbose = FALSE)
         df <- as.data.frame(df$states)
       }
       if (file_type == "csv") {
