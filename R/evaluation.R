@@ -310,10 +310,33 @@ evaluate_model <- function(path_input,
       # remove double predictions
       if (eval_exact_num_samples & (i == number_batches[k])) {
         double_index <- (i * batch_size) - num_samples[k]
+        
         if (double_index > 0) {
           index <- 1:(nrow(y_conf) - double_index)
-          y_conf <- y_conf[index, ]
-          y <- y[index, ]
+          
+          if (is.list(y_conf)) {
+            for (m in 1:length(y_conf)) {
+              y_conf[[m]] <- y_conf[[m]][index, ]
+              y[[m]] <- y[[m]][index, ]
+            }
+          } else {
+            y_conf <- y_conf[index, ]
+            y <- y[index, ]
+          }
+          
+          # vector to matrix
+          if (length(index) == 1) {
+            if (is.list(y_conf)) {
+              for (m in 1:length(y_conf)) {
+                y_conf[[m]] <- matrix(y_conf[[m]], ncol = length(y_conf[[m]]))
+                y[[m]] <- matrix(y[[m]], ncol = length(y[[m]]))
+              }
+            } else {
+              y_conf <- matrix(y_conf, ncol = length(y_conf))
+              y <- matrix(y, ncol = length(y))
+            }
+          }
+          
         }
       }
       
