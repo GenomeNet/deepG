@@ -2,9 +2,6 @@ context("predict")
 
 test_that("Sucessful prediction", {
    
-   devtools::load_all()
-   library(testthat)
-   
    sequence <- "AAACCNGGGTTT"
    maxlen <- 8
    filename <- tempfile(fileext = ".h5")
@@ -84,9 +81,6 @@ test_that("Sucessful prediction", {
    expect_equal(nrow(pred$states), length(pred$sample_end_position))
   
    # fasta file, by_entry
-   
-   devtools::load_all() ##############
-   
    Sequence <- c("AAAACCCC", "TT", "AAACCCGGGTTT")
    Header <- letters[1:3]   
    df <- data.frame(Sequence, Header)
@@ -102,7 +96,6 @@ test_that("Sucessful prediction", {
                          filename = "states.h5",
                          step = 2,
                          batch_size = 2, 
-                         return_states = TRUE,
                          padding = FALSE,
                          verbose = FALSE,
                          output_type = "h5",
@@ -110,8 +103,50 @@ test_that("Sucessful prediction", {
                          mode = "label", 
                          include_seq = TRUE)
    
-   expect_true(pred$sample_end_position, c(8, 10))
-   expect_equal(nrow(pred$states), length(pred$sample_end_position))
+   h5_files <- list.files(output_path, full.names = TRUE)
+   expect_true(basename(h5_files[1]) == "states_nr_1.h5")
+   expect_true(basename(h5_files[2]) == "states_nr_3.h5")
    
+   output_list_1 <- load_prediction(h5_files[1], get_sample_position = TRUE)
+   expect_equal(output_list_1$sample_end_position, 8)
+   output_list_2 <- load_prediction(h5_files[2], get_sample_position = TRUE)
+   expect_equal(output_list_2$sample_end_position, c(8,10,12))
+   
+   # fasta file, by_entry
+   h5_file <- tempfile(fileext = ".h5")
+   pred <- predict_model(layer_name = NULL, 
+                         path_input = fasta_path,
+                         output_format = "by_entry_one_file",
+                         filename = h5_file,
+                         step = 2,
+                         batch_size = 2, 
+                         padding = TRUE,
+                         verbose = FALSE,
+                         output_type = "h5",
+                         model = model,
+                         mode = "label")
+   
+   output_list <- load_prediction(h5_file, get_sample_position = TRUE)
+   expect_true(all(output_list[[1]]$states == output_list_1$states))
+   expect_true(all(output_list[[1]]$sample_end_position == output_list_1$sample_end_position))
+   expect_true(all(output_list[[2]]$states == output_list_2$states))
+   expect_true(all(output_list[[2]]$sample_end_position == output_list_2$sample_end_position))
+   
+   # one pred per entry
+   h5_file <- tempfile(fileext = ".h5")
+   pred <- predict_model(layer_name = NULL, 
+                         path_input = fasta_path,
+                         output_format = "one_pred_per_entry",
+                         filename = h5_file,
+                         step = 2,
+                         batch_size = 2, 
+                         padding = TRUE,
+                         verbose = FALSE,
+                         output_type = "h5",
+                         model = model,
+                         mode = "label")
+   
+   output_list <- load_prediction(h5_file)
+   expect_equal(nrow(output_list$states),  nrow(df))
    
 })
