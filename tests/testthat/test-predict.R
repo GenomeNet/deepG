@@ -2,6 +2,8 @@ context("predict")
 
 test_that("Sucessful prediction", {
    
+   devtools::load_all()
+   
    sequence <- "AAACCNGGGTTT"
    maxlen <- 8
    filename <- tempfile(fileext = ".h5")
@@ -18,7 +20,8 @@ test_that("Sucessful prediction", {
                          batch_size = 1, 
                          return_states = TRUE,
                          verbose = FALSE,
-                         output_type = "h5", model = model,
+                         output_type = "h5",
+                         model = model,
                          mode = "label", 
                          include_seq = TRUE)
    
@@ -36,7 +39,7 @@ test_that("Sucessful prediction", {
                          filename = filename, step = 1,
                          batch_size = 2, 
                          return_states = TRUE,
-                         padding_maxlen = TRUE,
+                         padding = "maxlen",
                          verbose = FALSE,
                          output_type = "csv", model = model,
                          mode = "label", ambiguous_nuc = "empirical",
@@ -55,7 +58,7 @@ test_that("Sucessful prediction", {
                          filename = NULL, step = 2,
                          batch_size = 2, 
                          return_states = TRUE,
-                         padding = TRUE,
+                         padding = "standard",
                          verbose = FALSE,
                          output_type = "csv", model = model,
                          mode = "label", 
@@ -71,7 +74,7 @@ test_that("Sucessful prediction", {
                          filename = NULL, step = 2,
                          batch_size = 2, 
                          return_states = TRUE,
-                         padding = TRUE,
+                         padding = "standard",
                          verbose = FALSE,
                          output_type = "csv", model = model,
                          mode = "label", 
@@ -80,7 +83,7 @@ test_that("Sucessful prediction", {
    expect_equal(pred$sample_end_position, c(8, 10))
    expect_equal(nrow(pred$states), length(pred$sample_end_position))
   
-   # fasta file, by_entry
+   # fasta file by_entry
    Sequence <- c("AAAACCCC", "TT", "AAACCCGGGTTT")
    Header <- letters[1:3]   
    df <- data.frame(Sequence, Header)
@@ -96,7 +99,7 @@ test_that("Sucessful prediction", {
                          filename = "states.h5",
                          step = 2,
                          batch_size = 2, 
-                         padding = FALSE,
+                         padding = "none",
                          verbose = FALSE,
                          output_type = "h5",
                          model = model,
@@ -120,7 +123,7 @@ test_that("Sucessful prediction", {
                          filename = h5_file,
                          step = 2,
                          batch_size = 2, 
-                         padding = TRUE,
+                         padding = "none",
                          verbose = FALSE,
                          output_type = "h5",
                          model = model,
@@ -140,7 +143,6 @@ test_that("Sucessful prediction", {
                          filename = h5_file,
                          step = 2,
                          batch_size = 2, 
-                         padding = TRUE,
                          verbose = FALSE,
                          output_type = "h5",
                          model = model,
@@ -148,5 +150,32 @@ test_that("Sucessful prediction", {
    
    output_list <- load_prediction(h5_file)
    expect_equal(nrow(output_list$states),  nrow(df))
+   
+   # lm, target middle
+   model <- create_model_lstm_cnn_target_middle(
+      maxlen = maxlen,
+      verbose = FALSE,
+      layer_dense = 4,
+      layer_lstm = 8)
+   
+   h5_file <- tempfile(fileext = ".h5")
+   pred <- predict_model(layer_name = NULL, 
+                         path_input = fasta_path,
+                         output_format = "by_entry_one_file",
+                         filename = h5_file,
+                         step = 2,
+                         target_len = 3,
+                         batch_size = 2, 
+                         padding = "standard",
+                         verbose = FALSE,
+                         output_type = "h5",
+                         lm_format = "target_middle_lstm",
+                         model = model,
+                         mode = "lm")
+   
+   output_list <- load_prediction(h5_file, get_sample_position = TRUE)
+   expect_equal(output_list[[1]]$sample_end_position, 8)
+   expect_equal(output_list[[2]]$sample_end_position, 2)
+   expect_equal(output_list[[3]]$sample_end_position[1], 9)
    
 })
