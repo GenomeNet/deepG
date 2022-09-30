@@ -15,6 +15,15 @@
 #' @param output_format Either `"one_seq"`, `"by_entry"`, `"by_entry_one_file"`, `"one_pred_per_entry"`.
 #' @param output_type `"h5"` or `"csv"`. If `output_format`` is `"by_entries_one_file", "one_pred_per_entry"` can only be `"h5"`.
 #' @param return_states Return predictions as data frame. Only supported for output_format `"one_seq"`.
+#' @param padding Either `"none"`, `"maxlen"`, `"standard"` or `"self"`.
+#' \itemize{
+#' \item If `"none"`, apply no padding and skip sequences that are too short.
+#' \item If `"maxlen"`, pad with maxlen number of zeros vectors.
+#' \item If `"standard"`, pad with zero vectors only if sequence is shorter than maxlen. Pads to minimum size required for one prediction.
+#' \item If `"self"`, concatenate sequence with itself until sequence is long enough for one prediction.
+#' Example: if sequence is "ACGT" and maxlen is 10, make prediction for "ACGTACGTAC". 
+#' Only applied if sequence is shorter than maxlen.
+#' }
 #' @param verbose Boolean.
 #' @inheritParams predict_model_one_seq
 #' @inheritParams predict_model_by_entry
@@ -43,7 +52,7 @@
 #' list.files(output_dir)
 #' @export
 predict_model <- function(output_format = "one_seq", model = NULL, layer_name = NULL, sequence = NULL, path_input = NULL,
-                          round_digits = 2, filename = "states.h5", step = 1, vocabulary = c("a", "c", "g", "t"),
+                          round_digits = NULL, filename = "states.h5", step = 1, vocabulary = c("a", "c", "g", "t"),
                           batch_size = 256, verbose = TRUE, return_states = FALSE, 
                           output_type = "h5", padding = "none",
                           path_model = NULL, mode = "lm", lm_format = "target_right", output_dir = NULL,
@@ -142,7 +151,7 @@ predict_model_one_seq <- function(path_model = NULL, layer_name = NULL, sequence
     filename <- tempfile(fileext = paste0(".", output_type))
   }
   stopifnot(batch_size > 0)
-  stopifnot(!file.exists(paste0(filename, ".", output_type)) & !file.exists(filename))
+  stopifnot(!file.exists(filename))
   if (reverse_complement_encoding) {
     test_len <- length(vocabulary) != 4
     if (test_len || all(sort(stringr::str_to_lower(vocabulary)) != c("a", "c", "g", "t"))) {
@@ -317,7 +326,9 @@ predict_model_one_seq <- function(path_model = NULL, layer_name = NULL, sequence
       x <- x[ , c(index_x_1, index_x_2), ]
     } 
     
-    pred_list[[i]] <- predict(model, x, verbose = 0)
+    y <- predict(model, x, verbose = 0)
+    if (!is.null(round_digits)) y <- round(y, round_digits)
+    pred_list[[i]] <- y
     
   }
   
@@ -399,13 +410,15 @@ predict_model_by_entry <- function(path_model = NULL, layer_name = NULL, path_in
   df <- fasta.file[ , c("Sequence", "Header")]
   names(df) <- c("seq", "header")
   rownames(df) <- NULL
+  num_skipped_seq <- 0
   
   for (i in 1:nrow(df)) {
     
-    if (i > 1) verbose <- FALSE
-    
     # skip entry if too short
-    if ((nchar(df[i, "seq"]) < maxlen) & padding == "none") next
+    if ((nchar(df[i, "seq"]) < maxlen) & padding == "none") {
+      num_skipped_seq <- num_skipped_seq + 1
+      next
+    } 
     
     current_file <- paste0(output_dir, "/", filename, "_nr_", as.character(i), ".", output_type)
     
@@ -413,11 +426,19 @@ predict_model_by_entry <- function(path_model = NULL, layer_name = NULL, path_in
                           round_digits = round_digits, path_input = path_input,
                           filename = current_file,
                           step = step, vocabulary = vocabulary, batch_size = batch_size,
-                          verbose = verbose, output_type = output_type, mode = mode,
+                          verbose = ifelse(i > 1, FALSE, verbose), 
+                          output_type = output_type, mode = mode,
                           lm_format = lm_format, model = model, include_seq = include_seq,
                           padding = padding,
                           ambiguous_nuc = "zero", reverse_complement_encoding = reverse_complement_encoding)
   }
+  
+  if (verbose & num_skipped_seq > 0) {
+    message(paste0("Skipped ", num_skipped_seq,
+                   ifelse(num_skipped_seq == 1, " entry", " entries"),
+                   ". Use different padding option to evaluate all."))
+  }  
+  
 }
 
 #' Write states to h5 file
@@ -490,20 +511,25 @@ predict_model_by_entry_one_file <- function(path_model, path_input, round_digits
   sample_end_position.grp <- h5_file$create_group("sample_end_position")
   if (include_seq) seq.grp <- h5_file$create_group("sequence")
   
+  num_skipped_seq <- 0
+  
   for (i in 1:nrow(df)) {
     
     #seq_name <- df$header[i]
     seq_name <- paste0("entry_", i)
     temp_file <- tempfile(fileext = ".h5")
-    if (i > 1) verbose <- FALSE
     
     # skip entry if too short
-    if ((nchar(df[i, "seq"]) < maxlen) & padding == "none") next
+    if ((nchar(df[i, "seq"]) < maxlen) & padding == "none") {
+      num_skipped_seq <- num_skipped_seq + 1
+      next
+    } 
     
     output_list <- predict_model_one_seq(path_model = path_model, layer_name = layer_name, sequence = df$seq[i], path_input = path_input,
                                          round_digits = round_digits, filename = temp_file, step = step, vocabulary = vocabulary,
-                                         batch_size = batch_size, verbose = verbose, return_states = TRUE, 
-                                         output_type = "h5", model = model, mode = mode, lm_format = lm_format, ambiguous_nuc = "zero",
+                                         batch_size = batch_size, return_states = TRUE, 
+                                         output_type = "h5", model = model, mode = mode, lm_format = lm_format,
+                                         ambiguous_nuc = "zero", verbose = ifelse(i > 1, FALSE, verbose), 
                                          padding = padding, format = format, include_seq = include_seq,
                                          reverse_complement_encoding = reverse_complement_encoding)
     
@@ -512,6 +538,13 @@ predict_model_by_entry_one_file <- function(path_model, path_input, round_digits
     
     if (include_seq) seq.grp[[seq_name]] <- output_list$sequence
   }
+  
+  if (verbose & num_skipped_seq > 0) {
+    message(paste0("Skipped ", num_skipped_seq,
+                   ifelse(num_skipped_seq == 1, " entry", " entries"),
+                   ". Use different padding option to evaluate all."))
+  }  
+  
   h5_file$close_all()
 }
 
@@ -530,7 +563,7 @@ predict_model_one_pred_per_entry <- function(model = NULL, layer_name = NULL, pa
   
   file_type <- "h5"
   stopifnot(batch_size > 0)
-  stopifnot(!file.exists(paste0(filename, ".", file_type)) & !file.exists(filename))
+  stopifnot(!file.exists(filename))
   # token for ambiguous nucleotides
   for (i in letters) {
     if (!(i %in% stringr::str_to_lower(vocabulary))) {
