@@ -2,7 +2,7 @@ context("predict")
 
 test_that("Sucessful prediction", {
    
-   devtools::load_all()
+   #devtools::load_all()
    
    sequence <- "AAACCNGGGTTT"
    maxlen <- 8
@@ -33,7 +33,21 @@ test_that("Sucessful prediction", {
    expect_equal(pred_h5$states, pred$states)
    expect_equal(pred_h5$sample_end_position, pred$sample_end_position)
    
-   # test csv + padding maxlen + ...
+   # batch size bigger than number of samples
+   pred2 <- predict_model(layer_name = NULL, sequence = sequence,
+                          filename = NULL, step = 1,
+                          batch_size = 100, 
+                          return_states = TRUE,
+                          verbose = FALSE,
+                          output_type = "h5",
+                          model = model,
+                          mode = "label", 
+                          include_seq = TRUE)
+   
+   expect_true(all(abs(pred$states - pred2$states) < 1e-06))
+   expect_equal(pred$sample_end_position, pred2$sample_end_position)
+   
+   # test csv + padding maxlen + ... (nuc_dist)
    filename <- tempfile(fileext = ".csv")
    pred <- predict_model(layer_name = NULL, sequence = sequence,
                          filename = filename, step = 1,
@@ -82,7 +96,7 @@ test_that("Sucessful prediction", {
    
    expect_equal(pred$sample_end_position, c(8, 10))
    expect_equal(nrow(pred$states), length(pred$sample_end_position))
-  
+   
    # fasta file by_entry
    Sequence <- c("AAAACCCC", "TT", "AAACCCGGGTTT")
    Header <- letters[1:3]   
@@ -92,19 +106,21 @@ test_that("Sucessful prediction", {
    output_path <- tempfile()
    dir.create(output_path)
    
-   pred <- predict_model(layer_name = NULL, 
-                         path_input = fasta_path,
-                         output_format = "by_entry",
-                         output_dir = output_path,
-                         filename = "states.h5",
-                         step = 2,
-                         batch_size = 2, 
-                         padding = "none",
-                         verbose = FALSE,
-                         output_type = "h5",
-                         model = model,
-                         mode = "label", 
-                         include_seq = TRUE)
+   expect_message(
+      predict_model(layer_name = NULL, 
+                    path_input = fasta_path,
+                    output_format = "by_entry",
+                    output_dir = output_path,
+                    filename = "states.h5",
+                    step = 2,
+                    batch_size = 2, 
+                    padding = "none",
+                    verbose = TRUE,
+                    output_type = "h5",
+                    model = model,
+                    mode = "label", 
+                    include_seq = TRUE)
+   )
    
    h5_files <- list.files(output_path, full.names = TRUE)
    expect_true(basename(h5_files[1]) == "states_nr_1.h5")
