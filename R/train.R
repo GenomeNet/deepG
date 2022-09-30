@@ -444,8 +444,10 @@ train_model <- function(train_type = "lm",
                              target_from_csv = target_from_csv, reset_states = reset_states, early_stopping_time = early_stopping_time,
                              validation_only_after_training = validation_only_after_training)
 
+  # initialize metrics, temporary fix
+  model <- manage_metrics(model)
+  
   # training
-  #message("Start training ...")
   if (train_with_gen) {
     
     model <- keras::set_weights(model, model_weights)

@@ -169,7 +169,7 @@ balanced_acc_wrapper <- function(num_targets, cm_dir) {
                                                  store_cm = function(self) {
                                                    if (self$count > 0) {
                                                      if (self$count %% 2 == 0) {
-                                                       file_name <- file.path(self$cm_dir, paste0("cm_val_", floor(self$count/2), ".rds"))
+                                                       file_name <- file.path(self$cm_dir, paste0("cm_val_", floor(self$count/2) - 1, ".rds"))
                                                      } else {
                                                        file_name <- file.path(self$cm_dir, paste0("cm_train_", floor(self$count/2), ".rds"))
                                                      }
@@ -241,7 +241,6 @@ auc_wrapper <- function(model_output_size,
   
   return(auc_metric)
 }
-
 
 #' Loss function for label noise
 #' 

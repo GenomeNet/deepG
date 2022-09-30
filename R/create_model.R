@@ -2317,35 +2317,36 @@ get_output_activations <- function(model) {
 }
 
 # temporary fix for metric bugs
-manage_metrics <- function(model) {
+manage_metrics <- function(model, compile = FALSE) {
   
   dummy_gen <- generator_dummy(model,batch_size = 1)
   z <- dummy_gen()
-  suppressMessages(
-    pred <- model$evaluate(z[[1]], z[[2]], verbose = 0L)
-  )
+  if (length(model$metrics) == 0) {
+    suppressMessages(
+      eval <- model$evaluate(z[[1]], z[[2]], verbose = 0L)
+    )
+  }
   
-  # model$metrics
-  # metric_names <- vector("character", length(model$metrics))
-  # for (i in 1:length(model$metrics)) {
-  #   metric_names[i] <-  model$metrics[[i]]$name
-  # }
-  # metric_names
-  # duplicated_index <- duplicated(metric_names)
-  # duplicated_index
-  # loss_index <- stringr::str_detect(metric_names, "loss")
-  # loss_index
-  # index <- duplicated_index | loss_index
-  # index
-  # 
-  # # remove double metrics
-  # 
-  # model <-  model %>% keras::compile(loss = model$loss,
-  #                                    optimizer = model$optimizer,
-  #                                    metrics = model$metrics[!index])
-  # eval <- model$evaluate(z[[1]], z[[2]])
+  if (compile) {
+    metric_names <- vector("character", length(model$metrics))
+    for (i in 1:length(model$metrics)) {
+      metric_names[i] <-  model$metrics[[i]]$name
+    }
+    
+    duplicated_index <- duplicated(metric_names)
+    loss_index <- stringr::str_detect(metric_names, "loss")
+    index <- duplicated_index | loss_index
+    
+    # remove double metrics
+    model <- model %>% keras::compile(loss = model$loss,
+                                      optimizer = model$optimizer,
+                                      metrics = model$metrics[!index])
+    suppressMessages(
+      eval <- model$evaluate(z[[1]], z[[2]], verbose = 0L)
+    )
+  }
   
-  model
+  return(model)
   
 }
 
