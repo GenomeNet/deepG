@@ -10,22 +10,24 @@ predict_model(
   layer_name = NULL,
   sequence = NULL,
   path_input = NULL,
-  round_digits = 2,
+  round_digits = NULL,
   filename = "states.h5",
   step = 1,
   vocabulary = c("a", "c", "g", "t"),
   batch_size = 256,
   verbose = TRUE,
   return_states = FALSE,
-  padding_maxlen = FALSE,
   output_type = "h5",
+  padding = "none",
   path_model = NULL,
   mode = "lm",
   lm_format = "target_right",
   output_dir = NULL,
   format = "fasta",
   include_seq = TRUE,
-  reverse_complement_encoding = FALSE
+  reverse_complement_encoding = FALSE,
+  ambiguous_nuc = "zero",
+  ...
 )
 }
 \arguments{
@@ -53,9 +55,17 @@ predict_model(
 
 \item{return_states}{Return predictions as data frame. Only supported for output_format \code{"one_seq"}.}
 
-\item{padding_maxlen}{Boolean, whether to pad input with maxlen 0-vectors. (First prediction is for tensor of zeros)}
-
 \item{output_type}{\code{"h5"} or \code{"csv"}. If \verb{output_format`` is }"by_entries_one_file", "one_pred_per_entry"\verb{can only be}"h5"`.}
+
+\item{padding}{Either \code{"none"}, \code{"maxlen"}, \code{"standard"} or \code{"self"}.
+\itemize{
+\item If \code{"none"}, apply no padding and skip sequences that are too short.
+\item If \code{"maxlen"}, pad with maxlen number of zeros vectors.
+\item If \code{"standard"}, pad with zero vectors only if sequence is shorter than maxlen. Pads to minimum size required for one prediction.
+\item If \code{"self"}, concatenate sequence with itself until sequence is long enough for one prediction.
+Example: if sequence is "ACGT" and maxlen is 10, make prediction for "ACGTACGTAC".
+Only applied if sequence is shorter than maxlen.
+}}
 
 \item{path_model}{Path to a pretrained model.}
 
@@ -66,6 +76,10 @@ predict_model(
 \item{format}{Either \code{"fasta"} or \code{"fastq"}.}
 
 \item{include_seq}{Whether to include input sequence in h5 file.}
+
+\item{ambiguous_nuc}{\code{"zero"} or \code{"equal"}.}
+
+\item{...}{Further arguments for sequence encoding with \code{\link{seq_encoding_label}}.}
 }
 \description{
 Removes layers (optional) from pretrained model and calculates states of fasta/fastq file or nucleotide sequence.

@@ -3094,7 +3094,7 @@ generator_random <- function(
   # target from csv
   if (label_from_csv) {
     .datatable.aware = TRUE
-    output_label_csv <- read.csv2(target_from_csv, header = TRUE, stringsAsFactors = FALSE)
+    output_label_csv <- utils::read.csv2(target_from_csv, header = TRUE, stringsAsFactors = FALSE)
     if (dim(output_label_csv)[2] == 1) {
       output_label_csv <- read.csv(target_from_csv, header = TRUE, stringsAsFactors = FALSE)
     }

@@ -14,12 +14,13 @@ remove_checkpoints(
 \arguments{
 \item{cp_dir}{Directory containing checkpoints.}
 
-\item{metric}{Either \code{"acc"}, \code{"loss"} or \code{"last_ep"}. Condition which checkpoint to keep.}
+\item{metric}{Either \code{"acc"}, \code{"loss"} or \code{"last_ep"}. Condition which checkpoints to keep.}
 
 \item{best_n}{Number of checkpoints to keep.}
 
 \item{ask_before_remove}{Whether to show files to keep before deleting rest.}
 }
 \description{
-Keep only specified number of best checkpoints, based on some condition (accuracy, loss or epoch number).
+Remove all but n 'best' checkpoints, based on some condition. Condition can be
+accuracy, loss or epoch number.
 }

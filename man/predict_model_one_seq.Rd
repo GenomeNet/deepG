@@ -16,14 +16,18 @@ predict_model_one_seq(
   batch_size = 256,
   verbose = TRUE,
   return_states = FALSE,
-  padding_maxlen = FALSE,
+  target_len = 1,
   output_type = "h5",
   model = NULL,
   mode = "lm",
   lm_format = "target_right",
+  ambiguous_nuc = "zero",
+  padding = "none",
   format = "fasta",
+  output_dir = NULL,
   include_seq = TRUE,
-  reverse_complement_encoding = FALSE
+  reverse_complement_encoding = FALSE,
+  ...
 )
 }
 \arguments{
@@ -49,7 +53,7 @@ predict_model_one_seq(
 
 \item{return_states}{Logical scalar, return states matrix.}
 
-\item{padding_maxlen}{Boolean, whether to pad input with maxlen 0-vectors. (First prediction is for tensor of zeros)}
+\item{target_len}{Number of nucleotides to predict at once for language model.}
 
 \item{output_type}{Either \code{"h5"} or \code{"csv"}.}
 
@@ -57,13 +61,18 @@ predict_model_one_seq(
 
 \item{mode}{Either \code{"lm"} for language model or \code{"label"} for label classification.}
 
+\item{ambiguous_nuc}{\code{"zero"} or \code{"equal"}.}
+
+\item{padding}{Whether to pad sequences too short for one sample with zeros.}
+
 \item{format}{Either \code{"fasta"} or \code{"fastq"}.}
 
 \item{include_seq}{Whether to include input sequence in h5 file.}
+
+\item{...}{Further arguments for sequence encoding with \code{\link{seq_encoding_label}}.}
 }
 \description{
 Removes layers (optional) from pretrained model and calculates states of fasta file, writes states to h5/csv file.
 Function combines fasta entries in file to one sequence. This means predictor sequences can contain elements from more than one fasta entry.
 h5 file also contains sequence and positions of targets corresponding to states.
 }
-\keyword{internal}

@@ -4,19 +4,18 @@
 \alias{conf_matrix_cb}
 \title{Confusion matrix callback.}
 \usage{
-conf_matrix_cb(path_tensorboard, run_name, confMatLabels, cm_dir, total_epochs)
+conf_matrix_cb(path_tensorboard, run_name, confMatLabels, cm_dir)
 }
 \arguments{
-\item{path_tensorboard}{Path to tensorboard directory}
+\item{path_tensorboard}{Path to tensorboard directory or \code{NULL}. If \code{NULL}, training not tracked on tensorboard.}
 
-\item{run_name}{Name of training run.}
+\item{run_name}{Name of the run. Name will be used to identify output from callbacks. If \code{NULL}, will use date as run name.
+If name already present, will add \code{"_2"} to name or \code{"_{x+1}"} if name ends with \verb{_x}, where \code{x} is some integer.}
 
 \item{confMatLabels}{Names of classes.}
 
 \item{cm_dir}{Directory that contains confusion matrix files.}
-
-\item{total_epochs}{Number of total training epochs.}
 }
 \description{
-Create a confusion matrix to display in tensorboard "IMAGES" tab.
+Create a confusion matrix to display under tensorboard images.
 }

@@ -13,14 +13,15 @@ predict_model_by_entry_one_file(
   vocabulary = c("a", "c", "g", "t"),
   batch_size = 256,
   layer_name = NULL,
-  padding_maxlen = FALSE,
   verbose = TRUE,
   model = NULL,
   mode = "lm",
-  lm_format = lm_format,
+  lm_format = "target_right",
+  padding = "none",
   format = "fasta",
   include_seq = TRUE,
-  reverse_complement_encoding = FALSE
+  reverse_complement_encoding = FALSE,
+  ...
 )
 }
 \description{

@@ -7,8 +7,8 @@
 load_prediction(
   h5_path,
   rows = NULL,
-  verbose = TRUE,
-  get_target_positions = FALSE,
+  verbose = FALSE,
+  get_sample_position = FALSE,
   get_seq = FALSE
 )
 }
@@ -19,7 +19,7 @@ load_prediction(
 
 \item{verbose}{Boolean.}
 
-\item{get_target_positions}{Return position of corresponding targets if \code{TRUE}.}
+\item{get_sample_position}{Return position of sample corresponding to state if \code{TRUE}.}
 
 \item{get_seq}{Return nucleotide sequence if \code{TRUE}.}
 }

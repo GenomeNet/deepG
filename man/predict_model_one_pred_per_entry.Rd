@@ -10,14 +10,17 @@ predict_model_one_pred_per_entry(
   path_input,
   round_digits = 2,
   format = "fasta",
+  ambiguous_nuc = "zero",
   filename = "states.h5",
+  padding = padding,
   vocabulary = c("a", "c", "g", "t"),
   batch_size = 256,
   verbose = TRUE,
   return_states = FALSE,
   path_model = NULL,
   reverse_complement_encoding = FALSE,
-  include_seq = FALSE
+  include_seq = FALSE,
+  ...
 )
 }
 \arguments{
@@ -31,7 +34,11 @@ predict_model_one_pred_per_entry(
 
 \item{format}{Either \code{"fasta"} or \code{"fastq"}.}
 
+\item{ambiguous_nuc}{\code{"zero"} or \code{"equal"}.}
+
 \item{filename}{Filename to store states in. No file output if argument is \code{NULL}.}
+
+\item{padding}{Whether to pad sequences too short for one sample with zeros.}
 
 \item{vocabulary}{Vector of allowed characters, character outside vocabulary get encoded as 0-vector.}
 
@@ -44,6 +51,8 @@ predict_model_one_pred_per_entry(
 \item{path_model}{Path to a pretrained model.}
 
 \item{include_seq}{Whether to include input sequence in h5 file.}
+
+\item{...}{Further arguments for sequence encoding with \code{\link{seq_encoding_label}}.}
 }
 \description{
 Computes output at specified model layer. Forces every fasta entry to have length maxlen by either padding sequences shorter than maxlen or taking random subsequence for

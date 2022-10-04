@@ -10,19 +10,21 @@ predict_model_by_entry(
   path_input,
   round_digits = 2,
   filename = "states.h5",
-  output_dir,
+  output_dir = NULL,
   step = 1,
   vocabulary = c("a", "c", "g", "t"),
   batch_size = 256,
-  padding_maxlen = FALSE,
   output_type = "h5",
   model = NULL,
   mode = "lm",
   lm_format = "target_right",
   format = "fasta",
   reverse_complement_encoding = FALSE,
+  padding = "none",
   verbose = FALSE,
-  include_seq = FALSE
+  include_seq = FALSE,
+  ambiguous_nuc = "zero",
+  ...
 )
 }
 \arguments{
