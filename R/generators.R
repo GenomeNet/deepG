@@ -2615,6 +2615,11 @@ generator_fasta_label_folder_wrapper <- function(val, new_batch_size = NULL,
 #' @export
 generator_dummy <- function(model, batch_size) {
   
+  # stateful model 
+  if (!is.null(model$input_shape[[1]])) {
+    batch_size <- model$input_shape[[1]]
+  }
+  
   num_input_layers <- ifelse(is.list(model$input), length(model$inputs), 1)
   x <- list()
   if (num_input_layers == 1) {
