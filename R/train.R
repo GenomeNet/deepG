@@ -524,15 +524,15 @@ get_run_name <- function(run_name = NULL, path_tensorboard, path_checkpoint, pat
   
   if (!is.null(path_tensorboard)) {
     tb_names <- list.files(path_tensorboard)
-    name_present_tb <- any(stringr::str_detect(tb_names, run_name)) & (run_name %in% tb_names)
+    name_present_tb <- (run_name %in% tb_names) # & any(stringr::str_detect(tb_names, run_name))
   }
   if (!is.null(path_checkpoint)) {
     cp_names <- list.files(path_checkpoint)
-    name_present_cp <- any(stringr::str_detect(cp_names, run_name)) & (run_name %in% cp_names)
+    name_present_cp <- (run_name %in% cp_names) # & any(stringr::str_detect(cp_names, run_name))  
   }
   if (!is.null(path_log)) {
     log_names <- list.files(path_log)
-    name_present_log <- any(stringr::str_detect(log_names, run_name)) & (run_name %in% log_names)
+    name_present_log <- (run_name %in% log_names) # & any(stringr::str_detect(log_names, run_name)) 
   }
   
   name_present <- name_present_tb | name_present_cp | name_present_log
@@ -547,7 +547,8 @@ get_run_name <- function(run_name = NULL, path_tensorboard, path_checkpoint, pat
       run_name_new <- paste0(run_name, "_2")
     }
     
-    int_ending <- stringr::str_subset(c(tb_names, tb_names), stringr::str_remove(run_name, "_\\d+$")) %>% unique()
+    int_ending <- stringr::str_subset(c(tb_names, cp_names, log_names),
+                                      paste0("^", stringr::str_remove(run_name, "_\\d+$"))) %>% unique()
     int_ending <- stringr::str_subset(int_ending, "_\\d+$")
     if (length(int_ending) > 0) {
       max_int_ending <- stringr::str_extract(int_ending, "_\\d+$") %>% stringr::str_remove("_") %>% as.integer() %>% max()
