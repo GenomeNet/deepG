@@ -3261,7 +3261,7 @@ generator_random <- function(
     
     if (train_type == "label_csv") {
       x <- one_hot_sample
-      y <- data.table::rbindlist(target_list) %>% as.matrix()
+      y <- do.call(rbind, target_list) 
       colnames(y) <- NULL
     }
     
@@ -3277,11 +3277,6 @@ generator_random <- function(
       l <- reshape_tensor(x = x, y = y,
                           new_batch_size = sum(new_batch_size),
                           samples_per_target = samples_per_target,
-                          #batch_size = sum(batch_size),
-                          #path = path,
-                          #voc_len = length(vocabulary),
-                          #maxlen = maxlen,
-                          #concat_maxlen = concat_maxlen,
                           buffer_len = buffer_len,
                           reshape_mode = reshape_mode)
       return(l)
