@@ -1,17 +1,20 @@
+
 #' Encodes integer sequence for language model
 #'
-#' \code{seq_encoding_lm} Helper function for \code{\link{generator_fasta_lm}}. 
+#' Helper function for \code{\link{generator_fasta_lm}}. 
 #' Encodes integer sequence to input/target list according to \code{output_format} argument. 
 #'
+#' @inheritParams generator_fasta_lm
 #' @param sequence Sequence of integers.
-#' @param maxlen Length of one sample
-#' @param vocabulary Set of characters to encode.
 #' @param start_ind Start positions of samples in \code{sequence}.
-#' @param ambiguous_nuc How to handle nucleotides outside vocabulary, either "zero", "discard" or "equal". If "zero", input gets encoded as zero vector;
-#' if "equal" input is 1/length(vocabulary) x length(vocabulary). If "discard" samples containing nucleotides outside vocabulary get discarded.
+#' @param ambiguous_nuc How to handle nucleotides outside vocabulary, either `"zero"`, `"empirical"` or `"equal"`.
+#' See \code{\link{train_model}}. Note that `"discard"` option is not available for this function.
 #' @param nuc_dist Nucleotide distribution.
-#' @param use_quality Use quality scores.
+#' @param max_cov Biggest coverage value. Only applies if `use_coverage = TRUE`.
+#' @param cov_vector Vector of coverage values associated to the input. 
+#' @param adjust_start_ind Whether to shift values in \code{start_ind} to start at 1: for example (5,11,25) becomes (1,7,21).
 #' @param quality_vector Vector of quality probabilities.
+#' @param tokenizer A keras tokenizer.
 #' @param char_sequence A character string.
 #' @examples 
 #' # use integer sequence as input 
@@ -57,13 +60,16 @@ seq_encoding_lm <- function(sequence = NULL, maxlen, vocabulary, start_ind, ambi
                             nuc_dist = NULL, use_quality = FALSE, quality_vector = NULL,
                             target_len = 1, use_coverage = FALSE, max_cov = NULL, cov_vector = NULL,
                             n_gram = NULL, n_gram_stride = 1, output_format = "target_right",
-                            discard_amb_nt = FALSE, char_sequence = NULL, adjust_start_ind = TRUE) {
+                            char_sequence = NULL, adjust_start_ind = FALSE,
+                            tokenizer = NULL) {
   
+  discard_amb_nt <- FALSE
   ## TODO: add discard_amb_nt
   if (!is.null(char_sequence)) {
     
     vocabulary <- stringr::str_to_lower(vocabulary)
     pattern <- paste0("[^", paste0(vocabulary, collapse = ""), "]")
+    
     
     # token for ambiguous nucleotides
     for (i in letters) {
@@ -72,7 +78,11 @@ seq_encoding_lm <- function(sequence = NULL, maxlen, vocabulary, start_ind, ambi
         break
       }
     }
-    tokenizer <- keras::fit_text_tokenizer(keras::text_tokenizer(char_level = TRUE, lower = TRUE, oov_token = "0"), c(vocabulary, amb_nuc_token))
+    
+    if (is.null(tokenizer)) {
+      tokenizer <- keras::fit_text_tokenizer(keras::text_tokenizer(char_level = TRUE, lower = TRUE, oov_token = "0"), c(vocabulary, amb_nuc_token))
+    }
+    
     sequence <- stringr::str_to_lower(char_sequence)
     sequence <- stringr::str_replace_all(string = sequence, pattern = pattern, amb_nuc_token)
     sequence <- keras::texts_to_sequences(tokenizer, sequence)[[1]] - 1
@@ -266,17 +276,9 @@ seq_encoding_lm <- function(sequence = NULL, maxlen, vocabulary, start_ind, ambi
 
 #' Encodes integer sequence for label classification.
 #'
-#' Helper function for \code{\link{generator_fasta_label_header_csv}}, returns encoding for integer sequence.
+#' Returns encoding for integer or character sequence.
 #'
-#' @param sequence Sequence of integers.
-#' @param maxlen Length of predictor sequence.
-#' @param vocabulary Set of characters to encode.
-#' @param start_ind Start positions of samples in \code{sequence}.
-#' @param ambiguous_nuc How to handle nucleotides outside vocabulary, either "zero", "discard" or "equal". If "zero", input gets encoded as zero vector;
-#' if "equal" input is 1/length(vocabulary) x length(vocabulary). If "discard" samples containing nucleotides outside vocabulary get discarded.
-#' @param nuc_dist Nucleotide distribution.
-#' @param use_quality Use quality scores.
-#' @param quality_vector Vector of quality probabilities.
+#' @inheritParams seq_encoding_lm
 #' @examples 
 #' # use integer sequence as input
 #' x <- seq_encoding_label(sequence = c(1,0,5,1,3,4,3,1,4,1,2),
@@ -302,10 +304,11 @@ seq_encoding_lm <- function(sequence = NULL, maxlen, vocabulary, start_ind, ambi
 #' @export
 seq_encoding_label <- function(sequence = NULL, maxlen, vocabulary, start_ind, ambiguous_nuc = "zero", nuc_dist = NULL,
                                use_quality = FALSE, quality_vector = NULL, use_coverage = FALSE, max_cov = NULL,
-                               adjust_start_ind = TRUE, discard_amb_nt = FALSE,
-                               cov_vector = NULL, n_gram = NULL, n_gram_stride = 1, char_sequence = NULL) {
+                               cov_vector = NULL, n_gram = NULL, n_gram_stride = 1,
+                               char_sequence = NULL, tokenizer = NULL, adjust_start_ind = FALSE) {
   
   ## TODO: add discard_amb_nt
+  discard_amb_nt <- FALSE
   if (!is.null(char_sequence)) {
     
     vocabulary <- stringr::str_to_lower(vocabulary)
@@ -318,7 +321,11 @@ seq_encoding_label <- function(sequence = NULL, maxlen, vocabulary, start_ind, a
         break
       }
     }
-    tokenizer <- keras::fit_text_tokenizer(keras::text_tokenizer(char_level = TRUE, lower = TRUE, oov_token = "0"), c(vocabulary, amb_nuc_token))
+    
+    if (is.null(tokenizer)) {
+      tokenizer <- keras::fit_text_tokenizer(keras::text_tokenizer(char_level = TRUE, lower = TRUE, oov_token = "0"), c(vocabulary, amb_nuc_token))
+    }
+    
     sequence <- stringr::str_to_lower(char_sequence)
     sequence <- stringr::str_replace_all(string = sequence, pattern = pattern, amb_nuc_token)
     sequence <- keras::texts_to_sequences(tokenizer, sequence)[[1]] - 1
@@ -331,7 +338,7 @@ seq_encoding_label <- function(sequence = NULL, maxlen, vocabulary, start_ind, a
     maxlen <- maxlen - n_gram + 1
     voc_len <- length(vocabulary)^n_gram
   }
-    
+  
   if (adjust_start_ind) start_ind <- start_ind - start_ind[1] + 1
   numberOfSamples <- length(start_ind)
   
@@ -385,6 +392,7 @@ seq_encoding_label <- function(sequence = NULL, maxlen, vocabulary, start_ind, a
   
   return(x)
 }
+
 
 #' Computes start position of samples
 #'
