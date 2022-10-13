@@ -3317,7 +3317,7 @@ generator_random <- function(
     
     if (train_type == "label_csv") {
       x <- one_hot_sample
-      y <- data.table::rbindlist(target_list) %>% as.matrix()
+      y <- do.call(rbind, target_list) 
       colnames(y) <- NULL
     }
     
