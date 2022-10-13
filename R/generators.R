@@ -3134,11 +3134,18 @@ generator_random <- function(
   start_ind <- list()
   
   for (i in 1:path_len) {
+    
     if (train_type == "label_folder") {
       fasta_files[[i]] <- list_fasta_files(path[[i]], format, file_filter = NULL)
     } else {
       fasta_files[[i]] <- list_fasta_files(path, format, file_filter = NULL)
     }
+    
+    # remove files without target label
+    if (train_type == "label_csv") {
+      fasta_files[[i]] <- fasta_files[[i]][basename(fasta_files[[i]]) %in% unique(output_label_csv$file)]
+    }
+    
     num_files[[i]] <- length(fasta_files[[i]])
     start_ind[[i]] <- (0:(batch_size[[i]] - 1) * seq_len_total) + 1
     if (sample_by_file_size) {
@@ -3163,15 +3170,14 @@ generator_random <- function(
     stopifnot("file" %in% names(output_label_csv))
     data.table::setkey(output_label_csv, file)
     
-    # remove files without target label
-    fasta_files[[1]] <- fasta_files[[1]][basename(fasta_files[[1]]) %in% output_label_csv$file]
-    
     vocabulary_label <- names(output_label_csv)
     vocabulary_label <- vocabulary_label[vocabulary_label != "header" & vocabulary_label != "file"]
     if (!is.null(target_split)) {
       check_header_names(target_split = target_split, vocabulary_label = vocabulary_label)
     }
   }
+  
+  
   
   function() {
     for (p in 1:path_len) {
