@@ -3133,6 +3133,25 @@ generator_random <- function(
   file_prob <- list()
   start_ind <- list()
   
+  # target from csv
+  if (label_from_csv) {
+    .datatable.aware = TRUE
+    output_label_csv <- read.csv2(target_from_csv, header = TRUE, stringsAsFactors = FALSE)
+    if (dim(output_label_csv)[2] == 1) {
+      output_label_csv <- read.csv(target_from_csv, header = TRUE, stringsAsFactors = FALSE)
+    }
+    output_label_csv <- data.table::as.data.table(output_label_csv)
+    stopifnot("file" %in% names(output_label_csv))
+    data.table::setkey(output_label_csv, file)
+    
+    vocabulary_label <- names(output_label_csv)
+    vocabulary_label <- vocabulary_label[vocabulary_label != "header" & vocabulary_label != "file"]
+    if (!is.null(target_split)) {
+      check_header_names(target_split = target_split, vocabulary_label = vocabulary_label)
+    }
+  }
+  
+  
   for (i in 1:path_len) {
     
     if (train_type == "label_folder") {
@@ -3158,26 +3177,6 @@ generator_random <- function(
   if (!sample_by_file_size & any(unlist(num_files) > 1)) {
     message("It is adviced to use sample_by_file_size when using random sampling strategy.")
   }
-  
-  # target from csv
-  if (label_from_csv) {
-    .datatable.aware = TRUE
-    output_label_csv <- read.csv2(target_from_csv, header = TRUE, stringsAsFactors = FALSE)
-    if (dim(output_label_csv)[2] == 1) {
-      output_label_csv <- read.csv(target_from_csv, header = TRUE, stringsAsFactors = FALSE)
-    }
-    output_label_csv <- data.table::as.data.table(output_label_csv)
-    stopifnot("file" %in% names(output_label_csv))
-    data.table::setkey(output_label_csv, file)
-    
-    vocabulary_label <- names(output_label_csv)
-    vocabulary_label <- vocabulary_label[vocabulary_label != "header" & vocabulary_label != "file"]
-    if (!is.null(target_split)) {
-      check_header_names(target_split = target_split, vocabulary_label = vocabulary_label)
-    }
-  }
-  
-  
   
   function() {
     for (p in 1:path_len) {
