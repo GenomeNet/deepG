@@ -217,7 +217,7 @@ train_model <- function(train_type = "lm",
   
   # initialize metrics, temporary fix
   model <- manage_metrics(model)
-
+  
   run_name <- get_run_name(run_name, path_tensorboard, path_checkpoint, path_log, auto_extend = TRUE)
   train_with_gen <- is.null(dataset)
   output <- list(tensorboard = FALSE, checkpoints = FALSE)
@@ -235,7 +235,7 @@ train_model <- function(train_type = "lm",
     
     if (train_type == "label_header") target_from_csv <- NULL
     if (train_type == "label_csv") {
-      train_type <- "label_header"
+      #train_type <- "label_header"
       if (is.null(target_from_csv)) {
         stop('You need to add a path to csv file for target_from_csv when using train_type = "label_csv"')
       }
@@ -351,7 +351,7 @@ train_model <- function(train_type = "lm",
   if (is.null(step)) step <- maxlen
   vocabulary_label_size <- length(vocabulary_label)
   vocabulary_size <- length(vocabulary)
-
+  
   if (is.null(dataset) && labelByFolder) {
     if (length(path) == 1) warning("Training with just one label")
   }
@@ -443,13 +443,13 @@ train_model <- function(train_type = "lm",
                              save_weights_only = save_weights_only, path_checkpoint = path_checkpoint, save_best_only = save_best_only, gen.val = gen.val,
                              target_from_csv = target_from_csv, reset_states = reset_states, early_stopping_time = early_stopping_time,
                              validation_only_after_training = validation_only_after_training)
-
+  
   # initialize metrics, temporary fix
   model <- manage_metrics(model)
   
   # training
   if (train_with_gen) {
-    
+    print("training gen")
     model <- keras::set_weights(model, model_weights)
     history <-
       model %>% keras::fit(

@@ -3117,11 +3117,12 @@ generator_random <- function(
     }
   }
   
-  if (!sample_by_file_size & any(unlist(num_files) > 1)) {
-    message("It is adviced to use sample_by_file_size when using random sampling strategy.")
-  }
+  # if (!sample_by_file_size & any(unlist(num_files) > 1)) {
+  #   message("It is adviced to use sample_by_file_size when using random sampling strategy.")
+  # }
   
   function() {
+    
     for (p in 1:path_len) {
       remaining_samples <- batch_size[p]
       nuc_vector <- vector("character", remaining_samples)
@@ -3135,10 +3136,12 @@ generator_random <- function(
         iter <- 1
         while (all(length_vector < seq_len_total)) {
           file_index <- sample(1:num_files[[p]], size = 1, prob = file_prob[[p]])
-          fasta_file <- read_fasta_fastq(format = format, skip_amb_nuc =  skip_amb_nuc, file_index = file_index, pattern = pattern,
-                                         shuffle_input = shuffle_input, proportion_entries = proportion_entries, vocabulary_label = vocabulary_label,
+          fasta_file <- read_fasta_fastq(format = format, skip_amb_nuc = skip_amb_nuc, file_index = file_index, pattern = pattern,
+                                         shuffle_input = shuffle_input, proportion_entries = proportion_entries,
+                                         vocabulary_label = vocabulary_label,
                                          filter_header = ifelse(train_type == "label_header", TRUE, FALSE),
                                          reverse_complement = reverse_complement, fasta.files = fasta_files[[p]])
+          
           if (nrow(fasta_file) == 0) next
           if (!is.null(concat_seq)) {
             fasta_file <- data.frame(Header = "header", Sequence = paste(fasta_file$Sequence, collapse = stringr::str_to_lower(concat_seq)),
@@ -3161,7 +3164,7 @@ generator_random <- function(
             length_vector <- nchar(fasta_file$Sequence)
           }
           if (iter >= max_iter) {
-            stop(paste("Could not extact sample for", iter, "iterations. Either maxlen is too big or sequences in fasta files too short."))
+            stop(paste("Could not extract sample for", iter, "iterations. Either maxlen is too big or sequences in fasta files too short."))
           }
           iter <- iter + 1
         }
@@ -3173,6 +3176,7 @@ generator_random <- function(
                                       train_mode = "label",
                                       discard_amb_nuc = ifelse(ambiguous_nuc == "discard", TRUE, FALSE),
                                       vocabulary = vocabulary)
+        
         if (length(sample_start) == 0) next
         nuc_seq <- paste(nuc_seq, collapse = "")
         sample_start <- sample(sample_start, size = min(remaining_samples, max_samples[p], length(sample_start)))
@@ -3186,9 +3190,9 @@ generator_random <- function(
         
         if (label_from_csv) {
           file_row_name <- fasta_files[[p]][file_index] %>% basename
-          label_row <- output_label_csv[.(file_row_name)][ , -"file"]
+          label_row <- output_label_csv[.(file_row_name)][ , -"file"] %>% as.matrix()
           label_matrix <- t(replicate(length(sample_start), label_row, simplify = TRUE))
-          target_list[[target_count]] <- label_matrix
+          target_list[[target_count]] <- label_matrix %>% as.matrix()
           target_count <- target_count + 1
         }
         
@@ -3265,7 +3269,7 @@ generator_random <- function(
     
     if (train_type == "label_csv") {
       x <- one_hot_sample
-      y <- do.call(rbind, target_list) 
+      y <- do.call(rbind, target_list) %>% as.matrix()
       colnames(y) <- NULL
     }
     

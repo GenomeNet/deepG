@@ -760,13 +760,13 @@ read_fasta_fastq <- function(format, skip_amb_nuc, file_index, pattern, shuffle_
       fasta.file <- remove_amb_nuc_entries(microseq::readFasta(fasta.files[file_index]), skip_amb_nuc = skip_amb_nuc,
                                            pattern = pattern)
     }
-    
+
     if (filter_header & is.null(target_from_csv)) {
       label_vector <- trimws(stringr::str_to_lower(fasta.file$Header))
       label_filter <- label_vector %in% vocabulary_label
       fasta.file <- fasta.file[label_filter, ]
     }
-    
+
     if (!is.null(proportion_entries) && proportion_entries < 1) {
       index <- sample(nrow(fasta.file), max(1, floor(nrow(fasta.file) * proportion_entries)))
       fasta.file <- fasta.file[index, ]
