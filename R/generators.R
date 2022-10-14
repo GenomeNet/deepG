@@ -3407,13 +3407,8 @@ get_generator <- function(path = NULL,
                           split_seq = FALSE,
                           target_split = NULL,
                           path_file_logVal = NULL,
-                          # buffer_len = NULL,
-                          # reshape_mode = NULL,
-                          # samples_per_target = NULL,
                           model = NULL,
                           vocabulary_label = NULL,
-                          train_files = NULL,
-                          val_files = NULL,
                           new_batch_size = NULL,
                           val = FALSE) {
   
@@ -3484,7 +3479,7 @@ get_generator <- function(path = NULL,
                               use_quality_score = use_quality_score, padding = padding, n_gram = n_gram,
                               added_label_path = added_label_path, add_input_as_seq = add_input_as_seq,
                               max_samples = max_samples, concat_seq = concat_seq, target_len = target_len,
-                              file_filter = train_files, use_coverage = use_coverage,
+                              file_filter = file_filter, use_coverage = use_coverage,
                               sample_by_file_size = sample_by_file_size, add_noise = add_noise)
   }
   
@@ -3548,7 +3543,7 @@ get_generator <- function(path = NULL,
                                             read_data = read_data, use_quality_score = use_quality_score, padding = padding,
                                             added_label_path = added_label_path, add_input_as_seq = add_input_as_seq,
                                             skip_amb_nuc = skip_amb_nuc, max_samples = max_samples, concat_seq = concat_seq,
-                                            target_from_csv = target_from_csv, target_split = target_split, file_filter = train_files,
+                                            target_from_csv = target_from_csv, target_split = target_split, file_filter = file_filter,
                                             use_coverage = use_coverage, proportion_entries = proportion_entries,
                                             sample_by_file_size = sample_by_file_size, n_gram = n_gram, n_gram_stride = n_gram_stride,
                                             add_noise = add_noise, reverse_complement_encoding = reverse_complement_encoding)
@@ -3648,8 +3643,6 @@ dataset_from_gen <- function(output_path,
                        train_type = train_type,
                        set_learning = set_learning,
                        path_file_logVal = NULL,
-                       train_files = NULL,
-                       val_files = NULL,
                        ...)
   
   for (batch_number in 1:iterations) {

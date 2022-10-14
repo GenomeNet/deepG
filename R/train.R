@@ -372,7 +372,7 @@ train_model <- function(train_type = "lm",
                          train_type = train_type, set_learning = set_learning, file_limit = file_limit,
                          reverse_complement_encoding = reverse_complement_encoding, read_data = read_data,
                          sample_by_file_size = sample_by_file_size, add_noise = add_noise, target_split = target_split,
-                         train_files = train_files, val_files = val_files, target_from_csv = target_from_csv,
+                         target_from_csv = target_from_csv,
                          split_seq = split_seq, path_file_logVal = path_file_logVal,
                          vocabulary_label = vocabulary_label, new_batch_size = new_batch_size, val = FALSE)
     
@@ -386,11 +386,11 @@ train_model <- function(train_type = "lm",
                              use_quality_score = use_quality_score, padding = padding, n_gram = n_gram,
                              added_label_path = added_label_path, add_input_as_seq = add_input_as_seq,
                              max_samples = max_samples, concat_seq = concat_seq, target_len = target_len,
-                             file_filter = train_files, use_coverage = use_coverage, random_sampling = random_sampling,
+                             file_filter = val_files, use_coverage = use_coverage, random_sampling = random_sampling,
                              train_type = train_type, set_learning = set_learning, file_limit = file_limit,
                              reverse_complement_encoding = reverse_complement_encoding, read_data = read_data,
                              sample_by_file_size = sample_by_file_size, add_noise = add_noise, target_split = target_split,
-                             train_files = train_files, val_files = val_files, target_from_csv = target_from_csv,
+                             target_from_csv = target_from_csv,
                              split_seq = split_seq, path_file_logVal = path_file_logVal, vocabulary_label = vocabulary_label,
                              new_batch_size = new_batch_size, val = TRUE)
   }
