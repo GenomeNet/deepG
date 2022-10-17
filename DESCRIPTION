@@ -45,13 +45,11 @@ Imports:
     purrr,
     magrittr,
     dplyr,
-    plyr,
     ggplot2,
     yardstick,
     jpeg,
     png,
     microseq,
-    usethis
 Remotes: r-tensorflow/wavenet
 NeedsCompilation: yes
 RoxygenNote: 7.2.0

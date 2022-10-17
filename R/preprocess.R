@@ -974,7 +974,7 @@ list_fasta_files <- function(path_corpus, format, file_filter) {
     } else {
       
       fasta.files[[i]] <- list.files(
-        path = xfun::normalize_path(path_corpus[[i]]),
+        path = path_corpus[[i]],
         pattern = paste0("\\.", format, "$"),
         full.names = TRUE)
     }
