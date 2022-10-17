@@ -91,6 +91,8 @@ If first label contains 5 percent wrong labels and second label no noise, then
 
 \item{f1_metric}{Whether to add F1 metric.}
 
+\item{verbose}{Boolean.}
+
 \item{batch_norm_momentum}{Momentum for the moving mean and the moving variance.}
 
 \item{model_seed}{Set seed for model parameters in tensorflow if not \code{NULL}.}

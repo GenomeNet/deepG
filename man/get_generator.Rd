@@ -158,8 +158,8 @@ Coverage information must be contained in fasta header: there must be a string \
 optional arguments \code{sd} or \code{mean} if noise_type is \code{"normal"} (default is \code{sd=1} and \code{mean=0}) or \verb{min, max} if \code{noise_type} is \code{"uniform"}
 (default is \verb{min=0, max=1}).}
 
-\item{set_learning}{When you want to assign one label to set of samples. Only implemented for \code{train_type = "label_folder"}.
-Input is a list with the following parameters
+\item{random_sampling}{Whether samples should be taken from random positions when using \code{max_samples} argument. If \code{FALSE} random
+samples are taken from a consecutive subsequence.
 \itemize{
 \item \code{samples_per_target}: how many samples to use for one target.
 \item \code{maxlen}: length of one sample.
@@ -178,6 +178,9 @@ argument. If \code{buffer_len} is an integer, the subsequences are interspaced w
 (\code{maxlen} \eqn{*} \code{samples_per_target}) + \code{buffer_len} \eqn{*} (\code{samples_per_target} - 1).
 }}
 
+\item{set_learning}{When you want to assign one label to set of samples. Only implemented for \code{train_type = "label_folder"}.
+Input is a list with the following parameters}
+
 \item{file_limit}{Integer or \code{NULL}. If integer, use only specified number of randomly sampled files for training. Ignored if greater than number of files in \code{path}.}
 
 \item{reverse_complement_encoding}{Whether to use both original sequence and reverse complement as two input sequences.}
@@ -193,10 +196,14 @@ Example: if csv file has header names \verb{"file", "label_1", "label_2", "label
 this will divide target matrix to list of length 2, where the first element contains columns named \code{"label_1"} and \code{"label_2"} and the
 second entry contains the column named \code{"label_3"}.}
 
+\item{path_file_logVal}{Path to csv file logging used validation files.}
+
 \item{model}{A keras model.}
 
 \item{vocabulary_label}{Character vector of possible targets. Targets outside \code{vocabulary_label} will get discarded if
 \code{train_type = "label_header"}.}
+
+\item{new_batch_size}{Batch size after reshaping data for set learning.}
 
 \item{val}{Logical, call initialized generator "genY" or "genValY" where Y is an integer between 1 and length of directories.}
 }

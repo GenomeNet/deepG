@@ -1,7 +1,7 @@
 #' Make prediction for nucleotide sequence or entries in fasta/fastq file
 #'
 #' @description Removes layers (optional) from pretrained model and calculates states of fasta/fastq file or nucleotide sequence.
-#' Writes states to h5 or csv file (access content of h5 output with \code{\link{load_predictions}} function).
+#' Writes states to h5 or csv file (access content of h5 output with \code{\link{load_prediction}} function).
 #' There are several options on how to process an input file:
 #' \itemize{
 #' \item If `"one_seq"`, computes prediction for sequence argument or fasta/fastq file.
@@ -29,6 +29,8 @@
 #' @inheritParams predict_model_by_entry
 #' @inheritParams predict_model_by_entry_one_file
 #' @inheritParams predict_model_one_pred_per_entry
+#' @inheritParams train_model
+#' @param output_dir Directory for file output.
 #' @param ... Further arguments for sequence encoding with \code{\link{seq_encoding_label}}.
 #' @examples
 #' # make prediction for single sequence and write to h5 file

@@ -7,6 +7,7 @@
 #' @param n Size of n gram.
 #' @param vocabulary Vector of allowed characters, samples outside vocabulary get discarded.
 #' @param file_sample If integer, size of random sample of files in \code{path_input}.
+#' @param nuc_dist Nucleotide distribution.
 #' @return Returns a matrix with distributions of nucleotides given the previous n nucleotides.
 #' @examples
 #' temp_dir <- tempfile()

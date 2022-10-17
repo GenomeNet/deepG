@@ -71,11 +71,13 @@ Only applied if sequence is shorter than maxlen.
 
 \item{mode}{Either \code{"lm"} for language model or \code{"label"} for label classification.}
 
-\item{output_dir}{Path to folder, where to write output.}
+\item{output_dir}{Directory for file output.}
 
 \item{format}{Either \code{"fasta"} or \code{"fastq"}.}
 
 \item{include_seq}{Whether to include input sequence in h5 file.}
+
+\item{reverse_complement_encoding}{Whether to use both original sequence and reverse complement as two input sequences.}
 
 \item{ambiguous_nuc}{\code{"zero"} or \code{"equal"}.}
 
@@ -83,7 +85,7 @@ Only applied if sequence is shorter than maxlen.
 }
 \description{
 Removes layers (optional) from pretrained model and calculates states of fasta/fastq file or nucleotide sequence.
-Writes states to h5 or csv file (access content of h5 output with \code{\link{load_predictions}} function).
+Writes states to h5 or csv file (access content of h5 output with \code{\link{load_prediction}} function).
 There are several options on how to process an input file:
 \itemize{
 \item If \code{"one_seq"}, computes prediction for sequence argument or fasta/fastq file.

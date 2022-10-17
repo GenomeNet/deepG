@@ -30,6 +30,8 @@ subset of \code{max_samples} samples.}
 
 \item{proportion_per_seq}{Numerical value between 0 and 1. Proportion of sequence to take samples from (use random subsequence).}
 
+\item{target_len}{Number of target nucleotides for language model.}
+
 \item{reverse_complement}{Boolean, for every new file decide randomly to use original data or its reverse complement.}
 
 \item{sample_by_file_size}{Sample new file weighted by file size (bigger files more likely).}

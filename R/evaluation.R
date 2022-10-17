@@ -15,6 +15,7 @@
 #' @param format File format, `"fasta"`, `"fastq"` or `"rds"`.
 #' @param mode Either `"lm"` for language model or `"label_header"`, `"label_csv"` or `"label_folder"` for label classification.
 #' @param verbose Boolean.
+#' @param target_middle Whether model is language model with separate input layers. 
 #' @param evaluate_all_files Boolean, if `TRUE` will iterate over all files in \code{path_input} once. \code{number_batches} will be overwritten.
 #' @param auc Whether to include AUC metric. If output layer activation is `"softmax"`, only possible for 2 targets. Computes the average if output layer has sigmoid
 #' activation and multiple targets.

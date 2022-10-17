@@ -11,7 +11,6 @@ load_cp(
   compile = FALSE,
   learning_rate = 0.01,
   solver = "adam",
-  metrics = c("acc"),
   loss = "categorical_crossentropy",
   verbose = TRUE
 )
@@ -31,7 +30,9 @@ Either "acc" for bast validation accuracy, "loss" for best validation loss or "l
 
 \item{solver}{Optimization method, options are \verb{"adam", "adagrad", "rmsprop"} or \code{"sgd"}.}
 
-\item{verbose}{Whether to print choosen checkpoint path}
+\item{loss}{Loss function. Only used if model gets compiled.}
+
+\item{verbose}{Whether to print choosen checkpoint path.}
 }
 \description{
 Load checkpoint from directory. Chooses best checkpoint based on some condition. Condition

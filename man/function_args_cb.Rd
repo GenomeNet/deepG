@@ -7,6 +7,8 @@
 function_args_cb(argumentList, path_tensorboard, run_name)
 }
 \arguments{
+\item{argumentList}{List of function arguments.}
+
 \item{path_tensorboard}{Path to tensorboard directory or \code{NULL}. If \code{NULL}, training not tracked on tensorboard.}
 
 \item{run_name}{Name of the run. Name will be used to identify output from callbacks. If \code{NULL}, will use date as run name.

@@ -84,6 +84,8 @@ generator_fasta_label_header_csv(
 
 \item{proportion_per_seq}{Numerical value between 0 and 1. Proportion of sequence to take samples from (use random subsequence).}
 
+\item{read_data}{If \code{TRUE} the first element of output is a list of length 2, each containing one part of paired read. Maxlen should be 2*length of one read.}
+
 \item{use_quality_score}{Whether to use fastq quality scores. If TRUE input is not one-hot-encoding but corresponds to probabilities.
 For example (0.97, 0.01, 0.01, 0.01) instead of (1, 0, 0, 0).}
 

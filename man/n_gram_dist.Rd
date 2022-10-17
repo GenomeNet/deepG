@@ -26,6 +26,8 @@ n_gram_dist(
 \item{file_sample}{If integer, size of random sample of files in \code{path_input}.}
 
 \item{step}{How often to take a sample.}
+
+\item{nuc_dist}{Nucleotide distribution.}
 }
 \value{
 Returns a matrix with distributions of nucleotides given the previous n nucleotides.

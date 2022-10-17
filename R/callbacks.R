@@ -206,6 +206,7 @@ tensorboard_cb <- function(path_tensorboard, run_name) {
 #' Print train_model call in text field of tensorboard.
 #' 
 #' @inheritParams train_model
+#' @param argumentList List of function arguments.
 #' @export
 function_args_cb <- function(argumentList, path_tensorboard, run_name) {
   

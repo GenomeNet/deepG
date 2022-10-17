@@ -92,6 +92,8 @@ If first label contains 5 percent wrong labels and second label no noise, then
 
 \item{loss_fn}{Either \code{"categorical_crossentropy"} or \code{"binary_crossentropy"}. If \code{label_noise_matrix} given, will use custom \code{"noisy_loss"}.}
 
+\item{num_input_layers}{Number of input layers.}
+
 \item{auc_metric}{Whether to add AUC metric.}
 
 \item{f1_metric}{Whether to add F1 metric.}
@@ -99,6 +101,8 @@ If first label contains 5 percent wrong labels and second label no noise, then
 \item{samples_per_target}{Number of samples to combine for one target.}
 
 \item{batch_norm_momentum}{Momentum for the moving mean and the moving variance.}
+
+\item{verbose}{Boolean.}
 
 \item{model_seed}{Set seed for model parameters in tensorflow if not \code{NULL}.}
 }

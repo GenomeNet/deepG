@@ -748,6 +748,7 @@ generator_fasta_lm <- function(path_corpus,
 #' Example: if csv file has header names `"file", "label_1", "label_2", "label_3"` and `target_split = list(c("label_1", "label_2"), "label_3")`,
 #' this will divide target matrix to list of length 2, where the first element contains columns named `"label_1"` and `"label_2"` and the
 #' second entry contains the column named `"label_3"`.
+#' @param read_data If `TRUE` the first element of output is a list of length 2, each containing one part of paired read. Maxlen should be 2*length of one read.
 #' @import data.table
 #' @export
 generator_fasta_label_header_csv <- function(path_corpus,
@@ -2675,6 +2676,7 @@ generator_dummy <- function(model, batch_size) {
 #' 
 #' @inheritParams generator_fasta_label_header_csv
 #' @param rds_folder Path to input files.
+#' @param target_len Number of target nucleotides for language model.
 #' @examples 
 #' # create 3 rds files
 #' rds_folder <- tempfile()
@@ -3311,6 +3313,8 @@ generator_random <- function(
 #' @inheritParams generator_rds
 #' @inheritParams generator_random
 #' @inheritParams generator_initialize
+#' @param path_file_logVal Path to csv file logging used validation files.
+#' @param new_batch_size Batch size after reshaping data for set learning.
 #' @examples 
 #' # create dummy fasta files
 #' fasta_path <- tempfile()
@@ -3567,6 +3571,9 @@ get_generator <- function(path = NULL,
 #' @inheritParams generator_fasta_label_header_csv
 #' @inheritParams generator_initialize
 #' @inheritParams generator_fasta_label_folder_wrapper
+#' @inheritParams get_generator
+#' @inheritParams train_model
+#' @param iterations Number of batches (output files) to create.
 #' @param output_path Output directory. Output files will be named `output_path` + `file_name_start` + x + ".rds" or ".pickle", where x is an index (from 1 to 
 #' \code{iterations}) and file ending depends on \code{as_numpy_array} argument.
 #' @param as_numpy_array Store output as list of numpy arrays if `TRUE` (otherwise as R array). 

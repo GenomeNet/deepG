@@ -27,6 +27,28 @@ dataset_from_gen(
 \item{output_path}{Output directory. Output files will be named \code{output_path} + \code{file_name_start} + x + ".rds" or ".pickle", where x is an index (from 1 to
 \code{iterations}) and file ending depends on \code{as_numpy_array} argument.}
 
+\item{iterations}{Number of batches (output files) to create.}
+
+\item{train_type}{Either \code{"lm"}, \code{"lm_rds"} for language model; \code{"label_header"}, \code{"label_folder"}, \code{"label_csv"}, \code{"label_rds"} for classification or \code{"dummy_gen"}.
+\itemize{
+\item Language model is trained to predict character(s) in a sequence. \cr
+\item \code{"label_header"}/\code{"label_folder"}/\code{"label_csv"} are trained to predict a corresponding class given a sequence as input.
+\item If \code{"label_header"}, class will be read from fasta headers.
+\item If \code{"label_folder"}, class will be read from folder, i.e. all files in one folder must belong to the same class.
+\item If \code{"label_csv"}, targets are read from a csv file. This file should have one column named "file". The targets then correspond to entries in that row (except "file"
+column). Example: if we are currently working with a file called "a.fasta" and coresponding label is "label_1", there should be a row in our csv file\tabular{lll}{
+   file \tab label_1 \tab label_2 \cr
+   "a.fasta" \tab 1 \tab 0 \cr
+}
+
+
+\item If \code{"label_rds"}, generator will iterate over set of .rds files containing each a list of input and target tensors. Not implemented for model
+with multiple inputs.
+\item If \code{"lm_rds"}, generator will iterate over set of .rds files and will split tensor according to \code{target_len} argument
+(targets are last \code{target_len} nucleotides of each sequence).
+\item  If \code{"dummy_gen"}, generator creates random data once and repeatedly feeds these to model.
+}}
+
 \item{output_format}{Determines shape of output tensor for language model.
 Either \code{"target_right"}, \code{"target_middle_lstm"}, \code{"target_middle_cnn"} or \code{"wavenet"}.
 Assume a sequence \code{"AACCGTA"}. Output correspond as follows
@@ -53,7 +75,12 @@ Assume a sequence \code{"AACCGTA"}. Output correspond as follows
 \item{shuffle}{Whether to shuffle samples within each batch.}
 
 \item{set_learning}{When you want to assign one label to set of samples. Only implemented for \code{train_type = "label_folder"}.
-Input is a list with the following parameters
+Input is a list with the following parameters}
+
+\item{seed}{Sets seed for \code{set.seed} function for reproducible results.}
+
+\item{random_sampling}{Whether samples should be taken from random positions when using \code{max_samples} argument. If \code{FALSE} random
+samples are taken from a consecutive subsequence.
 \itemize{
 \item \code{samples_per_target}: how many samples to use for one target.
 \item \code{maxlen}: length of one sample.
@@ -71,8 +98,6 @@ of length \code{maxlen} to one long sequence.
 argument. If \code{buffer_len} is an integer, the subsequences are interspaced with \code{buffer_len} rows. The input length is
 (\code{maxlen} \eqn{*} \code{samples_per_target}) + \code{buffer_len} \eqn{*} (\code{samples_per_target} - 1).
 }}
-
-\item{seed}{Sets seed for \code{set.seed} function for reproducible results.}
 
 \item{file_name_start}{Start of output file names.}
 

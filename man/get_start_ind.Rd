@@ -26,6 +26,8 @@ get_start_ind(
 \item{train_mode}{Either \code{"lm"} for language model or \code{"label"} for label classification.}
 
 \item{discard_amb_nuc}{Whether to discard all samples that contain characters outside vocabulary.}
+
+\item{vocabulary}{Vector of allowed characters. Characters outside vocabulary get encoded as specified in \code{ambiguous_nuc}.}
 }
 \description{
 Helper function for data generators.

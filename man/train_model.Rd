@@ -245,7 +245,20 @@ Not implemented for \code{train_type = "label_folder"}.}
 Coverage information must be contained in fasta header: there must be a string \code{"cov_n"} in the header, where \code{n} is some integer.}
 
 \item{set_learning}{When you want to assign one label to set of samples. Only implemented for \code{train_type = "label_folder"}.
-Input is a list with the following parameters
+Input is a list with the following parameters}
+
+\item{proportion_entries}{Proportion of fasta entries to keep. For example, if fasta file has 50 entries and \code{proportion_entries = 0.1},
+will randomly select 5 entries.}
+
+\item{sample_by_file_size}{Sample new file weighted by file size (bigger files more likely).}
+
+\item{n_gram}{Encode n nucleotides at once. Can be used for language model for target encoding.}
+
+\item{n_gram_stride}{Step size for n-gram encoding. For AACCGGTT with \code{n-gram = 4} and \code{n_gram_stride = 2}, generator encodes
+\verb{(AACC), (CCGG), (GGTT)}; for \code{n_gram_stride = 4} generator encodes \verb{(AACC), (GGTT)}.}
+
+\item{random_sampling}{Whether samples should be taken from random positions when using \code{max_samples} argument. If \code{FALSE} random
+samples are taken from a consecutive subsequence.
 \itemize{
 \item \code{samples_per_target}: how many samples to use for one target.
 \item \code{maxlen}: length of one sample.
@@ -263,16 +276,6 @@ of length \code{maxlen} to one long sequence.
 argument. If \code{buffer_len} is an integer, the subsequences are interspaced with \code{buffer_len} rows. The input length is
 (\code{maxlen} \eqn{*} \code{samples_per_target}) + \code{buffer_len} \eqn{*} (\code{samples_per_target} - 1).
 }}
-
-\item{proportion_entries}{Proportion of fasta entries to keep. For example, if fasta file has 50 entries and \code{proportion_entries = 0.1},
-will randomly select 5 entries.}
-
-\item{sample_by_file_size}{Sample new file weighted by file size (bigger files more likely).}
-
-\item{n_gram}{Encode n nucleotides at once. Can be used for language model for target encoding.}
-
-\item{n_gram_stride}{Step size for n-gram encoding. For AACCGGTT with \code{n-gram = 4} and \code{n_gram_stride = 2}, generator encodes
-\verb{(AACC), (CCGG), (GGTT)}; for \code{n_gram_stride = 4} generator encodes \verb{(AACC), (GGTT)}.}
 
 \item{add_noise}{\code{NULL} or list of arguments. If not \code{NULL}, list must contain the following arguments: \code{noise_type} can be \code{"normal"} or \code{"uniform"};
 optional arguments \code{sd} or \code{mean} if noise_type is \code{"normal"} (default is \code{sd=1} and \code{mean=0}) or \verb{min, max} if \code{noise_type} is \code{"uniform"}

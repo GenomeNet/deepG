@@ -11,7 +11,6 @@ seq_encoding_lm(
   start_ind,
   ambiguous_nuc = "zero",
   nuc_dist = NULL,
-  use_quality = FALSE,
   quality_vector = NULL,
   target_len = 1,
   use_coverage = FALSE,

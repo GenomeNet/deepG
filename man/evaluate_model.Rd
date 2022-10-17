@@ -51,6 +51,8 @@ evaluate_model(
 
 \item{format}{File format, \code{"fasta"}, \code{"fastq"} or \code{"rds"}.}
 
+\item{target_middle}{Whether model is language model with separate input layers.}
+
 \item{mode}{Either \code{"lm"} for language model or \code{"label_header"}, \code{"label_csv"} or \code{"label_folder"} for label classification.}
 
 \item{output_format}{Determines shape of output tensor for language model.

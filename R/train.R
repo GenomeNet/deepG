@@ -16,7 +16,7 @@
 #' \item If `"label_header"`, class will be read from fasta headers.
 #' \item If `"label_folder"`, class will be read from folder, i.e. all files in one folder must belong to the same class. 
 #' \item If `"label_csv"`, targets are read from a csv file. This file should have one column named "file". The targets then correspond to entries in that row (except "file"
-#' column). Example: if we are currently working with a file called "a.fasta" and coresponding label is "label_1", there should be a row in our csv file  
+#' column). Example: if we are currently working with a file called "a.fasta" and corresponding label is "label_1", there should be a row in our csv file  
 #' 
 #'  |  file       | label_1 | label_2 | 
 #'  |   ---       |   ---   |  ---    |   
@@ -98,6 +98,8 @@
 #' Not implemented for `train_type = "label_folder"`.
 #' @param set_learning When you want to assign one label to set of samples. Only implemented for `train_type = "label_folder"`.
 #' Input is a list with the following parameters 
+#' @param random_sampling Whether samples should be taken from random positions when using `max_samples` argument. If `FALSE` random 
+#' samples are taken from a consecutive subsequence.
 #' \itemize{
 #' \item `samples_per_target`: how many samples to use for one target.
 #' \item `maxlen`: length of one sample.

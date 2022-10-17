@@ -102,6 +102,8 @@ If first label contains 5 percent wrong labels and second label no noise, then
 
 \item{batch_norm_momentum}{Momentum for the moving mean and the moving variance.}
 
+\item{verbose}{Boolean.}
+
 \item{model_seed}{Set seed for model parameters in tensorflow if not \code{NULL}.}
 }
 \description{

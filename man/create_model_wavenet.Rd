@@ -50,6 +50,8 @@ then it's used as the dilation rate of each residual block.}
 
 \item{compile}{Whether to compile the model.}
 
+\item{verbose}{Boolean.}
+
 \item{model_seed}{Set seed for model parameters in tensorflow if not \code{NULL}.}
 }
 \description{

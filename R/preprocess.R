@@ -56,12 +56,13 @@
 #' y[2,] # t
 #' @export
 seq_encoding_lm <- function(sequence = NULL, maxlen, vocabulary, start_ind, ambiguous_nuc = "zero",
-                            nuc_dist = NULL, use_quality = FALSE, quality_vector = NULL,
+                            nuc_dist = NULL, quality_vector = NULL,
                             target_len = 1, use_coverage = FALSE, max_cov = NULL, cov_vector = NULL,
                             n_gram = NULL, n_gram_stride = 1, output_format = "target_right",
                             char_sequence = NULL, adjust_start_ind = FALSE,
                             tokenizer = NULL) {
 
+  use_quality <- ifelse(is.null(quality_vector), FALSE, TRUE)
   discard_amb_nt <- FALSE
   ## TODO: add discard_amb_nt
   if (!is.null(char_sequence)) {
@@ -307,7 +308,10 @@ seq_encoding_label <- function(sequence = NULL, maxlen, vocabulary, start_ind, a
                                char_sequence = NULL, tokenizer = NULL, adjust_start_ind = FALSE) {
 
   ## TODO: add discard_amb_nt
+  
+  use_quality <- ifelse(is.null(quality_vector), FALSE, TRUE)
   discard_amb_nt <- FALSE
+  
   if (!is.null(char_sequence)) {
     
     vocabulary <- stringr::str_to_lower(vocabulary)
@@ -397,6 +401,7 @@ seq_encoding_label <- function(sequence = NULL, maxlen, vocabulary, start_ind, a
 #' Helper function for data generators. 
 #' Computes start positions in sequence where samples can be extracted, given maxlen, step size and ambiguous nucleotide constraints.
 #'
+#' @inheritParams train_model
 #' @param seq_vector Vector of character sequences.
 #' @param length_vector Length of sequences in \code{seq_vector}.
 #' @param maxlen Length of one predictor sequence.
@@ -1170,6 +1175,7 @@ create_conf_mat_obj <- function(m, confMatLabels) {
 #' 
 #' @param int_seq Integer sequence
 #' @param n Length of n-gram aggregation
+#' @param voc_size Size of vocabulary.
 #' @examples
 #' int_to_n_gram(int_seq = c(1,1,2,4,4), n = 2, voc_size = 4)
 #' @export

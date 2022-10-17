@@ -45,6 +45,7 @@
 #' @param auc_metric Whether to add AUC metric.
 #' @param f1_metric Whether to add F1 metric.
 #' @param bal_acc Whether to add balanced accuracy.
+#' @param verbose Boolean.
 #' @param batch_norm_momentum Momentum for the moving mean and the moving variance.
 #' @param model_seed Set seed for model parameters in tensorflow if not `NULL`.
 #' @examples 
@@ -1644,6 +1645,7 @@ create_model_lstm_cnn_time_dist <- function(
 #'
 #' @inheritParams create_model_lstm_cnn
 #' @param samples_per_target Number of samples to combine for one target.
+#' @param num_input_layers Number of input layers.
 #' @examples
 #' create_model_lstm_cnn_multi_input(
 #'   maxlen = 50,
@@ -2361,10 +2363,11 @@ manage_metrics <- function(model, compile = FALSE) {
 #' @param cp_filter Condition to choose checkpoint if `cp_path` is a directory.
 #' Either "acc" for bast validation accuracy, "loss" for best validation loss or "last_ep" for last epoch.
 #' @param ep_index Load checkpoint from specific epoch number.
-#' @param verbose Whether to print choosen checkpoint path
+#' @param verbose Whether to print choosen checkpoint path.
+#' @param loss Loss function. Only used if model gets compiled.
 #' @export
 load_cp <- function(cp_path, cp_filter = NULL, ep_index = NULL, compile = FALSE,
-                    learning_rate = 0.01, solver = "adam", metrics = c("acc"),
+                    learning_rate = 0.01, solver = "adam",
                     loss = "categorical_crossentropy", verbose = TRUE) {
   
   if (!is.null(cp_filter)) {
