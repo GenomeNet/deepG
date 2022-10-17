@@ -1,4 +1,3 @@
-
 #' Encodes integer sequence for language model
 #'
 #' Helper function for \code{\link{generator_fasta_lm}}. 
@@ -57,12 +56,13 @@
 #' y[2,] # t
 #' @export
 seq_encoding_lm <- function(sequence = NULL, maxlen, vocabulary, start_ind, ambiguous_nuc = "zero",
-                            nuc_dist = NULL, use_quality = FALSE, quality_vector = NULL,
+                            nuc_dist = NULL, quality_vector = NULL,
                             target_len = 1, use_coverage = FALSE, max_cov = NULL, cov_vector = NULL,
                             n_gram = NULL, n_gram_stride = 1, output_format = "target_right",
                             char_sequence = NULL, adjust_start_ind = FALSE,
                             tokenizer = NULL) {
-  
+
+  use_quality <- ifelse(is.null(quality_vector), FALSE, TRUE)
   discard_amb_nt <- FALSE
   ## TODO: add discard_amb_nt
   if (!is.null(char_sequence)) {
@@ -303,12 +303,15 @@ seq_encoding_lm <- function(sequence = NULL, maxlen, vocabulary, start_ind, ambi
 #' x[2,,] # taatn
 #' @export
 seq_encoding_label <- function(sequence = NULL, maxlen, vocabulary, start_ind, ambiguous_nuc = "zero", nuc_dist = NULL,
-                               use_quality = FALSE, quality_vector = NULL, use_coverage = FALSE, max_cov = NULL,
+                               quality_vector = NULL, use_coverage = FALSE, max_cov = NULL,
                                cov_vector = NULL, n_gram = NULL, n_gram_stride = 1,
                                char_sequence = NULL, tokenizer = NULL, adjust_start_ind = FALSE) {
-  
+
   ## TODO: add discard_amb_nt
+  
+  use_quality <- ifelse(is.null(quality_vector), FALSE, TRUE)
   discard_amb_nt <- FALSE
+  
   if (!is.null(char_sequence)) {
     
     vocabulary <- stringr::str_to_lower(vocabulary)
@@ -338,7 +341,7 @@ seq_encoding_label <- function(sequence = NULL, maxlen, vocabulary, start_ind, a
     maxlen <- maxlen - n_gram + 1
     voc_len <- length(vocabulary)^n_gram
   }
-  
+
   if (adjust_start_ind) start_ind <- start_ind - start_ind[1] + 1
   numberOfSamples <- length(start_ind)
   
@@ -393,19 +396,28 @@ seq_encoding_label <- function(sequence = NULL, maxlen, vocabulary, start_ind, a
   return(x)
 }
 
-
 #' Computes start position of samples
 #'
 #' Helper function for data generators. 
 #' Computes start positions in sequence where samples can be extracted, given maxlen, step size and ambiguous nucleotide constraints.
 #'
+#' @inheritParams train_model
 #' @param seq_vector Vector of character sequences.
 #' @param length_vector Length of sequences in \code{seq_vector}.
 #' @param maxlen Length of one predictor sequence.
 #' @param step Distance between samples from one entry in \code{seq_vector}.
-#' @param train_mode Either "lm" for language model or "label" for label classification. Language models need one character more
-#' (the target) for one sample.
-#' @param discard_amb_nuc Discard all samples that contain characters outside vocabulary.
+#' @param train_mode Either `"lm"` for language model or `"label"` for label classification. 
+#' @param discard_amb_nuc Whether to discard all samples that contain characters outside vocabulary.
+#' @examples 
+#' seq_vector <- c("AAACCCNNNGGGTTT")
+#' get_start_ind(
+#'   seq_vector = seq_vector,
+#'   length_vector = nchar(seq_vector),
+#'   maxlen = 4,
+#'   step = 2,
+#'   train_mode = "label",
+#'   discard_amb_nuc = TRUE,
+#'   vocabulary = c("A", "C", "G", "T"))
 #' @export
 get_start_ind <- function(seq_vector, length_vector, maxlen,
                           step, train_mode = "label", discard_amb_nuc = FALSE, vocabulary = c("A", "C", "G", "T")) {
@@ -530,8 +542,6 @@ start_ind_ignore_amb <- function(seq_vector, length_vector, maxlen, step, vocabu
   start_ind
 }
 
-#' convert fastq quality score to probability
-#'
 quality_to_probability <- function(quality_vector) {
   Q <- utf8ToInt(quality_vector) - 33
   1 - 10^(-Q/10)
@@ -559,8 +569,38 @@ remove_amb_nuc_entries <- function(fasta.file, skip_amb_nuc, pattern) {
 #'
 #' @inheritParams generator_fasta_lm
 #' @inheritParams generator_fasta_label_header_csv
+#' @inheritParams train_model
 #' @param file_proportion Proportion of files to randomly sample for estimating class distributions.
-#' @param train_type Either "label_folder", "label_header" or "label_csv".
+#' @param csv_path If `train_type = "label_csv"`, path to csv file containing labels.
+#' @examples 
+#' 
+#' # create dummy data
+#' path_1 <- tempfile()
+#' path_2 <- tempfile()
+#' 
+#' for (current_path in c(path_1, path_2)) {
+#'   
+#'   dir.create(current_path)
+#'   # create twice as much data for first class
+#'   num_files <- ifelse(current_path == path_1, 6, 3)
+#'   create_dummy_data(file_path = current_path,
+#'                     num_files = num_files,
+#'                     seq_length = 10,
+#'                     num_seq = 5,
+#'                     vocabulary = c("a", "c", "g", "t"))
+#' }
+#' 
+#' 
+#' class_weight <- get_class_weight(
+#'   path = c(path_1, path_2),
+#'   vocabulary_label = c("A", "B"),
+#'   format = "fasta",
+#'   file_proportion = 1,
+#'   train_type = "label_folder",
+#'   csv_path = NULL)
+#' 
+#' class_weight
+#' 
 #' @export
 get_class_weight <- function(path,
                              vocabulary_label = NULL,
@@ -603,6 +643,7 @@ get_class_weight <- function(path,
     classes <- weight_collection
   }
   
+  names(classes) <- NULL # no list names in tf version > 2.8
   classes
 }
 
@@ -636,7 +677,7 @@ count_nuc <- function(path,
           fasta.file <- microseq::readFastq(i)
         }
         freq <- sum(nchar(fasta.file$Sequence))
-        classes[i] <- classes[i] + freq
+        classes[j] <- classes[j] + freq
       }
     }
   }
@@ -724,13 +765,13 @@ read_fasta_fastq <- function(format, skip_amb_nuc, file_index, pattern, shuffle_
       fasta.file <- remove_amb_nuc_entries(microseq::readFasta(fasta.files[file_index]), skip_amb_nuc = skip_amb_nuc,
                                            pattern = pattern)
     }
-    
+
     if (filter_header & is.null(target_from_csv)) {
       label_vector <- trimws(stringr::str_to_lower(fasta.file$Header))
       label_filter <- label_vector %in% vocabulary_label
       fasta.file <- fasta.file[label_filter, ]
     }
-    
+
     if (!is.null(proportion_entries) && proportion_entries < 1) {
       index <- sample(nrow(fasta.file), max(1, floor(nrow(fasta.file) * proportion_entries)))
       fasta.file <- fasta.file[index, ]
@@ -845,7 +886,7 @@ csv_to_tensor <- function(label_csv, added_label_vector, added_label_by_header, 
   return(label_tensor)
 }
 
-#' Devide tensor to list of subsets
+#' Divide tensor to list of subsets
 #'
 #' @keywords internal
 slice_tensor <- function(tensor, target_split) {
@@ -878,7 +919,6 @@ check_header_names <- function(target_split, vocabulary_label) {
 
 count_files <- function(path, format = "fasta", train_type,
                         target_from_csv = NULL, train_val_split_csv = NULL) {
-  
   
   num_files <- rep(0, length(path))
   if (!is.null(target_from_csv)) {
@@ -939,7 +979,7 @@ list_fasta_files <- function(path_corpus, format, file_filter) {
     } else {
       
       fasta.files[[i]] <- list.files(
-        path = xfun::normalize_path(path_corpus[[i]]),
+        path = path_corpus[[i]],
         pattern = paste0("\\.", format, "$"),
         full.names = TRUE)
     }
@@ -982,31 +1022,69 @@ get_coverage_concat <- function(fasta.file, concat_seq) {
 
 #' Reshape tensors for set learning
 #' 
-#' Reshape input x and target y. Aggregates multiple samples from x and y into single input/target batches  
+#' Reshape input x and target y. Aggregates multiple samples from x and y into single input/target batches.  
 #' 
-#' @param samples_per_target How many samples to use for one target. 
-#' @param reshape_mode "time_dist", "multi_input" or "concat".  If reshape_mode is "multi_input",  will produce samples_per_target separate inputs, 
-#' each of length maxlen. If reshape_mode is "time_dist", will produce a 4D input array. The dimensions correspond to
-#' (batch_size, samples_per_target, maxlen, length(vocabulary)). If reshape mode is "concat", will concatenate samples_per_target sequences
-#' of length maxlen to one long sequence
-#' @param buffer_len Only applies if \code{reshape_mode = "concat"}. If buffer_len is an integer, the subsequences are interspaced with buffer_len rows.
-#' The input sequence length is (maxlen \* samples_per_target) + buffer_len \* (samples_per_target - 1).
+#' @param x 3D input tensor.
+#' @param y 2D target tensor.
+#' @param samples_per_target How many samples to use for one target
+#' @param reshape_mode `"time_dist", "multi_input"` or `"concat"` 
+#' \itemize{
+#' \item If `"multi_input"`, will produce `samples_per_target` separate inputs, each of length `maxlen`.
+#' \item If `"time_dist"`, will produce a 4D input array. The dimensions correspond to
+#' `(new_batch_size, samples_per_target, maxlen, length(vocabulary))`.
+#' \item If `"concat"`, will concatenate `samples_per_target` sequences of length `maxlen` to one long sequence
+#' }
+#' @param buffer_len Only applies if `reshape_mode = "concat"`. If `buffer_len` is an integer, the subsequences are interspaced with `buffer_len` rows. The reshaped x has
+#' new maxlen: (`maxlen` \eqn{*} `samples_per_target`) + `buffer_len` \eqn{*} (`samples_per_target` - 1).
 #' @param new_batch_size Size of first axis of input/targets after reshaping.
+#' @param check_y Check if entries in `y` are consistent with reshape strategy (same label when aggregating).   
+#' @examples 
+#' # create dummy data
+#' batch_size <- 8
+#' maxlen <- 11
+#' voc_len <- 4 
+#' x <- sample(0:(voc_len-1), maxlen*batch_size, replace = TRUE)
+#' x <- keras::to_categorical(x, num_classes = voc_len)
+#' x <- array(x, dim = c(batch_size, maxlen, voc_len))
+#' y <- rep(0:1, each = batch_size/2)
+#' y <- keras::to_categorical(y, num_classes = 2)
+#' y
 #' 
-#' @inheritParams generator_initialize
-#' @inheritParams generator_fasta_label_folder_wrapper
+#' # reshape data for multi input model
+#' reshaped_data <- reshape_tensor(
+#'   x = x,
+#'   y = y,
+#'   new_batch_size = 2,
+#'   samples_per_target = 4,
+#'   reshape_mode = "multi_input")
+#' 
+#' length(reshaped_data[[1]])
+#' dim(reshaped_data[[1]][[1]])
+#' reshaped_data[[2]]
 #' @export
 reshape_tensor <- function(x, y, new_batch_size,
                            samples_per_target,
-                           batch_size, path, voc_len,
                            buffer_len = NULL,
-                           maxlen, reshape_mode = "time_dist",
-                           concat_maxlen = NULL) {
+                           reshape_mode = "time_dist",
+                           check_y = FALSE) {
+  
+  batch_size <- dim(x)[1]
+  maxlen <- dim(x)[2]
+  voc_len <- dim(x)[3]
+  num_classes <- dim(y)[2]
+  
+  if (check_y) {
+    targets <- apply(y, 1, which.max)
+    test_y_dist <- all(targets == rep(1:num_classes, each = batch_size/num_classes))
+    if (!test_y_dist) {
+      stop("y must have same number of samples for each class")
+    }
+  }
   
   if (reshape_mode == "time_dist") {
     
     x_new <- array(0, dim = c(new_batch_size, samples_per_target, maxlen, voc_len))
-    y_new <- array(0, dim = c(new_batch_size, length(path)))
+    y_new <- array(0, dim = c(new_batch_size, num_classes))
     for (i in 1:new_batch_size) {
       index <- (1:samples_per_target) + (i-1)*samples_per_target
       x_new[i, , , ] <- x[index, , ]
@@ -1029,13 +1107,18 @@ reshape_tensor <- function(x, y, new_batch_size,
   
   if (reshape_mode == "concat") {
     
-    x_new <- array(0, dim = c(new_batch_size, concat_maxlen, voc_len))
-    y_new <- array(0, dim = c(new_batch_size, length(path)))
     use_buffer <- !is.null(buffer_len) && buffer_len > 0
     if (use_buffer) {
       buffer_tensor <- array(0, dim = c(buffer_len, voc_len))
       buffer_tensor[ , voc_len] <- 1
+      concat_maxlen <- (maxlen * samples_per_target) + (buffer_len * (samples_per_target - 1))
+    } else {
+      concat_maxlen <- maxlen * samples_per_target 
     }
+    
+    x_new <- array(0, dim = c(new_batch_size, concat_maxlen, voc_len))
+    y_new <- array(0, dim = c(new_batch_size, num_classes))
+   
     
     for (i in 1:new_batch_size) {
       index <- (1:samples_per_target) + (i-1)*samples_per_target
@@ -1088,14 +1171,13 @@ create_conf_mat_obj <- function(m, confMatLabels) {
 #' 
 #' Input is sequence of integers from vocabulary of size \code{voc_size}. 
 #' Returns vector of integers corresponding to n-gram encoding.
-#' Integers > voc_size get encoded as voc_size^n + 1.
+#' Integers greater than `voc_size` get encoded as `voc_size^n + 1`.
 #' 
 #' @param int_seq Integer sequence
 #' @param n Length of n-gram aggregation
+#' @param voc_size Size of vocabulary.
 #' @examples
-#' \dontrun{
 #' int_to_n_gram(int_seq = c(1,1,2,4,4), n = 2, voc_size = 4)
-#' }
 #' @export
 int_to_n_gram <- function(int_seq, n, voc_size = 4) {
   encoding_len <- length(int_seq) - n + 1
@@ -1120,11 +1202,9 @@ int_to_n_gram <- function(int_seq, n, voc_size = 4) {
 #' @param input_matrix Matrix with one 1 per row and zeros otherwise.
 #' @param n Length of one n-gram.   
 #' @examples
-#' \dontrun{
 #' x <- c(0,0,1,3,3) 
 #' input_matrix <- keras::to_categorical(x, 4)
 #' n_gram_of_matrix(input_matrix, n = 2) 
-#' }
 #' @export
 n_gram_of_matrix <- function(input_matrix, n = 3) {
   voc_len <- ncol(input_matrix)^n
@@ -1167,8 +1247,8 @@ n_gram_vocabulary <- function(n_gram = 3, vocabulary = c("A", "C", "G", "T")) {
 #' Split fasta file into smaller files.
 #'
 #' Returns smaller files with same file name and "_x" (where x is an integer). For example,
-#' assume we have input file called "abc.fasta" with 100 entries and split_n = 50. Function will
-#' create two files called "abc_1.fasta" and "abc_2.fasta" in target_path.
+#' assume we have input file called "abc.fasta" with 100 entries and `split_n = 50`. Function will
+#' create two files called "abc_1.fasta" and "abc_2.fasta" in `target_path`.
 #'
 #' @param path_input Fasta file to split into smaller files
 #' @param split_n Maximum number of entries to use in smaller file.
@@ -1234,4 +1314,11 @@ add_noise_tensor <- function(x, noise_type, ...) {
   }
   
   return(x)
+}
+
+reverse_complement_tensor <- function(x) {
+  stopifnot(dim(x)[3] == 4)
+  x_rev_comp <- x[ , , 4:1]
+  x_rev_comp <- x_rev_comp[ , dim(x)[2]:1, ]
+  x_rev_comp
 }
