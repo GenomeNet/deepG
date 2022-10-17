@@ -449,7 +449,7 @@ train_model <- function(train_type = "lm",
   
   # training
   if (train_with_gen) {
-    print("training gen")
+    
     model <- keras::set_weights(model, model_weights)
     history <-
       model %>% keras::fit(

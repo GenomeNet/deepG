@@ -46,8 +46,6 @@ get_generator(
   path_file_logVal = NULL,
   model = NULL,
   vocabulary_label = NULL,
-  train_files = NULL,
-  val_files = NULL,
   new_batch_size = NULL,
   val = FALSE
 )
