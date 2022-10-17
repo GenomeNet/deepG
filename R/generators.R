@@ -3243,7 +3243,7 @@ generator_random <- function(
         
         if (label_from_csv) {
           file_row_name <- fasta_files[[p]][file_index] %>% basename
-          label_row <- output_label_csv[.(file_row_name)][ , -"file"]
+          label_row <- output_label_csv[.(file_row_name)][ , -"file"] %>% as.matrix()
           label_matrix <- t(replicate(length(sample_start), label_row, simplify = TRUE))
           target_list[[target_count]] <- label_matrix
           target_count <- target_count + 1
