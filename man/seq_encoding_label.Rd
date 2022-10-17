@@ -11,7 +11,6 @@ seq_encoding_label(
   start_ind,
   ambiguous_nuc = "zero",
   nuc_dist = NULL,
-  use_quality = FALSE,
   quality_vector = NULL,
   use_coverage = FALSE,
   max_cov = NULL,

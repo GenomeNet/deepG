@@ -660,7 +660,7 @@ predict_model_one_pred_per_entry <- function(model = NULL, layer_name = NULL, pa
       if (i == 1) start_ind <- seq(1, nchar(char_seq), maxlen)
       one_hot_batch <- seq_encoding_label(sequence = NULL, maxlen = maxlen, vocabulary = vocabulary,
                                           start_ind = start_ind, ambiguous_nuc = ambiguous_nuc, nuc_dist = NULL,
-                                          use_quality = FALSE, quality_vector = NULL, use_coverage = FALSE, max_cov = NULL,
+                                          quality_vector = NULL, use_coverage = FALSE, max_cov = NULL,
                                           cov_vector = NULL, n_gram = NULL, n_gram_stride = 1, char_sequence = char_seq,
                                           tokenizer = tokenizer, adjust_start_ind = TRUE) 
       if (reverse_complement_encoding) one_hot_batch <- list(one_hot_batch, reverse_complement_tensor(one_hot_batch))
@@ -681,7 +681,7 @@ predict_model_one_pred_per_entry <- function(model = NULL, layer_name = NULL, pa
   char_seq <- nucSeq[string_start_index : length(nucSeq)] %>% paste(collapse = "") 
   one_hot_batch <- seq_encoding_label(sequence = NULL, maxlen = maxlen, vocabulary = vocabulary,
                                       start_ind = seq(1, nchar(char_seq), maxlen), ambiguous_nuc = "zero", nuc_dist = NULL,
-                                      use_quality = FALSE, quality_vector = NULL, use_coverage = FALSE, max_cov = NULL,
+                                      quality_vector = NULL, use_coverage = FALSE, max_cov = NULL,
                                       cov_vector = NULL, n_gram = NULL, n_gram_stride = 1, char_sequence = char_seq,
                                       tokenizer = tokenizer, adjust_start_ind = TRUE) 
   if (reverse_complement_encoding) one_hot_batch <- list(one_hot_batch, reverse_complement_tensor(one_hot_batch))

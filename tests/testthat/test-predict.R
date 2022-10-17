@@ -2,8 +2,6 @@ context("predict")
 
 test_that("Sucessful prediction", {
    
-   #devtools::load_all()
-   
    sequence <- "AAACCNGGGTTT"
    maxlen <- 8
    filename <- tempfile(fileext = ".h5")

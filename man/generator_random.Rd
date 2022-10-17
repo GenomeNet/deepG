@@ -42,7 +42,7 @@ generator_random(
 \item If \code{"label_header"}, class will be read from fasta headers.
 \item If \code{"label_folder"}, class will be read from folder, i.e. all files in one folder must belong to the same class.
 \item If \code{"label_csv"}, targets are read from a csv file. This file should have one column named "file". The targets then correspond to entries in that row (except "file"
-column). Example: if we are currently working with a file called "a.fasta" and coresponding label is "label_1", there should be a row in our csv file\tabular{lll}{
+column). Example: if we are currently working with a file called "a.fasta" and corresponding label is "label_1", there should be a row in our csv file\tabular{lll}{
    file \tab label_1 \tab label_2 \cr
    "a.fasta" \tab 1 \tab 0 \cr
 }
@@ -90,6 +90,8 @@ can be a single directory or file or a list of directories and/or files.}
 \item{padding}{Whether to pad sequences too short for one sample with zeros.}
 
 \item{vocabulary}{Vector of allowed characters. Characters outside vocabulary get encoded as specified in \code{ambiguous_nuc}.}
+
+\item{number_target_nt}{Number of target nucleotides for language model.}
 
 \item{n_gram}{Integer, encode target not nucleotide wise but combine n nucleotides at once. For example for \verb{n=2, "AA" ->  (1, 0,..., 0),}
 \verb{"AC" ->  (0, 1, 0,..., 0), "TT" -> (0,..., 0, 1)}, where the one-hot vectors have length \code{length(vocabulary)^n}.}

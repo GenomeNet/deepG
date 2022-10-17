@@ -303,7 +303,7 @@ seq_encoding_lm <- function(sequence = NULL, maxlen, vocabulary, start_ind, ambi
 #' x[2,,] # taatn
 #' @export
 seq_encoding_label <- function(sequence = NULL, maxlen, vocabulary, start_ind, ambiguous_nuc = "zero", nuc_dist = NULL,
-                               use_quality = FALSE, quality_vector = NULL, use_coverage = FALSE, max_cov = NULL,
+                               quality_vector = NULL, use_coverage = FALSE, max_cov = NULL,
                                cov_vector = NULL, n_gram = NULL, n_gram_stride = 1,
                                char_sequence = NULL, tokenizer = NULL, adjust_start_ind = FALSE) {
 

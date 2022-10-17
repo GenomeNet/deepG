@@ -558,7 +558,7 @@ generator_fasta_lm <- function(path_corpus,
       array_list <- purrr::map(1:length(sequence_list),
                                ~seq_encoding_lm(sequence_list[[.x]], nuc_dist = nuc_dist_list[[.x]], adjust_start_ind = TRUE,
                                                 maxlen = maxlen, vocabulary = vocabulary, ambiguous_nuc = ambiguous_nuc,
-                                                start_ind =  start_index_list[[.x]], use_quality = use_quality_score,
+                                                start_ind =  start_index_list[[.x]], 
                                                 quality_vector = quality_list[[.x]], target_len = target_len,
                                                 cov_vector = coverage_list[[.x]], use_coverage = use_coverage, max_cov = max_cov,
                                                 n_gram = n_gram, n_gram_stride = n_gram_stride, output_format = output_format)
@@ -667,7 +667,7 @@ generator_fasta_lm <- function(path_corpus,
       array_list <- purrr::map(1:length(sequence_list),
                                ~seq_encoding_lm(sequence_list[[.x]], ambiguous_nuc = ambiguous_nuc, adjust_start_ind = TRUE,
                                                 maxlen = maxlen, vocabulary = vocabulary, nuc_dist = nuc_dist_list[[.x]],
-                                                start_ind =  start_index_list[[.x]], use_quality = use_quality_score,
+                                                start_ind =  start_index_list[[.x]], 
                                                 quality_vector = quality_list[[.x]], n_gram = n_gram,
                                                 cov_vector = coverage_list[[.x]], use_coverage = use_coverage, max_cov = max_cov,
                                                 output_format = output_format)
@@ -696,8 +696,8 @@ generator_fasta_lm <- function(path_corpus,
         if (add_input_as_seq[i]) {
           label_tensor_list[[i]] <- seq_encoding_label(as.vector(t(label_tensor_list[[i]])), nuc_dist = NULL, adjust_start_ind = TRUE,
                                                        maxlen = ncol(label_tensor_list[[i]]), vocabulary = vocabulary, ambiguous_nuc = ambiguous_nuc,
-                                                       start_ind =  1 + ncol(label_tensor_list[[i]]) * (0:(nrow(label_tensor_list[[i]]) - 1)), use_quality = FALSE,
-                                                       quality_vector = list())
+                                                       start_ind =  1 + ncol(label_tensor_list[[i]]) * (0:(nrow(label_tensor_list[[i]]) - 1)),
+                                                       quality_vector = NULL)
         }
       }
     }
@@ -707,7 +707,9 @@ generator_fasta_lm <- function(path_corpus,
     start_index_list <<- vector("list")
     sequence_list <<- vector("list")
     nuc_dist_list <<- vector("list")
-    quality_list <<- vector("list")
+    if (use_quality_score) {
+      quality_list <<- vector("list")
+    }
     coverage_list <<- vector("list")
     sequence_list_index <<- 1
     num_samples <<- 0
@@ -1368,7 +1370,7 @@ generator_fasta_label_header_csv <- function(path_corpus,
     array_x_list <- purrr::map(1:length(sequence_list), ~seq_encoding_label(sequence_list[[.x]], ambiguous_nuc = ambiguous_nuc, adjust_start_ind = TRUE,
                                                                             maxlen = maxlen, vocabulary = vocabulary, nuc_dist = nuc_dist_list[[.x]],
                                                                             start_ind =  start_index_list[[.x]], quality_vector = quality_list[[.x]],
-                                                                            use_quality = use_quality_score, cov_vector = coverage_list[[.x]],
+                                                                            cov_vector = coverage_list[[.x]],
                                                                             use_coverage = use_coverage, max_cov = max_cov, n_gram = n_gram, 
                                                                             n_gram_stride = n_gram_stride)
     )
@@ -1400,8 +1402,8 @@ generator_fasta_label_header_csv <- function(path_corpus,
         if (add_input_as_seq[i]) {
           label_tensor_list[[i]] <- seq_encoding_label(as.vector(t(label_tensor_list[[i]])), nuc_dist = NULL, adjust_start_ind = TRUE,
                                                        maxlen = ncol(label_tensor_list[[i]]), vocabulary = vocabulary, ambiguous_nuc = ambiguous_nuc,
-                                                       start_ind =  1 + ncol(label_tensor_list[[i]]) * (0:(nrow(label_tensor_list[[i]]) - 1)), use_quality = FALSE,
-                                                       quality_vector = list())
+                                                       start_ind =  1 + ncol(label_tensor_list[[i]]) * (0:(nrow(label_tensor_list[[i]]) - 1)),
+                                                       quality_vector = NULL)
         }
       }
     }
@@ -1449,7 +1451,9 @@ generator_fasta_label_header_csv <- function(path_corpus,
     sequence_list <<- vector("list")
     target_list <<- vector("list")
     nuc_dist_list <<- vector("list")
-    quality_list <<- vector("list")
+    if (use_quality_score) {
+      quality_list <<- vector("list")
+    }
     coverage_list <<- vector("list")
     sequence_list_index <<- 1
     num_samples <<- 0
@@ -2093,7 +2097,7 @@ generator_fasta_label_folder <- function(path_corpus,
     # one hot encode strings collected in sequence_list and connect arrays
     array_x_list <- purrr::map(1:length(sequence_list), ~seq_encoding_label(sequence = sequence_list[[.x]], ambiguous_nuc = ambiguous_nuc,
                                                                             maxlen = maxlen, vocabulary = vocabulary, nuc_dist = nuc_dist_list[[.x]],
-                                                                            start_ind =  start_index_list[[.x]], use_quality = use_quality_score,
+                                                                            start_ind =  start_index_list[[.x]], 
                                                                             quality_vector = quality_list[[.x]], cov_vector = coverage_list[[.x]],
                                                                             max_cov = max_cov, use_coverage = use_coverage, n_gram = n_gram,
                                                                             n_gram_stride = n_gram_stride, adjust_start_ind = TRUE)
@@ -2147,8 +2151,8 @@ generator_fasta_label_folder <- function(path_corpus,
         if (add_input_as_seq[i]) {
           label_tensor_list[[i]] <- seq_encoding_label(as.vector(t(label_tensor_list[[i]])), nuc_dist = NULL, adjust_start_ind = TRUE,
                                                        maxlen = ncol(label_tensor_list[[i]]), vocabulary = vocabulary, ambiguous_nuc = ambiguous_nuc,
-                                                       start_ind =  1 + ncol(label_tensor_list[[i]]) * (0:(nrow(label_tensor_list[[i]]) - 1)), use_quality = FALSE,
-                                                       quality_vector = list())
+                                                       start_ind =  1 + ncol(label_tensor_list[[i]]) * (0:(nrow(label_tensor_list[[i]]) - 1)), 
+                                                       quality_vector = NULL)
         }
       }
     }
@@ -2157,7 +2161,9 @@ generator_fasta_label_folder <- function(path_corpus,
     start_index_list <<- vector("list")
     sequence_list <<- vector("list")
     target_list <<- vector("list")
-    quality_list <<- vector("list")
+    if (use_quality_score) {
+      quality_list <<- vector("list")
+    }
     nuc_dist_list <<- vector("list")
     coverage_list <<- vector("list")
     sequence_list_index <<- 1
@@ -2920,6 +2926,7 @@ generator_rds <- function(rds_folder, batch_size, path_file_log = NULL,
 #' @inheritParams generator_fasta_lm
 #' @inheritParams generator_fasta_label_header_csv
 #' @inheritParams train_model
+#' @param number_target_nt Number of target nucleotides for language model.
 #' @export
 generator_random <- function(
   train_type = "label_folder",
@@ -3221,7 +3228,7 @@ generator_random <- function(
                                              vocabulary = vocabulary,
                                              start_ind = start_ind[[p]],
                                              ambiguous_nuc = ambiguous_nuc, nuc_dist = NULL,
-                                             use_quality = FALSE, quality_vector = NULL, use_coverage = FALSE,
+                                             quality_vector = NULL, use_coverage = FALSE,
                                              max_cov = NULL, n_gram_stride = n_gram_stride,
                                              cov_vector = NULL, n_gram = n_gram)
       } else {
