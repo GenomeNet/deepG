@@ -659,10 +659,9 @@ predict_model_one_pred_per_entry <- function(model = NULL, layer_name = NULL, pa
       char_seq <- nucSeq[string_start_index : string_end_index] %>% paste(collapse = "") 
       if (i == 1) start_ind <- seq(1, nchar(char_seq), maxlen)
       one_hot_batch <- seq_encoding_label(sequence = NULL, maxlen = maxlen, vocabulary = vocabulary,
-                                          start_ind = start_ind, ambiguous_nuc = ambiguous_nuc, nuc_dist = NULL,
-                                          quality_vector = NULL, use_coverage = FALSE, max_cov = NULL,
-                                          cov_vector = NULL, n_gram = NULL, n_gram_stride = 1, char_sequence = char_seq,
-                                          tokenizer = tokenizer, adjust_start_ind = TRUE) 
+                                          start_ind = start_ind, ambiguous_nuc = ambiguous_nuc, 
+                                          char_sequence = char_seq,
+                                          tokenizer = tokenizer, adjust_start_ind = TRUE, ...) 
       if (reverse_complement_encoding) one_hot_batch <- list(one_hot_batch, reverse_complement_tensor(one_hot_batch))
       activations <- keras::predict_on_batch(model, one_hot_batch)
       writer[row : (row + batch_size - 1), ] <- activations
@@ -683,7 +682,7 @@ predict_model_one_pred_per_entry <- function(model = NULL, layer_name = NULL, pa
                                       start_ind = seq(1, nchar(char_seq), maxlen), ambiguous_nuc = "zero", nuc_dist = NULL,
                                       quality_vector = NULL, use_coverage = FALSE, max_cov = NULL,
                                       cov_vector = NULL, n_gram = NULL, n_gram_stride = 1, char_sequence = char_seq,
-                                      tokenizer = tokenizer, adjust_start_ind = TRUE) 
+                                      tokenizer = tokenizer, adjust_start_ind = TRUE, ...) 
   if (reverse_complement_encoding) one_hot_batch <- list(one_hot_batch, reverse_complement_tensor(one_hot_batch))
   activations <- keras::predict_on_batch(model, one_hot_batch)
   writer[row : num_samples, ] <- activations[1 : length(row:num_samples), ]
