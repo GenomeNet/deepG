@@ -212,7 +212,7 @@ train_model <- function(train_type = "lm",
     
     if (train_type == "label_header") target_from_csv <- NULL
     if (train_type == "label_csv") {
-      train_type <- "label_header"
+     
       if (is.null(target_from_csv)) {
         stop('You need to add a path to csv file for target_from_csv when using train_type = "label_csv"')
       }

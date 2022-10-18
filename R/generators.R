@@ -891,6 +891,10 @@ generator_fasta_label_header_csv <- function(path_corpus,
     if (!is.null(target_split)) {
       check_header_names(target_split = target_split, vocabulary_label = vocabulary_label)
     }
+    
+    if (any(duplicated(output_label_csv$file))) {
+      stop("csv file with label contains duplicate file names in 'file' column")
+    }
   }
   
   # regular expression for chars outside vocabulary
@@ -3115,6 +3119,9 @@ generator_random <- function(
     # remove files without target label
     if (train_type == "label_csv") {
       fasta_files[[i]] <- fasta_files[[i]][basename(fasta_files[[i]]) %in% unique(output_label_csv$file)]
+      if (any(duplicated(output_label_csv$file))) {
+        stop("csv file with label contains duplicate file names in 'file' column")
+      }
     }
     
     num_files[[i]] <- length(fasta_files[[i]])
