@@ -938,7 +938,7 @@ count_files <- function(path, format = "fasta", train_type,
       if (endsWith(current_path, paste0(".", format))) {
         # remove files not in csv file 
         if (!is.null(target_from_csv)) {
-          current_files <- length(intersect(target_files, current_path))
+          current_files <- length(intersect(target_files, basename(current_path)))
         } else {
           current_files <- 1
         }
