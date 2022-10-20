@@ -25,7 +25,7 @@ navbar:
       - text: Human contamination
         href: https://colab.research.google.com/drive/1Eolc0koMNM1zkuO4XyVM58ImeF1BpRiH?usp=sharing
       - text: CRISPR detection
-        href: https://colab.research.google.com/drive/1MmQB2pFfEcp4GbgbT7wu6ScNt1YsChmn?usp=sharing
+        href: https://colab.research.google.com/drive/1yiXSwFafXpMLHaov9iBTQLIDZ6bK1zYX?usp=sharing
       - text: 16S rRNA detection
         href: https://colab.research.google.com/drive/1G7bOFEX87cZNrM2tdRtTdkrZn5fM__g0?usp=sharing
     tutorials:
