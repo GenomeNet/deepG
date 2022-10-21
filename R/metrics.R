@@ -92,7 +92,8 @@ f1_wrapper <- function(num_targets = 2, loss = "binary_crossentropy") {
 
 #' Balanced accuracy metric
 #'
-#' Compute balanced accuracy as additional score. Useful for imbalanced data.
+#' Compute balanced accuracy as additional score. Useful for imbalanced data. Only implemented for 
+#' model with mutually exclusive targets.
 #'
 #' @param num_targets Number of targets.
 #' @param cm_dir Directory of confusion matrix used to compute balanced accuracy.
