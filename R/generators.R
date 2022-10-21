@@ -3652,6 +3652,7 @@ dataset_from_gen <- function(output_path,
                        train_type = train_type,
                        set_learning = set_learning,
                        path_file_logVal = NULL,
+                       seed = seed,
                        ...)
   
   for (batch_number in 1:iterations) {
