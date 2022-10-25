@@ -264,9 +264,10 @@ train_model <- function(train_type = "lm",
       }
     }
     
-    if (!is.null(class_weight) && (length(class_weight) != length(vocabulary_label))) {
-      stop("class_weight and vocabulary_label must have same length")
-    }
+    # TODO: adjust for multi output model
+    # if (!is.null(class_weight) && (length(class_weight) != length(vocabulary_label))) {
+    #   stop("class_weight and vocabulary_label must have same length")
+    # }
     
     if (!is.null(concat_seq)) {
       if (!is.null(use_coverage)) stop("Coverage encoding not implemented for concat_seq")
