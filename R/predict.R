@@ -188,7 +188,7 @@ predict_model_one_seq <- function(path_model = NULL, layer_name = NULL, sequence
     if (format == "fastq") {
       fasta.file <- microseq::readFastq(path_input)
     }
-    if (nrow(fasta.file) > 1) {
+    if (nrow(fasta.file) > 1 & verbose) {
       text_1 <- paste("Your file has", nrow(fasta.file), "entries. 'one_seq'  output_format will concatenate them to a single sequence.\n")
       text_2 <- "Use 'by_entry' or 'by_entry_one_file' output_format to evaluate them separately."
       message(paste0(text_1, text_2))
