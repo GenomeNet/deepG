@@ -424,7 +424,12 @@ create_model_lstm_cnn <- function(
   optimizer <- set_optimizer(solver, learning_rate) 
   
   #add metrics
-  model_metrics <- c("acc")
+  if (loss_fn == "binary_crossentropy") {
+    model_metrics <- c("binary_accuracy")
+  } else {
+    model_metrics <- c("acc")
+  } 
+  
   cm_dir <- NULL
   if (num_output_layers == 1) {
     cm_dir <- file.path(tempdir(), paste(sample(letters, 7), collapse = ""))
@@ -895,7 +900,13 @@ create_model_lstm_cnn_target_middle <- function(
   }
   dir.create(cm_dir)
   model$cm_dir <- cm_dir
-  model_metrics <- c("acc")
+  
+  #add metrics
+  if (loss_fn == "binary_crossentropy") {
+    model_metrics <- c("binary_accuracy")
+  } else {
+    model_metrics <- c("acc")
+  } 
   
   if (loss_fn == "categorical_crossentropy") {
     
@@ -1226,8 +1237,14 @@ remove_add_layers <- function(model = NULL,
     
     optimizer <- set_optimizer(solver, learning_rate) 
     
+    metric_list <- list()
+    for (i in 1:length(losses)) {
+      metric_list[[i]] <- ifelse(losses[[i]] == "binary_crossentropy", "binary_accuracy", "acc")
+    }
+    
     model_new %>% keras::compile(loss = losses,
-                                 optimizer = optimizer, metrics = c("acc"))
+                                 optimizer = optimizer,
+                                 metrics = metric_list)
   }
   
   model_new
@@ -1572,7 +1589,13 @@ create_model_lstm_cnn_time_dist <- function(
   }
   dir.create(cm_dir)
   model$cm_dir <- cm_dir
-  model_metrics <- c("acc")
+  
+  #add metrics
+  if (loss_fn == "binary_crossentropy") {
+    model_metrics <- c("binary_accuracy")
+  } else {
+    model_metrics <- c("acc")
+  } 
   
   if (loss_fn == "categorical_crossentropy") {
     
@@ -1866,7 +1889,13 @@ create_model_lstm_cnn_multi_input <- function(
   }
   dir.create(cm_dir)
   model$cm_dir <- cm_dir
-  model_metrics <- c("acc")
+  
+  #add metrics
+  if (loss_fn == "binary_crossentropy") {
+    model_metrics <- c("binary_accuracy")
+  } else {
+    model_metrics <- c("acc")
+  } 
   
   if (loss_fn == "categorical_crossentropy") {
     
