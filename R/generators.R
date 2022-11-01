@@ -2720,6 +2720,7 @@ generator_rds <- function(rds_folder, batch_size, path_file_log = NULL,
                           reverse_complement = FALSE,
                           sample_by_file_size = FALSE,
                           n_gram = NULL, n_gram_stride = 1,
+                          reverse_complement_encoding = FALSE,
                           add_noise = NULL) {
   
   is_lm <- !is.null(target_len)
@@ -2915,6 +2916,12 @@ generator_rds <- function(rds_folder, batch_size, path_file_log = NULL,
     if (!is.null(add_noise)) {
       noise_args <- c(add_noise, list(x = x))
       x <- do.call(add_noise_tensor, noise_args)
+    }
+    
+    if (reverse_complement_encoding){
+      x_1 <- x
+      x_2 <- array(x_1[ , (dim(x)[2]):1, 4:1], dim = dim(x))
+      x <- list(x_1, x_2)
     }
     
     return(list(x, y))
@@ -3567,6 +3574,7 @@ get_generator <- function(path = NULL,
     gen <- generator_rds(rds_folder = path, batch_size = batch_size, path_file_log = path_file_log,
                          max_samples = max_samples, proportion_per_seq = proportion_per_seq,
                          sample_by_file_size = sample_by_file_size, add_noise = add_noise,
+                         reverse_complement_encoding = reverse_complement_encoding,
                          target_len = target_len, n_gram = n_gram, n_gram_stride = n_gram_stride)
     
   }
