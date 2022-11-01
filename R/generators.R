@@ -3284,12 +3284,6 @@ generator_random <- function(
       y <- do.call(rbind, y_list)
     }
     
-    if (reverse_complement_encoding){
-      x_1 <- x
-      x_2 <- array(x_1[ , (dim(x)[2]):1, 4:1], dim = dim(x))
-      x <- list(x_1, x_2)
-    }
-    
     if (train_type == "label_csv") {
       x <- one_hot_sample
       y <- do.call(rbind, target_list) %>% as.matrix()
@@ -3300,6 +3294,12 @@ generator_random <- function(
       x <- one_hot_sample
       target_int <- unlist(keras::texts_to_sequences(tokenizer_target, unlist(target_list))) - 1
       y  <- keras::to_categorical(target_int, num_classes = length(vocabulary_label))
+    }
+    
+    if (reverse_complement_encoding){
+      x_1 <- x
+      x_2 <- array(x_1[ , (dim(x)[2]):1, 4:1], dim = dim(x))
+      x <- list(x_1, x_2)
     }
     
     batch_number <<- batch_number + 1
@@ -3436,6 +3436,7 @@ get_generator <- function(path = NULL,
       seed = seed[1],
       format = format,
       reverse_complement = reverse_complement,
+      reverse_complement_encoding = reverse_complement_encoding,
       path = path,
       batch_size = batch_size,
       maxlen = maxlen,
@@ -3546,6 +3547,7 @@ get_generator <- function(path = NULL,
       seed = seed[1],
       format = format,
       reverse_complement = reverse_complement,
+      reverse_complement_encoding = reverse_complement_encoding,
       path = path,
       batch_size = batch_size,
       maxlen = maxlen,
