@@ -762,6 +762,7 @@ get_callbacks <- function(default_arguments , model, path_tensorboard, run_name,
   if (output$tensorboard) {
     
     # add balanced acc score
+    model <- manage_metrics(model)
     if (train_with_gen) {
       num_targets <- ifelse(train_type == "lm", length(vocabulary), length(vocabulary_label))
     } else {

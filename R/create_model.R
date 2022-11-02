@@ -425,7 +425,7 @@ create_model_lstm_cnn <- function(
   
   #add metrics
   if (loss_fn == "binary_crossentropy") {
-    model_metrics <- c("binary_accuracy")
+    model_metrics <- c(tf$keras$metrics$BinaryAccuracy(name = "acc"))
   } else {
     model_metrics <- c("acc")
   } 
@@ -903,7 +903,7 @@ create_model_lstm_cnn_target_middle <- function(
   
   #add metrics
   if (loss_fn == "binary_crossentropy") {
-    model_metrics <- c("binary_accuracy")
+    model_metrics <- c(tf$keras$metrics$BinaryAccuracy(name = "acc"))
   } else {
     model_metrics <- c("acc")
   } 
@@ -1592,7 +1592,7 @@ create_model_lstm_cnn_time_dist <- function(
   
   #add metrics
   if (loss_fn == "binary_crossentropy") {
-    model_metrics <- c("binary_accuracy")
+    model_metrics <- c(tf$keras$metrics$BinaryAccuracy(name = "acc"))
   } else {
     model_metrics <- c("acc")
   } 
@@ -1892,7 +1892,7 @@ create_model_lstm_cnn_multi_input <- function(
   
   #add metrics
   if (loss_fn == "binary_crossentropy") {
-    model_metrics <- c("binary_accuracy")
+    model_metrics <- c(tf$keras$metrics$BinaryAccuracy(name = "acc"))
   } else {
     model_metrics <- c("acc")
   } 
