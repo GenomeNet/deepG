@@ -310,7 +310,7 @@ tensorboard_complete_cb <- function(default_arguments, model, path_tensorboard, 
                                                             files_used <- read.csv(self$path_file_log, stringsAsFactors = FALSE, header = FALSE)
                                                             if (self$train_type == "label_folder") {
                                                               if (self$first_epoch) {
-                                                                if (length(self$step == 1)) self$step <- rep(self$step, length(vocabulary_label))
+                                                                if (length(self$step) == 1) self$step <- rep(self$step, length(vocabulary_label))
                                                                 if (length(self$proportion_per_seq) == 1) {
                                                                   self$proportion_per_seq <- rep(self$proportion_per_seq, length(self$vocabulary_label))
                                                                 }
