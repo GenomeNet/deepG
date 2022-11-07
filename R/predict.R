@@ -1,7 +1,7 @@
 #' Make prediction for nucleotide sequence or entries in fasta/fastq file
 #'
 #' @description Removes layers (optional) from pretrained model and calculates states of fasta/fastq file or nucleotide sequence.
-#' Writes states to h5 or csv file (access content of h5 output with \code{\link{load_predictions}} function).
+#' Writes states to h5 or csv file (access content of h5 output with \code{\link{load_prediction}} function).
 #' There are several options on how to process an input file:
 #' \itemize{
 #' \item If `"one_seq"`, computes prediction for sequence argument or fasta/fastq file.
@@ -29,6 +29,8 @@
 #' @inheritParams predict_model_by_entry
 #' @inheritParams predict_model_by_entry_one_file
 #' @inheritParams predict_model_one_pred_per_entry
+#' @inheritParams train_model
+#' @param output_dir Directory for file output.
 #' @param ... Further arguments for sequence encoding with \code{\link{seq_encoding_label}}.
 #' @examples
 #' # make prediction for single sequence and write to h5 file
@@ -204,7 +206,7 @@ predict_model_one_seq <- function(path_model = NULL, layer_name = NULL, sequence
   target_middle <- ifelse(mode == "lm" && (lm_format %in% c("target_middle_lstm", "target_middle_cnn")), TRUE, FALSE)
   if (!target_middle) {
     if (reverse_complement_encoding) {
-      model$input[[1]]$shape[[2]]
+      maxlen <- model$input[[1]]$shape[[2]]
     } else {
       maxlen <- model$input$shape[[2]]
     }
@@ -300,8 +302,7 @@ predict_model_one_seq <- function(path_model = NULL, layer_name = NULL, sequence
                             tokenizer = NULL,
                             adjust_start_ind = FALSE,
                             ...)
-    #print(x[1,,])
-    
+
     if (mode == "lm" && lm_format == "target_middle_lstm") {
       x1 <- x[ , index_x_1, ]
       x2 <- x[ , index_x_2, ]
@@ -325,6 +326,8 @@ predict_model_one_seq <- function(path_model = NULL, layer_name = NULL, sequence
     if (mode == "lm" && lm_format == "target_middle_cnn") {
       x <- x[ , c(index_x_1, index_x_2), ]
     } 
+    
+    if (reverse_complement_encoding) x <- list(x, reverse_complement_tensor(x))
     
     y <- predict(model, x, verbose = 0)
     if (!is.null(round_digits)) y <- round(y, round_digits)
@@ -390,7 +393,7 @@ predict_model_by_entry <- function(path_model = NULL, layer_name = NULL, path_in
   target_middle <- ifelse(mode == "lm" && (lm_format %in% c("target_middle_lstm", "target_middle_cnn")), TRUE, FALSE)
   if (!target_middle) {
     if (reverse_complement_encoding) {
-      model$input[[1]]$shape[[2]]
+      maxlen <- model$input[[1]]$shape[[2]]
     } else {
       maxlen <- model$input$shape[[2]]
     }
@@ -464,7 +467,7 @@ predict_model_by_entry_one_file <- function(path_model, path_input, round_digits
   # extract maxlen
   if (!target_middle) {
     if (reverse_complement_encoding) {
-      model$input[[1]]$shape[[2]]
+      maxlen <- model$input[[1]]$shape[[2]]
     } else {
       maxlen <- model$input$shape[[2]]
     }
@@ -585,7 +588,7 @@ predict_model_one_pred_per_entry <- function(model = NULL, layer_name = NULL, pa
   
   # extract maxlen
   if (reverse_complement_encoding) {
-    model$input[[1]]$shape[[2]]
+    maxlen <- model$input[[1]]$shape[[2]]
   } else {
     maxlen <- model$input$shape[[2]]
   }
@@ -657,9 +660,8 @@ predict_model_one_pred_per_entry <- function(model = NULL, layer_name = NULL, pa
       char_seq <- nucSeq[string_start_index : string_end_index] %>% paste(collapse = "") 
       if (i == 1) start_ind <- seq(1, nchar(char_seq), maxlen)
       one_hot_batch <- seq_encoding_label(sequence = NULL, maxlen = maxlen, vocabulary = vocabulary,
-                                          start_ind = start_ind, ambiguous_nuc = ambiguous_nuc, nuc_dist = NULL,
-                                          quality_vector = NULL, use_coverage = FALSE, max_cov = NULL,
-                                          cov_vector = NULL, n_gram = NULL, n_gram_stride = 1, char_sequence = char_seq,
+                                          start_ind = start_ind, ambiguous_nuc = ambiguous_nuc, 
+                                          char_sequence = char_seq,
                                           tokenizer = tokenizer, adjust_start_ind = TRUE, ...) 
       if (reverse_complement_encoding) one_hot_batch <- list(one_hot_batch, reverse_complement_tensor(one_hot_batch))
       activations <- keras::predict_on_batch(model, one_hot_batch)
@@ -679,9 +681,9 @@ predict_model_one_pred_per_entry <- function(model = NULL, layer_name = NULL, pa
   char_seq <- nucSeq[string_start_index : length(nucSeq)] %>% paste(collapse = "") 
   one_hot_batch <- seq_encoding_label(sequence = NULL, maxlen = maxlen, vocabulary = vocabulary,
                                       start_ind = seq(1, nchar(char_seq), maxlen), ambiguous_nuc = "zero", nuc_dist = NULL,
-                                      use_quality = FALSE, quality_vector = NULL, use_coverage = FALSE, max_cov = NULL,
+                                      quality_vector = NULL, use_coverage = FALSE, max_cov = NULL,
                                       cov_vector = NULL, n_gram = NULL, n_gram_stride = 1, char_sequence = char_seq,
-                                      tokenizer = tokenizer, adjust_start_ind = TRUE) 
+                                      tokenizer = tokenizer, adjust_start_ind = TRUE, ...) 
   if (reverse_complement_encoding) one_hot_batch <- list(one_hot_batch, reverse_complement_tensor(one_hot_batch))
   activations <- keras::predict_on_batch(model, one_hot_batch)
   writer[row : num_samples, ] <- activations[1 : length(row:num_samples), ]
