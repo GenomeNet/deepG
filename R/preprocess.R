@@ -1318,7 +1318,7 @@ add_noise_tensor <- function(x, noise_type, ...) {
 
 reverse_complement_tensor <- function(x) {
   stopifnot(dim(x)[3] == 4)
-  x_rev_comp <- x[ , , 4:1]
-  x_rev_comp <- x_rev_comp[ , dim(x)[2]:1, ]
+  x_rev_comp <- x[ ,  dim(x)[2]:1, 4:1]
+  x_rev_comp <- array(x_rev_comp, dim = dim(x))
   x_rev_comp
 }

@@ -206,7 +206,7 @@ predict_model_one_seq <- function(path_model = NULL, layer_name = NULL, sequence
   target_middle <- ifelse(mode == "lm" && (lm_format %in% c("target_middle_lstm", "target_middle_cnn")), TRUE, FALSE)
   if (!target_middle) {
     if (reverse_complement_encoding) {
-      model$input[[1]]$shape[[2]]
+      maxlen <- model$input[[1]]$shape[[2]]
     } else {
       maxlen <- model$input$shape[[2]]
     }
@@ -302,8 +302,7 @@ predict_model_one_seq <- function(path_model = NULL, layer_name = NULL, sequence
                             tokenizer = NULL,
                             adjust_start_ind = FALSE,
                             ...)
-    #print(x[1,,])
-    
+
     if (mode == "lm" && lm_format == "target_middle_lstm") {
       x1 <- x[ , index_x_1, ]
       x2 <- x[ , index_x_2, ]
@@ -327,6 +326,8 @@ predict_model_one_seq <- function(path_model = NULL, layer_name = NULL, sequence
     if (mode == "lm" && lm_format == "target_middle_cnn") {
       x <- x[ , c(index_x_1, index_x_2), ]
     } 
+    
+    if (reverse_complement_encoding) x <- list(one_hot_batch, reverse_complement_tensor(x))
     
     y <- predict(model, x, verbose = 0)
     if (!is.null(round_digits)) y <- round(y, round_digits)
@@ -466,7 +467,7 @@ predict_model_by_entry_one_file <- function(path_model, path_input, round_digits
   # extract maxlen
   if (!target_middle) {
     if (reverse_complement_encoding) {
-      model$input[[1]]$shape[[2]]
+      maxlen <- model$input[[1]]$shape[[2]]
     } else {
       maxlen <- model$input$shape[[2]]
     }
@@ -587,7 +588,7 @@ predict_model_one_pred_per_entry <- function(model = NULL, layer_name = NULL, pa
   
   # extract maxlen
   if (reverse_complement_encoding) {
-    model$input[[1]]$shape[[2]]
+    maxlen <- model$input[[1]]$shape[[2]]
   } else {
     maxlen <- model$input$shape[[2]]
   }
