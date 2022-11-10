@@ -25,6 +25,7 @@
 #' @param exact_num_samples Exact number of samples to evaluate. If you want to evaluate a number of samples not divisible by batch_size. Useful if you want
 #' to evaluate a data set exactly ones and know the number of samples already. Should be a vector if `mode = "label_folder"` (with same length as `vocabulary_label`)
 #' and else an integer.
+#' @param activations List containing output formats for output layers (`softmax, sigmoid` or `linear`). If `ǸULL`, will be estimated from model.   
 #' @param ... Further generator options. See \code{\link{get_generator}}.
 #' @examples
 #' # create dummy data
@@ -72,6 +73,7 @@ evaluate_model <- function(path_input,
                            auprc = FALSE,
                            path_pred_list = NULL,
                            exact_num_samples = NULL,
+                           activations = NULL,
                            ...) {
   
   set.seed(seed)
@@ -84,7 +86,7 @@ evaluate_model <- function(path_input,
     evaluate_all_files <- FALSE
   }
   eval_exact_num_samples <- !is.null(exact_num_samples) | evaluate_all_files
-  activations <- get_output_activations(model)
+  if (is.null(activations)) activations <- get_output_activations(model)
   
   if (is.null(vocabulary_label)) vocabulary_label <- list(vocabulary)
   if (!is.list(vocabulary_label)) vocabulary_label <- list(vocabulary_label)
