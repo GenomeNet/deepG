@@ -2623,7 +2623,7 @@ generator_fasta_label_folder_wrapper <- function(val, new_batch_size = NULL,
 generator_dummy <- function(model, batch_size) {
   
   # stateful model 
-  if (!is.null(model$input_shape[[1]])) {
+  if (!is.null(model$input_shape[[1]][[1]])) {
     batch_size <- model$input_shape[[1]]
   }
   
