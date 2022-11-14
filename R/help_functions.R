@@ -4,6 +4,7 @@
 #'
 #'@param maxlen Length of the input sequence.
 #'@param plen Length of a patch.
+#' @keywords internal
 stridecalc <- function(maxlen, plen) {
   vec <- c()
   for (i in ceiling(plen / 3):(floor(plen / 2) - 1)) {
@@ -22,6 +23,7 @@ stridecalc <- function(maxlen, plen) {
 #'@param plen Length of a patch.
 #'@param maxlen Length of the input sequence.
 #'@param stride Stride.
+#' @keywords internal
 nopatchescalc <- function(plen, maxlen, stride) {
   ((maxlen - plen)/stride) + 1
 }
@@ -38,7 +40,7 @@ maxlencalc <- function(plen, nopatches, stride) {
 #'@param model A keras model.
 #'@param optimizer A keras optimizer.
 #'@param history A keras history object.
-
+#' @keywords internal
 savechecks <- function(cp, runname, model, optimizer, history) {
   np = import("numpy", convert = F)
   ## define path for saved objects
@@ -67,10 +69,11 @@ savechecks <- function(cp, runname, model, optimizer, history) {
 #' 
 #' Writes the loss and the accuracy for a given epoch to the tensorboard.
 #'
-#'@param writer Name of the tensorboard writer function.
-#'@param loss Computed loss for a given epoch.
-#'@param acc Computed accracy for a given epoch.
-#'@param epoch Epoch, for which the values shall be written to the tensorboard.
+#' @param writer Name of the tensorboard writer function.
+#' @param loss Computed loss for a given epoch.
+#' @param acc Computed accracy for a given epoch.
+#' @param epoch Epoch, for which the values shall be written to the tensorboard.
+#' @keywords internal
 TB_loss_acc <- function(writer, loss, acc, epoch) {
   with(writer$as_default(), {
     tensorflow::tf$summary$scalar('epoch_loss',
@@ -89,6 +92,7 @@ TB_loss_acc <- function(writer, loss, acc, epoch) {
 #'@param model A keras model.
 #'@param train_type Either `"cpc"`, `"Self-GenomeNet"`.
 #'@param training Boolean. Whether this step is a training step.
+#' @keywords internal
 modelstep <-
   function(trainvaldat,
            model,
@@ -110,7 +114,7 @@ modelstep <-
 #' Reading Pretrained Model function
 #'
 #'@param pretrained_model The path to a saved keras model.
-
+#' @keywords internal
 ReadOpt <- function(pretrained_model) {
   ## Read configuration
   optconf <-
@@ -149,8 +153,8 @@ ReadOpt <- function(pretrained_model) {
 #' 
 #' Checks, whether all necessary parameters for a defined learning rate schedule are given.
 #'
-#'@param lr_schedule The name of a learning rate schedule.
-
+#' @param lr_schedule The name of a learning rate schedule.
+#' @keywords internal
 LRstop <- function(lr_schedule) {
   # cosine annealing
   if ("cosine_annealing" %in% lr_schedule) {
@@ -184,6 +188,7 @@ LRstop <- function(lr_schedule) {
 #'
 #'@param lr_schedule The name of a learning rate schedule.
 #'@param epoch Epoch, for which the learning rate shall be calculated.
+#' @keywords internal
 getEpochLR <- function(lr_schedule, epoch) {
   if (lr_schedule$schedule == "cosine_annealing") {
     # cosine annealing
@@ -245,7 +250,8 @@ GenParams <- function(maxlen,
     class = "Params"
   )
 }
-#
+
+
 GenTParams <- function(path,
                        shuffle_file_orderTrain,
                        path_file_log,
