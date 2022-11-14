@@ -4,7 +4,6 @@
 #'
 #'@param maxlen Length of the input sequence.
 #'@param plen Length of a patch.
-#'@export
 stridecalc <- function(maxlen, plen) {
   vec <- c()
   for (i in ceiling(plen / 3):(floor(plen / 2) - 1)) {
@@ -23,7 +22,6 @@ stridecalc <- function(maxlen, plen) {
 #'@param plen Length of a patch.
 #'@param maxlen Length of the input sequence.
 #'@param stride Stride.
-#'@export
 nopatchescalc <- function(plen, maxlen, stride) {
   ((maxlen - plen)/stride) + 1
 }
@@ -40,7 +38,6 @@ maxlencalc <- function(plen, nopatches, stride) {
 #'@param model A keras model.
 #'@param optimizer A keras optimizer.
 #'@param history A keras history object.
-#'@export
 
 savechecks <- function(cp, runname, model, optimizer, history) {
   np = import("numpy", convert = F)
@@ -74,7 +71,6 @@ savechecks <- function(cp, runname, model, optimizer, history) {
 #'@param loss Computed loss for a given epoch.
 #'@param acc Computed accracy for a given epoch.
 #'@param epoch Epoch, for which the values shall be written to the tensorboard.
-#'@export
 TB_loss_acc <- function(writer, loss, acc, epoch) {
   with(writer$as_default(), {
     tensorflow::tf$summary$scalar('epoch_loss',
@@ -93,7 +89,6 @@ TB_loss_acc <- function(writer, loss, acc, epoch) {
 #'@param model A keras model.
 #'@param train_type Either `"cpc"`, `"Self-GenomeNet"`.
 #'@param training Boolean. Whether this step is a training step.
-#'@export
 modelstep <-
   function(trainvaldat,
            model,
@@ -115,7 +110,6 @@ modelstep <-
 #' Reading Pretrained Model function
 #'
 #'@param pretrained_model The path to a saved keras model.
-#'@export
 
 ReadOpt <- function(pretrained_model) {
   ## Read configuration
@@ -156,7 +150,6 @@ ReadOpt <- function(pretrained_model) {
 #' Checks, whether all necessary parameters for a defined learning rate schedule are given.
 #'
 #'@param lr_schedule The name of a learning rate schedule.
-#'@export
 
 LRstop <- function(lr_schedule) {
   # cosine annealing
@@ -191,7 +184,6 @@ LRstop <- function(lr_schedule) {
 #'
 #'@param lr_schedule The name of a learning rate schedule.
 #'@param epoch Epoch, for which the learning rate shall be calculated.
-#'@export
 getEpochLR <- function(lr_schedule, epoch) {
   if (lr_schedule$schedule == "cosine_annealing") {
     # cosine annealing
