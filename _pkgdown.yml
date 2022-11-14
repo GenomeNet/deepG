@@ -43,7 +43,9 @@ navbar:
         href: articles/integrated_gradient.html
 reference:
 - title: Training
-  contents: train_model
+  contents: 
+  - train_model
+  - train_model_cpc
 - title: Model Architecture
   contents:
   - starts_with("create_model_")
@@ -51,6 +53,7 @@ reference:
   - merge_models
   - get_output_activations
   - reshape_input
+  - load_cp
 - title: Callbacks
   contents:
   - conf_matrix_cb
@@ -65,6 +68,9 @@ reference:
   - balanced_acc_wrapper
   - f1_wrapper
   - auc_wrapper
+  - exp_decay
+  - stepdecay
+  - sgdr
 - title: Generators
   contents:
   - starts_with("generator_")

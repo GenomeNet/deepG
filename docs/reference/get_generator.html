@@ -147,8 +147,6 @@ arguments.</p>
 <span>  path_file_logVal <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  model <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  vocabulary_label <span class="op">=</span> <span class="cn">NULL</span>,</span>
-<span>  train_files <span class="op">=</span> <span class="cn">NULL</span>,</span>
-<span>  val_files <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  new_batch_size <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  val <span class="op">=</span> <span class="cn">FALSE</span></span>
 <span><span class="op">)</span></span></code></pre></div>
@@ -168,7 +166,7 @@ can be a single directory or file or a list of directories and/or files.</p></dd
 <li><p>If <code>"label_header"</code>, class will be read from fasta headers.</p></li>
 <li><p>If <code>"label_folder"</code>, class will be read from folder, i.e. all files in one folder must belong to the same class.</p></li>
 <li><p>If <code>"label_csv"</code>, targets are read from a csv file. This file should have one column named "file". The targets then correspond to entries in that row (except "file"
-column). Example: if we are currently working with a file called "a.fasta" and coresponding label is "label_1", there should be a row in our csv file</p><table class="table table"><tr><td>file</td><td>label_1</td><td>label_2</td></tr><tr><td>"a.fasta"</td><td>1</td><td>0</td></tr></table></li>
+column). Example: if we are currently working with a file called "a.fasta" and corresponding label is "label_1", there should be a row in our csv file</p><table class="table table"><tr><td>file</td><td>label_1</td><td>label_2</td></tr><tr><td>"a.fasta"</td><td>1</td><td>0</td></tr></table></li>
 <li><p>If <code>"label_rds"</code>, generator will iterate over set of .rds files containing each a list of input and target tensors. Not implemented for model
 with multiple inputs.</p></li>
 <li><p>If <code>"lm_rds"</code>, generator will iterate over set of .rds files and will split tensor according to <code>target_len</code> argument
@@ -314,9 +312,9 @@ optional arguments <code>sd</code> or <code>mean</code> if noise_type is <code>"
 (default is <code>min=0, max=1</code>).</p></dd>
 
 
-<dt>set_learning</dt>
-<dd><p>When you want to assign one label to set of samples. Only implemented for <code>train_type = "label_folder"</code>.
-Input is a list with the following parameters</p><ul><li><p><code>samples_per_target</code>: how many samples to use for one target.</p></li>
+<dt>random_sampling</dt>
+<dd><p>Whether samples should be taken from random positions when using <code>max_samples</code> argument. If <code>FALSE</code> random
+samples are taken from a consecutive subsequence.</p><ul><li><p><code>samples_per_target</code>: how many samples to use for one target.</p></li>
 <li><p><code>maxlen</code>: length of one sample.</p></li>
 <li><p><code>reshape_mode</code>: <code>"time_dist", "multi_input"</code> or <code>"concat"</code>.</p><ul><li><p>If <code>reshape_mode</code> is <code>"multi_input"</code>, generator will produce <code>samples_per_target</code> separate inputs, each of length <code>maxlen</code> (model should have
 <code>samples_per_target</code> input layers).</p></li>
@@ -329,6 +327,11 @@ of length <code>maxlen</code> to one long sequence.</p></li>
 argument. If <code>buffer_len</code> is an integer, the subsequences are interspaced with <code>buffer_len</code> rows. The input length is
 (<code>maxlen</code> \(*\) <code>samples_per_target</code>) + <code>buffer_len</code> \(*\) (<code>samples_per_target</code> - 1).</p></li>
 </ul></dd>
+
+
+<dt>set_learning</dt>
+<dd><p>When you want to assign one label to set of samples. Only implemented for <code>train_type = "label_folder"</code>.
+Input is a list with the following parameters</p></dd>
 
 
 <dt>file_limit</dt>
@@ -356,6 +359,10 @@ this will divide target matrix to list of length 2, where the first element cont
 second entry contains the column named <code>"label_3"</code>.</p></dd>
 
 
+<dt>path_file_logVal</dt>
+<dd><p>Path to csv file logging used validation files.</p></dd>
+
+
 <dt>model</dt>
 <dd><p>A keras model.</p></dd>
 
@@ -363,6 +370,10 @@ second entry contains the column named <code>"label_3"</code>.</p></dd>
 <dt>vocabulary_label</dt>
 <dd><p>Character vector of possible targets. Targets outside <code>vocabulary_label</code> will get discarded if
 <code>train_type = "label_header"</code>.</p></dd>
+
+
+<dt>new_batch_size</dt>
+<dd><p>Batch size after reshaping data for set learning.</p></dd>
 
 
 <dt>val</dt>

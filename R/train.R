@@ -594,9 +594,6 @@ get_run_name <- function(run_name = NULL, path_tensorboard, path_checkpoint, pat
 }
 
 #' @title Train a CPC (Oord et al.) inspired neural network on genomic data
-#'
-#' @description
-#' 
 #' 
 #' @inheritParams generator_fasta_lm
 #' @inheritParams generator_fasta_label_folder
@@ -622,7 +619,6 @@ get_run_name <- function(run_name = NULL, path_tensorboard, path_checkpoint, pat
 #' will run for (\code{epochs} - \code{initial_epochs}) rounds and not \code{epochs} rounds.
 #' @param seed Sets seed for reproducible results.
 #' @param file_limit Integer or `NULL`. If integer, use only specified number of randomly sampled files for training. Ignored if greater than number of files in \code{path}.
-
 #' @param patchlen The length of a patch when splitting the input sequence.
 #' @param nopatches The number of patches when splitting the input sequence. 
 #' @param step Frequency of sampling steps.
@@ -635,97 +631,98 @@ get_run_name <- function(run_name = NULL, path_tensorboard, path_checkpoint, pat
 #' @param stepsmin In CPC, a patch is predicted given another patch. stepsmin defines how many patches between these two should be ignored during prediction.
 #' @param stepsmax The maximum distance between the predicted patch and the given patch.
 #' @param emb_scale Scales the impact of a patches context.
-
 #' @examples
-# # create dummy data
-# path_train_1 <- tempfile()
-# path_train_2 <- tempfile()
-# path_val_1 <- tempfile()
-# path_val_2 <- tempfile()
-# 
-# for (current_path in c(path_train_1, path_train_2,
-#                        path_val_1, path_val_2)) {
-#   dir.create(current_path)
-#   deepG::create_dummy_data(file_path = current_path,
-#                            num_files = 3,
-#                            seq_length = 10,
-#                            num_seq = 5,
-#                            vocabulary = c("a", "c", "g", "t"))
-# }
-# 
-# # create model
-# encoder <- function(maxlen = NULL,
-#                     patchlen = NULL,
-#                     nopatches = NULL,
-#                     eval = FALSE) {
-#   if (is.null(nopatches)) {
-#     nopatches <- nopatchescalc(patchlen, maxlen, patchlen * 0.4)
-#   }
-#   inp <- keras::layer_input(shape = c(maxlen, 4))
-#   stridelen <- as.integer(0.4 * patchlen)
-#   createpatches <- inp %>%
-#     keras::layer_reshape(list(maxlen, 4L, 1L), name = "prep_reshape1", dtype = "float32") %>%
-#     tensorflow::tf$image$extract_patches(
-#       sizes = list(1L, patchlen, 4L, 1L),
-#       strides = list(1L, stridelen, 4L, 1L),
-#       rates = list(1L, 1L, 1L, 1L),
-#       padding = "VALID",
-#       name = "prep_patches"
-#     ) %>%
-#     keras::layer_reshape(list(nopatches, patchlen, 4L),
-#                          name = "prep_reshape2") %>%
-#     tensorflow::tf$reshape(list(-1L, patchlen, 4L),
-#                            name = "prep_reshape3")
-#   
-#   danQ <- createpatches %>%
-#     keras::layer_conv_1d(
-#       input_shape = c(maxlen, 4L),
-#       filters = 320L,
-#       kernel_size = 26L,
-#       activation = "relu"
-#     ) %>%
-#     keras::layer_max_pooling_1d(pool_size = 13L, strides = 13L) %>%
-#     keras::layer_dropout(0.2) %>%
-#     keras::layer_lstm(units = 320, return_sequences = T) %>%
-#     keras::layer_dropout(0.5) %>%
-#     keras::layer_flatten() %>%
-#     keras::layer_dense(925, activation = "relu")
-#   patchesback <- danQ %>%
-#     tensorflow::tf$reshape(list(-1L, tensorflow::tf$cast(nopatches, tensorflow::tf$int16), 925L))
-#   keras::keras_model(inp, patchesback)
-# }
-# 
-# context <- function(latents) {
-#   cres <- latents
-#   cres_dim = cres$shape
-#   predictions <-
-#     cres %>%
-#     keras::layer_lstm(
-#       return_sequences = T,
-#       units = 256,  # WAS: 2048,
-#       name = paste("context_LSTM_1",
-#                    sep = ""),
-#       activation = "relu"
-#     )
-#   return(predictions)
-# }
-# 
-# # train model
-# hist <- train_model_cpc(train_type = "CPC",
-#                         ### cpc functions ###
-#                         encoder = encoder,
-#                         context = context,
-#                         #### Generator settings ####
-#                         path = c(path_train_1, path_train_2),
-#                         path_val = c(path_val_1, path_val_2),
-#                         path_checkpoint = "~",
-#                         run_name = "TEST",
-#                         batch_size = 8,
-#                         epochs = 3,
-#                         steps_per_epoch = 6,
-#                         patchlen = 100,
-#                         nopatches = 8)
-
+#' 
+#' #create dummy data
+#' path_train_1 <- tempfile()
+#' path_train_2 <- tempfile()
+#' path_val_1 <- tempfile()
+#' path_val_2 <- tempfile()
+#' 
+#' for (current_path in c(path_train_1, path_train_2,
+#'                        path_val_1, path_val_2)) {
+#'   dir.create(current_path)
+#'   deepG::create_dummy_data(file_path = current_path,
+#'                            num_files = 3,
+#'                            seq_length = 10,
+#'                            num_seq = 5,
+#'                            vocabulary = c("a", "c", "g", "t"))
+#' }
+#' 
+#' # create model
+#' encoder <- function(maxlen = NULL,
+#'                     patchlen = NULL,
+#'                     nopatches = NULL,
+#'                     eval = FALSE) {
+#'   if (is.null(nopatches)) {
+#'     nopatches <- nopatchescalc(patchlen, maxlen, patchlen * 0.4)
+#'   }
+#'   inp <- keras::layer_input(shape = c(maxlen, 4))
+#'   stridelen <- as.integer(0.4 * patchlen)
+#'   createpatches <- inp %>%
+#'     keras::layer_reshape(list(maxlen, 4L, 1L), name = "prep_reshape1", dtype = "float32") %>%
+#'     tensorflow::tf$image$extract_patches(
+#'       sizes = list(1L, patchlen, 4L, 1L),
+#'       strides = list(1L, stridelen, 4L, 1L),
+#'       rates = list(1L, 1L, 1L, 1L),
+#'       padding = "VALID",
+#'       name = "prep_patches"
+#'     ) %>%
+#'     keras::layer_reshape(list(nopatches, patchlen, 4L),
+#'                          name = "prep_reshape2") %>%
+#'     tensorflow::tf$reshape(list(-1L, patchlen, 4L),
+#'                            name = "prep_reshape3")
+#' 
+#'   danQ <- createpatches %>%
+#'     keras::layer_conv_1d(
+#'       input_shape = c(maxlen, 4L),
+#'       filters = 320L,
+#'       kernel_size = 26L,
+#'       activation = "relu"
+#'     ) %>%
+#'     keras::layer_max_pooling_1d(pool_size = 13L, strides = 13L) %>%
+#'     keras::layer_dropout(0.2) %>%
+#'     keras::layer_lstm(units = 320, return_sequences = TRUE) %>%
+#'     keras::layer_dropout(0.5) %>%
+#'     keras::layer_flatten() %>%
+#'     keras::layer_dense(925, activation = "relu")
+#'   patchesback <- danQ %>%
+#'     tensorflow::tf$reshape(list(-1L, tensorflow::tf$cast(nopatches, tensorflow::tf$int16), 925L))
+#'   keras::keras_model(inp, patchesback)
+#' }
+#' 
+#' context <- function(latents) {
+#'   cres <- latents
+#'   cres_dim = cres$shape
+#'   predictions <-
+#'     cres %>%
+#'     keras::layer_lstm(
+#'       return_sequences = TRUE,
+#'       units = 256,  # WAS: 2048,
+#'       name = paste("context_LSTM_1",
+#'                    sep = ""),
+#'       activation = "relu"
+#'     )
+#'   return(predictions)
+#' }
+#' 
+#' # train model
+#' temp_dir <- tempdir()
+#' dir.create(temp_dir)
+#' hist <- train_model_cpc(train_type = "CPC",
+#'                         ### cpc functions ###
+#'                         encoder = encoder,
+#'                         context = context,
+#'                         #### Generator settings ####
+#'                         path_checkpoint = temp_dir,
+#'                         path = c(path_train_1, path_train_2),
+#'                         path_val = c(path_val_1, path_val_2),
+#'                         run_name = "TEST",
+#'                         batch_size = 8,
+#'                         epochs = 3,
+#'                         steps_per_epoch = 6,
+#'                         patchlen = 100,
+#'                         nopatches = 8)
 #'  
 #' @export
 train_model_cpc <-
@@ -910,7 +907,7 @@ train_model_cpc <-
         steps = steps_per_epoch,
         samples = steps_per_epoch * batch_size,
         verbose = 1,
-        do_validation = T,
+        do_validation = TRUE,
         metrics = c("loss", "accuracy", "val_loss", "val_accuracy")
       ),
       metrics = list(
@@ -1054,7 +1051,7 @@ train_model_cpc <-
                   modelstep(fastrain(),
                             model,
                             train_type,
-                            T)
+                            TRUE)
                 l <- out[1]
                 acc <- out[2]
               })
@@ -1110,7 +1107,7 @@ train_model_cpc <-
                   nrow(
                     read_csv(
                       path_file_log,
-                      col_names = F,
+                      col_names = FALSE,
                       col_types = cols()
                     )
                   ) / num_files,

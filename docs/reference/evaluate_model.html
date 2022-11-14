@@ -162,6 +162,10 @@
 <dd><p>File format, <code>"fasta"</code>, <code>"fastq"</code> or <code>"rds"</code>.</p></dd>
 
 
+<dt>target_middle</dt>
+<dd><p>Whether model is language model with separate input layers.</p></dd>
+
+
 <dt>mode</dt>
 <dd><p>Either <code>"lm"</code> for language model or <code>"label_header"</code>, <code>"label_csv"</code> or <code>"label_folder"</code> for label classification.</p></dd>
 
@@ -265,16 +269,16 @@ and else an integer.</p></dd>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [[1]]$confusion_matrix</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>           Truth</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Prediction a c g t</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>          a 0 0 0 0</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>          c 0 0 1 0</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>          g 3 4 5 2</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>          t 0 0 0 0</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>          a 2 0 3 2</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>          c 0 0 0 0</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>          g 0 3 3 0</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>          t 1 1 0 0</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [[1]]$accuracy</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] 0.3333333</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [[1]]$categorical_crossentropy_loss</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] 1.371211</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] 1.387788</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [[1]]$AUC</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> NULL</span>
