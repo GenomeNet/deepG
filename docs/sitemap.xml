@@ -31,6 +31,15 @@
     <loc>https://genomenet.github.io/deepG/index.html</loc>
   </url>
   <url>
+    <loc>https://genomenet.github.io/deepG/reference/LRstop.html</loc>
+  </url>
+  <url>
+    <loc>https://genomenet.github.io/deepG/reference/ReadOpt.html</loc>
+  </url>
+  <url>
+    <loc>https://genomenet.github.io/deepG/reference/TB_loss_acc.html</loc>
+  </url>
+  <url>
     <loc>https://genomenet.github.io/deepG/reference/add_noise_tensor.html</loc>
   </url>
   <url>
@@ -121,6 +130,9 @@
     <loc>https://genomenet.github.io/deepG/reference/evaluate_softmax.html</loc>
   </url>
   <url>
+    <loc>https://genomenet.github.io/deepG/reference/exp_decay.html</loc>
+  </url>
+  <url>
     <loc>https://genomenet.github.io/deepG/reference/f1_wrapper.html</loc>
   </url>
   <url>
@@ -149,6 +161,9 @@
   </url>
   <url>
     <loc>https://genomenet.github.io/deepG/reference/generator_rds.html</loc>
+  </url>
+  <url>
+    <loc>https://genomenet.github.io/deepG/reference/getEpochLR.html</loc>
   </url>
   <url>
     <loc>https://genomenet.github.io/deepG/reference/get_class_weight.html</loc>
@@ -199,6 +214,9 @@
     <loc>https://genomenet.github.io/deepG/reference/interpolate_seq.html</loc>
   </url>
   <url>
+    <loc>https://genomenet.github.io/deepG/reference/load_cp.html</loc>
+  </url>
+  <url>
     <loc>https://genomenet.github.io/deepG/reference/load_model_self_genomenet.html</loc>
   </url>
   <url>
@@ -217,6 +235,9 @@
     <loc>https://genomenet.github.io/deepG/reference/model_self_genomenet_maxlen_150.html</loc>
   </url>
   <url>
+    <loc>https://genomenet.github.io/deepG/reference/modelstep.html</loc>
+  </url>
+  <url>
     <loc>https://genomenet.github.io/deepG/reference/n_gram_dist.html</loc>
   </url>
   <url>
@@ -224,6 +245,9 @@
   </url>
   <url>
     <loc>https://genomenet.github.io/deepG/reference/noisy_loss_wrapper.html</loc>
+  </url>
+  <url>
+    <loc>https://genomenet.github.io/deepG/reference/nopatchescalc.html</loc>
   </url>
   <url>
     <loc>https://genomenet.github.io/deepG/reference/parenthesis.html</loc>
@@ -277,10 +301,16 @@
     <loc>https://genomenet.github.io/deepG/reference/reshape_tensor.html</loc>
   </url>
   <url>
+    <loc>https://genomenet.github.io/deepG/reference/savechecks.html</loc>
+  </url>
+  <url>
     <loc>https://genomenet.github.io/deepG/reference/seq_encoding_label.html</loc>
   </url>
   <url>
     <loc>https://genomenet.github.io/deepG/reference/seq_encoding_lm.html</loc>
+  </url>
+  <url>
+    <loc>https://genomenet.github.io/deepG/reference/sgdr.html</loc>
   </url>
   <url>
     <loc>https://genomenet.github.io/deepG/reference/slice_tensor.html</loc>
@@ -298,6 +328,12 @@
     <loc>https://genomenet.github.io/deepG/reference/start_ind_ignore_amb_single_seq.html</loc>
   </url>
   <url>
+    <loc>https://genomenet.github.io/deepG/reference/stepdecay.html</loc>
+  </url>
+  <url>
+    <loc>https://genomenet.github.io/deepG/reference/stridecalc.html</loc>
+  </url>
+  <url>
     <loc>https://genomenet.github.io/deepG/reference/summarize_states.html</loc>
   </url>
   <url>
@@ -308,6 +344,9 @@
   </url>
   <url>
     <loc>https://genomenet.github.io/deepG/reference/train_model.html</loc>
+  </url>
+  <url>
+    <loc>https://genomenet.github.io/deepG/reference/train_model_cpc.html</loc>
   </url>
   <url>
     <loc>https://genomenet.github.io/deepG/reference/validation_after_training_cb.html</loc>
