@@ -124,6 +124,25 @@ batch.</p>
 <code>iterations</code>) and file ending depends on <code>as_numpy_array</code> argument.</p></dd>
 
 
+<dt>iterations</dt>
+<dd><p>Number of batches (output files) to create.</p></dd>
+
+
+<dt>train_type</dt>
+<dd><p>Either <code>"lm"</code>, <code>"lm_rds"</code> for language model; <code>"label_header"</code>, <code>"label_folder"</code>, <code>"label_csv"</code>, <code>"label_rds"</code> for classification or <code>"dummy_gen"</code>.</p><ul><li><p>Language model is trained to predict character(s) in a sequence. <br></p></li>
+<li><p><code>"label_header"</code>/<code>"label_folder"</code>/<code>"label_csv"</code> are trained to predict a corresponding class given a sequence as input.</p></li>
+<li><p>If <code>"label_header"</code>, class will be read from fasta headers.</p></li>
+<li><p>If <code>"label_folder"</code>, class will be read from folder, i.e. all files in one folder must belong to the same class.</p></li>
+<li><p>If <code>"label_csv"</code>, targets are read from a csv file. This file should have one column named "file". The targets then correspond to entries in that row (except "file"
+column). Example: if we are currently working with a file called "a.fasta" and corresponding label is "label_1", there should be a row in our csv file</p><table class="table table"><tr><td>file</td><td>label_1</td><td>label_2</td></tr><tr><td>"a.fasta"</td><td>1</td><td>0</td></tr></table></li>
+<li><p>If <code>"label_rds"</code>, generator will iterate over set of .rds files containing each a list of input and target tensors. Not implemented for model
+with multiple inputs.</p></li>
+<li><p>If <code>"lm_rds"</code>, generator will iterate over set of .rds files and will split tensor according to <code>target_len</code> argument
+(targets are last <code>target_len</code> nucleotides of each sequence).</p></li>
+<li><p>If <code>"dummy_gen"</code>, generator creates random data once and repeatedly feeds these to model.</p></li>
+</ul></dd>
+
+
 <dt>output_format</dt>
 <dd><p>Determines shape of output tensor for language model.
 Either <code>"target_right"</code>, <code>"target_middle_lstm"</code>, <code>"target_middle_cnn"</code> or <code>"wavenet"</code>.
@@ -165,7 +184,16 @@ Assume a sequence <code>"AACCGTA"</code>. Output correspond as follows</p><ul><l
 
 <dt>set_learning</dt>
 <dd><p>When you want to assign one label to set of samples. Only implemented for <code>train_type = "label_folder"</code>.
-Input is a list with the following parameters</p><ul><li><p><code>samples_per_target</code>: how many samples to use for one target.</p></li>
+Input is a list with the following parameters</p></dd>
+
+
+<dt>seed</dt>
+<dd><p>Sets seed for <code>set.seed</code> function for reproducible results.</p></dd>
+
+
+<dt>random_sampling</dt>
+<dd><p>Whether samples should be taken from random positions when using <code>max_samples</code> argument. If <code>FALSE</code> random
+samples are taken from a consecutive subsequence.</p><ul><li><p><code>samples_per_target</code>: how many samples to use for one target.</p></li>
 <li><p><code>maxlen</code>: length of one sample.</p></li>
 <li><p><code>reshape_mode</code>: <code>"time_dist", "multi_input"</code> or <code>"concat"</code>.</p><ul><li><p>If <code>reshape_mode</code> is <code>"multi_input"</code>, generator will produce <code>samples_per_target</code> separate inputs, each of length <code>maxlen</code> (model should have
 <code>samples_per_target</code> input layers).</p></li>
@@ -178,10 +206,6 @@ of length <code>maxlen</code> to one long sequence.</p></li>
 argument. If <code>buffer_len</code> is an integer, the subsequences are interspaced with <code>buffer_len</code> rows. The input length is
 (<code>maxlen</code> \(*\) <code>samples_per_target</code>) + <code>buffer_len</code> \(*\) (<code>samples_per_target</code> - 1).</p></li>
 </ul></dd>
-
-
-<dt>seed</dt>
-<dd><p>Sets seed for <code>set.seed</code> function for reproducible results.</p></dd>
 
 
 <dt>file_name_start</dt>

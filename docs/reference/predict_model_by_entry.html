@@ -105,19 +105,21 @@ Names of output files are: file_path + "Nr" + i + filename + output_type, where 
 <span>  <span class="va">path_input</span>,</span>
 <span>  round_digits <span class="op">=</span> <span class="fl">2</span>,</span>
 <span>  filename <span class="op">=</span> <span class="st">"states.h5"</span>,</span>
-<span>  <span class="va">output_dir</span>,</span>
+<span>  output_dir <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  step <span class="op">=</span> <span class="fl">1</span>,</span>
 <span>  vocabulary <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"a"</span>, <span class="st">"c"</span>, <span class="st">"g"</span>, <span class="st">"t"</span><span class="op">)</span>,</span>
 <span>  batch_size <span class="op">=</span> <span class="fl">256</span>,</span>
-<span>  padding_maxlen <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  output_type <span class="op">=</span> <span class="st">"h5"</span>,</span>
 <span>  model <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  mode <span class="op">=</span> <span class="st">"lm"</span>,</span>
 <span>  lm_format <span class="op">=</span> <span class="st">"target_right"</span>,</span>
 <span>  format <span class="op">=</span> <span class="st">"fasta"</span>,</span>
 <span>  reverse_complement_encoding <span class="op">=</span> <span class="cn">FALSE</span>,</span>
+<span>  padding <span class="op">=</span> <span class="st">"none"</span>,</span>
 <span>  verbose <span class="op">=</span> <span class="cn">FALSE</span>,</span>
-<span>  include_seq <span class="op">=</span> <span class="cn">FALSE</span></span>
+<span>  include_seq <span class="op">=</span> <span class="cn">FALSE</span>,</span>
+<span>  ambiguous_nuc <span class="op">=</span> <span class="st">"zero"</span>,</span>
+<span>  <span class="va">...</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
 

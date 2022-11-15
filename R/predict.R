@@ -138,6 +138,7 @@ predict_model <- function(output_format = "one_seq", model = NULL, layer_name = 
 #' @param format Either `"fasta"` or `"fastq"`.
 #' @param include_seq Whether to include input sequence in h5 file.
 #' @param ... Further arguments for sequence encoding with \code{\link{seq_encoding_label}}.
+#' @keywords internal
 predict_model_one_seq <- function(path_model = NULL, layer_name = NULL, sequence = NULL, path_input = NULL, round_digits = 2,
                                   filename = "states.h5", step = 1, vocabulary = c("a", "c", "g", "t"), batch_size = 256, verbose = TRUE,
                                   return_states = FALSE, target_len = 1,

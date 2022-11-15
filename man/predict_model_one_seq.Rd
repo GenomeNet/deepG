@@ -76,3 +76,4 @@ Removes layers (optional) from pretrained model and calculates states of fasta f
 Function combines fasta entries in file to one sequence. This means predictor sequences can contain elements from more than one fasta entry.
 h5 file also contains sequence and positions of targets corresponding to states.
 }
+\keyword{internal}
