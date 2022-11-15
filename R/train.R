@@ -98,8 +98,6 @@
 #' Not implemented for `train_type = "label_folder"`.
 #' @param set_learning When you want to assign one label to set of samples. Only implemented for `train_type = "label_folder"`.
 #' Input is a list with the following parameters 
-#' @param random_sampling Whether samples should be taken from random positions when using `max_samples` argument. If `FALSE` random 
-#' samples are taken from a consecutive subsequence.
 #' \itemize{
 #' \item `samples_per_target`: how many samples to use for one target.
 #' \item `maxlen`: length of one sample.
@@ -117,6 +115,8 @@
 #' argument. If `buffer_len` is an integer, the subsequences are interspaced with `buffer_len` rows. The input length is
 #' (`maxlen` \eqn{*} `samples_per_target`) + `buffer_len` \eqn{*} (`samples_per_target` - 1).
 #' }
+#' @param random_sampling Whether samples should be taken from random positions when using `max_samples` argument. If `FALSE` random 
+#' samples are taken from a consecutive subsequence.
 #' @param n_gram Encode n nucleotides at once. Can be used for language model for target encoding.
 #' @param n_gram_stride Step size for n-gram encoding. For AACCGGTT with `n-gram = 4` and `n_gram_stride = 2`, generator encodes
 #' `(AACC), (CCGG), (GGTT)`; for `n_gram_stride = 4` generator encodes `(AACC), (GGTT)`.
@@ -594,7 +594,10 @@ get_run_name <- function(run_name = NULL, path_tensorboard, path_checkpoint, pat
   return(run_name_new)
 }
 
-#' @title Train a CPC (Oord et al.) inspired neural network on genomic data
+#' @title Train CPC inspired model
+#'   
+#' @description
+#' Train a CPC (Oord et al.) inspired neural network on genomic data.
 #' 
 #' @inheritParams generator_fasta_lm
 #' @inheritParams generator_fasta_label_folder

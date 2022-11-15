@@ -134,7 +134,19 @@
 
 <dt>set_learning</dt>
 <dd><p>When you want to assign one label to set of samples. Only implemented for <code>train_type = "label_folder"</code>.
-Input is a list with the following parameters</p></dd>
+Input is a list with the following parameters</p><ul><li><p><code>samples_per_target</code>: how many samples to use for one target.</p></li>
+<li><p><code>maxlen</code>: length of one sample.</p></li>
+<li><p><code>reshape_mode</code>: <code>"time_dist", "multi_input"</code> or <code>"concat"</code>.</p><ul><li><p>If <code>reshape_mode</code> is <code>"multi_input"</code>, generator will produce <code>samples_per_target</code> separate inputs, each of length <code>maxlen</code> (model should have
+<code>samples_per_target</code> input layers).</p></li>
+<li><p>If reshape_mode is <code>"time_dist"</code>, generator will produce a 4D input array. The dimensions correspond to
+<code>(batch_size, samples_per_target, maxlen, length(vocabulary))</code>.</p></li>
+<li><p>If <code>reshape_mode</code> is <code>"concat"</code>, generator will concatenate <code>samples_per_target</code> sequences
+of length <code>maxlen</code> to one long sequence.</p></li>
+</ul></li>
+<li><p>If <code>reshape_mode</code> is <code>"concat"</code>, there is an additional <code>buffer_len</code>
+argument. If <code>buffer_len</code> is an integer, the subsequences are interspaced with <code>buffer_len</code> rows. The input length is
+(<code>maxlen</code> \(*\) <code>samples_per_target</code>) + <code>buffer_len</code> \(*\) (<code>samples_per_target</code> - 1).</p></li>
+</ul></dd>
 
 </dl></div>
 

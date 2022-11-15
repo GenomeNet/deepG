@@ -2,7 +2,7 @@
 % Please edit documentation in R/train.R
 \name{train_model_cpc}
 \alias{train_model_cpc}
-\title{Train a CPC (Oord et al.) inspired neural network on genomic data}
+\title{Train CPC inspired model}
 \usage{
 train_model_cpc(
   train_type = "CPC",
@@ -114,7 +114,7 @@ subset of \code{max_samples} samples.}
 \item{emb_scale}{Scales the impact of a patches context.}
 }
 \description{
-Train a CPC (Oord et al.) inspired neural network on genomic data
+Train a CPC (Oord et al.) inspired neural network on genomic data.
 }
 \examples{
 

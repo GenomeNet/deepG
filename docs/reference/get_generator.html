@@ -314,7 +314,12 @@ optional arguments <code>sd</code> or <code>mean</code> if noise_type is <code>"
 
 <dt>random_sampling</dt>
 <dd><p>Whether samples should be taken from random positions when using <code>max_samples</code> argument. If <code>FALSE</code> random
-samples are taken from a consecutive subsequence.</p><ul><li><p><code>samples_per_target</code>: how many samples to use for one target.</p></li>
+samples are taken from a consecutive subsequence.</p></dd>
+
+
+<dt>set_learning</dt>
+<dd><p>When you want to assign one label to set of samples. Only implemented for <code>train_type = "label_folder"</code>.
+Input is a list with the following parameters</p><ul><li><p><code>samples_per_target</code>: how many samples to use for one target.</p></li>
 <li><p><code>maxlen</code>: length of one sample.</p></li>
 <li><p><code>reshape_mode</code>: <code>"time_dist", "multi_input"</code> or <code>"concat"</code>.</p><ul><li><p>If <code>reshape_mode</code> is <code>"multi_input"</code>, generator will produce <code>samples_per_target</code> separate inputs, each of length <code>maxlen</code> (model should have
 <code>samples_per_target</code> input layers).</p></li>
@@ -327,11 +332,6 @@ of length <code>maxlen</code> to one long sequence.</p></li>
 argument. If <code>buffer_len</code> is an integer, the subsequences are interspaced with <code>buffer_len</code> rows. The input length is
 (<code>maxlen</code> \(*\) <code>samples_per_target</code>) + <code>buffer_len</code> \(*\) (<code>samples_per_target</code> - 1).</p></li>
 </ul></dd>
-
-
-<dt>set_learning</dt>
-<dd><p>When you want to assign one label to set of samples. Only implemented for <code>train_type = "label_folder"</code>.
-Input is a list with the following parameters</p></dd>
 
 
 <dt>file_limit</dt>

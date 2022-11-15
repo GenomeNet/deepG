@@ -124,7 +124,6 @@ model with mutually exclusive targets.</p>
 <span class="r-in"><span><span class="va">cm_dir</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/tempfile.html" class="external-link">tempfile</a></span><span class="op">(</span><span class="op">)</span> </span></span>
 <span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/base/files2.html" class="external-link">dir.create</a></span><span class="op">(</span><span class="va">cm_dir</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="va">bal_acc_metric</span> <span class="op">&lt;-</span> <span class="fu">balanced_acc_wrapper</span><span class="op">(</span>num_targets <span class="op">=</span> <span class="fl">3L</span>, cm_dir <span class="op">=</span> <span class="va">cm_dir</span><span class="op">)</span></span></span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Loaded Tensorflow version 2.9.1</span>
 <span class="r-in"><span><span class="va">bal_acc_metric</span><span class="op">$</span><span class="fu">update_state</span><span class="op">(</span><span class="va">y_true</span>, <span class="va">y_pred</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="va">bal_acc_metric</span><span class="op">$</span><span class="fu">result</span><span class="op">(</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> tf.Tensor(0.8333333, shape=(), dtype=float32)</span>

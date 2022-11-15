@@ -75,12 +75,7 @@ Assume a sequence \code{"AACCGTA"}. Output correspond as follows
 \item{shuffle}{Whether to shuffle samples within each batch.}
 
 \item{set_learning}{When you want to assign one label to set of samples. Only implemented for \code{train_type = "label_folder"}.
-Input is a list with the following parameters}
-
-\item{seed}{Sets seed for \code{set.seed} function for reproducible results.}
-
-\item{random_sampling}{Whether samples should be taken from random positions when using \code{max_samples} argument. If \code{FALSE} random
-samples are taken from a consecutive subsequence.
+Input is a list with the following parameters
 \itemize{
 \item \code{samples_per_target}: how many samples to use for one target.
 \item \code{maxlen}: length of one sample.
@@ -98,6 +93,11 @@ of length \code{maxlen} to one long sequence.
 argument. If \code{buffer_len} is an integer, the subsequences are interspaced with \code{buffer_len} rows. The input length is
 (\code{maxlen} \eqn{*} \code{samples_per_target}) + \code{buffer_len} \eqn{*} (\code{samples_per_target} - 1).
 }}
+
+\item{seed}{Sets seed for \code{set.seed} function for reproducible results.}
+
+\item{random_sampling}{Whether samples should be taken from random positions when using \code{max_samples} argument. If \code{FALSE} random
+samples are taken from a consecutive subsequence.}
 
 \item{file_name_start}{Start of output file names.}
 
