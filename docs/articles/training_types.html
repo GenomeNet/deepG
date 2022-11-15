@@ -67,7 +67,7 @@
       <a href="https://colab.research.google.com/drive/1Eolc0koMNM1zkuO4XyVM58ImeF1BpRiH?usp=sharing" class="external-link">Human contamination</a>
     </li>
     <li>
-      <a href="https://colab.research.google.com/drive/1MmQB2pFfEcp4GbgbT7wu6ScNt1YsChmn?usp=sharing" class="external-link">CRISPR detection</a>
+      <a href="https://colab.research.google.com/drive/1yiXSwFafXpMLHaov9iBTQLIDZ6bK1zYX?usp=sharing" class="external-link">CRISPR detection</a>
     </li>
     <li>
       <a href="https://colab.research.google.com/drive/1G7bOFEX87cZNrM2tdRtTdkrZn5fM__g0?usp=sharing" class="external-link">16S rRNA detection</a>
@@ -250,7 +250,7 @@ mark.out {
 <p>The <code>train_model</code> call is identical to the previous model, except we have to change the output format of the generator by setting <code>output_format = "target_middle_lstm"</code>. This reverses the order of the sequence after the target.</p>
 <div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">hist</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/train_model.html">train_model</a></span><span class="op">(</span>train_type <span class="op">=</span> <span class="st">"lm"</span>, <span class="co"># running a language model</span></span>
-<span>                    output_format <span class="op">=</span> <span class="st">"target_middle_lstm"</span>, <span class="co"># predict target at end of sequence </span></span>
+<span>                    output_format <span class="op">=</span> <span class="st">"target_middle_lstm"</span>, <span class="co"># predict target in middle of sequence </span></span>
 <span>                    model <span class="op">=</span> <span class="va">model</span>,</span>
 <span>                    path <span class="op">=</span> <span class="va">train_dir</span>,</span>
 <span>                    path_val <span class="op">=</span> <span class="va">val_dir</span>,</span>
@@ -373,10 +373,10 @@ mark.out {
 <span><span class="op">)</span></span></code></pre></div>
 <pre><code><span><span class="co">## </span></span>
 <span><span class="co">## Final epoch (plot to see history):</span></span>
-<span><span class="co">##             loss: 0.004329</span></span>
+<span><span class="co">##             loss: 0.002162</span></span>
 <span><span class="co">##     balanced_acc: 1</span></span>
 <span><span class="co">##              acc: 1</span></span>
-<span><span class="co">##         val_loss: 0.0002638</span></span>
+<span><span class="co">##         val_loss: 0.0002431</span></span>
 <span><span class="co">## val_balanced_acc: 1</span></span>
 <span><span class="co">##          val_acc: 1</span></span>
 <span><span class="co">##               lr: 0.1</span></span></code></pre>
@@ -410,10 +410,10 @@ mark.out {
 <span><span class="op">)</span></span></code></pre></div>
 <pre><code><span><span class="co">## </span></span>
 <span><span class="co">## Final epoch (plot to see history):</span></span>
-<span><span class="co">##             loss: 0.00001871</span></span>
+<span><span class="co">##             loss: 0.00001731</span></span>
 <span><span class="co">##     balanced_acc: 1</span></span>
 <span><span class="co">##              acc: 1</span></span>
-<span><span class="co">##         val_loss: 0.00001024</span></span>
+<span><span class="co">##         val_loss: 0.00001229</span></span>
 <span><span class="co">## val_balanced_acc: 1</span></span>
 <span><span class="co">##          val_acc: 1</span></span>
 <span><span class="co">##               lr: 0.1</span></span></code></pre>

@@ -25,7 +25,7 @@ generator_random(
   vocabulary_label = NULL,
   target_from_csv = NULL,
   target_split = NULL,
-  max_iter = 10000,
+  max_iter = 1000,
   verbose = TRUE,
   set_learning = NULL,
   shuffle_input = TRUE,

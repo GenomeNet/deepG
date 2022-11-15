@@ -29,6 +29,7 @@ evaluate_model(
   auprc = FALSE,
   path_pred_list = NULL,
   exact_num_samples = NULL,
+  activations = NULL,
   ...
 )
 }
@@ -99,6 +100,8 @@ activation and multiple targets.}
 \item{exact_num_samples}{Exact number of samples to evaluate. If you want to evaluate a number of samples not divisible by batch_size. Useful if you want
 to evaluate a data set exactly ones and know the number of samples already. Should be a vector if \code{mode = "label_folder"} (with same length as \code{vocabulary_label})
 and else an integer.}
+
+\item{activations}{List containing output formats for output layers (\verb{softmax, sigmoid} or \code{linear}). If \code{ǸULL}, will be estimated from model.}
 
 \item{...}{Further generator options. See \code{\link{get_generator}}.}
 }

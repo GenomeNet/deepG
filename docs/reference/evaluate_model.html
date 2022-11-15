@@ -42,7 +42,7 @@
       <a href="https://colab.research.google.com/drive/1Eolc0koMNM1zkuO4XyVM58ImeF1BpRiH?usp=sharing" class="external-link">Human contamination</a>
     </li>
     <li>
-      <a href="https://colab.research.google.com/drive/1MmQB2pFfEcp4GbgbT7wu6ScNt1YsChmn?usp=sharing" class="external-link">CRISPR detection</a>
+      <a href="https://colab.research.google.com/drive/1yiXSwFafXpMLHaov9iBTQLIDZ6bK1zYX?usp=sharing" class="external-link">CRISPR detection</a>
     </li>
     <li>
       <a href="https://colab.research.google.com/drive/1G7bOFEX87cZNrM2tdRtTdkrZn5fM__g0?usp=sharing" class="external-link">16S rRNA detection</a>
@@ -120,6 +120,7 @@
 <span>  auprc <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  path_pred_list <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  exact_num_samples <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  activations <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  <span class="va">...</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
@@ -237,6 +238,10 @@ to evaluate a data set exactly ones and know the number of samples already. Shou
 and else an integer.</p></dd>
 
 
+<dt>activations</dt>
+<dd><p>List containing output formats for output layers (<code>softmax, sigmoid</code> or <code>linear</code>). If <code>ǸULL</code>, will be estimated from model.</p></dd>
+
+
 <dt>...</dt>
 <dd><p>Further generator options. See <code><a href="get_generator.html">get_generator</a></code>.</p></dd>
 
@@ -269,16 +274,16 @@ and else an integer.</p></dd>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [[1]]$confusion_matrix</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>           Truth</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Prediction a c g t</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>          a 2 0 3 2</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>          c 0 0 0 0</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>          g 0 3 3 0</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>          t 1 1 0 0</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>          a 1 1 2 1</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>          c 1 2 1 2</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>          g 0 0 0 0</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>          t 2 1 1 0</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [[1]]$accuracy</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] 0.3333333</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] 0.2</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [[1]]$categorical_crossentropy_loss</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] 1.387788</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] 1.39902</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [[1]]$AUC</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> NULL</span>

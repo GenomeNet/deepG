@@ -12,7 +12,8 @@ balanced_acc_wrapper(num_targets, cm_dir)
 \item{cm_dir}{Directory of confusion matrix used to compute balanced accuracy.}
 }
 \description{
-Compute balanced accuracy as additional score. Useful for imbalanced data.
+Compute balanced accuracy as additional score. Useful for imbalanced data. Only implemented for
+model with mutually exclusive targets.
 }
 \examples{
 

@@ -15,6 +15,7 @@ generator_rds(
   sample_by_file_size = FALSE,
   n_gram = NULL,
   n_gram_stride = 1,
+  reverse_complement_encoding = FALSE,
   add_noise = NULL
 )
 }
@@ -41,6 +42,8 @@ subset of \code{max_samples} samples.}
 
 \item{n_gram_stride}{Step size for n-gram encoding. For AACCGGTT with \code{n-gram = 4} and \code{n_gram_stride = 2}, generator encodes
 \verb{(AACC), (CCGG), (GGTT)}; for \code{n_gram_stride = 4} generator encodes \verb{(AACC), (GGTT)}.}
+
+\item{reverse_complement_encoding}{Whether to use both original sequence and reverse complement as two input sequences.}
 
 \item{add_noise}{\code{NULL} or list of arguments. If not \code{NULL}, list must contain the following arguments: \code{noise_type} can be \code{"normal"} or \code{"uniform"};
 optional arguments \code{sd} or \code{mean} if noise_type is \code{"normal"} (default is \code{sd=1} and \code{mean=0}) or \verb{min, max} if \code{noise_type} is \code{"uniform"}

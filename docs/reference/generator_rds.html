@@ -45,7 +45,7 @@ the first list element as targets and the rest as input."><meta property="og:ima
       <a href="https://colab.research.google.com/drive/1Eolc0koMNM1zkuO4XyVM58ImeF1BpRiH?usp=sharing" class="external-link">Human contamination</a>
     </li>
     <li>
-      <a href="https://colab.research.google.com/drive/1MmQB2pFfEcp4GbgbT7wu6ScNt1YsChmn?usp=sharing" class="external-link">CRISPR detection</a>
+      <a href="https://colab.research.google.com/drive/1yiXSwFafXpMLHaov9iBTQLIDZ6bK1zYX?usp=sharing" class="external-link">CRISPR detection</a>
     </li>
     <li>
       <a href="https://colab.research.google.com/drive/1G7bOFEX87cZNrM2tdRtTdkrZn5fM__g0?usp=sharing" class="external-link">16S rRNA detection</a>
@@ -112,6 +112,7 @@ the first list element as targets and the rest as input.</p>
 <span>  sample_by_file_size <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  n_gram <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  n_gram_stride <span class="op">=</span> <span class="fl">1</span>,</span>
+<span>  reverse_complement_encoding <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  add_noise <span class="op">=</span> <span class="cn">NULL</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
@@ -161,6 +162,10 @@ subset of <code>max_samples</code> samples.</p></dd>
 <code>(AACC), (CCGG), (GGTT)</code>; for <code>n_gram_stride = 4</code> generator encodes <code>(AACC), (GGTT)</code>.</p></dd>
 
 
+<dt>reverse_complement_encoding</dt>
+<dd><p>Whether to use both original sequence and reverse complement as two input sequences.</p></dd>
+
+
 <dt>add_noise</dt>
 <dd><p><code>NULL</code> or list of arguments. If not <code>NULL</code>, list must contain the following arguments: <code>noise_type</code> can be <code>"normal"</code> or <code>"uniform"</code>;
 optional arguments <code>sd</code> or <code>mean</code> if noise_type is <code>"normal"</code> (default is <code>sd=1</code> and <code>mean=0</code>) or <code>min, max</code> if <code>noise_type</code> is <code>"uniform"</code>
@@ -195,18 +200,18 @@ optional arguments <code>sd</code> or <code>mean</code> if noise_type is <code>"
 <span class="r-in"><span><span class="va">x</span><span class="op">[</span><span class="fl">1</span>, , <span class="op">]</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>       [,1] [,2] [,3] [,4]</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  [1,]    1    0    0    0</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  [2,]    0    1    0    0</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  [3,]    1    0    0    0</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  [4,]    0    0    0    1</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [2,]    1    0    0    0</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [3,]    0    0    0    1</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [4,]    0    0    1    0</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  [5,]    1    0    0    0</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  [6,]    0    0    0    1</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  [7,]    0    0    0    1</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  [8,]    0    1    0    0</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [6,]    0    0    1    0</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [7,]    0    0    1    0</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [8,]    0    0    1    0</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  [9,]    0    0    1    0</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [10,]    0    1    0    0</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [11,]    1    0    0    0</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [11,]    0    1    0    0</span>
 <span class="r-in"><span><span class="va">y</span><span class="op">[</span><span class="fl">1</span>, <span class="op">]</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] 0 0 1</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] 1 0 0</span>
 </code></pre></div>
     </div>
   </div>
