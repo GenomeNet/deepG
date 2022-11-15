@@ -166,7 +166,7 @@ If name already present, will add <code>"_2"</code> to name or <code>"_{x+1}"</c
 <li><p>If <code>"label_header"</code>, class will be read from fasta headers.</p></li>
 <li><p>If <code>"label_folder"</code>, class will be read from folder, i.e. all files in one folder must belong to the same class.</p></li>
 <li><p>If <code>"label_csv"</code>, targets are read from a csv file. This file should have one column named "file". The targets then correspond to entries in that row (except "file"
-column). Example: if we are currently working with a file called "a.fasta" and coresponding label is "label_1", there should be a row in our csv file</p><table class="table table"><tr><td>file</td><td>label_1</td><td>label_2</td></tr><tr><td>"a.fasta"</td><td>1</td><td>0</td></tr></table></li>
+column). Example: if we are currently working with a file called "a.fasta" and corresponding label is "label_1", there should be a row in our csv file</p><table class="table table"><tr><td>file</td><td>label_1</td><td>label_2</td></tr><tr><td>"a.fasta"</td><td>1</td><td>0</td></tr></table></li>
 <li><p>If <code>"label_rds"</code>, generator will iterate over set of .rds files containing each a list of input and target tensors. Not implemented for model
 with multiple inputs.</p></li>
 <li><p>If <code>"lm_rds"</code>, generator will iterate over set of .rds files and will split tensor according to <code>target_len</code> argument

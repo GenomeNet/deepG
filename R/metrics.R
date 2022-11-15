@@ -267,3 +267,152 @@ noisy_loss_wrapper <- function(noise_matrix) {
   }
   noisy_loss
 }
+
+cpcloss <- function(latents,
+                    context,
+                    target_dim = 64,
+                    emb_scale = 0.1 ,
+                    steps_to_ignore = 2,
+                    steps_to_predict = 3,
+                    steps_skip = 1,
+                    batch_size = 32,
+                    k = 5,
+                    train_type = "cpc") {
+  # define empty lists for metrics
+  loss <- list()
+  acc <- list()
+  # create context tensor
+  ctx <- context(latents)
+  c_dim <- latents$shape[[2]]
+  
+  # loop for different distances of predicted patches
+  for (i in seq(steps_to_ignore, (steps_to_predict - 1), steps_skip)) {
+    # define patches to be deleted
+    c_dim_i <- c_dim - i - 1
+    if (train_type == "Self-GenomeNet") {
+      steps_to_ignore <- 1
+      steps_to_predict <- 2
+      steps_skip <- 1
+      target_dim <- ctx$shape[[3]]
+      both <-
+        ctx %>% keras::layer_conv_1d(kernel_size = 1, filters = target_dim)
+      preds_i <- both[1:batch_size, ,]
+      revcompl <-
+        both[(batch_size + 1):as.integer(batch_size * 2), , ]
+      logits_flag <- FALSE
+      for (j in seq_len(c_dim - (i + 1))) {
+        preds_ij <- both[, j,] %>% keras::k_reshape(c(-1, target_dim))
+        revcompl_j <-
+          ctx[, (c_dim - j - i), ] %>% keras::k_reshape(c(-1, target_dim))
+        logits <- tensorflow::tf$matmul(preds_ij, tensorflow::tf$transpose(revcompl_j))
+        logitsnew <- logitsnew
+        if (isTRUE(logits_flag)) {
+          logits <- tensorflow::tf$concat(list(logits, logitsnew), axis = 0L)
+        } else {
+          logits <- logitsnew
+          logits_flag <- TRUE
+        }
+      }
+      # define labels
+      labels <-
+        rep(c(seq(batch_size, (
+          2 * batch_size - 1
+        )), (seq(
+          0, (batch_size - 1)
+        ))), (dim(both)[[2]] - (i + 1))) %>% as.integer()
+    } else {
+      # define total number of elements in context tensor
+      total_elements <- batch_size * c_dim_i
+      # add conv layer and reshape tensor for matrix multiplication
+      targets <-
+        latents %>% keras::layer_conv_1d(kernel_size = 1, filters = target_dim) %>% keras::k_reshape(c(-1, target_dim))
+      # add conv layer and reshape for matrix multiplication
+      preds_i <-
+        ctx %>% keras::layer_conv_1d(kernel_size = 1, filters = target_dim)
+      preds_i <- preds_i[, (1:(c_dim - i - 1)),]
+      preds_i <- keras::k_reshape(preds_i, c(-1, target_dim)) * emb_scale
+      
+      # define logits normally
+      logits <- tensorflow::tf$matmul(preds_i, tensorflow::tf$transpose(targets))
+      
+      # get position of labels
+      b <- floor(seq(0, total_elements - 1) / c_dim_i)
+      col <- seq(0, total_elements - 1) %% c_dim_i
+      
+      # define labels
+      labels <- b * c_dim + col + (i + 1)
+      labels <- as.integer(labels)
+    }
+    # calculate loss and accuracy for each step
+    loss[[length(loss) + 1]] <-
+      tensorflow::tf$nn$sparse_softmax_cross_entropy_with_logits(labels, logits) %>%
+      tensorflow::tf$stack(axis = 0) %>% tensorflow::tf$reduce_mean()
+    acc[[length(acc) + 1]] <-
+      tensorflow::tf$keras$metrics$sparse_top_k_categorical_accuracy(tensorflow::tf$cast(labels, dtype = "int64"), logits, as.integer(k)) %>%
+      tensorflow::tf$stack(axis = 0) %>% tensorflow::tf$reduce_mean()
+  }
+  # convert to tensor for output
+  loss <- loss %>% tensorflow::tf$stack(axis = 0) %>% tensorflow::tf$reduce_mean()
+  acc <- acc %>% tensorflow::tf$stack(axis = 0) %>% tensorflow::tf$reduce_mean()
+  return(tensorflow::tf$stack(list(loss, acc)))
+}
+
+#' Stochastic Gradient Descent with Warm Restarts
+#' 
+#' Compute the learning Rate for a given epoch using Stochastic Gradient Descent with Warm Restarts. Implements approach from this [paper](https://arxiv.org/abs/1608.03983).
+#'
+#'@param lrmin Lower limit of the range for the learning rate.
+#'@param lrmax Upper limit of the range for the learning rate.
+#'@param restart Number of epochs until a restart is conducted.
+#'@param mult Factor, by which the number of epochs until a restart is increased at every restart.
+#'@param epoch Epoch, for which the learning rate shall be calculated.
+#'@export
+sgdr <- function(lrmin = 5e-10,
+                 lrmax = 5e-2,
+                 restart = 50,
+                 mult = 1,
+                 epoch = NULL) {
+  iter <- c()
+  position <- c()
+  i <- 0
+  while (length(iter) < epoch) {
+    iter <- c(iter, rep(i, restart * mult ^ i))
+    position <- c(position, c(1:(restart * mult ^ i)))
+    i <- i + 1
+  }
+  restart2 <- (restart * mult ^ iter[epoch])
+  epoch <- position[epoch]
+  return(lrmin + 1 / 2 * (lrmax - lrmin) * (1 + cos((epoch / restart2) * pi)))
+}
+
+#' Step Decay
+#' 
+#' Compute the learning Rate for a given epoch using Step Decay.
+#'
+#'@param lrmax Upper limit of the range for the learning rate.
+#'@param newstep Number of epochs until the learning rate is reduced.
+#'@param mult Factor, by which the number of epochs until a restart is decreased after a new step.
+#'@param epoch Epoch, for which the learning rate shall be calculated.
+#'@export
+stepdecay <- function(lrmax = 0.005,
+                      newstep = 50,
+                      mult = 0.7,
+                      epoch = NULL) {
+  return(lrmax * (mult ^ (floor((
+    epoch
+  ) / newstep))))
+}
+
+#' Exponential Decay
+#' 
+#' Compute the learning Rate for a given epoch using Exponential Decay.
+#'
+#'@param lrmax Upper limit of the range for the learning rate.
+#'@param mult Factor, by which the number of epochs until a restart is decreased after a new step.
+#'@param epoch Epoch, for which the learning rate shall be calculated.
+#'@export
+exp_decay <- function(lrmax = 0.005,
+                      mult = 0.1,
+                      epoch = NULL) {
+  return(lrmax * exp(-mult * epoch))
+}

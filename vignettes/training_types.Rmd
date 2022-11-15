@@ -132,7 +132,7 @@ The `train_model` call is identical to the previous model, except we have to cha
 
 ```{r warning = FALSE, message = FALSE}
 hist <- train_model(train_type = "lm", # running a language model
-                    output_format = "target_middle_lstm", # predict target at end of sequence 
+                    output_format = "target_middle_lstm", # predict target in middle of sequence 
                     model = model,
                     path = train_dir,
                     path_val = val_dir,

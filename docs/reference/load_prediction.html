@@ -98,8 +98,8 @@
     <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">load_prediction</span><span class="op">(</span></span>
 <span>  <span class="va">h5_path</span>,</span>
 <span>  rows <span class="op">=</span> <span class="cn">NULL</span>,</span>
-<span>  verbose <span class="op">=</span> <span class="cn">TRUE</span>,</span>
-<span>  get_target_positions <span class="op">=</span> <span class="cn">FALSE</span>,</span>
+<span>  verbose <span class="op">=</span> <span class="cn">FALSE</span>,</span>
+<span>  get_sample_position <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  get_seq <span class="op">=</span> <span class="cn">FALSE</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
@@ -118,8 +118,8 @@
 <dd><p>Boolean.</p></dd>
 
 
-<dt>get_target_positions</dt>
-<dd><p>Return position of corresponding targets if <code>TRUE</code>.</p></dd>
+<dt>get_sample_position</dt>
+<dd><p>Return position of sample corresponding to state if <code>TRUE</code>.</p></dd>
 
 
 <dt>get_seq</dt>
@@ -152,28 +152,27 @@
 <span class="r-out co"><span class="r-pr">#&gt;</span> ________________________________________________________________________________</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> NULL</span>
 <span class="r-in"><span><span class="fu">load_prediction</span><span class="op">(</span>h5_path <span class="op">=</span> <span class="va">output_file</span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> states matrix has 19 rows and 2 columns </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $states</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>       [,1] [,2]</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  [1,] 0.52 0.48</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  [2,] 0.48 0.52</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  [3,] 0.50 0.50</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  [4,] 0.51 0.49</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  [5,] 0.48 0.52</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  [6,] 0.52 0.48</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  [7,] 0.52 0.48</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  [8,] 0.50 0.50</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  [9,] 0.52 0.48</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [10,] 0.49 0.51</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [11,] 0.54 0.46</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [12,] 0.50 0.50</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [13,] 0.51 0.49</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [14,] 0.51 0.49</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [15,] 0.47 0.53</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [16,] 0.50 0.50</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [17,] 0.59 0.41</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [18,] 0.53 0.47</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [19,] 0.49 0.51</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>            [,1]      [,2]</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [1,] 0.5382894 0.4617105</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [2,] 0.5833274 0.4166726</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [3,] 0.5630409 0.4369590</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [4,] 0.5793107 0.4206893</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [5,] 0.5749316 0.4250683</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [6,] 0.5869661 0.4130338</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [7,] 0.5433405 0.4566594</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [8,] 0.5587386 0.4412613</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [9,] 0.5056735 0.4943265</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [10,] 0.5528837 0.4471163</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [11,] 0.5596755 0.4403245</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [12,] 0.5184827 0.4815173</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [13,] 0.5598489 0.4401511</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [14,] 0.5722887 0.4277112</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [15,] 0.5579701 0.4420299</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [16,] 0.5085251 0.4914748</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [17,] 0.4697151 0.5302849</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [18,] 0.5696082 0.4303917</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [19,] 0.6181589 0.3818411</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 </code></pre></div>
     </div>
