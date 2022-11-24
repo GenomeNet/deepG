@@ -68,6 +68,7 @@ evaluate_model <- function(path_input,
                            target_from_csv = NULL,
                            max_samples = NULL,
                            proportion_per_seq = NULL,
+                           concat_seq = NULL,
                            seed = 1234,
                            auc = FALSE,
                            auprc = FALSE,
@@ -147,6 +148,10 @@ evaluate_model <- function(path_input,
         }
         
         seq_vector <- fasta_file$Sequence
+        
+        if (!is.null(concat_seq)) {
+          seq_vector <- paste(seq_vector, collapse = concat_seq)
+        }
         
         if (!is.null(proportion_per_seq)) {
           fasta_width <- nchar(seq_vector)
@@ -237,6 +242,7 @@ evaluate_model <- function(path_input,
                               verbose = FALSE,
                               shuffle_file_order = FALSE,
                               step = step,
+                              concat_seq = concat_seq,
                               padding = padding,
                               shuffle_input = FALSE,
                               reverse_complement = FALSE,
@@ -260,6 +266,7 @@ evaluate_model <- function(path_input,
                                             step = step,
                                             padding = padding,
                                             shuffle_input = FALSE,
+                                            concat_seq = concat_seq,
                                             vocabulary_label = vocabulary_label[[1]],
                                             reverse_complement = FALSE,
                                             ambiguous_nuc = ambiguous_nuc,
@@ -293,6 +300,7 @@ evaluate_model <- function(path_input,
                                           vocabulary = vocabulary,
                                           step = step,
                                           padding = padding,
+                                          concat_seq = concat_seq,
                                           reverse_complement = FALSE,
                                           num_targets = length(path_input),
                                           ones_column = k,
