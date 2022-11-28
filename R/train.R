@@ -61,7 +61,7 @@
 #' @param seed Sets seed for reproducible results.
 #' @param shuffle_input Whether to shuffle entries in file.
 #' @param tb_images Whether to show custom images (confusion matrix) in tensorboard "IMAGES" tab.
-#' @param format File format, `"fasta"`, `"fastq"` or `"rds"`.
+#' @param format File format, `"fasta"`, `"fastq"`, `"rds"` or `"fasta.tar.gz"`, `"fastq.tar.gz"` for `tar.gz` files. 
 #' @param path_file_log Write name of files used for training to csv file if path is specified.
 #' @param vocabulary_label Character vector of possible targets. Targets outside \code{vocabulary_label} will get discarded if
 #' \code{train_type = "label_header"}.

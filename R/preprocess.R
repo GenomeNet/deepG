@@ -758,7 +758,7 @@ read_fasta_fastq <- function(format, skip_amb_nuc, file_index, pattern, shuffle_
                              reverse_complement, fasta.files, use_coverage = FALSE, proportion_entries = NULL,
                              vocabulary_label = NULL, filter_header = FALSE, target_from_csv = NULL) {
   
-  if (format == "fasta") {
+  if (stringr::str_detect(format, "fasta")) {
     if (is.null(skip_amb_nuc)) {
       fasta.file <- microseq::readFasta(fasta.files[file_index])
     } else {
@@ -786,7 +786,8 @@ read_fasta_fastq <- function(format, skip_amb_nuc, file_index, pattern, shuffle_
     }
     
   }
-  if (format == "fastq") {
+  
+  if (stringr::str_detect(format, "fastq")) {
     if (is.null(skip_amb_nuc)) {
       fasta.file <- microseq::readFastq(fasta.files[file_index])
     } else {
