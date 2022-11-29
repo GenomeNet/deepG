@@ -293,24 +293,15 @@ cpcloss <- function(latents,
       steps_to_predict <- 2
       steps_skip <- 1
       target_dim <- ctx$shape[[3]]
-      both <-
+      ctx_conv <-
         ctx %>% keras::layer_conv_1d(kernel_size = 1, filters = target_dim)
-      preds_i <- both[1:batch_size, ,]
-      revcompl <-
-        both[(batch_size + 1):as.integer(batch_size * 2), , ]
-      logits_flag <- FALSE
+      logits <- tf$zeros(list(0L,as.integer(ctx$shape[[1]])))
       for (j in seq_len(c_dim - (i + 1))) {
-        preds_ij <- both[, j,] %>% keras::k_reshape(c(-1, target_dim))
-        revcompl_j <-
+        basepos <- ctx_conv[, j,] %>% keras::k_reshape(c(-1, target_dim))
+        targetpos <-
           ctx[, (c_dim - j - i), ] %>% keras::k_reshape(c(-1, target_dim))
-        logits <- tensorflow::tf$matmul(preds_ij, tensorflow::tf$transpose(revcompl_j))
-        logitsnew <- logitsnew
-        if (isTRUE(logits_flag)) {
-          logits <- tensorflow::tf$concat(list(logits, logitsnew), axis = 0L)
-        } else {
-          logits <- logitsnew
-          logits_flag <- TRUE
-        }
+        logits_j <- tensorflow::tf$matmul(basepos, tensorflow::tf$transpose(targetpos))
+        logits <- tensorflow::tf$concat(list(logits, logits_j), axis = 0L)
       }
       # define labels
       labels <-
@@ -318,7 +309,7 @@ cpcloss <- function(latents,
           2 * batch_size - 1
         )), (seq(
           0, (batch_size - 1)
-        ))), (dim(both)[[2]] - (i + 1))) %>% as.integer()
+        ))), (c_dim - (i + 1))) %>% as.integer()
     } else {
       # define total number of elements in context tensor
       total_elements <- batch_size * c_dim_i
