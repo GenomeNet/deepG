@@ -1105,7 +1105,7 @@ train_model_cpc <-
                 tensorflow::tf$summary$scalar(
                   'training files seen',
                   nrow(
-                    readr::read_csv(
+                    tidyverse::read_csv(
                       path_file_log,
                       col_names = FALSE,
                       col_types = cols()
