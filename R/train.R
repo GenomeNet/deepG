@@ -1108,7 +1108,7 @@ train_model_cpc <-
                     readr::read_csv(
                       path_file_log,
                       col_names = FALSE,
-                      col_types = cols()
+                      col_types = readr::cols()
                     )
                   ) / num_files,
                   step = tensorflow::tf$cast(epoch, "int64")
