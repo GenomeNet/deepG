@@ -1336,3 +1336,19 @@ positional_encoding <- function(seq_len, d_model, n=10000) {
   }
   return(P)
 }
+
+plot_cm <- function(cm, perc = FALSE, cm_labels, round_dig = 2, text_size = 1) {
+  
+  if (perc) cm <- cm_perc(cm, round_dig)
+  cm <- create_conf_mat_obj(cm, cm_labels)
+  
+  cm_plot <- ggplot2::autoplot(cm, type = "heatmap") +
+    ggplot2::scale_fill_gradient(low="#D6EAF8", high = "#2E86C1")  +
+    ggplot2::theme(axis.text.x =
+                     ggplot2::element_text(angle=90,hjust=1, size = text_size)) +
+    ggplot2::theme(axis.text.y =
+                     ggplot2::element_text(size = text_size))
+  
+  cm_plot
+  
+}
