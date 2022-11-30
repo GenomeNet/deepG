@@ -2555,7 +2555,7 @@ create_model_transformer <- function(maxlen,
   } 
   if (pos_encoding == "embedding") { 
     position_embedding_layer <- tensorflow::tf$keras$layers$Embedding(maxlen, vocabulary_size)
-    position_indices <- tensorflow::tf$range(as.integer(maxlen), dtype = "int32") * 0.000001
+    position_indices <- tensorflow::tf$range(as.integer(maxlen), dtype = "int32") 
     embedded_indices <- position_embedding_layer(position_indices)
     output_tensor <- keras::layer_lambda(input_tensor, f = function(x) {
       tensorflow::tf$math$add(x, embedded_indices)
