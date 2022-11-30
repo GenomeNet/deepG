@@ -61,7 +61,7 @@ seq_encoding_lm <- function(sequence = NULL, maxlen, vocabulary, start_ind, ambi
                             n_gram = NULL, n_gram_stride = 1, output_format = "target_right",
                             char_sequence = NULL, adjust_start_ind = FALSE,
                             tokenizer = NULL) {
-
+  
   use_quality <- ifelse(is.null(quality_vector), FALSE, TRUE)
   discard_amb_nt <- FALSE
   ## TODO: add discard_amb_nt
@@ -306,7 +306,7 @@ seq_encoding_label <- function(sequence = NULL, maxlen, vocabulary, start_ind, a
                                quality_vector = NULL, use_coverage = FALSE, max_cov = NULL,
                                cov_vector = NULL, n_gram = NULL, n_gram_stride = 1,
                                char_sequence = NULL, tokenizer = NULL, adjust_start_ind = FALSE) {
-
+  
   ## TODO: add discard_amb_nt
   
   use_quality <- ifelse(is.null(quality_vector), FALSE, TRUE)
@@ -341,7 +341,7 @@ seq_encoding_label <- function(sequence = NULL, maxlen, vocabulary, start_ind, a
     maxlen <- maxlen - n_gram + 1
     voc_len <- length(vocabulary)^n_gram
   }
-
+  
   if (adjust_start_ind) start_ind <- start_ind - start_ind[1] + 1
   numberOfSamples <- length(start_ind)
   
@@ -765,13 +765,13 @@ read_fasta_fastq <- function(format, skip_amb_nuc, file_index, pattern, shuffle_
       fasta.file <- remove_amb_nuc_entries(microseq::readFasta(fasta.files[file_index]), skip_amb_nuc = skip_amb_nuc,
                                            pattern = pattern)
     }
-
+    
     if (filter_header & is.null(target_from_csv)) {
       label_vector <- trimws(stringr::str_to_lower(fasta.file$Header))
       label_filter <- label_vector %in% vocabulary_label
       fasta.file <- fasta.file[label_filter, ]
     }
-
+    
     if (!is.null(proportion_entries) && proportion_entries < 1) {
       index <- sample(nrow(fasta.file), max(1, floor(nrow(fasta.file) * proportion_entries)))
       fasta.file <- fasta.file[index, ]
@@ -1119,7 +1119,7 @@ reshape_tensor <- function(x, y, new_batch_size,
     
     x_new <- array(0, dim = c(new_batch_size, concat_maxlen, voc_len))
     y_new <- array(0, dim = c(new_batch_size, num_classes))
-   
+    
     
     for (i in 1:new_batch_size) {
       index <- (1:samples_per_target) + (i-1)*samples_per_target
@@ -1159,7 +1159,7 @@ cm_perc <- function(cm, round_dig = 2) {
 }
 
 create_conf_mat_obj <- function(m, confMatLabels) {
-  dimnames(m) <- list(Truth = confMatLabels, Prediction = confMatLabels)
+  dimnames(m) <- list(Prediction = confMatLabels, Truth = confMatLabels)
   l <- list()
   m <- as.table(m)
   l[["table"]] <- m
@@ -1322,4 +1322,17 @@ reverse_complement_tensor <- function(x) {
   x_rev_comp <- x[ ,  dim(x)[2]:1, 4:1]
   x_rev_comp <- array(x_rev_comp, dim = dim(x))
   x_rev_comp
+}
+
+
+positional_encoding <- function(seq_len, d_model, n=10000) {
+  P = matrix(0, nrow = seq_len, ncol = d_model)
+  for (k in 0:(seq_len - 1)) {
+    for (i in 0:(floor(d_model/2) - 1)) {
+      denominator <- n^(2*i/d_model)
+      P[k + 1, i + 1] <- sin(k/denominator)
+      P[k + 1, i + (1 + floor(d_model/2))] <- cos(k/denominator)
+    }
+  }
+  return(P)
 }

@@ -2469,3 +2469,214 @@ load_cp <- function(cp_path, cp_filter = NULL, ep_index = NULL, compile = FALSE,
   return(model)
   
 }
+
+
+attention_block <- function(inputs, head_size, num_heads, dropout = 0, res_connection = TRUE) {
+  
+  # Normalization and Attention
+  norm_layer <- tensorflow::tf$keras$layers$LayerNormalization(epsilon=1e-6, axis=-1L)
+  x <- inputs %>% norm_layer
+  multi_head_layer <- tensorflow::tf$keras$layers$MultiHeadAttention(
+    key_dim=head_size, num_heads=num_heads, dropout=dropout)
+  x <- multi_head_layer(query = x, value = x)
+  dropout_layer <- tensorflow::tf$keras$layers$Dropout(dropout)
+  x <- x %>% dropout_layer
+  if (res_connection) x <- x + inputs
+  return(x)
+}
+
+
+#' Create transformer model
+#'
+#' Creates transformer network for classification. Model can consist of several stacked attention blocks.
+#' 
+#' @inheritParams keras::layer_multi_head_attention
+#' @inheritParams create_model_lstm_cnn
+#' @param pos_encoding Either `"sinusoid"` or `"embedding"`. How to add positional information.
+#' If `"sinusoid"`, will add sine waves of different frequencies to input.
+#' If `"embedding"`, model learns positional embedding.
+#' @param head_size Vector of dimensions of attention keys for each block.
+#' @param res_connection Whether to add residual connection between attention blocks.
+#' @param n Frequency of sine waves for positional encoding. Only applied if `pos_encoding = "sinusoid"`.
+#' @param dropout Vector of dropout rates after attention block(s). 
+#' @param dropout_dense Dropout for dense layers.
+#' @param flatten_method How to process output of last attention block. Can be `"gap_channels_last"`, `"gap_channels_first"`
+#' or `"flatten"`. If `"gap_channels_last"` or `"gap_channels_first"`, will apply global average pooling. If `"flatten"`, will flatten 
+#' output after last attention block.
+#' @examples 
+#' 
+#' model <- create_model_transformer(maxlen = 50,
+#'             head_size=c(4,7), num_heads=c(5,8), dropout=c(0.3,0.5))
+#' 
+#' @export
+create_model_transformer <- function(maxlen,
+                                     vocabulary_size = 4,
+                                     pos_encoding = "sinusoid",
+                                     head_size=4L,
+                                     num_heads=5L,
+                                     dropout=0,
+                                     res_connection = TRUE,
+                                     n = 10000, # pos emb frequency
+                                     layer_dense = 2,
+                                     dropout_dense = NULL,
+                                     flatten_method = "flatten",
+                                     last_layer_activation = "softmax",
+                                     loss_fn = "categorical_crossentropy",
+                                     solver = "adam",
+                                     learning_rate = 0.01,
+                                     label_noise_matrix = NULL,
+                                     bal_acc = FALSE,
+                                     f1_metric = FALSE,
+                                     auc_metric = FALSE,
+                                     label_smoothing = 0,
+                                     verbose = TRUE,
+                                     model_seed = NULL) {
+  
+  stopifnot(length(head_size) == length(num_heads))
+  stopifnot(length(head_size) == length(dropout))
+  stopifnot(flatten_method %in% c("gap_channels_last", "gap_channels_first", "flatten"))
+  stopifnot(pos_encoding %in% c("sinusoid", "embedding"))
+  num_dense_layers <- length(layer_dense)
+  num_attention_blocks <- length(head_size)
+  head_size <- as.integer(head_size)
+  num_heads <- as.integer(num_heads)
+  maxlen <- as.integer(maxlen)
+  vocabulary_size <-  as.integer(vocabulary_size)
+  if (!is.null(model_seed)) tensorflow::tf$random$set_seed(model_seed)
+  
+  input_tensor <- keras::layer_input(shape = c(maxlen, vocabulary_size))
+  
+  # positional encoding 
+  if (pos_encoding == "sinusoid") { 
+    pe_matrix <- positional_encoding(maxlen, d_model = vocabulary_size, n = n) 
+    output_tensor <- keras::layer_lambda(input_tensor, f = function(x) {
+      tensorflow::tf$math$add(x, pe_matrix)
+    })
+  } 
+  if (pos_encoding == "embedding") { 
+    position_embedding_layer <- tensorflow::tf$keras$layers$Embedding(maxlen, vocabulary_size)
+    position_indices <- tensorflow::tf$range(as.integer(maxlen), dtype = "int32") * 0.000001
+    embedded_indices <- position_embedding_layer(position_indices)
+    output_tensor <- keras::layer_lambda(input_tensor, f = function(x) {
+      tensorflow::tf$math$add(x, embedded_indices)
+    })
+  }
+  
+  # attention blocks
+  for (i in 1:num_attention_blocks) {
+    output_tensor <- attention_block(inputs = output_tensor,
+                                     head_size = head_size[i],
+                                     num_heads = num_heads[i],
+                                     dropout = dropout[i])
+    
+  }
+  
+  # flatten
+  if (flatten_method == "gap_channels_last") {
+    output_tensor <- output_tensor %>% keras::layer_global_average_pooling_1d(data_format="channels_last") 
+  }
+  if (flatten_method == "gap_channels_first") {
+    output_tensor <- output_tensor %>% keras::layer_global_average_pooling_1d(data_format="channels_first") 
+  }
+  if (flatten_method == "flatten") {
+    output_tensor <- output_tensor %>% keras::layer_flatten()
+  }
+  
+  # dense layers
+  if (num_dense_layers > 1) {
+    for (i in 1:(num_dense_layers - 1)) {
+      output_tensor <- output_tensor %>% keras::layer_dense(units = layer_dense[i], activation = "relu")
+      if (!is.null(dropout_dense)) {
+        output_tensor <- output_tensor %>% keras::layer_dropout(rate = dropout_dense[i])
+      }
+    }
+  }  
+  
+  output_tensor <- output_tensor %>% keras::layer_dense(units = layer_dense[length(layer_dense)], activation = last_layer_activation)
+  
+  # create model
+  model <- keras::keras_model(inputs = input_tensor, outputs = output_tensor)
+  
+  # compile
+  model <- compile_model(model = model, label_smoothing = label_smoothing,
+                         solver = solver, learning_rate = learning_rate, loss_fn = loss_fn, 
+                         num_output_layers = 1, label_noise_matrix = label_noise_matrix,
+                         bal_acc = bal_acc, f1_metric = f1_metric, auc_metric = auc_metric)
+  
+  if (verbose) print(model)
+  model
+  
+}
+
+
+compile_model <- function(model, solver, learning_rate, loss_fn, label_smoothing = 0,
+                          num_output_layers = 1, label_noise_matrix = NULL,
+                          bal_acc = FALSE, f1_metric = FALSE, auc_metric = FALSE) {
+  
+  optimizer <- set_optimizer(solver, learning_rate) 
+  
+  #add metrics
+  if (loss_fn == "binary_crossentropy") {
+    model_metrics <- c(tf$keras$metrics$BinaryAccuracy(name = "acc"))
+  } else {
+    model_metrics <- c("acc")
+  } 
+  
+  cm_dir <- NULL
+  if (num_output_layers == 1) {
+    cm_dir <- file.path(tempdir(), paste(sample(letters, 7), collapse = ""))
+    while (dir.exists(cm_dir)) {
+      cm_dir <- file.path(tempdir(), paste(sample(letters, 7), collapse = ""))
+    }
+    dir.create(cm_dir)
+    model$cm_dir <- cm_dir
+    
+    if (loss_fn == "categorical_crossentropy") {
+      
+      if (bal_acc) {
+        macro_average_cb <- balanced_acc_wrapper(num_targets, cm_dir)
+        model_metrics <- c(macro_average_cb, "acc")
+      }
+      
+      if (f1_metric) {
+        f1 <- f1_wrapper(num_targets)
+        model_metrics <- c(model_metrics, f1)
+      }
+    }
+    
+    if (auc_metric) {
+      auc <- auc_wrapper(model_output_size = layer_dense[length(layer_dense)],
+                         loss = loss_fn)
+      model_metrics <- c(model_metrics, auc)
+    }
+  }
+  
+  if (label_smoothing > 0 & !is.null(label_noise_matrix)) {
+    stop("Can not use label smoothing and label noise at the same time. Either set label_smoothing = 0 or label_noise_matrix = NULL")
+  }
+  
+  if (label_smoothing > 0) {
+    if (loss_fn == "categorical_crossentropy") {
+      smooth_loss <- tensorflow::tf$losses$CategoricalCrossentropy(label_smoothing = label_smoothing, name = "smooth_loss")
+    }
+    if (loss_fn == "binary_crossentropy") {
+      smooth_loss <- tensorflow::tf$losses$BinaryCrossentropy(label_smoothing = label_smoothing, name = "smooth_loss")
+    }
+    model %>% keras::compile(loss = smooth_loss,
+                             optimizer = optimizer, metrics = model_metrics)
+  } else if (!is.null(label_noise_matrix)) {
+    row_sums <- rowSums(label_noise_matrix)
+    if (!all(row_sums == 1)) {
+      warning("Sum of noise matrix rows don't add up to 1")
+    }
+    noisy_loss <- noisy_loss_wrapper(solve(label_noise_matrix))
+    model %>% keras::compile(loss =  noisy_loss,
+                             optimizer = optimizer, metrics = model_metrics)
+  } else {
+    model %>% keras::compile(loss = loss_fn,
+                             optimizer = optimizer, metrics = model_metrics)
+  }
+  
+  model
+  
+}
