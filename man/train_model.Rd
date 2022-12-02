@@ -151,7 +151,7 @@ will run for (\code{epochs} - \code{initial_epochs}) rounds and not \code{epochs
 
 \item{tb_images}{Whether to show custom images (confusion matrix) in tensorboard "IMAGES" tab.}
 
-\item{format}{File format, \code{"fasta"}, \code{"fastq"} or \code{"rds"}.}
+\item{format}{File format, \code{"fasta"}, \code{"fastq"}, \code{"rds"} or \code{"fasta.tar.gz"}, \code{"fastq.tar.gz"} for \code{tar.gz} files.}
 
 \item{path_file_log}{Write name of files used for training to csv file if path is specified.}
 

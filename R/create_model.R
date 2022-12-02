@@ -2608,7 +2608,6 @@ create_model_transformer <- function(maxlen,
   
 }
 
-
 compile_model <- function(model, solver, learning_rate, loss_fn, label_smoothing = 0,
                           num_output_layers = 1, label_noise_matrix = NULL,
                           bal_acc = FALSE, f1_metric = FALSE, auc_metric = FALSE) {

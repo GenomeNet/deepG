@@ -10,6 +10,7 @@ get_class_weight(
   format = "fasta",
   file_proportion = 1,
   train_type = "label_folder",
+  named_list = FALSE,
   csv_path = NULL
 )
 }
@@ -43,6 +44,8 @@ with multiple inputs.
 (targets are last \code{target_len} nucleotides of each sequence).
 \item  If \code{"dummy_gen"}, generator creates random data once and repeatedly feeds these to model.
 }}
+
+\item{named_list}{Whether to give class weight list names \verb{"0", "1", ...} or not.}
 
 \item{csv_path}{If \code{train_type = "label_csv"}, path to csv file containing labels.}
 }

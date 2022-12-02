@@ -92,7 +92,7 @@ will randomly select 5 entries.}
 
 \item{shuffle_input}{Whether to shuffle entries in file.}
 
-\item{format}{File format, \code{"fasta"}, \code{"fastq"} or \code{"rds"}.}
+\item{format}{File format, \code{"fasta"}, \code{"fastq"}, \code{"rds"} or \code{"fasta.tar.gz"}, \code{"fastq.tar.gz"} for \code{tar.gz} files.}
 
 \item{path_file_log}{Write name of files used for training to csv file if path is specified.}
 

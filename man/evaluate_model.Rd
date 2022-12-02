@@ -24,6 +24,7 @@ evaluate_model(
   target_from_csv = NULL,
   max_samples = NULL,
   proportion_per_seq = NULL,
+  concat_seq = NULL,
   seed = 1234,
   auc = FALSE,
   auprc = FALSE,
@@ -86,6 +87,9 @@ Assume a sequence \code{"AACCGTA"}. Output correspond as follows
 subset of \code{max_samples} samples.}
 
 \item{proportion_per_seq}{Numerical value between 0 and 1. Proportion of sequence to take samples from (use random subsequence).}
+
+\item{concat_seq}{Character string or \code{NULL}. If not \code{NULL} all entries from file get concatenated to one sequence with \code{concat_seq} string between them.
+Example: If 1.entry AACC, 2. entry TTTG and \code{concat_seq = "ZZZ"} this becomes AACCZZZTTTG.}
 
 \item{seed}{Sets seed for \code{set.seed} function for reproducible results.}
 
