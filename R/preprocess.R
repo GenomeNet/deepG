@@ -572,6 +572,7 @@ remove_amb_nuc_entries <- function(fasta.file, skip_amb_nuc, pattern) {
 #' @inheritParams train_model
 #' @param file_proportion Proportion of files to randomly sample for estimating class distributions.
 #' @param csv_path If `train_type = "label_csv"`, path to csv file containing labels.
+#' @param named_list Whether to give class weight list names `"0", "1", ...` or not.
 #' @examples 
 #' 
 #' # create dummy data
@@ -607,6 +608,7 @@ get_class_weight <- function(path,
                              format = "fasta",
                              file_proportion = 1, 
                              train_type = "label_folder",
+                             named_list = FALSE,
                              csv_path = NULL) {
   
   classes <- count_nuc(path = path,
@@ -624,26 +626,29 @@ get_class_weight <- function(path,
   }
   
   if (!is.list(classes)) {
+    num_classes <- length(classes)
+    total <- sum(classes)
     weight_list <- list()
-    weight_list[["0"]] <- 1
-    for (i in 2:(length(classes))) {
-      weight_list[[as.character(i-1)]] <- classes[1]/classes[i]
+    for (i in 1:(length(classes))) {
+      weight_list[[as.character(i-1)]] <- total/(classes[i] * num_classes)
     }
+    if (!named_list) names(classes) <- NULL # no list names in tf version > 2.8
     classes <- weight_list
   } else {
     weight_collection <- list()
     for (j in 1:length(classes)) {
+      num_classes <- length(classes[[j]])
+      total <- sum(classes[[j]])
       weight_list <- list()
-      weight_list[["0"]] <- 1
-      for (i in 2:(length(classes[[j]]))) {
-        weight_list[[as.character(i-1)]] <- classes[[j]][1]/classes[[j]][i]
+      for (i in 1:(length(classes[[j]]))) {
+        weight_list[[as.character(i-1)]] <- total/(classes[[j]][i] * num_classes)
       }
+      if (!named_list) names(classes) <- NULL
       weigth_collection[[j]] <- weight_list
     }
     classes <- weight_collection
   }
   
-  names(classes) <- NULL # no list names in tf version > 2.8
   classes
 }
 
