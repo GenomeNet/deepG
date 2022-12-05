@@ -2437,4 +2437,61 @@ test_that("Checking the generator for the Fasta files", {
   expect_equivalent(arrays[[2]], y)
   expect_equivalent(arrays[[1]][4, , ], m)
   expect_equivalent(arrays[[1]][5, , ], m2)
+  
+  # rds generator with multi inputs/outputs
+  
+  x1 <- array(0, dim = c(9,5,4))
+  x2 <- array(0, dim = c(9,5,3))
+  y1 <- array(0, dim = c(9,2))
+  y2 <- array(0, dim = c(9,6))
+  
+  for (i in 1:dim(x1)[1]) {
+    x1[i,,] <- i
+    y1[i, ] <- i
+    x2[i,,] <- i + 10
+    y2[i, ] <- i + 10
+  }
+  
+  index_1 <- 1:5
+  index_2 <- 6:9
+  x_list_1 <- list(x1[index_1, , ], x2[index_1, , ])
+  x_list_2 <- list(x1[index_2, , ], x2[index_2, , ])
+  y_list_1 <- list(y1[index_1, ], y2[index_1, ])
+  y_list_2 <- list(y1[index_2, ], y2[index_2, ])
+  z1 <- list(x = x_list_1, y = y_list_1)
+  z2 <- list(x = x_list_2, y = y_list_2)
+  
+  temp_dir <- tempfile()
+  dir.create(temp_dir)
+  saveRDS(z1, paste0(temp_dir, "/file_1.rds"))
+  saveRDS(z2, paste0(temp_dir, "/file_2.rds"))
+  
+  gen <- generator_rds(rds_folder = temp_dir,
+                       batch_size = 10, path_file_log = NULL,
+                       max_samples = NULL,
+                       proportion_per_seq = NULL,
+                       target_len = NULL,
+                       seed = 1,
+                       reverse_complement = FALSE,
+                       sample_by_file_size = FALSE,
+                       n_gram = NULL, n_gram_stride = 1,
+                       reverse_complement_encoding = FALSE,
+                       add_noise = NULL)
+  
+  for (k in 1:5) {
+    z <- gen()
+    x1 <- z[[1]][[1]] %>% as.array()
+    x2 <- z[[1]][[2]] %>% as.array()
+    y1 <- z[[2]][[1]] %>% as.array()
+    y2 <- z[[2]][[2]] %>% as.array()
+    
+    
+    for (i in 1:dim(x1)[1]) {
+      expect_equivalent(min(x1[i,,]), max(y1[i,]))
+      expect_equivalent(min(x1[i,,]) + 10, max(x2[i,,]))
+      expect_equivalent(max(x2[i,,]), min(y2[i,]))
+      expect_equivalent(max(y1[i,]) + 10, min(y2[i,]))
+    }
+  }
+  
 })

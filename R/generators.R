@@ -2717,12 +2717,14 @@ generator_rds <- function(rds_folder, batch_size, path_file_log = NULL,
                           max_samples = NULL,
                           proportion_per_seq = NULL,
                           target_len = NULL,
+                          seed = NULL,
                           reverse_complement = FALSE,
                           sample_by_file_size = FALSE,
                           n_gram = NULL, n_gram_stride = 1,
                           reverse_complement_encoding = FALSE,
                           add_noise = NULL) {
   
+  if (!is.null(seed)) set.seed(seed)
   is_lm <- !is.null(target_len)
   
   if (!is.null(n_gram) & is_lm && (target_len < n_gram)) {
@@ -2758,11 +2760,48 @@ generator_rds <- function(rds_folder, batch_size, path_file_log = NULL,
   } else {
     x_complete <- rds_file
   }
-  if (!is_lm) y_complete <- rds_file[[2]]
   
+  if (!is_lm) y_complete <- rds_file[[2]]
+  # TODO: adjust for different input fomrat (input mix of 3D and 1D etc.)
+  multi_input <- ifelse(is.list(x_complete), TRUE, FALSE)
+  multi_output <- ifelse(length(rds_file) > 1 && is.list(rds_file[[2]]), TRUE, FALSE)
+  
+  
+  if (multi_input) {
+    x_dim_list <- list()
+    size_splits_in <- list()
+    for (i in 1:length(x_complete)) {
+      x_dim_list[[i]] <- dim(x_complete[[i]])
+      size_splits_in[[i]] <- x_dim_list[[i]][length(x_dim_list[[i]])] 
+      if (i > 1) {
+        if (length(x_dim_list[[i]]) != length(x_dim_list[[i-1]])) {
+          stop("rds generator only works if separate inputs have same dimension size")
+        }
+      }
+    }
+    x_complete <- tensorflow::tf$concat(x_complete, 
+                                        axis = as.integer(length(x_dim_list[[1]]) - 1)) %>% as.array()
+  } 
   x_dim_start <- dim(x_complete)
+  
   if (!is_lm) {
+    if (multi_output) {
+      y_dim_list <- list()
+      size_splits_out <- list()
+      for (i in 1:length(y_complete)) {
+        y_dim_list[[i]] <- dim(y_complete[[i]])
+        size_splits_out[[i]] <- y_dim_list[[i]][length(y_dim_list[[i]])] 
+        if (i > 1) {
+          if (length(y_dim_list[[i]]) != length(y_dim_list[[i-1]])) {
+            stop("rds generator only works if separate outputs have same dimension size")
+          }
+        }
+      }
+      y_complete <- tensorflow::tf$concat(y_complete,
+                                          axis = as.integer(length(y_dim_list[[1]]) - 1)) %>% as.array()
+    } 
     y_dim_start <- dim(y_complete)
+    
     if (x_dim_start[1] != y_dim_start[1]) {
       stop("Different number of samples for input and target")
     }
@@ -2786,6 +2825,7 @@ generator_rds <- function(rds_folder, batch_size, path_file_log = NULL,
   
   function() {
     
+    # TODO: adjust for multi input/output
     x_index <- 1
     x <- array(0, c(batch_size, x_dim[2:3]))
     if (is_lm) {
@@ -2824,15 +2864,28 @@ generator_rds <- function(rds_folder, batch_size, path_file_log = NULL,
             )
           }
           
-          x_complete <<- rds_file[[1]]
+          if (multi_input) {
+            # combine inputs in one tensor
+            x_complete <<- tensorflow::tf$concat(rds_file[[1]], 
+                                                 axis = as.integer(length(x_dim_list[[1]]) - 1)) %>% as.array()
+          } else {
+            x_complete <<- rds_file[[1]]
+          } 
           x_dim <<- dim(x_complete)
           
           if (!is_lm) {
-            y_complete <<- rds_file[[2]]
+            if (multi_output) {
+              y_complete <- tensorflow::tf$concat(rds_file[[2]], 
+                                                  axis = as.integer(length(y_dim_list[[1]]) - 1)) %>% as.array()
+            } else {
+              y_complete <<- rds_file[[2]]
+            }
             y_dim <<- dim(y_complete)
           }
           
           if (!is_lm && (x_dim[1] != y_dim[1])) {
+            print(x_dim)
+            print(y_dim)
             stop("Different number of samples for input and target")
           }
           
@@ -2842,6 +2895,7 @@ generator_rds <- function(rds_folder, batch_size, path_file_log = NULL,
               sample_index <<- sample(sample_index, min(length(sample_index), max(1, floor(length(sample_index) * proportion_per_seq))))
             }
           }
+          
           if (!is.null(max_samples)) {
             if (length(sample_index) > 1) {
               sample_index <<- sample(sample_index, min(length(sample_index), max_samples))
@@ -2864,11 +2918,13 @@ generator_rds <- function(rds_folder, batch_size, path_file_log = NULL,
       x[x_index:(x_index + length(index) - 1), , ] <- x_complete[index, , ]
       
       if (!is_lm) {
+        #print(y_complete)
         y[x_index:(x_index + length(index) - 1), ] <- y_complete[index, ]
       }
       
       x_index <- x_index + length(index)
       sample_index <<- setdiff(sample_index, index)
+      
     }
     
     if (is_lm) {
@@ -2922,6 +2978,14 @@ generator_rds <- function(rds_folder, batch_size, path_file_log = NULL,
       x_1 <- x
       x_2 <- array(x_1[ , (dim(x)[2]):1, 4:1], dim = dim(x))
       x <- list(x_1, x_2)
+    }
+    
+    if (multi_input) {
+      x <- tensorflow::tf$split(x, num_or_size_splits = size_splits_in, axis = as.integer(length(x_dim)-1))
+    }
+    
+    if (multi_output) {
+      y <- tensorflow::tf$split(y, num_or_size_splits = size_splits_out, axis = as.integer(length(y_dim)-1))
     }
     
     return(list(x, y))
@@ -3576,7 +3640,7 @@ get_generator <- function(path = NULL,
     gen <- generator_rds(rds_folder = path, batch_size = batch_size, path_file_log = path_file_log,
                          max_samples = max_samples, proportion_per_seq = proportion_per_seq,
                          sample_by_file_size = sample_by_file_size, add_noise = add_noise,
-                         reverse_complement_encoding = reverse_complement_encoding,
+                         reverse_complement_encoding = reverse_complement_encoding, seed = seed[1],
                          target_len = target_len, n_gram = n_gram, n_gram_stride = n_gram_stride)
     
   }
@@ -3673,7 +3737,7 @@ dataset_from_gen <- function(output_path,
     
     if (shuffle) {
       shuffle_index <- sample(dim(x)[1])
-      if (!is.list(y)) {
+      if (!is.list(x)) {
         x <- x[shuffle_index, , ]
       } else {
         for (i in 1:length(x)) {
