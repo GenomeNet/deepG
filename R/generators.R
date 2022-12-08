@@ -2765,8 +2765,7 @@ generator_rds <- function(rds_folder, batch_size, path_file_log = NULL,
   # TODO: adjust for different input fomrat (input mix of 3D and 1D etc.)
   multi_input <- ifelse(is.list(x_complete), TRUE, FALSE)
   multi_output <- ifelse(length(rds_file) > 1 && is.list(rds_file[[2]]), TRUE, FALSE)
-  
-  
+
   if (multi_input) {
     x_dim_list <- list()
     size_splits_in <- list()
