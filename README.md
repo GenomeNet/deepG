@@ -1,7 +1,7 @@
 
 <p>
 
-<img alt="DeepG logo" height="7px" src="https://avatars.githubusercontent.com/u/47594096?s=200&v=4" align="left" hspace="10px" vspace="0px">
+<img alt="DeepG logo" height="70px" src="man/figures/logo_small.png" align="left" hspace="10px" vspace="0px">
 
 </p>
 
@@ -18,7 +18,7 @@ advanced AI researchers. DeepG is a collaborative effort from the
 McHardy Lab at the *Helmholtz Centre for Infection Research*, The Bischl
 lab at the *University of Munich* and the Huttenhower lab at *Harvard
 T.H. Chan School of Public
-Health*
+Health*.
 
 [![DOI](https://zenodo.org/badge/387820006.svg)](https://zenodo.org/badge/latestdoi/387820006)
 
@@ -62,7 +62,7 @@ devtools::install_github("GenomeNet/deepG")
 
 ## Usage
 
-See the package website at <https://deepg.de> for documentation and
+See the Package website at <https://deepg.de> for documentation and
 example
 code.
 
