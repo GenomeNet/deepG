@@ -300,7 +300,7 @@ will run for (<code>epochs</code> - <code>initial_epochs</code>) rounds and not 
 
 
 <dt>format</dt>
-<dd><p>File format, <code>"fasta"</code>, <code>"fastq"</code> or <code>"rds"</code>.</p></dd>
+<dd><p>File format, <code>"fasta"</code>, <code>"fastq"</code>, <code>"rds"</code> or <code>"fasta.tar.gz"</code>, <code>"fastq.tar.gz"</code> for <code>tar.gz</code> files.</p></dd>
 
 
 <dt>path_file_log</dt>
@@ -508,13 +508,13 @@ optional arguments <code>sd</code> or <code>mean</code> if noise_type is <code>"
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># create model</span></span></span>
 <span class="r-in"><span><span class="va">model</span> <span class="op">&lt;-</span> <span class="fu"><a href="create_model_lstm_cnn.html">create_model_lstm_cnn</a></span><span class="op">(</span>layer_lstm <span class="op">=</span> <span class="fl">8</span>, layer_dense <span class="op">=</span> <span class="fl">2</span>, maxlen <span class="op">=</span> <span class="fl">5</span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Model: "model_33"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Model: "model_34"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> ________________________________________________________________________________</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  Layer (type)                       Output Shape                    Param #     </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> ================================================================================</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  input_22 (InputLayer)              [(None, 5, 4)]                  0           </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  input_23 (InputLayer)              [(None, 5, 4)]                  0           </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  lstm_24 (LSTM)                     (None, 8)                       416         </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  dense_35 (Dense)                   (None, 2)                       18          </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  dense_36 (Dense)                   (None, 2)                       18          </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> ================================================================================</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Total params: 434</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Trainable params: 434</span>
@@ -544,7 +544,7 @@ optional arguments <code>sd</code> or <code>mean</code> if noise_type is <code>"
 
 
       <footer><div class="copyright">
-  <p></p><p>Developed by Philipp Münch, René Mreches, Martin Binder, Hüseyin Anil Gündüz, Alice McHardy.</p>
+  <p></p><p>Developed by Philipp Münch, René Mreches, Martin Binder, Hüseyin Anil Gündüz, Xiao-Yin To, Alice McHardy.</p>
 </div>
 
 <div class="pkgdown">

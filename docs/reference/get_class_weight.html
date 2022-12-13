@@ -103,6 +103,7 @@ Outputs list of class relations. Can be used as input for <code>class_weigth</co
 <span>  format <span class="op">=</span> <span class="st">"fasta"</span>,</span>
 <span>  file_proportion <span class="op">=</span> <span class="fl">1</span>,</span>
 <span>  train_type <span class="op">=</span> <span class="st">"label_folder"</span>,</span>
+<span>  named_list <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  csv_path <span class="op">=</span> <span class="cn">NULL</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
@@ -142,6 +143,10 @@ with multiple inputs.</p></li>
 </ul></dd>
 
 
+<dt>named_list</dt>
+<dd><p>Whether to give class weight list names <code>"0", "1", ...</code> or not.</p></dd>
+
+
 <dt>csv_path</dt>
 <dd><p>If <code>train_type = "label_csv"</code>, path to csv file containing labels.</p></dd>
 
@@ -176,12 +181,13 @@ with multiple inputs.</p></li>
 <span class="r-in"><span>  csv_path <span class="op">=</span> <span class="cn">NULL</span><span class="op">)</span></span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="va">class_weight</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [[1]]</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] 1</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $`0`</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    A </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 0.75 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [[2]]</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> A </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $`1`</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   B </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1.5 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-in"><span></span></span>
 </code></pre></div>
@@ -194,7 +200,7 @@ with multiple inputs.</p></li>
 
 
       <footer><div class="copyright">
-  <p></p><p>Developed by Philipp Münch, René Mreches, Martin Binder, Hüseyin Anil Gündüz, Alice McHardy.</p>
+  <p></p><p>Developed by Philipp Münch, René Mreches, Martin Binder, Hüseyin Anil Gündüz, Xiao-Yin To, Alice McHardy.</p>
 </div>
 
 <div class="pkgdown">

@@ -136,15 +136,15 @@
 <span class="r-in"><span><span class="va">output_file</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/tempfile.html" class="external-link">tempfile</a></span><span class="op">(</span>fileext <span class="op">=</span> <span class="st">".h5"</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="fu"><a href="predict_model.html">predict_model</a></span><span class="op">(</span>output_format <span class="op">=</span> <span class="st">"one_seq"</span>, model <span class="op">=</span> <span class="va">model</span>, step <span class="op">=</span> <span class="fl">10</span>,</span></span>
 <span class="r-in"><span>              sequence <span class="op">=</span> <span class="va">sequence</span>, filename <span class="op">=</span> <span class="va">output_file</span>, mode <span class="op">=</span> <span class="st">"label"</span><span class="op">)</span></span></span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> layer_name not specified. Using layer dense_18</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Computing output for model at layer dense_18 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Model: "model_14"</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> layer_name not specified. Using layer dense_19</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Computing output for model at layer dense_19 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Model: "model_15"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> ________________________________________________________________________________</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  Layer (type)                       Output Shape                    Param #     </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> ================================================================================</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  input_14 (InputLayer)              [(None, 20, 4)]                 0           </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  input_15 (InputLayer)              [(None, 20, 4)]                 0           </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  lstm_15 (LSTM)                     (None, 8)                       416         </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  dense_18 (Dense)                   (None, 2)                       18          </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  dense_19 (Dense)                   (None, 2)                       18          </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> ================================================================================</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Total params: 434</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Trainable params: 434</span>
@@ -154,25 +154,25 @@
 <span class="r-in"><span><span class="fu">load_prediction</span><span class="op">(</span>h5_path <span class="op">=</span> <span class="va">output_file</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $states</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>            [,1]      [,2]</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  [1,] 0.5793801 0.4206199</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  [2,] 0.4905646 0.5094354</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  [3,] 0.5318806 0.4681193</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  [4,] 0.5303926 0.4696074</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  [5,] 0.5520452 0.4479547</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  [6,] 0.5647426 0.4352574</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  [7,] 0.5199113 0.4800887</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  [8,] 0.5376721 0.4623278</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  [9,] 0.4789735 0.5210266</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [10,] 0.5573504 0.4426497</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [11,] 0.5479485 0.4520515</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [12,] 0.4592451 0.5407549</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [13,] 0.5531864 0.4468136</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [14,] 0.5755088 0.4244911</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [15,] 0.5269503 0.4730497</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [16,] 0.5152493 0.4847507</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [17,] 0.6028650 0.3971349</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [18,] 0.5957094 0.4042906</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [19,] 0.5401791 0.4598210</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [1,] 0.5823807 0.4176193</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [2,] 0.5760499 0.4239500</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [3,] 0.5747239 0.4252761</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [4,] 0.5799693 0.4200308</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [5,] 0.5699171 0.4300829</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [6,] 0.5892100 0.4107900</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [7,] 0.5825222 0.4174778</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [8,] 0.5744175 0.4255825</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [9,] 0.5716776 0.4283224</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [10,] 0.5705716 0.4294283</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [11,] 0.5877081 0.4122919</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [12,] 0.5638786 0.4361213</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [13,] 0.5787756 0.4212243</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [14,] 0.5838944 0.4161054</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [15,] 0.5638053 0.4361947</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [16,] 0.5711952 0.4288047</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [17,] 0.5992809 0.4007192</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [18,] 0.5924143 0.4075857</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [19,] 0.5852003 0.4147997</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 </code></pre></div>
     </div>
@@ -184,7 +184,7 @@
 
 
       <footer><div class="copyright">
-  <p></p><p>Developed by Philipp Münch, René Mreches, Martin Binder, Hüseyin Anil Gündüz, Alice McHardy.</p>
+  <p></p><p>Developed by Philipp Münch, René Mreches, Martin Binder, Hüseyin Anil Gündüz, Xiao-Yin To, Alice McHardy.</p>
 </div>
 
 <div class="pkgdown">

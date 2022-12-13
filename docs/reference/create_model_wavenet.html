@@ -182,13 +182,13 @@ then it's used as the dilation rate of each residual block.</p></dd>
     <h2>Examples</h2>
     <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="va">model</span> <span class="op">&lt;-</span> <span class="fu">create_model_wavenet</span><span class="op">(</span>residual_blocks <span class="op">=</span> <span class="fl">2</span><span class="op">^</span><span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="fl">1</span><span class="op">:</span><span class="fl">4</span>, <span class="fl">2</span><span class="op">)</span>, maxlen <span class="op">=</span> <span class="fl">1000</span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Model: "model_6"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Model: "model_7"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> ________________________________________________________________________________</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  Layer (type)             Output Shape      Param #  Connected to               </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> ================================================================================</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  input_7 (InputLayer)     [(None, 1000, 4)  0        []                         </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  input_8 (InputLayer)     [(None, 1000, 4)  0        []                         </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>                           ]                                                     </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  conv1d_13 (Conv1D)       (None, 1000, 32)  4096     ['input_7[0][0]']          </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  conv1d_13 (Conv1D)       (None, 1000, 32)  4096     ['input_8[0][0]']          </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  r_layer (RLayer)         [(None, 1000, 32  0        ['conv1d_13[0][0]']        </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>                           ),                                                    </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>                            (None, 1000, 32                                      </span>
@@ -248,7 +248,7 @@ then it's used as the dilation rate of each residual block.</p></dd>
 
 
       <footer><div class="copyright">
-  <p></p><p>Developed by Philipp Münch, René Mreches, Martin Binder, Hüseyin Anil Gündüz, Alice McHardy.</p>
+  <p></p><p>Developed by Philipp Münch, René Mreches, Martin Binder, Hüseyin Anil Gündüz, Xiao-Yin To, Alice McHardy.</p>
 </div>
 
 <div class="pkgdown">

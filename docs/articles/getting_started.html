@@ -254,20 +254,20 @@ mark.out {
 <span><span class="co">## [[1]]$confusion_matrix</span></span>
 <span><span class="co">##             Truth</span></span>
 <span><span class="co">## Prediction   high_gc equal_dist</span></span>
-<span><span class="co">##   high_gc        362          0</span></span>
-<span><span class="co">##   equal_dist      37        399</span></span>
+<span><span class="co">##   high_gc        385          1</span></span>
+<span><span class="co">##   equal_dist      14        398</span></span>
 <span><span class="co">## </span></span>
 <span><span class="co">## [[1]]$accuracy</span></span>
-<span><span class="co">## [1] 0.9536341</span></span>
+<span><span class="co">## [1] 0.981203</span></span>
 <span><span class="co">## </span></span>
 <span><span class="co">## [[1]]$categorical_crossentropy_loss</span></span>
-<span><span class="co">## [1] 0.1664274</span></span>
+<span><span class="co">## [1] 0.1169291</span></span>
 <span><span class="co">## </span></span>
 <span><span class="co">## [[1]]$AUC</span></span>
-<span><span class="co">## [1] 0.9981407</span></span>
+<span><span class="co">## [1] 0.9973995</span></span>
 <span><span class="co">## </span></span>
 <span><span class="co">## [[1]]$AUPRC</span></span>
-<span><span class="co">## [1] 0.9981022</span></span></code></pre>
+<span><span class="co">## [1] 0.9973713</span></span></code></pre>
 <p>We can check where our model made mistakes for the sequence with high GC content.</p>
 <div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">high_gc_file</span> <span class="op">&lt;-</span> <span class="fu">microseq</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/microseq/man/readFasta.html" class="external-link">readFasta</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/list.files.html" class="external-link">list.files</a></span><span class="op">(</span><span class="va">val_1_dir</span>, full.names <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span><span class="op">[</span><span class="fl">1</span><span class="op">]</span><span class="op">)</span></span>
@@ -302,53 +302,30 @@ mark.out {
 <span><span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">pred_df</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"high_gc_conf"</span>, <span class="st">"equal_dist_conf"</span>, <span class="st">"sample_end_position"</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">pred_df</span><span class="op">)</span></span></code></pre></div>
 <pre><code><span><span class="co">##   high_gc_conf equal_dist_conf sample_end_position</span></span>
-<span><span class="co">## 1    0.9188128      0.08118727                  50</span></span>
-<span><span class="co">## 2    0.9302119      0.06978811                  75</span></span>
-<span><span class="co">## 3    0.9420348      0.05796512                 100</span></span>
-<span><span class="co">## 4    0.9349488      0.06505124                 125</span></span>
-<span><span class="co">## 5    0.9412953      0.05870470                 150</span></span>
-<span><span class="co">## 6    0.9377016      0.06229834                 175</span></span></code></pre>
+<span><span class="co">## 1    0.9132041      0.08679590                  50</span></span>
+<span><span class="co">## 2    0.9312269      0.06877302                  75</span></span>
+<span><span class="co">## 3    0.9341301      0.06586976                 100</span></span>
+<span><span class="co">## 4    0.9248236      0.07517630                 125</span></span>
+<span><span class="co">## 5    0.9351547      0.06484523                 150</span></span>
+<span><span class="co">## 6    0.9286696      0.07133042                 175</span></span></code></pre>
 <div class="sourceCode" id="cb18"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">wrong_pred</span> <span class="op">&lt;-</span> <span class="va">pred_df</span> <span class="op"><a href="../reference/pipe.html">%&gt;%</a></span> <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">high_gc_conf</span> <span class="op">&lt;</span> <span class="fl">0.5</span><span class="op">)</span></span>
 <span><span class="va">wrong_pred</span></span></code></pre></div>
 <pre><code><span><span class="co">##    high_gc_conf equal_dist_conf sample_end_position</span></span>
-<span><span class="co">## 1     0.1810216       0.8189783                 800</span></span>
-<span><span class="co">## 2     0.2862690       0.7137310                 825</span></span>
-<span><span class="co">## 3     0.4550762       0.5449238                1050</span></span>
-<span><span class="co">## 4     0.1173862       0.8826137                1075</span></span>
-<span><span class="co">## 5     0.1653612       0.8346388                1150</span></span>
-<span><span class="co">## 6     0.1494038       0.8505962                1175</span></span>
-<span><span class="co">## 7     0.1699497       0.8300505                1325</span></span>
-<span><span class="co">## 8     0.4561236       0.5438765                1575</span></span>
-<span><span class="co">## 9     0.1570149       0.8429851                1950</span></span>
-<span><span class="co">## 10    0.4377471       0.5622530                2225</span></span>
-<span><span class="co">## 11    0.3907176       0.6092823                2375</span></span>
-<span><span class="co">## 12    0.1563121       0.8436879                2700</span></span>
-<span><span class="co">## 13    0.2767166       0.7232834                2875</span></span>
-<span><span class="co">## 14    0.1929830       0.8070169                3000</span></span>
-<span><span class="co">## 15    0.4188986       0.5811014                3150</span></span>
-<span><span class="co">## 16    0.4999052       0.5000948                3225</span></span>
-<span><span class="co">## 17    0.1707753       0.8292247                3550</span></span>
-<span><span class="co">## 18    0.1842640       0.8157361                3700</span></span>
-<span><span class="co">## 19    0.3965769       0.6034232                4275</span></span>
-<span><span class="co">## 20    0.1637637       0.8362364                4425</span></span>
-<span><span class="co">## 21    0.2527212       0.7472788                4675</span></span>
-<span><span class="co">## 22    0.1641787       0.8358213                5450</span></span>
-<span><span class="co">## 23    0.1892688       0.8107311                5550</span></span>
-<span><span class="co">## 24    0.3714488       0.6285511                6175</span></span>
-<span><span class="co">## 25    0.1816906       0.8183093                6325</span></span>
-<span><span class="co">## 26    0.1574632       0.8425367                6350</span></span>
-<span><span class="co">## 27    0.3496368       0.6503632                6500</span></span>
-<span><span class="co">## 28    0.4296815       0.5703186                6975</span></span>
-<span><span class="co">## 29    0.2099331       0.7900669                7550</span></span>
-<span><span class="co">## 30    0.2021904       0.7978095                7850</span></span>
-<span><span class="co">## 31    0.1683577       0.8316422                7875</span></span>
-<span><span class="co">## 32    0.3063792       0.6936209                7900</span></span>
-<span><span class="co">## 33    0.4233614       0.5766386                8075</span></span>
-<span><span class="co">## 34    0.1495787       0.8504212                8225</span></span>
-<span><span class="co">## 35    0.3396004       0.6603996                8400</span></span>
-<span><span class="co">## 36    0.2133902       0.7866098                9900</span></span>
-<span><span class="co">## 37    0.4731183       0.5268817                9925</span></span></code></pre>
+<span><span class="co">## 1    0.40029472       0.5997053                 675</span></span>
+<span><span class="co">## 2    0.06563434       0.9343656                 800</span></span>
+<span><span class="co">## 3    0.06470647       0.9352934                1150</span></span>
+<span><span class="co">## 4    0.16290323       0.8370968                1475</span></span>
+<span><span class="co">## 5    0.05980777       0.9401921                1950</span></span>
+<span><span class="co">## 6    0.05855723       0.9414428                2700</span></span>
+<span><span class="co">## 7    0.07035532       0.9296446                3000</span></span>
+<span><span class="co">## 8    0.06148772       0.9385122                3700</span></span>
+<span><span class="co">## 9    0.07519007       0.9248100                4675</span></span>
+<span><span class="co">## 10   0.35447988       0.6455200                6500</span></span>
+<span><span class="co">## 11   0.27814656       0.7218535                7550</span></span>
+<span><span class="co">## 12   0.08490564       0.9150943                7875</span></span>
+<span><span class="co">## 13   0.07240243       0.9275976                8225</span></span>
+<span><span class="co">## 14   0.11474812       0.8852519                9925</span></span></code></pre>
 <div class="sourceCode" id="cb20"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw">if</span> <span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">nrow</a></span><span class="op">(</span><span class="va">wrong_pred</span><span class="op">)</span> <span class="op">==</span> <span class="fl">0</span><span class="op">)</span> <span class="op">{</span></span>
 <span>  <span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="st">"All predictions for high GC content class correct"</span><span class="op">)</span></span>
@@ -364,43 +341,20 @@ mark.out {
 <span>  </span>
 <span>  <span class="va">wrong_pred_seq</span></span>
 <span><span class="op">}</span></span></code></pre></div>
-<pre><code><span><span class="co">##  [1] "CCCACTTCGTGTCTATGCCGGACACGCCTCGATAGGCGCAGGCGATGGGC"</span></span>
-<span><span class="co">##  [2] "GCCTCGATAGGCGCAGGCGATGGGCTCCGGCTCGTAACGTCGGGCAGGCG"</span></span>
-<span><span class="co">##  [3] "TCCGGTGGGGGCAGGTCCTCCTGGCGGGCGCTGTATTGGACGGGCTGCAG"</span></span>
-<span><span class="co">##  [4] "GGGCGCTGTATTGGACGGGCTGCAGCGTTCCCCGCACCACCGTTTTAGCT"</span></span>
-<span><span class="co">##  [5] "ACAGGAGAGACCCTCGGTTGCCGGCGACGCCGTGTCGTTGGTAGGCCCAC"</span></span>
-<span><span class="co">##  [6] "GACGCCGTGTCGTTGGTAGGCCCACTGGCCATCGCTGAGCTGCACTCGCC"</span></span>
-<span><span class="co">##  [7] "GCTCGCCCTCGCCGACTCGCTGTTCGTGTGACTGTCCGTTGGCGGGTGGC"</span></span>
-<span><span class="co">##  [8] "TGATCGGCGACCGCGCTAGCGGTAACCCGCCACCCGGTACCGGTCGGCCG"</span></span>
-<span><span class="co">##  [9] "GCCCAACAAGGACGGTGAACTCCCCCGGGTACGGAAGAGGGTATGGCCGC"</span></span>
-<span><span class="co">## [10] "ACCTGCGCGCCGCCTGGAATGGTCCGACGGGTGCCTCTTGCGCCGTCGCC"</span></span>
-<span><span class="co">## [11] "CCCGGAGCAACGAGTGGTCCCACACAGGCCCGTGCGAGTAAGGGGCGCGA"</span></span>
-<span><span class="co">## [12] "AGGAGTCCTCCTAGAGCTCATGGGTTGAGACGTGCCTCGACGCCCGACCT"</span></span>
-<span><span class="co">## [13] "AGGGTCCCTGCGCCTAAAGGGGGCCGTCCGCCCCTAGGTCGGTCTTGGCG"</span></span>
-<span><span class="co">## [14] "CCCATTAGACCGTCCTGGCGGACACCCGTACGGGTGAGACCCTCCGGGTC"</span></span>
-<span><span class="co">## [15] "GACGCGTATTGGTGGGGGCGTCAGGGGCGGGGCCCTTAGTCCGGTGCCGT"</span></span>
-<span><span class="co">## [16] "GCTGTGACCCAGGTAACGCCACGCTGCGCGGCCGGTGTGCCTCCCGGTGC"</span></span>
-<span><span class="co">## [17] "GCATCGGGTTTCGAGCGCGGACCCCGTCGCAACTGCCCCATGCTGGTAGG"</span></span>
-<span><span class="co">## [18] "TGCTTATCATGGCCGCCCTGATGACGTGTCAGGGGGAGGACTGAGCGGGG"</span></span>
-<span><span class="co">## [19] "GTACCCGCCTGTGAGGGCTTTTCCCGAGCCGCCCCGTGACGGGCGCAAGC"</span></span>
-<span><span class="co">## [20] "AGGGCTACCTGGCCGCCTGATAGGTGGAGACGTGTTCTGGCCGCCCTCGC"</span></span>
-<span><span class="co">## [21] "ATCCCGCATTCGCCGACGTCTCCACAGGAGGATCAGCGGGTCCGGGGCGA"</span></span>
-<span><span class="co">## [22] "CCAGTGCCGCCCATGCGTACTCGATGCAGACGGCCCGATCTCGCAGCTGC"</span></span>
-<span><span class="co">## [23] "GCCAGTGGCGTCGTAGTTAGCTCGGGGGCCTCGAGTGCCACGCCCGAATG"</span></span>
-<span><span class="co">## [24] "GCTGCAGCCGGCATCCCGGATTGTCGACGACCGTACCGCCCCCGCTGGCG"</span></span>
-<span><span class="co">## [25] "CCGCATCCCGATTGCCGGAAGGAGCGCCGGGCCATAGTCCTGCCTTAGGG"</span></span>
-<span><span class="co">## [26] "GCCGGGCCATAGTCCTGCCTTAGGGCGGTCACCCGCGACCTAAAAGGGAG"</span></span>
-<span><span class="co">## [27] "AACGTTCCGCCCTGGCGTGTCGGAGGCTCAGCAAGCCAGCGGCTGCGGGG"</span></span>
-<span><span class="co">## [28] "CTTGCGCCGAGGCTCAACGCTGTTCCGGGGGGGCGCCAGCTCTGGAAGCG"</span></span>
-<span><span class="co">## [29] "TTTGCGCCCCCTAAGGCACAGCCGCGACCCCAGGTTGGGAACCGCCGAAC"</span></span>
-<span><span class="co">## [30] "TGGTCTGGGAGCCTCTGCGGGCGCCCTACGGAACGTGGCTCCGAGCATCG"</span></span>
-<span><span class="co">## [31] "CTACGGAACGTGGCTCCGAGCATCGGCGCATCGGCATGTGTCTGCCGGCG"</span></span>
-<span><span class="co">## [32] "GCGCATCGGCATGTGTCTGCCGGCGCGGTCTGTTCCCGGGTCCGGGCTGC"</span></span>
-<span><span class="co">## [33] "CAACCCTCCACGTGGTGCGCGGCTACCTACGCCGCGCTGGATGGCGGGCC"</span></span>
-<span><span class="co">## [34] "GGCGGGCCCTTCAATTCTATAAGCGACGCCGCCCTTGTCTGACGCTGGGC"</span></span>
-<span><span class="co">## [35] "GCCCCATCTGACCGCGGCGGCCGTTCACCCTATGTAGCCCCCTGCCTCGC"</span></span>
-<span><span class="co">## [36] "TGGCCGTCGCGCTCCGGAGCCGTCACACCGGCGTACCTGTTATAAAGTCG"</span></span>
-<span><span class="co">## [37] "CACCGGCGTACCTGTTATAAAGTCGCCCGCGCTCCCCCGGGCGCACCACG"</span></span></code></pre>
+<pre><code><span><span class="co">##  [1] "CTTAGAGACCTCGCCGCCACCGCCCGAGGTTCCGCTCCGGCGTCCCGCGG"</span></span>
+<span><span class="co">##  [2] "CCCACTTCGTGTCTATGCCGGACACGCCTCGATAGGCGCAGGCGATGGGC"</span></span>
+<span><span class="co">##  [3] "ACAGGAGAGACCCTCGGTTGCCGGCGACGCCGTGTCGTTGGTAGGCCCAC"</span></span>
+<span><span class="co">##  [4] "GATAGCTCCACACCCACCTCAGCGTCCCGGGCCGCCGGCGTTCCGCCTGC"</span></span>
+<span><span class="co">##  [5] "GCCCAACAAGGACGGTGAACTCCCCCGGGTACGGAAGAGGGTATGGCCGC"</span></span>
+<span><span class="co">##  [6] "AGGAGTCCTCCTAGAGCTCATGGGTTGAGACGTGCCTCGACGCCCGACCT"</span></span>
+<span><span class="co">##  [7] "CCCATTAGACCGTCCTGGCGGACACCCGTACGGGTGAGACCCTCCGGGTC"</span></span>
+<span><span class="co">##  [8] "TGCTTATCATGGCCGCCCTGATGACGTGTCAGGGGGAGGACTGAGCGGGG"</span></span>
+<span><span class="co">##  [9] "ATCCCGCATTCGCCGACGTCTCCACAGGAGGATCAGCGGGTCCGGGGCGA"</span></span>
+<span><span class="co">## [10] "AACGTTCCGCCCTGGCGTGTCGGAGGCTCAGCAAGCCAGCGGCTGCGGGG"</span></span>
+<span><span class="co">## [11] "TTTGCGCCCCCTAAGGCACAGCCGCGACCCCAGGTTGGGAACCGCCGAAC"</span></span>
+<span><span class="co">## [12] "CTACGGAACGTGGCTCCGAGCATCGGCGCATCGGCATGTGTCTGCCGGCG"</span></span>
+<span><span class="co">## [13] "GGCGGGCCCTTCAATTCTATAAGCGACGCCGCCCTTGTCTGACGCTGGGC"</span></span>
+<span><span class="co">## [14] "CACCGGCGTACCTGTTATAAAGTCGCCCGCGCTCCCCCGGGCGCACCACG"</span></span></code></pre>
 <p>We can check the nucleotide distribution of those sequences</p>
 <div class="sourceCode" id="cb22"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">l</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="op">)</span></span>
@@ -410,43 +364,20 @@ mark.out {
 <span><span class="va">dist_matrix</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/do.call.html" class="external-link">do.call</a></span><span class="op">(</span><span class="va">rbind</span>, <span class="va">l</span><span class="op">)</span></span>
 <span><span class="va">dist_matrix</span></span></code></pre></div>
 <pre><code><span><span class="co">##          A    C    G    T</span></span>
-<span><span class="co">##  [1,] 0.16 0.34 0.32 0.18</span></span>
-<span><span class="co">##  [2,] 0.14 0.30 0.42 0.14</span></span>
-<span><span class="co">##  [3,] 0.08 0.26 0.46 0.20</span></span>
-<span><span class="co">##  [4,] 0.12 0.32 0.32 0.24</span></span>
-<span><span class="co">##  [5,] 0.16 0.32 0.36 0.16</span></span>
-<span><span class="co">##  [6,] 0.12 0.36 0.32 0.20</span></span>
-<span><span class="co">##  [7,] 0.04 0.34 0.36 0.26</span></span>
-<span><span class="co">##  [8,] 0.14 0.40 0.34 0.12</span></span>
-<span><span class="co">##  [9,] 0.24 0.30 0.36 0.10</span></span>
-<span><span class="co">## [10,] 0.08 0.40 0.34 0.18</span></span>
-<span><span class="co">## [11,] 0.22 0.32 0.38 0.08</span></span>
-<span><span class="co">## [12,] 0.18 0.32 0.30 0.20</span></span>
-<span><span class="co">## [13,] 0.10 0.34 0.38 0.18</span></span>
-<span><span class="co">## [14,] 0.16 0.38 0.30 0.16</span></span>
-<span><span class="co">## [15,] 0.08 0.24 0.48 0.20</span></span>
-<span><span class="co">## [16,] 0.10 0.38 0.36 0.16</span></span>
-<span><span class="co">## [17,] 0.14 0.34 0.34 0.18</span></span>
-<span><span class="co">## [18,] 0.16 0.22 0.42 0.20</span></span>
-<span><span class="co">## [19,] 0.12 0.38 0.34 0.16</span></span>
-<span><span class="co">## [20,] 0.12 0.32 0.36 0.20</span></span>
-<span><span class="co">## [21,] 0.18 0.34 0.34 0.14</span></span>
-<span><span class="co">## [22,] 0.16 0.40 0.28 0.16</span></span>
-<span><span class="co">## [23,] 0.14 0.30 0.38 0.18</span></span>
-<span><span class="co">## [24,] 0.12 0.42 0.32 0.14</span></span>
-<span><span class="co">## [25,] 0.16 0.34 0.34 0.16</span></span>
-<span><span class="co">## [26,] 0.20 0.32 0.34 0.14</span></span>
-<span><span class="co">## [27,] 0.14 0.32 0.40 0.14</span></span>
-<span><span class="co">## [28,] 0.12 0.32 0.40 0.16</span></span>
-<span><span class="co">## [29,] 0.20 0.40 0.28 0.12</span></span>
-<span><span class="co">## [30,] 0.12 0.32 0.38 0.18</span></span>
-<span><span class="co">## [31,] 0.14 0.32 0.36 0.18</span></span>
-<span><span class="co">## [32,] 0.04 0.34 0.40 0.22</span></span>
-<span><span class="co">## [33,] 0.12 0.40 0.34 0.14</span></span>
-<span><span class="co">## [34,] 0.14 0.34 0.30 0.22</span></span>
-<span><span class="co">## [35,] 0.10 0.48 0.24 0.18</span></span>
-<span><span class="co">## [36,] 0.16 0.34 0.30 0.20</span></span>
-<span><span class="co">## [37,] 0.16 0.44 0.26 0.14</span></span></code></pre>
+<span><span class="co">##  [1,] 0.10 0.46 0.30 0.14</span></span>
+<span><span class="co">##  [2,] 0.16 0.34 0.32 0.18</span></span>
+<span><span class="co">##  [3,] 0.16 0.32 0.36 0.16</span></span>
+<span><span class="co">##  [4,] 0.12 0.48 0.26 0.14</span></span>
+<span><span class="co">##  [5,] 0.24 0.30 0.36 0.10</span></span>
+<span><span class="co">##  [6,] 0.18 0.32 0.30 0.20</span></span>
+<span><span class="co">##  [7,] 0.16 0.38 0.30 0.16</span></span>
+<span><span class="co">##  [8,] 0.16 0.22 0.42 0.20</span></span>
+<span><span class="co">##  [9,] 0.18 0.34 0.34 0.14</span></span>
+<span><span class="co">## [10,] 0.14 0.32 0.40 0.14</span></span>
+<span><span class="co">## [11,] 0.20 0.40 0.28 0.12</span></span>
+<span><span class="co">## [12,] 0.14 0.32 0.36 0.18</span></span>
+<span><span class="co">## [13,] 0.14 0.34 0.30 0.22</span></span>
+<span><span class="co">## [14,] 0.16 0.44 0.26 0.14</span></span></code></pre>
 <div class="sourceCode" id="cb24"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">df</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span>distribution <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/vector.html" class="external-link">as.vector</a></span><span class="op">(</span><span class="va">dist_matrix</span><span class="op">)</span>,</span>
 <span>                 nt <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/factor.html" class="external-link">factor</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="va">vocabulary</span>, each <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">nrow</a></span><span class="op">(</span><span class="va">dist_matrix</span><span class="op">)</span><span class="op">)</span><span class="op">)</span>,</span>
@@ -461,11 +392,11 @@ mark.out {
 <span><span class="va">pred_summary</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/summarize_states.html">summarize_states</a></span><span class="op">(</span>label_names <span class="op">=</span> <span class="va">label_names</span>, df <span class="op">=</span> <span class="va">pred_df</span><span class="op">[</span>, <span class="fl">1</span><span class="op">:</span><span class="fl">2</span><span class="op">]</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">pred_summary</span><span class="op">)</span></span></code></pre></div>
 <pre><code><span><span class="co">##    file_name mean_conf_high_gc mean_conf_equal_dist max_conf_high_gc</span></span>
-<span><span class="co">## 1:        NA         0.8494764            0.1505236        0.9430411</span></span>
+<span><span class="co">## 1:        NA         0.8901041            0.1098958        0.9406289</span></span>
 <span><span class="co">##    max_conf_equal_dist vote_perc_high_gc vote_perc_equal_dist mean_prediction</span></span>
-<span><span class="co">## 1:           0.8826137         0.9072682           0.09273183         high_gc</span></span>
+<span><span class="co">## 1:           0.9414428         0.9649123           0.03508772         high_gc</span></span>
 <span><span class="co">##    max_prediction vote_prediction num_prediction</span></span>
-<span><span class="co">## 1:        high_gc         high_gc            399</span></span></code></pre>
+<span><span class="co">## 1:     equal_dist         high_gc            399</span></span></code></pre>
 </div>
 </div>
   </div>
@@ -482,7 +413,7 @@ mark.out {
 
       <footer><div class="copyright">
   <p></p>
-<p>Developed by Philipp Münch, René Mreches, Martin Binder, Hüseyin Anil Gündüz, Alice McHardy.</p>
+<p>Developed by Philipp Münch, René Mreches, Martin Binder, Hüseyin Anil Gündüz, Xiao-Yin To, Alice McHardy.</p>
 </div>
 
 <div class="pkgdown">
