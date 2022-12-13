@@ -1,7 +1,7 @@
 
 <p>
 
-<img alt="DeepG logo" height="150px" src="https://avatars.githubusercontent.com/u/47594096?s=200&v=4" align="left" hspace="10px" vspace="0px">
+<img alt="DeepG logo" height="70px" src="https://avatars.githubusercontent.com/u/47594096?s=200&v=4" align="left" hspace="10px" vspace="0px">
 
 </p>
 
