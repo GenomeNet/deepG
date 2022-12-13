@@ -1161,6 +1161,7 @@ cm_perc <- function(cm, round_dig = 2) {
     }
   }
   cm <- round(cm, round_dig)
+  cm
 }
 
 create_conf_mat_obj <- function(m, confMatLabels) {

@@ -10,11 +10,11 @@ knitr::opts_chunk$set(
 )
 ```
 
-<p><img alt="DeepG logo" height="70px" src="https://avatars.githubusercontent.com/u/47594096?s=200&v=4" align="left" hspace="10px" vspace="0px"></p>
+<p><img alt="DeepG logo" height="70px" src="man/figures/logo_small.png" align="left" hspace="10px" vspace="0px"></p>
 
 <h1>DeepG: R toolbox for deep neural networks optimized for genomic datasets</h1>
 
-The goal of the package is to speed up the development of bioinformatical tools for sequence classification, homology detection and other bioinformatical tasks. It is developed for biologists and advanced AI researchers. DeepG is a collaborative effort from the McHardy Lab at the *Helmholtz Centre for Infection Research*, The Bischl lab at the *University of Munich* and the Huttenhower lab at *Harvard T.H. Chan School of Public Health*
+The goal of the package is to speed up the development of bioinformatical tools for sequence classification, homology detection and other bioinformatical tasks. It is developed for biologists and advanced AI researchers. DeepG is a collaborative effort from the McHardy Lab at the *Helmholtz Centre for Infection Research*, The Bischl lab at the *University of Munich* and the Huttenhower lab at *Harvard T.H. Chan School of Public Health*.
 
 [![DOI](https://zenodo.org/badge/387820006.svg)](https://zenodo.org/badge/latestdoi/387820006)
 
@@ -60,7 +60,7 @@ devtools::load_all(path = "~/deepGdev")
 
 ## Usage 
 
-See the package website at https://deepg.de for documentation and example code.
+See the Package website at https://deepg.de for documentation and example code.
 
  <!-- ## Examples  -->
 
