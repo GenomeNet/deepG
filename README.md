@@ -7,7 +7,8 @@
 
 <h1>
 
-DeepG: R toolbox for deep neural networks optimized for genomic datasets
+<b>DeepG: R toolbox for deep neural networks optimized for genomic
+datasets</b>
 
 </h1>
 
