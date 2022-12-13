@@ -2914,10 +2914,11 @@ generator_rds <- function(rds_folder, batch_size, path_file_log = NULL,
       } else {
         index <- sample(sample_index, min(batch_size - x_index + 1, length(sample_index)))
       }
+      
+      # subsetting
       x[x_index:(x_index + length(index) - 1), , ] <- x_complete[index, , ]
       
       if (!is_lm) {
-        #print(y_complete)
         y[x_index:(x_index + length(index) - 1), ] <- y_complete[index, ]
       }
       

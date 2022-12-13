@@ -18,7 +18,7 @@ advanced AI researchers. DeepG is a collaborative effort from the
 McHardy Lab at the *Helmholtz Centre for Infection Research*, The Bischl
 lab at the *University of Munich* and the Huttenhower lab at *Harvard
 T.H. Chan School of Public
-Health*
+Health*.
 
 [![DOI](https://zenodo.org/badge/387820006.svg)](https://zenodo.org/badge/latestdoi/387820006)
 

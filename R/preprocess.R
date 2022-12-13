@@ -1357,3 +1357,36 @@ plot_cm <- function(cm, perc = FALSE, cm_labels, round_dig = 2, text_size = 1) {
   cm_plot
   
 }
+
+subset_tensor_list <- function(tensor_list, dim_list, subset_index, dim_n_list) {
+  
+  for (i in 1:length(tensor_list)) {
+    tensor_list[[i]] <- subset_tensor(tensor = tensor_list[[i]],
+                                      subset_index = subset_index,
+                                      dim_n = dim_n_list[[i]])
+  }
+  
+}
+
+subset_tensor <- function(tensor, subset_index, dim_n) {
+  
+  if (dim_n == 1) {
+    subset_tensor <- tensor[subset_index]
+  }
+  
+  if (dim_n == 2) {
+    subset_tensor <- tensor[subset_index, ]
+  }
+  
+  if (dim_n == 3) {
+    subset_tensor <- tensor[subset_index, , ]
+  }
+  
+  if (dim_n == 4) {
+    subset_tensor <- tensor[subset_index, , , ]
+  }
+  
+  if (length(subset_index) == 1 & dim_n > 1) {
+    subset_tensor <- tensorflow::tf$expand_dims(subset_tensor, axis = 0L)
+  }
+}
