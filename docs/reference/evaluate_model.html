@@ -115,6 +115,7 @@
 <span>  target_from_csv <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  max_samples <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  proportion_per_seq <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  concat_seq <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  seed <span class="op">=</span> <span class="fl">1234</span>,</span>
 <span>  auc <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  auprc <span class="op">=</span> <span class="cn">FALSE</span>,</span>
@@ -214,6 +215,11 @@ subset of <code>max_samples</code> samples.</p></dd>
 <dd><p>Numerical value between 0 and 1. Proportion of sequence to take samples from (use random subsequence).</p></dd>
 
 
+<dt>concat_seq</dt>
+<dd><p>Character string or <code>NULL</code>. If not <code>NULL</code> all entries from file get concatenated to one sequence with <code>concat_seq</code> string between them.
+Example: If 1.entry AACC, 2. entry TTTG and <code>concat_seq = "ZZZ"</code> this becomes AACCZZZTTTG.</p></dd>
+
+
 <dt>seed</dt>
 <dd><p>Sets seed for <code>set.seed</code> function for reproducible results.</p></dd>
 
@@ -275,15 +281,15 @@ and else an integer.</p></dd>
 <span class="r-out co"><span class="r-pr">#&gt;</span>           Truth</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Prediction a c g t</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>          a 0 0 0 0</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>          c 2 1 2 1</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>          g 2 1 1 3</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>          t 1 0 1 0</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>          c 0 0 0 0</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>          g 5 2 5 2</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>          t 0 0 0 1</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [[1]]$accuracy</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] 0.1333333</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] 0.4</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [[1]]$categorical_crossentropy_loss</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] 1.403538</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] 1.321667</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [[1]]$AUC</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> NULL</span>
@@ -302,7 +308,7 @@ and else an integer.</p></dd>
 
 
       <footer><div class="copyright">
-  <p></p><p>Developed by Philipp Münch, René Mreches, Martin Binder, Hüseyin Anil Gündüz, Alice McHardy.</p>
+  <p></p><p>Developed by Philipp Münch, René Mreches, Martin Binder, Hüseyin Anil Gündüz, Xiao-Yin To, Alice McHardy.</p>
 </div>
 
 <div class="pkgdown">

@@ -10,7 +10,7 @@ knitr::opts_chunk$set(
 )
 ```
 
-<p><img alt="DeepG logo" height="150px" src="https://avatars.githubusercontent.com/u/47594096?s=200&v=4" align="left" hspace="10px" vspace="0px"></p>
+<p><img alt="DeepG logo" height="70px" src="https://avatars.githubusercontent.com/u/47594096?s=200&v=4" align="left" hspace="10px" vspace="0px"></p>
 
 <h1>DeepG: R toolbox for deep neural networks optimized for genomic datasets</h1>
 
