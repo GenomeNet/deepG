@@ -1,16 +1,10 @@
 
-<p>
+# DeepG <img src="man/figures/logo_small.png"  align="left" vspace="-1800px"/>
 
-<img alt="DeepG logo" height="70px" src="man/figures/logo_small.png" align="left" hspace="10px" vspace="0px">
-
-</p>
-
-<h1>
-
-<b>DeepG: R toolbox for deep neural networks optimized for genomic
-datasets</b>
-
-</h1>
+**R toolbox for deep neural networks optimized for genomic datasets**
+<!---
+% <p><img alt="DeepG logo" height="70px" src="man/figures/logo_small.png" align="left" hspace="-1000px" vspace="-180px"></p>
+-->
 
 The goal of the package is to speed up the development of
 bioinformatical tools for sequence classification, homology detection
