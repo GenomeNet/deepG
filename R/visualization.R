@@ -273,7 +273,7 @@ gradients_stepwise <- function(model = model, baseline_seq, target_class_idx,
 #' Heatmap of integrated gradient scores
 #' 
 #' Creates a heatmap from output of \code{\link{integrated_gradients}} function. The first row contains 
-#' the column-wise absolut sums of IG scores and the second row the sums. Rows 3 to 6 contain the IG scores for each 
+#' the column-wise absolute sums of IG scores and the second row the sums. Rows 3 to 6 contain the IG scores for each 
 #' position and each nucleotide. The last row contains nucleotide information.
 #'
 #' @param integrated_grads Matrix of integrated gradient scores (output of \code{\link{integrated_gradients}} function).

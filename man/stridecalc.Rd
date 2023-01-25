@@ -2,7 +2,7 @@
 % Please edit documentation in R/help_functions.R
 \name{stridecalc}
 \alias{stridecalc}
-\title{Stride lenght calculation}
+\title{Stride length calculation}
 \usage{
 stridecalc(maxlen, plen)
 }

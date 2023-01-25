@@ -501,9 +501,9 @@ create_model_lstm_cnn <- function(
 #' @inheritParams wavenet::wavenet
 #' @inheritParams create_model_lstm_cnn
 #' @examples 
-#' 
+#'\dontrun{
 #' model <- create_model_wavenet(residual_blocks = 2^rep(1:4, 2), maxlen = 1000)
-#' 
+#' }
 #' @export
 create_model_wavenet <- function(filters = 16, kernel_size = 2, residual_blocks, maxlen,
                                  input_tensor = NULL, initial_kernel_size = 32, initial_filters = 32,
@@ -1879,10 +1879,118 @@ get_optimizer <- function(model) {
   return(optimizer)
 }
 
-#' Genomenet model 
+#' @title Create GenomeNet Model with Given Architecture Parameters
 #'
-#' TODO: add link to paper
-#'
+#' @param maxlen (integer `numeric(1)`)\cr
+#'   Input sequence length.
+#' @param learning.rate (`numeric(1)`)\cr
+#'   Used by the `keras` optimizer that is specified by `optimizer`.
+#' @param number_of_cnn_layers (integer `numeric(1)`)\cr
+#'   Target number of CNN-layers to use in total. If `number_of_cnn_layers` is
+#'   greater than `conv_block_count`, then the effective number of CNN layers
+#'   is set to the closest integer that is divisible by `conv_block_count`.
+#' @param `conv_block_count` (integer `numeric(1)`)\cr
+#'   Number of convolutional blocks, into which the CNN layers are divided.
+#'   If this is greater than `number_of_cnn_layers`, then it is set to
+#'   `number_of_cnn_layers` (the convolutional block size will then be 1).\cr
+#'   Convolutional blocks are used when `model_type` is `"gap"` (the output of
+#'   the last `conv_block_count * (1 - skip_block_fraction)` blocks is
+#'   fed to global average pooling and then concatenated), and also when
+#'   `residual_block` is `TRUE` (the number of filters is held constant within
+#'   blocks). If neither of these is the case, `conv_block_count` has little
+#'   effect besides the fact that `number_of_cnn_layers` is set to the closest
+#'   integer divisible by `conv_block_count`.
+#' @param `kernel_size_0` (`numeric(1)`)\cr
+#'   Target CNN kernel size of the first CNN-layer. Although CNN kernel size is
+#'   always an integer, this value can be non-integer, potentially affecting
+#'   the kernel-sizes of intermediate layers (which are geometrically
+#'   interpolated between `kernel_size_0` and `kernel_size_end`).
+#' @param `kernel_size_end` (`numeric(1)`)\cr
+#'   Target CNN kernel size of the last CNN-layer; ignored if only one
+#'   CNN-layer is used (i.e. if `number_of_cnn_layers` is 1). Although CNN
+#'   kernel size is always an integer, this value can be non-integer,
+#'   potentially affecting the kernel-sizes of intermediate layers (which are
+#'   geometrically interpolated between `kernel_size_0` and `kernel_size_end`).
+#' @param filters_0 (`numeric(1)`)\cr
+#'   Target filter number of the first CNN-layer. Although CNN filter number is
+#'   always an integer, this value can be non-integer, potentially affecting
+#'   the filter-numbers of intermediate layers (which are geometrically
+#'   interpolated between `filters_0` and `filters_end`).\cr
+#'   Note that filters are constant within convolutional blocks when
+#'   `residual_block` is `TRUE`.
+#' @param filters_end (`numeric(1)`)\cr
+#'   Target filter number of the last CNN-layer; ignored if only one CNN-layer
+#'   is used (i.e. if `number_of_cnn_layers` is 1). Although CNN filter number
+#'   is always an integer, this value can be non-integer, potentially affecting
+#'   the filter-numbers of intermediatdilation_rates layers (which are geometrically
+#'   interpolated between `kernel_size_0` and `kernel_size_end`).\cr
+#'   Note that filters are constant within convolutional blocks when
+#'   `residual_block` is `TRUE`.
+#' @param dilation_end (`numeric(1)`)\cr
+#'   Dilation of the last CNN-layer *within each block*. Dilation rates within
+#'   each convolutional block grows exponentially from 1 (no dilation) for the
+#'   first CNN-layer to each block, to this value. Set to 1 (default) to
+#'   disable dilation.
+#' @param max_pool_end (`numeric(1)`)\cr
+#'   Target total effective pooling of CNN part of the network. "Effective
+#'   pooling" here is the product of the pooling rates of all previous
+#'   CNN-layers. A network with three CNN-layers, all of which are followed
+#'   by pooling layers of size 2, therefore has effective pooling of 8, with
+#'   the effective pooling at intermediate positions being 1 (beginning), 2,
+#'   and 4. Effective pooling after each layer is set to the power of 2 that is,
+#'   on a logarithmic scale, closest to
+#'   `max_pool_end ^ (<CNN layer number> / <total number of CNN layers>)`.
+#'   Therefore, even though the total effective pooling size of the whole
+#'   CNN part of the network will always be a power of 2, having different,
+#'   possibly non-integer values of `max_pool_end`, will still lead to
+#'   different networks.
+#' @param dense_layer_num (integer `numeric(1)`)\cr
+#'   number of dense layers at the end of the network, not counting the output
+#'   layer.
+#' @param dense_layer_units (integer `numeric(1)`)\cr
+#'   Number of units in each dense layer, except for the output layer.
+#' @param dropout (`numeric(1)`)\cr
+#'   Dropout rate of dense layers, except for the output layer.
+#' @param batch_norm_momentum (`numeric(1)`)\cr
+#'   `momentum`-parameter of `layer_batch_normalization` layers used in the
+#'   convolutional part of the network.
+#' @param leaky_relu_alpha (`numeric(1)`)\cr
+#'   `alpha`-parameter of the `layer_activation_leaky_relu` activation layers
+#'   used in the convolutional part of the network.
+#' @param dense_activation (`character(1)`)\cr
+#'   Which activation function to use for dense layers. Should be one of
+#'   `"relu"`, `"sigmoid"`, or `"tanh"`.
+#' @param skip_block_fraction (`numeric(1)`)\cr
+#'   What fraction of the first convolutional blocks to skip.
+#'   Only used when `model_type` is `"gap"`.
+#' @param residual_block (`logical(1)`)\cr
+#'   Whether to use residual layers in the convolutional part of the network.
+#' @param reverse_encoding (`logical(1)`)\cr
+#'   Whether the network should have a second input for reverse-complement
+#'   sequences.
+#' @param optimizer (`character(1)`)\cr
+#'   Which optimizer to use. One of `"adam"`, `"adagrad"`, `"rmsprop"`, or `"sgd"`.
+#' @param model_type (`character(1)`)\cr
+#'   Whether to use the global average pooling (`"gap"`) or recurrent
+#'   (`"recurrent"`) model type.
+#' @param recurrent_type (`character(1)`)\cr
+#'   Which recurrent network type to use. One of `"lstm"` or `"gru"`.
+#'   Only used when `model_type` is `"recurrent"`.
+#' @param recurrent_layers (integer `numeric(1)`)\cr
+#'   Number of recurrent layers.
+#'   Only used when `model_type` is `"recurrent"`.
+#' @param recurrent_bidirectional (`logical(1)`)\cr
+#'   Whether to use bidirectional recurrent layers.
+#'   Only used when `model_type` is `"recurrent"`.
+#' @param recurrent_units (integer `numeric(1)`)\cr
+#'   Number of units in each recurrent layer.
+#'   Only used when `model_type` is `"recurrent"`.
+#' @param vocabulary.size (integer `numeric(1)`)\cr
+#'   Vocabulary size of (one-hot encoded) input strings. This determines the
+#'   input tensor shape, together with `maxlen`.
+#' @param num_targets (integer `numeric(1)`)\cr
+#'   Number of output units to create.
+#' @return A keras model.
 #' @export
 create_model_genomenet <- function(
   maxlen = 300,

@@ -2,7 +2,7 @@
 % Please edit documentation in R/create_model.R
 \name{create_model_genomenet}
 \alias{create_model_genomenet}
-\title{Genomenet model}
+\title{Create GenomeNet Model with Given Architecture Parameters}
 \usage{
 create_model_genomenet(
   maxlen = 300,
@@ -35,6 +35,146 @@ create_model_genomenet(
   model_seed = NULL
 )
 }
+\arguments{
+\item{maxlen}{(integer \code{numeric(1)})\cr
+Input sequence length.}
+
+\item{number_of_cnn_layers}{(integer \code{numeric(1)})\cr
+Target number of CNN-layers to use in total. If \code{number_of_cnn_layers} is
+greater than \code{conv_block_count}, then the effective number of CNN layers
+is set to the closest integer that is divisible by \code{conv_block_count}.}
+
+\item{filters_0}{(\code{numeric(1)})\cr
+Target filter number of the first CNN-layer. Although CNN filter number is
+always an integer, this value can be non-integer, potentially affecting
+the filter-numbers of intermediate layers (which are geometrically
+interpolated between \code{filters_0} and \code{filters_end}).\cr
+Note that filters are constant within convolutional blocks when
+\code{residual_block} is \code{TRUE}.}
+
+\item{filters_end}{(\code{numeric(1)})\cr
+Target filter number of the last CNN-layer; ignored if only one CNN-layer
+is used (i.e. if \code{number_of_cnn_layers} is 1). Although CNN filter number
+is always an integer, this value can be non-integer, potentially affecting
+the filter-numbers of intermediatdilation_rates layers (which are geometrically
+interpolated between \code{kernel_size_0} and \code{kernel_size_end}).\cr
+Note that filters are constant within convolutional blocks when
+\code{residual_block} is \code{TRUE}.}
+
+\item{dilation_end}{(\code{numeric(1)})\cr
+Dilation of the last CNN-layer \emph{within each block}. Dilation rates within
+each convolutional block grows exponentially from 1 (no dilation) for the
+first CNN-layer to each block, to this value. Set to 1 (default) to
+disable dilation.}
+
+\item{max_pool_end}{(\code{numeric(1)})\cr
+Target total effective pooling of CNN part of the network. "Effective
+pooling" here is the product of the pooling rates of all previous
+CNN-layers. A network with three CNN-layers, all of which are followed
+by pooling layers of size 2, therefore has effective pooling of 8, with
+the effective pooling at intermediate positions being 1 (beginning), 2,
+and 4. Effective pooling after each layer is set to the power of 2 that is,
+on a logarithmic scale, closest to
+\verb{max_pool_end ^ (<CNN layer number> / <total number of CNN layers>)}.
+Therefore, even though the total effective pooling size of the whole
+CNN part of the network will always be a power of 2, having different,
+possibly non-integer values of \code{max_pool_end}, will still lead to
+different networks.}
+
+\item{dense_layer_num}{(integer \code{numeric(1)})\cr
+number of dense layers at the end of the network, not counting the output
+layer.}
+
+\item{dense_layer_units}{(integer \code{numeric(1)})\cr
+Number of units in each dense layer, except for the output layer.}
+
+\item{batch_norm_momentum}{(\code{numeric(1)})\cr
+\code{momentum}-parameter of \code{layer_batch_normalization} layers used in the
+convolutional part of the network.}
+
+\item{leaky_relu_alpha}{(\code{numeric(1)})\cr
+\code{alpha}-parameter of the \code{layer_activation_leaky_relu} activation layers
+used in the convolutional part of the network.}
+
+\item{dense_activation}{(\code{character(1)})\cr
+Which activation function to use for dense layers. Should be one of
+\code{"relu"}, \code{"sigmoid"}, or \code{"tanh"}.}
+
+\item{skip_block_fraction}{(\code{numeric(1)})\cr
+What fraction of the first convolutional blocks to skip.
+Only used when \code{model_type} is \code{"gap"}.}
+
+\item{residual_block}{(\code{logical(1)})\cr
+Whether to use residual layers in the convolutional part of the network.}
+
+\item{reverse_encoding}{(\code{logical(1)})\cr
+Whether the network should have a second input for reverse-complement
+sequences.}
+
+\item{optimizer}{(\code{character(1)})\cr
+Which optimizer to use. One of \code{"adam"}, \code{"adagrad"}, \code{"rmsprop"}, or \code{"sgd"}.}
+
+\item{model_type}{(\code{character(1)})\cr
+Whether to use the global average pooling (\code{"gap"}) or recurrent
+(\code{"recurrent"}) model type.}
+
+\item{recurrent_type}{(\code{character(1)})\cr
+Which recurrent network type to use. One of \code{"lstm"} or \code{"gru"}.
+Only used when \code{model_type} is \code{"recurrent"}.}
+
+\item{recurrent_layers}{(integer \code{numeric(1)})\cr
+Number of recurrent layers.
+Only used when \code{model_type} is \code{"recurrent"}.}
+
+\item{recurrent_bidirectional}{(\code{logical(1)})\cr
+Whether to use bidirectional recurrent layers.
+Only used when \code{model_type} is \code{"recurrent"}.}
+
+\item{recurrent_units}{(integer \code{numeric(1)})\cr
+Number of units in each recurrent layer.
+Only used when \code{model_type} is \code{"recurrent"}.}
+
+\item{num_targets}{(integer \code{numeric(1)})\cr
+Number of output units to create.}
+
+\item{learning.rate}{(\code{numeric(1)})\cr
+Used by the \code{keras} optimizer that is specified by \code{optimizer}.}
+
+\item{`conv_block_count`}{(integer \code{numeric(1)})\cr
+Number of convolutional blocks, into which the CNN layers are divided.
+If this is greater than \code{number_of_cnn_layers}, then it is set to
+\code{number_of_cnn_layers} (the convolutional block size will then be 1).\cr
+Convolutional blocks are used when \code{model_type} is \code{"gap"} (the output of
+the last \code{conv_block_count * (1 - skip_block_fraction)} blocks is
+fed to global average pooling and then concatenated), and also when
+\code{residual_block} is \code{TRUE} (the number of filters is held constant within
+blocks). If neither of these is the case, \code{conv_block_count} has little
+effect besides the fact that \code{number_of_cnn_layers} is set to the closest
+integer divisible by \code{conv_block_count}.}
+
+\item{`kernel_size_0`}{(\code{numeric(1)})\cr
+Target CNN kernel size of the first CNN-layer. Although CNN kernel size is
+always an integer, this value can be non-integer, potentially affecting
+the kernel-sizes of intermediate layers (which are geometrically
+interpolated between \code{kernel_size_0} and \code{kernel_size_end}).}
+
+\item{`kernel_size_end`}{(\code{numeric(1)})\cr
+Target CNN kernel size of the last CNN-layer; ignored if only one
+CNN-layer is used (i.e. if \code{number_of_cnn_layers} is 1). Although CNN
+kernel size is always an integer, this value can be non-integer,
+potentially affecting the kernel-sizes of intermediate layers (which are
+geometrically interpolated between \code{kernel_size_0} and \code{kernel_size_end}).}
+
+\item{dropout}{(\code{numeric(1)})\cr
+Dropout rate of dense layers, except for the output layer.}
+
+\item{vocabulary.size}{(integer \code{numeric(1)})\cr
+Vocabulary size of (one-hot encoded) input strings. This determines the
+input tensor shape, together with \code{maxlen}.}
+}
+\value{
+A keras model.
+}
 \description{
-TODO: add link to paper
+Create GenomeNet Model with Given Architecture Parameters
 }

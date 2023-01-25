@@ -34,7 +34,7 @@ Tensorflow implementation is based on this paper."><meta property="og:image" con
 </li>
 <li class="dropdown">
   <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-    Google Colab Notebooks
+    Notebooks
      
     <span class="caret"></span>
   </a>
@@ -42,13 +42,19 @@ Tensorflow implementation is based on this paper."><meta property="og:image" con
       <a href="https://colab.research.google.com/drive/175jIdXcDcgPUvaBo2rH2Lupbpjnp5O7G?usp=sharing" class="external-link">deepG tutorial</a>
     </li>
     <li>
-      <a href="https://colab.research.google.com/drive/1Eolc0koMNM1zkuO4XyVM58ImeF1BpRiH?usp=sharing" class="external-link">Human contamination</a>
+      <a href="https://colab.research.google.com/drive/1Eolc0koMNM1zkuO4XyVM58ImeF1BpRiH?usp=sharing" class="external-link">Read-length level: Human contamination</a>
     </li>
     <li>
-      <a href="https://colab.research.google.com/drive/1yiXSwFafXpMLHaov9iBTQLIDZ6bK1zYX?usp=sharing" class="external-link">CRISPR detection</a>
+      <a href="https://colab.research.google.com/drive/1yiXSwFafXpMLHaov9iBTQLIDZ6bK1zYX?usp=sharing" class="external-link">Locus level: CRISPR detection</a>
     </li>
     <li>
-      <a href="https://colab.research.google.com/drive/1G7bOFEX87cZNrM2tdRtTdkrZn5fM__g0?usp=sharing" class="external-link">16S rRNA detection</a>
+      <a href="https://colab.research.google.com/drive/1G7bOFEX87cZNrM2tdRtTdkrZn5fM__g0?usp=sharing" class="external-link">Gene level: 16S rRNA detection</a>
+    </li>
+    <li>
+      <a href="https://colab.research.google.com/drive/1BCggL-tfQF136YeJ8cKKi-zoBEDMgkNh?usp=sharing" class="external-link">Genome level: Bacterial morphology (Sporulation)</a>
+    </li>
+    <li>
+      <a href="https://colab.research.google.com/drive/10xpRzGd3JeBAbqQYSCxzQUMctt01sx9D?usp=sharing" class="external-link">Full metagenome level: Colorectal cancer prediction</a>
     </li>
   </ul></li>
 <li class="dropdown">
@@ -155,26 +161,26 @@ gradient repeatedly for different shuffles). Final result is average of <code>nu
 <span class="r-in"><span>  target_class_idx <span class="op">=</span> <span class="fl">3</span>,</span></span>
 <span class="r-in"><span>  model <span class="op">=</span> <span class="va">model</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> tf.Tensor(</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [[ 0.0000000e+00 -6.4906657e-05 -0.0000000e+00 -0.0000000e+00]</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  [ 0.0000000e+00 -9.4129675e-05 -0.0000000e+00 -0.0000000e+00]</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  [ 0.0000000e+00 -0.0000000e+00 -0.0000000e+00 -1.3292081e-05]</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  [ 0.0000000e+00 -0.0000000e+00 -0.0000000e+00 -2.1334770e-05]</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  [ 0.0000000e+00 -2.7180940e-04 -0.0000000e+00 -0.0000000e+00]</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  [ 0.0000000e+00 -3.5588181e-04 -0.0000000e+00 -0.0000000e+00]</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  [ 4.2800489e-04 -0.0000000e+00 -0.0000000e+00 -0.0000000e+00]</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  [ 0.0000000e+00 -5.7253969e-04 -0.0000000e+00 -0.0000000e+00]</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  [ 0.0000000e+00 -7.3553243e-04 -0.0000000e+00 -0.0000000e+00]</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  [ 0.0000000e+00 -9.3875430e-04 -0.0000000e+00 -0.0000000e+00]</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  [-0.0000000e+00 -1.2093198e-03 -0.0000000e+00 -0.0000000e+00]</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  [-8.6072570e-04 -0.0000000e+00 -0.0000000e+00 -0.0000000e+00]</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  [-0.0000000e+00 -0.0000000e+00 -1.6545873e-03 -0.0000000e+00]</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  [-0.0000000e+00 -0.0000000e+00 -2.1019436e-03 -0.0000000e+00]</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  [-0.0000000e+00 -0.0000000e+00 -0.0000000e+00 -2.9605997e-03]</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  [-0.0000000e+00 -4.6299174e-03 -0.0000000e+00 -0.0000000e+00]</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  [-0.0000000e+00 -0.0000000e+00 -4.9457694e-03 -0.0000000e+00]</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  [-0.0000000e+00 -0.0000000e+00 -6.1905682e-03 -0.0000000e+00]</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  [-0.0000000e+00 -0.0000000e+00 -0.0000000e+00 -1.1240428e-02]</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  [-0.0000000e+00 -1.3293253e-02 -0.0000000e+00 -0.0000000e+00]], shape=(20, 4), dtype=float32)</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [[-0.0000000e+00  9.1987597e-05 -0.0000000e+00  0.0000000e+00]</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [-0.0000000e+00  7.7544304e-05 -0.0000000e+00  0.0000000e+00]</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [-0.0000000e+00  0.0000000e+00 -0.0000000e+00  4.7592071e-04]</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [-0.0000000e+00  0.0000000e+00 -0.0000000e+00  5.4882286e-04]</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [-0.0000000e+00  5.6734123e-05 -0.0000000e+00  0.0000000e+00]</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [-0.0000000e+00  2.0251748e-05 -0.0000000e+00  0.0000000e+00]</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [ 3.7936166e-05 -0.0000000e+00 -0.0000000e+00  0.0000000e+00]</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [ 0.0000000e+00 -3.3104978e-05 -0.0000000e+00  0.0000000e+00]</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [ 0.0000000e+00 -7.6247285e-05 -0.0000000e+00  0.0000000e+00]</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [ 0.0000000e+00 -8.3640683e-05 -0.0000000e+00  0.0000000e+00]</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [-0.0000000e+00 -3.3391385e-05 -0.0000000e+00  0.0000000e+00]</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [-3.2705440e-05 -0.0000000e+00 -0.0000000e+00  0.0000000e+00]</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [ 0.0000000e+00  0.0000000e+00 -7.5720862e-04  0.0000000e+00]</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [ 0.0000000e+00  0.0000000e+00 -8.6371833e-04  0.0000000e+00]</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [-0.0000000e+00  0.0000000e+00 -0.0000000e+00  4.2538969e-03]</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [-0.0000000e+00  5.7813915e-04 -0.0000000e+00  0.0000000e+00]</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [ 0.0000000e+00  0.0000000e+00 -1.0128256e-03  0.0000000e+00]</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [ 0.0000000e+00  0.0000000e+00 -9.5609709e-04  0.0000000e+00]</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [ 0.0000000e+00  0.0000000e+00 -0.0000000e+00  2.0613331e-02]</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [ 0.0000000e+00 -2.7535805e-03  0.0000000e+00  0.0000000e+00]], shape=(20, 4), dtype=float32)</span>
 </code></pre></div>
     </div>
   </div>

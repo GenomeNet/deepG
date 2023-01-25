@@ -1,5 +1,5 @@
 
-# DeepG <img src="man/figures/logo_small.png"  align="left" vspace="-1800px"/>
+# DeepG <img src="man/figures/logo2.png" width="50" height="50"  align="left" vspace="-1800px"/>
 
 **R toolbox for deep neural networks optimized for genomic datasets**
 <!---

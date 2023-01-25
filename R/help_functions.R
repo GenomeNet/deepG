@@ -1,4 +1,4 @@
-#' Stride lenght calculation
+#' Stride length calculation
 #' 
 #' Compute the optimal length for Stride.
 #'
