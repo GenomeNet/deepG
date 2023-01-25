@@ -486,42 +486,7 @@ create_model_lstm_cnn <- function(
   }
   
   argg <- c(as.list(environment()))
-  argg["model_metrics"] <- NULL
-  argg["model"] <- NULL
-  argg["i"] <- NULL
-  argg["optimizer"] <- NULL
-  argg["layer_lstm"] <- paste(as.character(layer_lstm), collapse = " ")
-  argg["filters"] <- paste(as.character(filters), collapse = " ")
-  argg["kernel_size"] <- paste(as.character(kernel_size), collapse = " ")
-  argg["pool_size"] <- paste(as.character(pool_size), collapse = " ")
-  argg["strides"] <- paste(as.character(strides), collapse = " ")
-  argg["residual_block"] <- paste(as.character(residual_block), collapse = " ")
-  argg["residual_block_length"] <- paste(as.character(residual_block_length), collapse = " ")
-  argg["size_reduction_1Dconv"] <- paste(as.character(size_reduction_1Dconv), collapse = " ")
-  argg["layer_dense"] <- paste(as.character(layer_dense), collapse = " ")
-  argg["padding"] <- paste(as.character(padding), collapse = " ")
-  argg["use_bias"] <- paste(as.character(use_bias), collapse = " ")
-  argg["input_label_list"] <- paste(as.character(layer_dense), collapse = " ")
-  argg["input_tensor"] <- NULL
-  argg["label_inputs"] <- NULL
-  argg["f1"] <- NULL
-  argg["multi_acc"] <- NULL
-  argg[["trainable_params"]] <- model$count_params()
-  for (i in 1:length(label_input)) {
-    argg[paste0("input_tensor_", i)] <- NULL
-    argg[paste0("label_input_layer_", i)] <- NULL
-  }
-  argg["output_tensor"] <- NULL
-  argg["output_list"] <- NULL
-  argg["residual_layer"] <- NULL
-  argg["label_noise_matrix"] <- NULL
-  argg["smooth_loss"] <- NULL
-  argg["noisy_loss"] <- NULL
-  argg["col_sums"] <- NULL
-  argg["auc"] <- NULL
-  argg["multi_label"] <- NULL
-  argg["macro_average_cb"] <- NULL
-  model$hparam <- argg
+  model <- add_hparam_list(model, argg)
   model$cm_dir <- cm_dir
   
   if (verbose) summary(model)
@@ -559,10 +524,8 @@ create_model_wavenet <- function(filters = 16, kernel_size = 2, residual_blocks,
   }
   
   argg <- c(as.list(environment()))
-  argg["model"] <- NULL
-  argg["optimizer"] <- NULL
-  argg["residual_blocks"] <- paste(as.character(residual_blocks), collapse = " ")
-  model$hparam <- argg
+  model <- add_hparam_list(model, argg)
+  
   reticulate::py_set_attr(x = model, name = "hparam", value = model$hparam)
   if (verbose) summary(model)
   model
@@ -945,39 +908,7 @@ create_model_lstm_cnn_target_middle <- function(
   }
   
   argg <- c(as.list(environment()))
-  argg["model_metrics"] <- NULL
-  argg["i"] <- NULL
-  argg["optimizer"] <- NULL
-  argg["model"] <- NULL
-  argg["input_tensor_1"] <- NULL
-  argg["input_tensor_2"] <- NULL
-  argg["input_label_list"] <- NULL
-  for (i in 1:length(label_input)) {
-    argg[paste0("input_tensor_", i)] <- NULL
-    argg[paste0("label_input_layer_", i)] <- NULL
-  }
-  argg[["trainable_params"]] <- model$count_params()
-  argg["label_input"] <- NULL
-  argg["label_inputs"] <- NULL
-  argg["maxlen_1"] <- NULL
-  argg["maxlen_2"] <- NULL
-  argg["f1"] <- NULL
-  argg["output_tensor"] <- NULL
-  argg["output_tensor_1"] <- NULL
-  argg["output_tensor_2"] <- NULL
-  argg["output_list"] <- NULL
-  argg["optimizer"] <- NULL
-  argg["label_noise_matrix"] <- NULL
-  argg["smooth_loss"] <- NULL
-  argg["noisy_loss"] <- NULL
-  argg["col_sums"] <- NULL
-  argg["layer_lstm"] <- paste(as.character(layer_lstm), collapse = " ")
-  argg["filters"] <- paste(as.character(filters), collapse = " ")
-  argg["kernel_size"] <- paste(as.character(kernel_size), collapse = " ")
-  argg["strides"] <- paste(as.character(strides), collapse = " ")
-  argg["layer_dense"] <- paste(as.character(layer_dense), collapse = " ")
-  argg["macro_average_cb"] <- NULL
-  model$hparam <- argg
+  model <- add_hparam_list(model, argg)
   reticulate::py_set_attr(x = model, name = "hparam", value = model$hparam)
   
   if (verbose) summary(model)
@@ -1617,41 +1548,8 @@ create_model_lstm_cnn_time_dist <- function(
   model %>% keras::compile(loss = loss_fn,
                            optimizer = optimizer, metrics = model_metrics)
   
-  
   argg <- c(as.list(environment()))
-  argg["model_metrics"] <- NULL
-  argg["model"] <- NULL
-  argg["i"] <- NULL
-  argg["optimizer"] <- NULL
-  argg["layer_lstm"] <- paste(as.character(layer_lstm), collapse = " ")
-  argg["filters"] <- paste(as.character(filters), collapse = " ")
-  argg["kernel_size"] <- paste(as.character(kernel_size), collapse = " ")
-  argg["pool_size"] <- paste(as.character(pool_size), collapse = " ")
-  argg["strides"] <- paste(as.character(strides), collapse = " ")
-  argg["layer_dense"] <- paste(as.character(layer_dense), collapse = " ")
-  argg["padding"] <- paste(as.character(padding), collapse = " ")
-  argg["use_bias"] <- paste(as.character(use_bias), collapse = " ")
-  argg["input_label_list"] <- paste(as.character(layer_dense), collapse = " ")
-  argg["input_tensor"] <- NULL
-  argg["label_inputs"] <- NULL
-  argg["f1"] <- NULL
-  argg["multi_acc"] <- NULL
-  argg[["trainable_params"]] <- model$count_params()
-  argg["output_tensor"] <- NULL
-  argg["output_list"] <- NULL
-  argg["label_noise_matrix"] <- NULL
-  argg["smooth_loss"] <- NULL
-  argg["noisy_loss"] <- NULL
-  argg["col_sums"] <- NULL
-  argg["auc"] <- NULL
-  argg["multi_label"] <- NULL
-  argg["macro_average_cb"] <- NULL
-  argg["input_list"] <- NULL
-  argg["model_metrics"] <- NULL
-  argg["representation_list"] <- NULL
-  argg["same_length"] <- NULL
-  argg["y"] <- NULL
-  model$hparam <- argg
+  model <- add_hparam_list(model, argg)
   model$cm_dir <- cm_dir
   
   if (verbose) summary(model)
@@ -1917,42 +1815,8 @@ create_model_lstm_cnn_multi_input <- function(
   model %>% keras::compile(loss = loss_fn,
                            optimizer = optimizer, metrics = model_metrics)
   
-  
   argg <- c(as.list(environment()))
-  argg["model_metrics"] <- NULL
-  argg["model"] <- NULL
-  argg["i"] <- NULL
-  argg["optimizer"] <- NULL
-  argg["layer_lstm"] <- paste(as.character(layer_lstm), collapse = " ")
-  argg["filters"] <- paste(as.character(filters), collapse = " ")
-  argg["kernel_size"] <- paste(as.character(kernel_size), collapse = " ")
-  argg["pool_size"] <- paste(as.character(pool_size), collapse = " ")
-  argg["strides"] <- paste(as.character(strides), collapse = " ")
-  argg["layer_dense"] <- paste(as.character(layer_dense), collapse = " ")
-  argg["padding"] <- paste(as.character(padding), collapse = " ")
-  argg["use_bias"] <- paste(as.character(use_bias), collapse = " ")
-  argg["input_label_list"] <- paste(as.character(layer_dense), collapse = " ")
-  argg["input_tensor"] <- NULL
-  argg["label_inputs"] <- NULL
-  argg["f1"] <- NULL
-  argg["multi_acc"] <- NULL
-  argg[["trainable_params"]] <- model$count_params()
-  argg["output_tensor"] <- NULL
-  argg["output_list"] <- NULL
-  argg["label_noise_matrix"] <- NULL
-  argg["smooth_loss"] <- NULL
-  argg["noisy_loss"] <- NULL
-  argg["col_sums"] <- NULL
-  argg["auc"] <- NULL
-  argg["multi_label"] <- NULL
-  argg["macro_average_cb"] <- NULL
-  argg["input_list"] <- NULL
-  argg["model_metrics"] <- NULL
-  argg["representation_list"] <- NULL
-  argg["same_length"] <- NULL
-  argg["y"] <- NULL
-  argg["feature_ext_model"] <- NULL
-  model$hparam <- argg
+  model <- add_hparam_list(model, argg)
   model$cm_dir <- cm_dir
   
   if (verbose) summary(model)
@@ -2224,34 +2088,7 @@ create_model_genomenet <- function(
   model %>% keras::compile(loss = "categorical_crossentropy", optimizer = keras_optimizer, metrics = "acc")
   
   argg <- c(as.list(environment()))
-  argg["model_metrics"] <- NULL
-  argg["model"] <- NULL
-  argg["i"] <- NULL
-  argg["optimizer"] <- NULL
-  argg["number_of_cnn_layers"] <- paste(as.character(number_of_cnn_layers), collapse = " ")
-  argg["filters"] <- paste(as.character(filters), collapse = " ")
-  argg["kernel_size"] <- paste(as.character(kernel_size), collapse = " ")
-  argg["input_tensor"] <- NULL
-  argg["label_inputs"] <- NULL
-  argg["f1"] <- NULL
-  argg["multi_acc"] <- NULL
-  argg[["trainable_params"]] <- model$count_params()
-  argg["output_tensor"] <- NULL
-  argg["output_list"] <- NULL
-  argg["label_noise_matrix"] <- NULL
-  argg["smooth_loss"] <- NULL
-  argg["noisy_loss"] <- NULL
-  argg["col_sums"] <- NULL
-  argg["auc"] <- NULL
-  argg["multi_label"] <- NULL
-  argg["macro_average_cb"] <- NULL
-  argg["input_list"] <- NULL
-  argg["model_metrics"] <- NULL
-  argg["representation_list"] <- NULL
-  argg["same_length"] <- NULL
-  argg["y"] <- NULL
-  argg["feature_ext_model"] <- NULL
-  model$hparam <- argg
+  model <- add_hparam_list(model, argg)
   
   model
 }
@@ -2470,7 +2307,6 @@ load_cp <- function(cp_path, cp_filter = NULL, ep_index = NULL, compile = FALSE,
   
 }
 
-
 attention_block <- function(inputs, head_size, num_heads, dropout = 0, res_connection = TRUE) {
   
   # Normalization and Attention
@@ -2604,6 +2440,11 @@ create_model_transformer <- function(maxlen,
                          bal_acc = bal_acc, f1_metric = f1_metric, auc_metric = auc_metric)
   
   if (verbose) print(model)
+  
+  argg <- c(as.list(environment()))
+  model <- add_hparam_list(model, argg)
+  reticulate::py_set_attr(x = model, name = "hparam", value = model$hparam)
+  
   model
   
 }

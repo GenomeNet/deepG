@@ -501,7 +501,7 @@ train_model <- function(train_type = "lm",
   }
   
   message("Training done.")
-  
+ 
   return(history)
 }
 

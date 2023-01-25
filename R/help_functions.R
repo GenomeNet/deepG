@@ -278,3 +278,77 @@ GenVParams <- function(path_val,
                  shuffle_file_order = shuffle_file_orderVal),
             class = "Params")
 }
+
+# add list of hyperparameters to model
+add_hparam_list <- function(model, argg) {
+  
+  argg["model_metrics"] <- NULL
+  argg["model"] <- NULL
+  argg["i"] <- NULL
+  argg["optimizer"] <- NULL
+  argg["layer_lstm"] <- paste(as.character(argg$layer_lstm), collapse = " ")
+  argg["filters"] <- paste(as.character(argg$filters), collapse = " ")
+  argg["kernel_size"] <- paste(as.character(argg$kernel_size), collapse = " ")
+  argg["pool_size"] <- paste(as.character(argg$pool_size), collapse = " ")
+  argg["strides"] <- paste(as.character(argg$strides), collapse = " ")
+  argg["residual_block"] <- paste(as.character(argg$residual_block), collapse = " ")
+  argg["residual_block_length"] <- paste(as.character(argg$residual_block_length), collapse = " ")
+  argg["size_reduction_1Dconv"] <- paste(as.character(argg$size_reduction_1Dconv), collapse = " ")
+  argg["layer_dense"] <- paste(as.character(argg$layer_dense), collapse = " ")
+  argg["padding"] <- paste(as.character(argg$padding), collapse = " ")
+  argg["use_bias"] <- paste(as.character(argg$use_bias), collapse = " ")
+  argg["input_label_list"] <- paste(as.character(argg$layer_dense), collapse = " ")
+  argg["input_tensor"] <- NULL
+  argg["label_inputs"] <- NULL
+  argg["f1"] <- NULL
+  argg["multi_acc"] <- NULL
+  argg[["trainable_params"]] <- model$count_params()
+  for (i in 1:length(argg$label_input)) {
+    argg[paste0("input_tensor_", i)] <- NULL
+    argg[paste0("label_input_layer_", i)] <- NULL
+  }
+  argg["output_tensor"] <- NULL
+  argg["output_list"] <- NULL
+  argg["residual_layer"] <- NULL
+  argg["label_noise_matrix"] <- NULL
+  argg["smooth_loss"] <- NULL
+  argg["noisy_loss"] <- NULL
+  argg["col_sums"] <- NULL
+  argg["auc"] <- NULL
+  argg["multi_label"] <- NULL
+  argg["macro_average_cb"] <- NULL
+  argg["verbose"] <- NULL
+  
+  argg["optimizer"] <- NULL
+  argg["residual_blocks"] <- paste(as.character(argg$residual_blocks), collapse = " ")
+  
+  argg["model_metrics"] <- NULL
+  argg["i"] <- NULL
+  argg["optimizer"] <- NULL
+  argg["model"] <- NULL
+  argg["input_tensor_1"] <- NULL
+  argg["input_tensor_2"] <- NULL
+  argg["input_label_list"] <- NULL
+  for (i in 1:length(argg$label_input)) {
+    argg[paste0("input_tensor_", i)] <- NULL
+    argg[paste0("label_input_layer_", i)] <- NULL
+  }
+  argg[["trainable_params"]] <- model$count_params()
+  argg["label_input"] <- NULL
+  argg["label_inputs"] <- NULL
+  argg["maxlen_1"] <- NULL
+  argg["maxlen_2"] <- NULL
+  argg["f1"] <- NULL
+  argg["output_tensor"] <- NULL
+  argg["output_tensor_1"] <- NULL
+  argg["output_tensor_2"] <- NULL
+
+  argg["feature_ext_model"] <- NULL
+
+  argg["number_of_cnn_layers"] <- paste(as.character(argg$number_of_cnn_layers), collapse = " ")
+  argg["feature_ext_model"] <- NULL
+  argg["pe_matrix"] <- NULL
+  
+  model$hparam <- argg
+  model
+}
