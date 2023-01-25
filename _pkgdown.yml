@@ -22,12 +22,16 @@ navbar:
       menu:
       - text: deepG tutorial
         href: https://colab.research.google.com/drive/175jIdXcDcgPUvaBo2rH2Lupbpjnp5O7G?usp=sharing
-      - text: Human contamination
+      - text: Read-length level: Human contamination
         href: https://colab.research.google.com/drive/1Eolc0koMNM1zkuO4XyVM58ImeF1BpRiH?usp=sharing
-      - text: CRISPR detection
+      - text: Locus level: CRISPR detection
         href: https://colab.research.google.com/drive/1yiXSwFafXpMLHaov9iBTQLIDZ6bK1zYX?usp=sharing
-      - text: 16S rRNA detection
+      - text: Gene level: 16S rRNA detection
         href: https://colab.research.google.com/drive/1G7bOFEX87cZNrM2tdRtTdkrZn5fM__g0?usp=sharing
+      - text: Genome level: Bacterial morphology (Sporulation)
+        href: https://colab.research.google.com/drive/1BCggL-tfQF136YeJ8cKKi-zoBEDMgkNh?usp=sharing  
+      - text: Full metagenome level: Colorectal cancer prediction 
+        href: https://colab.research.google.com/drive/10xpRzGd3JeBAbqQYSCxzQUMctt01sx9D?usp=sharing   
     tutorials:
       text: Tutorials
       menu:
