@@ -6,80 +6,22 @@
 \usage{
 get_class_weight(
   path,
-  vocabulary_label = NULL,
+  labelVocabulary = NULL,
   format = "fasta",
   file_proportion = 1,
   train_type = "label_folder",
-  named_list = FALSE,
   csv_path = NULL
 )
 }
 \arguments{
-\item{path}{Path to training data. If \code{train_type} is \code{label_folder}, should be a vector or list
-where each entry corresponds to a class (list elements can be directories and/or individual files). If \code{train_type} is not \code{label_folder},
-can be a single directory or file or a list of directories and/or files.}
+\item{labelVocabulary}{Character vector of possible targets. Targets outside \code{labelVocabulary} will get discarded.}
 
-\item{vocabulary_label}{Character vector of possible targets. Targets outside \code{vocabulary_label} will get discarded.}
-
-\item{format}{File format, either \code{"fasta"} or \code{"fastq"}.}
+\item{format}{File format, either fasta or fastq.}
 
 \item{file_proportion}{Proportion of files to randomly sample for estimating class distributions.}
 
-\item{train_type}{Either \code{"lm"}, \code{"lm_rds"} for language model; \code{"label_header"}, \code{"label_folder"}, \code{"label_csv"}, \code{"label_rds"} for classification or \code{"dummy_gen"}.
-\itemize{
-\item Language model is trained to predict character(s) in a sequence. \cr
-\item \code{"label_header"}/\code{"label_folder"}/\code{"label_csv"} are trained to predict a corresponding class given a sequence as input.
-\item If \code{"label_header"}, class will be read from fasta headers.
-\item If \code{"label_folder"}, class will be read from folder, i.e. all files in one folder must belong to the same class.
-\item If \code{"label_csv"}, targets are read from a csv file. This file should have one column named "file". The targets then correspond to entries in that row (except "file"
-column). Example: if we are currently working with a file called "a.fasta" and corresponding label is "label_1", there should be a row in our csv file\tabular{lll}{
-   file \tab label_1 \tab label_2 \cr
-   "a.fasta" \tab 1 \tab 0 \cr
-}
-
-
-\item If \code{"label_rds"}, generator will iterate over set of .rds files containing each a list of input and target tensors. Not implemented for model
-with multiple inputs.
-\item If \code{"lm_rds"}, generator will iterate over set of .rds files and will split tensor according to \code{target_len} argument
-(targets are last \code{target_len} nucleotides of each sequence).
-\item  If \code{"dummy_gen"}, generator creates random data once and repeatedly feeds these to model.
-}}
-
-\item{named_list}{Whether to give class weight list names \verb{"0", "1", ...} or not.}
-
-\item{csv_path}{If \code{train_type = "label_csv"}, path to csv file containing labels.}
+\item{train_type}{Either "label_folder", "label_header" or "label_csv".}
 }
 \description{
-Count number of nucleotides for each class and use as estimation for relation of class distribution.
-Outputs list of class relations. Can be used as input for \code{class_weigth} in \code{\link{train_model}} function.
-}
-\examples{
-
-# create dummy data
-path_1 <- tempfile()
-path_2 <- tempfile()
-
-for (current_path in c(path_1, path_2)) {
-  
-  dir.create(current_path)
-  # create twice as much data for first class
-  num_files <- ifelse(current_path == path_1, 6, 3)
-  create_dummy_data(file_path = current_path,
-                    num_files = num_files,
-                    seq_length = 10,
-                    num_seq = 5,
-                    vocabulary = c("a", "c", "g", "t"))
-}
-
-
-class_weight <- get_class_weight(
-  path = c(path_1, path_2),
-  vocabulary_label = c("A", "B"),
-  format = "fasta",
-  file_proportion = 1,
-  train_type = "label_folder",
-  csv_path = NULL)
-
-class_weight
-
+Estimate frequency of different classes
 }

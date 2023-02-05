@@ -1,43 +1,27 @@
 #' Get distribution of n-grams
 #' 
-#' Get distribution of next character given previous n nucleotides.
-#'
-#' @inheritParams generator_fasta_lm
-#' @param path_input Path to folder containing fasta files or single fasta file.
+#' @param fasta_path Path to folder containing fasta files or single fasta file.
 #' @param n Size of n gram.
+#' @param format "fasta" or "fastq".
 #' @param vocabulary Vector of allowed characters, samples outside vocabulary get discarded.
-#' @param file_sample If integer, size of random sample of files in \code{path_input}.
-#' @param nuc_dist Nucleotide distribution.
+#' @param file_sample If integer, size of random sample of files in \code{fasta_path}.
+#' @param step Frequency of samples.
 #' @return Returns a matrix with distributions of nucleotides given the previous n nucleotides.
-#' @examples
-#' temp_dir <- tempfile()
-#' dir.create(temp_dir)
-#' create_dummy_data(file_path = temp_dir,
-#'                   num_files = 3,
-#'                   seq_length = 80,
-#'                   vocabulary = c("A", "C", "G", "T"),
-#'                   num_seq = 2)
-#' 
-#' m <- n_gram_dist(path_input = temp_dir,
-#'                  n = 3,
-#'                  step = 1,
-#'                  nuc_dist = FALSE)
-#' head(round(m, 2))
 #' @export
-n_gram_dist <- function(path_input,
-                        n = 2,
-                        vocabulary = c("A", "C", "G", "T"),
-                        format = "fasta",
-                        file_sample = NULL,
-                        step = 1,
-                        nuc_dist = FALSE) {
+n_gram <- function(fasta_path,
+                   n = 2,
+                   vocabulary = c("A", "C", "G", "T"),
+                   format = "fasta", 
+                   file_sample = NULL,
+                   step = 1,
+                   nuc_dist = FALSE) { 
   
-  if (endsWith(path_input, paste0(".", format))) {
-    num_files <- 1
-    fasta_files <- path_input
+  if (endsWith(fasta_path, paste0(".", format))) {
+    num_files <- 1 
+    fasta_files <- fasta_path   
   } else {
     fasta_files <- list.files(
-      path = xfun::normalize_path(path_input),
+      path = xfun::normalize_path(fasta_path),
       pattern = paste0("\\.", format, "$"),
       full.names = TRUE)
     num_files <- length(fasta_files)
@@ -53,7 +37,7 @@ n_gram_dist <- function(path_input,
   for (i in 1:n){
     l[[i]] <-  vocabulary
   }
-  label_df <- apply(expand.grid(l), 2, as.character)
+  label_df <- apply(expand.grid(l), 2, as.character) 
   labels <- vector("character")
   for (i in 1:nrow(label_df)){
     labels[i] <- paste(label_df[i, ], collapse = "")
@@ -71,19 +55,12 @@ n_gram_dist <- function(path_input,
   
   for (i in 1:num_files) {
     
-    if (format == "fasta") {
-      fasta_file <-  microseq::readFasta(fasta_files[i])
-      
-    } 
-    if (format == "fastq") {
-      fasta_file <-  microseq::readFastq(fasta_files[i])
-    } 
-    
-    seq_vector <- fasta_file$Sequence
-    start_ind <- get_start_ind(seq_vector = seq_vector,
-                               length_vector = nchar(seq_vector),
-                               maxlen = n, step = step, train_mode = "lm")
-    nuc_seq <- paste(seq_vector, collapse = "")
+    fasta_file <-  Biostrings::readDNAStringSet(fasta_files[i], format = format)
+    seq_vector <- as.data.frame(fasta_file)$x
+    start_ind <- getStartInd(seq_vector = seq_vector,
+                             length_vector = as.data.frame(fasta_file@ranges)$width,
+                             maxlen = n, step = step, train_mode = "lm")
+    nuc_seq <- paste(seq_vector, collapse = "")  
     split_seq <- strsplit(nuc_seq, "")[[1]]
     nuc_seq_length <- nchar(nuc_seq)
     gram <- split_seq[1 : (nuc_seq_length - n)]
@@ -91,7 +68,7 @@ n_gram_dist <- function(path_input,
       for (j in 2:n){
         gram <- paste0(gram, split_seq[j : (nuc_seq_length - n + j - 1)])
       }
-    }
+    }  
     targets <- split_seq[(n + 1) : nuc_seq_length]
     
     # remove sequences with overlapping fasta entries
@@ -111,6 +88,7 @@ n_gram_dist <- function(path_input,
                           targets = factor(targets, levels = vocabulary))
     table_df <- as.data.frame(table(gram_df))
     
+    # TODO: check if freq correctly allignes with grams and targets
     stopifnot(all(freq_df$gram == table_df$gram) & all(freq_df$targets == table_df$targets))
     
     freq_df$freq <- freq_df$freq + table_df$Freq
@@ -120,66 +98,65 @@ n_gram_dist <- function(path_input,
   dist_matrix
 }
 
+#' Helper function for \code{n_gram}
+#'
+#' @export
 df_to_distribution_matrix <- function(freq_df, vocabulary = c("A", "C", "G", "T")) {
-  
   stopifnot(names(freq_df) == c("gram", "targets", "freq"))
-  gram_levels <- levels(factor(freq_df$gram))
+  gram_levels <- levels(freq_df$gram)
   num_levels <- length(gram_levels)
   dist_matrix <- matrix(0, nrow = num_levels, ncol = length(vocabulary))
   dist_matrix <- as.data.frame(dist_matrix)
+  #freq_df$percentage <- freq_df$freq/sum(freq_df$freq) 
   rownames(dist_matrix) <- as.character(freq_df$gram[1:nrow(dist_matrix)])
   colnames(dist_matrix) <- vocabulary
- 
+  # for (gram_level in gram_levels) {
+  #   df_subset <- freq_df[freq_df$gram == gram_level, ]
+  #   for (nuc in vocabulary) {
+  #     dist_matrix[gram_level, nuc] <- df_subset %>% dplyr::filter(targets == nuc) %>% dplyr::select(freq)
+  #   }
+  # }
   for (nuc in vocabulary){
-    nuc_column <- freq_df %>% dplyr::filter(targets == nuc) %>% dplyr::select(gram, freq)
-    stopifnot(nuc_column$gram == rownames(dist_matrix))
-    dist_matrix[ , nuc] <- nuc_column$freq
+   nuc_column <- freq_df %>% dplyr::filter(targets == nuc) %>% dplyr::select(gram, freq) 
+   stopifnot(nuc_column$gram == rownames(dist_matrix)) 
+   dist_matrix[ , nuc] <- nuc_column$freq
   }
   dist_matrix$sum <- apply(dist_matrix, 1, sum)
   non_zero <- dist_matrix$sum != 0
-  for (nuc in vocabulary) {
+  for (nuc in vocabulary) { 
     dist_matrix[non_zero, nuc] <- dist_matrix[non_zero, nuc]/dist_matrix$sum[non_zero]
   }
   dist_matrix[ , vocabulary]
 }
 
-#' Predict the next nucleotide using n-gram
-#'
-#' Predict the next nucleotide using n-gram. 
-#'
-#' @inheritParams generator_fasta_lm
-#' @param path_input Path to folder containing fasta files or single fasta file.
-#' @param distribution_matrix A data frame containing frequency of next nucleotide given the previous n nucleotides (output of \code{\link{n_gram_dist}} function).
-#' @param default_pred Either character from vocabulary or `"random"`. Will be used as prediction if certain n-gram did not appear before.
-#' If `"random"` assign random prediction.
-#' @param vocabulary Vector of allowed characters, samples outside vocabulary get discarded.
-#' @param file_sample If integer, size of random sample of files in \code{path_input}.
-#' @param return_data_frames Boolean, whether to return data frame with input, predictions, target position and true target.
-#'
-#' @examples
-#' # create dummy fasta files
-#' temp_dir <- tempfile()
-#' dir.create(temp_dir)
-#' create_dummy_data(file_path = temp_dir,
-#'                   num_files = 3,
-#'                   seq_length = 8,
-#'                   vocabulary = c("A", "C", "G", "T"),
-#'                   num_seq = 2)
+#' predict the next nucleotide using n-gram
 #' 
-#' m <- n_gram_dist(path_input = temp_dir,
-#'                  n = 3,
-#'                  step = 1,
-#'                  nuc_dist = FALSE)
+#' @param fasta_path Path to folder containing fasta files or single fasta file.
+#' @param distribution_matrix Output of \code{n_gram} function.
+#' @param default_pred Either character from vocabulary or "random". Will be used as prediction if certain n-gram did not appear before.
+#' If "random" assign random prediction.   
+#' @param vocabulary Vector of allowed characters, samples outside vocabulary get discarded.
+#' @param file_sample If integer, size of random sample of files in \code{fasta_path}.
+#' @param format "fasta" or "fastq".
+#' @param return_data_frames Boolean, whether to return data frame with input, predictions, target position and true target. 
+#' 
+#' @examples 
+#' \dontrun{
+#' n_gram_dist <- n_gram(fasta_path = "/net/sgi/genomenet/data/ncbi_genomes/train",
+#'                       n = 2,
+#'                       file_sample = NULL,
+#'                       nuc_dist = TRUE)
 #' 
 #' # use distribution matrix to make predictions for one file
-#' predictions <- predict_with_n_gram(path_input = list.files(temp_dir, full.names = TRUE)[1], 
-#'                                    distribution_matrix = m)
+#' predictions <- predict_with_n_gram(fasta_path = "/net/sgi/genomenet/data/ncbi_genomes/test/GCF_001941465.1_ASM194146v1_genomic.fasta",
+#'                                    distribution_matrix = n_gram_dist)
 #' 
 #' # show accuracy
-#' predictions[[1]]
+#' predictions$accuracy
+#' }
 #' @export
-predict_with_n_gram <- function(path_input, distribution_matrix, default_pred = "random", vocabulary = c("A", "C", "G", "T"),
-                                file_sample = NULL, format = "fasta", return_data_frames = FALSE, step = 1) {
+predict_with_n_gram <- function(fasta_path, distribution_matrix, default_pred = "random", vocabulary = c("A", "C", "G", "T"),
+                                file_sample = NULL, format = "fasta", return_data_frames = FALSE) {
   
   n <- nchar(rownames(distribution_matrix)[1])
   pred_int <- apply(distribution_matrix, 1, which.max)
@@ -195,17 +172,17 @@ predict_with_n_gram <- function(path_input, distribution_matrix, default_pred = 
   # integer to nucleotide
   pred <- vector("character")
   for (i in 1:length(pred_int)){
-    pred[i] <- vocabulary[pred_int[i]]
+   pred[i] <- vocabulary[pred_int[i]]
   }
   
   model <- data.frame(gram = rownames(distribution_matrix), pred = pred)
   
-  if (endsWith(path_input, paste0(".", format))) {
-    num_files <- 1
-    fasta_files <- path_input
+  if (endsWith(fasta_path, paste0(".", format))) {
+    num_files <- 1 
+    fasta_files <- fasta_path   
   } else {
     fasta_files <- list.files(
-      path = xfun::normalize_path(path_input),
+      path = xfun::normalize_path(fasta_path),
       pattern = paste0("\\.", format, "$"),
       full.names = TRUE)
     num_files <- length(fasta_files)
@@ -223,19 +200,12 @@ predict_with_n_gram <- function(path_input, distribution_matrix, default_pred = 
   
   for (i in 1:num_files) {
     
-    if (format == "fasta") {
-      fasta_file <-  microseq::readFasta(fasta_files[i])
-      
-    } 
-    if (format == "fastq") {
-      fasta_file <-  microseq::readFastq(fasta_files[i])
-    } 
-    
-    seq_vector <- fasta_file$Sequence
-    start_ind <- get_start_ind(seq_vector = seq_vector,
-                               length_vector = nchar(seq_vector),
-                               maxlen = n, step = step, train_mode = "lm")
-    nuc_seq <- paste(seq_vector, collapse = "")
+    fasta_file <-  Biostrings::readDNAStringSet(fasta_files[i], format = format)
+    seq_vector <- as.data.frame(fasta_file)$x
+    start_ind <- getStartInd(seq_vector = seq_vector,
+                             length_vector = as.data.frame(fasta_file@ranges)$width,
+                             maxlen = n, step = 1, train_mode = "lm")
+    nuc_seq <- paste(seq_vector, collapse = "")  
     split_seq <- strsplit(nuc_seq, "")[[1]]
     
     nuc_seq_length <- nchar(nuc_seq)
@@ -244,7 +214,7 @@ predict_with_n_gram <- function(path_input, distribution_matrix, default_pred = 
       for (j in 2:n){
         gram <- paste0(gram, split_seq[j : (nuc_seq_length - n + j - 1)])
       }
-    }
+    }  
     targets <- split_seq[(n + 1) : nuc_seq_length]
     
     # remove sequences with overlapping fasta entries
@@ -260,11 +230,12 @@ predict_with_n_gram <- function(path_input, distribution_matrix, default_pred = 
     pred_df <- dplyr::left_join(gram_df, model, by = "gram")
     names(pred_df)[2] <- "true"
     if (return_data_frames) {
-      pred_df_list[[i]] <- list(pred_df, accuracy = sum(pred_df$true == pred_df$pred)/nrow(pred_df))
+      pred_df_list[[i]] <- list(pred_df, accurcy = sum(pred_df$true == pred_df$pred)/nrow(pred_df))
     } else {
-      pred_df_list[[i]] <- list(accuracy = sum(pred_df$true == pred_df$pred)/nrow(pred_df))
+      pred_df_list[[i]] <- list(accurcy = sum(pred_df$true == pred_df$pred)/nrow(pred_df))
     }
   }
-  
   return(pred_df_list)
 }
+
+

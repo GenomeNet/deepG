@@ -1,0 +1,27 @@
+
+
+
+    if (additional_labels) {
+      label_list <- unlist(label_list) %>% stringr::str_to_lower()
+      header_unique <- unique(label_list)
+      label_list <- as.list(label_list)
+
+      for (i in header_unique) {
+        if (added_label_by_header) {
+          label_from_csv_1 <- label_csv[which(label_csv$header == i), ]
+          label_from_csv <- label_from_csv_1[ , -"header"]
+        } else {
+          label_from_csv_1 <- label_csv[which(label_csv$file == i), ]
+          label_from_csv <- label_from_csv_1[ , -"file"] # %>% as.numeric() %>% as.matrix(nrow = 1)
+        }
+        index_label_list <- label_list == i
+        if (nrow(label_from_csv) == 0) {
+          label_list[index_label_list] <- lapply(label_list[index_label_list], function(x) x <- rep(0, ncol(label_from_csv)))
+        } else {
+          label_list[index_label_list] <- lapply(label_list[index_label_list], function(x) x <- label_from_csv)
+        }
+      }
+
+      label_tensor <- matrix(unlist(label_list), ncol = ncol(label_from_csv), byrow = TRUE)
+    }
+

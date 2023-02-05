@@ -2,59 +2,49 @@
 % Please edit documentation in R/n_gram.R
 \name{predict_with_n_gram}
 \alias{predict_with_n_gram}
-\title{Predict the next nucleotide using n-gram}
+\title{predict the next nucleotide using n-gram}
 \usage{
 predict_with_n_gram(
-  path_input,
+  fasta_path,
   distribution_matrix,
   default_pred = "random",
   vocabulary = c("A", "C", "G", "T"),
   file_sample = NULL,
   format = "fasta",
-  return_data_frames = FALSE,
-  step = 1
+  return_data_frames = FALSE
 )
 }
 \arguments{
-\item{path_input}{Path to folder containing fasta files or single fasta file.}
+\item{fasta_path}{Path to folder containing fasta files or single fasta file.}
 
-\item{distribution_matrix}{A data frame containing frequency of next nucleotide given the previous n nucleotides (output of \code{\link{n_gram_dist}} function).}
+\item{distribution_matrix}{Output of \code{n_gram} function.}
 
-\item{default_pred}{Either character from vocabulary or \code{"random"}. Will be used as prediction if certain n-gram did not appear before.
-If \code{"random"} assign random prediction.}
+\item{default_pred}{Either character from vocabulary or "random". Will be used as prediction if certain n-gram did not appear before.
+If "random" assign random prediction.}
 
 \item{vocabulary}{Vector of allowed characters, samples outside vocabulary get discarded.}
 
-\item{file_sample}{If integer, size of random sample of files in \code{path_input}.}
+\item{file_sample}{If integer, size of random sample of files in \code{fasta_path}.}
 
-\item{format}{File format, either \code{"fasta"} or \code{"fastq"}.}
+\item{format}{"fasta" or "fastq".}
 
 \item{return_data_frames}{Boolean, whether to return data frame with input, predictions, target position and true target.}
-
-\item{step}{How often to take a sample.}
 }
 \description{
-Predict the next nucleotide using n-gram.
+predict the next nucleotide using n-gram
 }
 \examples{
-# create dummy fasta files
-temp_dir <- tempfile()
-dir.create(temp_dir)
-create_dummy_data(file_path = temp_dir,
-                  num_files = 3,
-                  seq_length = 8,
-                  vocabulary = c("A", "C", "G", "T"),
-                  num_seq = 2)
-
-m <- n_gram_dist(path_input = temp_dir,
-                 n = 3,
-                 step = 1,
-                 nuc_dist = FALSE)
+\dontrun{
+n_gram_dist <- n_gram(fasta_path = "/net/sgi/genomenet/data/ncbi_genomes/train",
+                      n = 2,
+                      file_sample = NULL,
+                      nuc_dist = TRUE)
 
 # use distribution matrix to make predictions for one file
-predictions <- predict_with_n_gram(path_input = list.files(temp_dir, full.names = TRUE)[1], 
-                                   distribution_matrix = m)
+predictions <- predict_with_n_gram(fasta_path = "/net/sgi/genomenet/data/ncbi_genomes/test/GCF_001941465.1_ASM194146v1_genomic.fasta",
+                                   distribution_matrix = n_gram_dist)
 
 # show accuracy
-predictions[[1]]
+predictions$accuracy
+}
 }

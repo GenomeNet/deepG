@@ -2,132 +2,80 @@
 % Please edit documentation in R/generators.R
 \name{dataset_from_gen}
 \alias{dataset_from_gen}
-\title{Collect samples from generator and store in rds or pickle file.}
+\title{Collect samples from generator and store in rds file.}
 \usage{
 dataset_from_gen(
   output_path,
-  iterations = 10,
+  num_samples = 1000,
   train_type = "lm",
   output_format = "target_right",
-  path_corpus,
-  batch_size = 32,
+  path,
+  format = "fasta",
   maxlen = 250,
-  step = NULL,
   vocabulary = c("a", "c", "g", "t"),
-  as_numpy_array = FALSE,
-  shuffle = FALSE,
-  set_learning = NULL,
-  seed = NULL,
-  random_sampling,
-  file_name_start = "batch_",
-  ...
+  seed = 1234,
+  reverseComplements = FALSE,
+  ambiguous_nuc = "zeros",
+  use_quality_score = FALSE,
+  padding = FALSE,
+  added_label_path = NULL,
+  add_input_as_seq = NULL,
+  skip_amb_nuc = NULL,
+  concat_seq = NULL,
+  target_len = 1,
+  use_coverage = FALSE,
+  reshape_mode = NULL,
+  set_learning = NULL
 )
 }
 \arguments{
-\item{output_path}{Output directory. Output files will be named \code{output_path} + \code{file_name_start} + x + ".rds" or ".pickle", where x is an index (from 1 to
-\code{iterations}) and file ending depends on \code{as_numpy_array} argument.}
-
-\item{iterations}{Number of batches (output files) to create.}
-
-\item{train_type}{Either \code{"lm"}, \code{"lm_rds"} for language model; \code{"label_header"}, \code{"label_folder"}, \code{"label_csv"}, \code{"label_rds"} for classification or \code{"dummy_gen"}.
-\itemize{
-\item Language model is trained to predict character(s) in a sequence. \cr
-\item \code{"label_header"}/\code{"label_folder"}/\code{"label_csv"} are trained to predict a corresponding class given a sequence as input.
-\item If \code{"label_header"}, class will be read from fasta headers.
-\item If \code{"label_folder"}, class will be read from folder, i.e. all files in one folder must belong to the same class.
-\item If \code{"label_csv"}, targets are read from a csv file. This file should have one column named "file". The targets then correspond to entries in that row (except "file"
-column). Example: if we are currently working with a file called "a.fasta" and corresponding label is "label_1", there should be a row in our csv file\tabular{lll}{
-   file \tab label_1 \tab label_2 \cr
-   "a.fasta" \tab 1 \tab 0 \cr
-}
-
-
-\item If \code{"label_rds"}, generator will iterate over set of .rds files containing each a list of input and target tensors. Not implemented for model
-with multiple inputs.
-\item If \code{"lm_rds"}, generator will iterate over set of .rds files and will split tensor according to \code{target_len} argument
-(targets are last \code{target_len} nucleotides of each sequence).
-\item  If \code{"dummy_gen"}, generator creates random data once and repeatedly feeds these to model.
-}}
+\item{output_path}{Where to store output rds file.}
 
 \item{output_format}{Determines shape of output tensor for language model.
-Either \code{"target_right"}, \code{"target_middle_lstm"}, \code{"target_middle_cnn"} or \code{"wavenet"}.
-Assume a sequence \code{"AACCGTA"}. Output correspond as follows
-\itemize{
-\item \verb{"target_right": X = "AACCGT", Y = "A"}
-\item \verb{"target_middle_lstm": X = (X_1 = "AAC", X_2 = "ATG"), Y = "C"} (note reversed order of X_2)
-\item \verb{"target_middle_cnn": X = "AACGTA", Y = "C"}
-\item \verb{"wavenet": X = "AACCGT", Y = "ACCGTA"}
-}}
+Either "target_right", "target_middle_lstm", "target_middle_cnn" or "wavenet".
+Assume a sequence "AACCGTA". Output correspond as follows
+"target_right": X = "AACCGT", Y = "A"
+"target_middle_lstm": X = (X_1 = "AAC", X_2 = "ATG"), Y = "C" (note reversed order of X_2)
+"target_middle_cnn": X = "AACGTA", Y = "C" 
+"wavenet": X = "AACCGT", Y = "ACCGTA"}
 
-\item{path_corpus}{Input directory where fasta files are located or path to single file ending with fasta or fastq
-(as specified in format argument). Can also be a list of directories and/or files.}
+\item{path}{Path}
 
-\item{batch_size}{Number of samples in one batch.}
+\item{format}{File format, either fasta or fastq.}
 
 \item{maxlen}{Length of predictor sequence.}
 
-\item{step}{How often to take a sample.}
+\item{vocabulary}{Vector of allowed characters, character outside vocabulary get encoded as 0-vector.}
 
-\item{vocabulary}{Vector of allowed characters. Characters outside vocabulary get encoded as specified in \code{ambiguous_nuc}.}
+\item{seed}{Sets seed for set.seed function, for reproducible results when using \code{randomFiles} or \code{shuffleFastaEntries}}
 
-\item{as_numpy_array}{Store output as list of numpy arrays if \code{TRUE} (otherwise as R array).}
+\item{reverseComplements}{Logical, for every new file decide randomly to use original data or its reverse complement.}
 
-\item{shuffle}{Whether to shuffle samples within each batch.}
+\item{ambiguous_nuc}{How to handle nucleotides outside vocabulary, either "zero", "discard", "empirical" or "equal". If "zero", input gets encoded as zero vector; 
+if "equal" input is 1/length(vocabulary) x length(vocabulary). If "discard" samples containing nucleotides outside vocabulary get discarded. 
+If "empirical" use nucleotide distribution of current file.}
 
-\item{set_learning}{When you want to assign one label to set of samples. Only implemented for \code{train_type = "label_folder"}.
-Input is a list with the following parameters
-\itemize{
-\item \code{samples_per_target}: how many samples to use for one target.
-\item \code{maxlen}: length of one sample.
-\item \code{reshape_mode}: \verb{"time_dist", "multi_input"} or \code{"concat"}.
-\itemize{
-\item
-If \code{reshape_mode} is \code{"multi_input"}, generator will produce \code{samples_per_target} separate inputs, each of length \code{maxlen} (model should have
-\code{samples_per_target} input layers).
-\item If reshape_mode is \code{"time_dist"}, generator will produce a 4D input array. The dimensions correspond to
-\verb{(batch_size, samples_per_target, maxlen, length(vocabulary))}.
-\item If \code{reshape_mode} is \code{"concat"}, generator will concatenate \code{samples_per_target} sequences
-of length \code{maxlen} to one long sequence.
-}
-\item If \code{reshape_mode} is \code{"concat"}, there is an additional \code{buffer_len}
-argument. If \code{buffer_len} is an integer, the subsequences are interspaced with \code{buffer_len} rows. The input length is
-(\code{maxlen} \eqn{*} \code{samples_per_target}) + \code{buffer_len} \eqn{*} (\code{samples_per_target} - 1).
-}}
+\item{use_quality_score}{Whether to use fastq qualitiy scores. If TRUE input is not one-hot-encoding but corresponds to probabilities.
+For example (0.97, 0.01, 0.01, 0.01) instead of (1, 0, 0, 0).}
 
-\item{seed}{Sets seed for \code{set.seed} function for reproducible results.}
+\item{padding}{Whether to pad sequences too short for one sample with zeros.}
 
-\item{random_sampling}{Whether samples should be taken from random positions when using \code{max_samples} argument. If \code{FALSE} random
-samples are taken from a consecutive subsequence.}
+\item{added_label_path}{Path to folder with additional labels. Should be a csv file with one column named "file". Other columns should correspond to one label.}
 
-\item{file_name_start}{Start of output file names.}
+\item{add_input_as_seq}{Boolean vector specifying for each entry in \code{added_label_path} if rows from csv should be encoded as a sequence or used directly.
+If a row in your csv file is a sequence this should be true. For example you may want to add another sequence, say ACCGT. Then this would correspond to 1,2,2,3,4 in
+csv file (if vocabulary = c("A", "C", "G", "T")).  If \code{add_input_as_seq} is TRUE, 12234 gets one-hot encoded, so added input is a 3D tensor.  If \code{add_input_as_seq} is 
+FALSE this will feed network just raw data (a 2D tensor).}
 
-\item{...}{further generator options. See \code{\link{get_generator}}.}
+\item{skip_amb_nuc}{Threshold of ambiguous nucleotides to accept in fasta entry. Complete entry will get discarded otherwise.}
+
+\item{concat_seq}{Character string or NULL. If not NULL all entries from file get concatenated to one sequence with concat_seq string between them.
+Example: If 1.entry AACC, 2. entry TTTG and concat_seq = "ZZZ" this becomes AACCZZZTTTG.}
+
+\item{target_len}{Number of nucleotides to predict at once.}
+
+\item{use_coverage}{Boolean. Whether to use coverage as encoding rather than one-hot encoding.}
 }
 \description{
-Repeatedly generate samples with data generator and store output. Creates a separate rds or pickle file in \code{output_path} for each
-batch.
-}
-\examples{
-# create dummy fasta files
-temp_dir <- tempfile()
-dir.create(temp_dir)
-create_dummy_data(file_path = temp_dir,
-                  num_files = 3,
-                  seq_length = 8, 
-                  num_seq = 2)
-
-# extract samples
-out_dir <- tempfile()
-dir.create(out_dir)
-dataset_from_gen(output_path = out_dir,
-                 iterations = 10,
-                 train_type = "lm",
-                 output_format = "target_right",
-                 path_corpus = temp_dir, 
-                 batch_size = 32,
-                 maxlen = 5,
-                 step = 1,
-                 file_name_start = "batch_")
-
-list.files(out_dir)
+Repeatedly take one random sample from random file and combine samples. Files are sampled weighted by file size.
 }

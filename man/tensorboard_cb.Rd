@@ -2,17 +2,15 @@
 % Please edit documentation in R/callbacks.R
 \name{tensorboard_cb}
 \alias{tensorboard_cb}
-\title{Tensorboard callback}
+\title{tensorboard callback}
 \usage{
-tensorboard_cb(path_tensorboard, run_name)
+tensorboard_cb(tensorboard.log, run.name)
 }
 \arguments{
-\item{path_tensorboard}{Path to tensorboard directory or \code{NULL}. If \code{NULL}, training not tracked on tensorboard.}
+\item{tensorboard.log}{Path to tensorboard log directory.}
 
-\item{run_name}{Name of the run. Name will be used to identify output from callbacks. If \code{NULL}, will use date as run name.
-If name already present, will add \code{"_2"} to name or \code{"_{x+1}"} if name ends with \verb{_x}, where \code{x} is some integer.}
+\item{run.name}{Name of the run (without file ending). Name will be used to identify output from callbacks.}
 }
 \description{
-Tensorboard callback
+tensorboard callback
 }
-\keyword{internal}

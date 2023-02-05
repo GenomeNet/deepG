@@ -3,16 +3,17 @@
 \docType{data}
 \name{ecoli_small}
 \alias{ecoli_small}
-\title{Ecoli subset}
+\title{subset of the E. coli genome for evaluation 
+Can be loaded to workspace via data(ecoli_small)}
 \format{
-character 326.73 kB
+character
 }
 \usage{
 ecoli_small
 }
 \description{
-Subset of the E. coli genome for evaluation.
-Can be loaded to workspace via \code{data(ecoli_small)}.
+subset of the E. coli genome for evaluation 
+Can be loaded to workspace via data(ecoli_small)
 }
 \references{
 \url{https://science.sciencemag.org/content/277/5331/1453.long}

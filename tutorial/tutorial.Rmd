@@ -1,0 +1,732 @@
+---
+title: "deepG tutorial"
+output:
+  pdf_document:
+    toc: yes
+    toc_depth: 3
+  html_document:
+    theme: united
+    toc: yes
+---
+
+```{r setup, include=FALSE}
+#library(deepG)
+devtools::load_all()
+library(magrittr)
+```
+
+# Introduction
+
+The deepG library can be used for applying deep learning on genomic data. The library supports creating neural network architecture,
+automation of data preprocesing (data generator), network training, inference and visualizing feature importances (integrated gradients). 
+
+# Create a model
+
+deepG supports three functions to create a keras model. 
+
+## `create_model_lstm_cnn`
+
+The architecture of this model is $k$ * LSTM, $m$ * CNN and $n$ * dense layers, where $k,m \ge 0$ and $n \ge 1$.   
+The user can choose the size of the individual LSTM, CNN and Dense layers and add additional features to each layer;
+for example the LSTM layer may be bidirectional or stateful.  
+The last dense layer layer has a softmax activation and determines how many targets we want to predict. 
+
+The following implementation creates a model with 1 CNN layer (+ batch normalization), 2 LSTM and 2 dense layers.  
+```{r}
+library(deepG)
+library(magrittr)
+
+model <- create_model_lstm_cnn(
+  maxlen = 20,
+  layer_lstm = c(8, 8),
+  layer_dense = c(16, 4),
+  vocabulary.size = 4,
+  kernel_size = c(3),
+  filters = c(4)
+)
+```
+
+The model expects an input with dimensions (NULL (batch size), maxlen, vocabulary.size) and a target with dimension (NULL (batch size), number of targets).
+Maxlen specifies the length of the input sequence. 
+
+```{r warning=FALSE}
+batch_size <- 3
+maxlen <- 20
+vocabulary.size <- 4
+input <- array(rnorm(maxlen * batch_size * vocabulary.size), 
+               dim = c(batch_size, maxlen, vocabulary.size))
+pred <- predict(model, input)
+dim(pred)
+``` 
+
+## `create_model_lstm_cnn_target_middle`
+
+This architecture is closely related to `create_model_lstm_cnn_target` with the main difference that the model has two input layers (provided `label_input = NULL`).  
+
+```{r}
+model <- create_model_lstm_cnn_target_middle(
+  maxlen = 20,
+  layer_lstm = c(8, 8),
+  layer_dense = c(16, 4),
+  vocabulary.size = 4,
+  kernel_size = c(3),
+  filters = c(4)
+)
+```
+
+This architecture can be used to predict a character in the middle of a sequence. For example 
+
+sequence: \texttt{ACCG}\texttt{\color{blue}T}\texttt{GGAA}
+
+then the first input should correspond to \texttt{ACCG}, the second input to \texttt{GGAA} and \texttt{T} to the target.  
+This can be used to combine the 2 tasks 
+
+1. predict \texttt{T} given \texttt{ACCG} 
+
+2. predict \texttt{T} given \texttt{AAGG} (note reversed order of input)
+
+in one model.
+
+## `create_model_wavenet`
+
+This model uses causal dilated convolution layers, which is suitable to handle long sequences. The original paper can be found [here](https://arxiv.org/pdf/1609.03499.pdf)  
+
+```{r warning = FALSE}
+model <- create_model_wavenet(filters = 16, kernel_size = 2, residual_blocks = 2^(2:4),
+                              maxlen = 500, input_tensor = NULL, initial_kernel_size = 32,
+                              initial_filters = 32, output_channels = 4,
+                              output_activation = "softmax", solver = "adam",
+                              learning.rate = 0.001, compile = TRUE) 
+model
+```
+
+The model expects an input and output of dimension (batch size, maxlen, vocabulary.size). The target sequence should be equal to input sequence shifted by 
+one position. For example, given a sequence \texttt{ACCGGTC} and maxlen = 6, the input should correspond to \texttt{ACCGGT} and target to \texttt{CCGGTC}. 
+
+# Training 
+
+## Create dummy data
+
+For the following examples to run, you have to create dummy data as described below. The data consists of random \texttt{A,C,G,T} sequences. 
+
+```{r warning = FALSE}
+dir_path <- file.path(getwd(), "dummy_data")
+dir.create(dir_path)
+
+vocabulary <- c("A", "C", "G", "T")
+train_path_1 <- file.path(dir_path, "train_files_1")
+validation_path_1 <- file.path(dir_path, "validation_files_1")
+train_path_2 <- file.path(dir_path, "train_files_2")
+validation_path_2 <- file.path(dir_path, "validation_files_2")
+num_files <- 2
+seq_length <- 100
+num_seq <- 3
+
+# create training files
+create_dummy_data(file_path = train_path_1, num_files = num_files,
+                 seq_length = seq_length, vocabulary = vocabulary, num_seq = num_seq)
+create_dummy_data(file_path = train_path_2, num_files = num_files,
+                 seq_length = seq_length, vocabulary = vocabulary, num_seq = num_seq)
+# create validation files
+create_dummy_data(file_path = validation_path_1, num_files = num_files,
+                 seq_length = seq_length, vocabulary = vocabulary, num_seq = num_seq)
+create_dummy_data(file_path = validation_path_2, num_files = num_files,
+                 seq_length = seq_length, vocabulary = vocabulary, num_seq = num_seq)
+```
+
+## Preparing the data
+
+Input data must be files in FASTA or FASTQ format and file names must have .fasta or .fastq ending; otherwise files will be ignored. 
+All training and validation data should each be in one folder. deepG uses a data generator to iterate over files in train/validation folder.   
+Before we train our model, we have to decide what our training objetive is. It can be either a language model or label classification.
+
+## Language model
+
+With language model, we mean a model that predicts a character in a sequence.
+The target can be at the end of the sequence, for example
+
+\texttt{ACGTCA}\texttt{\color{blue}G}
+
+or in the middle
+
+\texttt{ACG}\texttt{\color{blue}T}\texttt{CAG}
+
+We have several options to determine the output format of the data generator using the `output_format` argument 
+
+Assume a sequence \texttt{AACCGTA} and `maxlen = 6`. Output correspond as follows
+
+"target_right": X = \texttt{AACCGT}, Y = \texttt{A}
+
+"target_middle_lstm": X = (X_1 = \texttt{AAC}, X_2 = \texttt{ATG}), Y = \texttt{C} (note reversed order of X_2)
+
+"target_middle_cnn": X = \texttt{AACGTA}, Y = \texttt{C} 
+
+"wavenet": X = \texttt{AACCGT}, Y = \texttt{ACCGTA}
+
+### Predict next character
+
+Say we want to predict the next character in a sequence given the last 50 characters and our text consists of the letters \texttt{A,C,G,T}. First we have to create a model. We may use a model with 2 LSTM and one dense layer for predictions.   
+
+```{r warning = FALSE}
+model <- create_model_lstm_cnn(
+  maxlen = 50,
+  layer_lstm = c(8, 8),
+  layer_dense = c(4),
+  vocabulary.size = 4 # text consists of A,C,G,T
+)
+```
+
+Next we have to specify the location of our training and validation data and the output format of the data generator    
+
+```{r warning = FALSE, message = FALSE}
+trainNetwork(train_type = "lm", # running a language model 
+             model = model,
+             path = train_path_1,
+             path.val = validation_path_1,
+             steps.per.epoch = 5, # use 5 batches per epoch
+             validation.split = 0.2, # use 20% of samples for validation compared to train
+             batch.size = 8,
+             epochs = 2, 
+             output_format = "target_right" # predict target at end of sequence 
+)
+```
+
+### Predict character in middle of sequence 
+
+If we want to predict a character in the middle of a sequence and use LSTM layers, we should split our input into two layers. One layer handles the sequence 
+before and one the input after the target. If, for example 
+
+sequence: \texttt{ACCG}\texttt{\color{blue}{T}}\texttt{GGAA} 
+
+then first input corresponds to \texttt{ACCG} and second to \texttt{AAGG}. We may create a model with two input layers using the `create_model_cnn_lstm_target_middle`
+
+```{r warning = FALSE}
+model <- create_model_lstm_cnn_target_middle(
+  maxlen = 50,
+  layer_lstm = c(8, 8),
+  layer_dense = c(4),
+  vocabulary.size = 4 # text consists of A,C,G,T
+)
+```
+
+The `trainNetwork` call is identical to the previous model, except we have to change the output format of the generator by setting `output_format = "target_middle_lstm"`. This reverses the order of the sequence after the target.  
+
+```{r warning = FALSE, message = FALSE}
+trainNetwork(train_type = "lm", # running a language model 
+             model = model,
+             path = train_path_1,
+             path.val = validation_path_1,
+             steps.per.epoch = 5, # use 5 batches per epoch
+             validation.split = 0.2, # use 20% of samples for validation compared to train
+             batch.size = 8,
+             epochs = 2,
+             output_format = "target_middle_lstm" # predict target in middle of sequence 
+)
+```
+
+
+## Label classification
+
+With label classification, we describe the task of mapping a label to a sequence. 
+For example: given the sequence \texttt{ACGACCG}, does the sequence belong to a viral or bacterial genome?
+
+deepG offers two options to map a label to a sequence 
+
+1. the label gets read from the fasta header
+
+2. files from every class are in seperate folders
+
+### Label by fasta header 
+
+First we have to create a model. We may use a model with 2 LSTM and one dense layer for predictions.     
+
+```{r warning = FALSE}
+model <- create_model_lstm_cnn(
+  maxlen = 50,
+  layer_lstm = c(8, 8),
+  layer_dense = c(2), # binary classification
+  vocabulary.size = 4 # text consists of A,C,G,T
+)
+```
+
+The fasta headers in our dummy data have the names "label_a" or "label_b"
+
+```{r warning = FALSE, message = FALSE}
+files <- list.files(train_path_1)
+fasta_file <- microseq::readFasta(file.path(train_path_1, files[1]))
+head(fasta_file)
+```
+
+```{r warning = FALSE, message = FALSE}
+trainNetwork(train_type = "label_header", # reading label from fasta header  
+             model = model,
+             path = train_path_1,
+             path.val = validation_path_1,
+             steps.per.epoch = 5, 
+             validation.split = 0.2, 
+             batch.size = 8,
+             epochs = 2,
+             labelVocabulary = c("label_a", "label_b") # names of labels
+)
+```
+
+### Label by folder
+
+Alternatively, we may put all data from one class into a separate folder. Say we want to classify if a sequence belongs to viral or bacterial genomen. Then
+we have to put all virus/bacteria files into their own folder. In this case the `path` and `path.val` arguments should be vectors, where each entry is the path to one class.    
+
+```{r warning = FALSE, message = FALSE}
+trainNetwork(train_type = "label_folder", # reading label from folder  
+             model = model,
+             path = c(train_path_1, # note that path has two entries 
+                      train_path_2),
+             path.val = c(validation_path_1,
+                          validation_path_2),
+             steps.per.epoch = 5, # use 5 batches per epoch
+             validation.split = 0.2, # use 20% of samples for validation compared to training 
+             batch.size = 8,
+             epochs = 2,
+             labelVocabulary = c("class_1", "class_2") # names of classes
+)
+```
+
+# Inference
+
+Once we have trained a model, we may use the model to get the activations of a certain layer and write the states to an h5 file.
+
+```{r warning = FALSE, message = FALSE}
+model
+num_layers <- length(model$get_config()$layers)
+layer_name <- model$get_config()$layers[[num_layers]]$name
+cat("get output at layer", layer_name)
+fasta.path <- file.path(train_path_1, "file_1.fasta")
+fasta.file <- microseq::readFasta(fasta.path)
+head(fasta.file)
+sequence <- fasta.file$Sequence[1]
+filename <- file.path(dir_path, "states.h5")
+
+if (!file.exists(filename)) {
+  writeStates(
+    model = model,
+    layer_name = layer_name, 
+    sequence = sequence,
+    round_digits = 4,
+    filename = filename,
+    batch.size = 10,
+    mode = "lm")
+}  
+```
+
+We can access the h5 file as follows 
+
+```{r warning = FALSE, message = FALSE}
+states <- readRowsFromH5(h5_path = filename, complete = TRUE)
+head(states)
+```
+
+If a fasta file contains several entries, you should use the `writeStatesByFastaEntries` function. This functions writes a separate h5 file for each 
+fasta entry. `writeStates` treads all entries in one file as a single sequence.  
+
+```{r warning = FALSE, message = FALSE, eval = FALSE}
+# writeStatesByFastaEntries(layer_name = "layer_name", 
+#                           model = model,
+#                           fasta.path = "/path/to/input/file", 
+#                           file_path = "/path/to/h5/output/files")
+```
+
+# Features
+
+## Data generator options
+
+Lets assume we are given the sequence \texttt{abcdefghiiii} 
+
+```{r warning = FALSE, message = FALSE}
+sequence <- paste0("a", "b", "c", "d", "e", "f", "g", "h", "i", "i", "i", "i")
+df <- data.frame(Sequence = sequence, Header = "seq_1", stringsAsFactors = FALSE)
+file_path <- file.path(dir_path, "a.fasta")
+# sequence as fasta file
+microseq::writeFasta(fdta = dplyr::as_tibble(df), out.file = file_path)
+```
+
+`trainNetwork` uses a data generator to iterate over files in one folder (or single file). For example, if we train a language model,
+we call the `fastaFileGenerator` function
+
+### step
+
+First, we may determine how often we take a sample. If `step = 1` we take a sample at every possible step. For the example, if `maxlen = 3, step = 1`
+
+1. sample corresponds to input = \texttt{abc}, target = \texttt{d}
+
+2. sample corresponds to input = \texttt{bcd}, target = \texttt{e}
+
+3. sample corresponds to input = \texttt{cde}, target = \texttt{f}
+
+if `step = 3`  
+
+1. sample corresponds to input = \texttt{abc}, target = \texttt{d}
+
+2. sample corresponds to input = \texttt{def}, target = \texttt{g}
+
+3. sample corresponds to input = \texttt{ghi}, target = \texttt{j}
+
+The generator one-hot-encodes the samples
+
+```{r warning = FALSE, message = FALSE}
+vocabulary <- c("a", "b", "c", "d", "e", "f", "g", "h", "i")
+gen <- fastaFileGenerator(corpus.dir = file_path,
+                          batch.size = 1,
+                          maxlen = 3,
+                          vocabulary = vocabulary,
+                          step = 3, 
+                          output_format = "target_right")
+z <- gen()
+x <- z[[1]][1,,] #encodes abc
+y <- z[[2]] # encodes d
+colnames(x) <- vocabulary
+colnames(y) <- vocabulary
+x
+y
+# go 3 steps forward
+z <- gen()
+x <- z[[1]][1,,] #encodes def
+y <- z[[2]] # encodes g
+colnames(x) <- vocabulary
+colnames(y) <- vocabulary
+x
+y
+```
+
+### output_format
+
+The `output_format` determines the shape of the output.  Assume a sequence \texttt{ABCDEFG} and `maxlen = 6`. Output correspond as follows
+
+"target_right": X = \texttt{ABCDEF}, Y = \texttt{G}
+
+"target_middle_lstm": X = (X_1 = \texttt{ABC}, X_2 = \texttt{GFE}), Y = \texttt{D}" (note reversed order of X_2)
+
+"target_middel_cnn": X = \texttt{ABCEFG}, Y = \texttt{D} 
+
+"wavenet": X = \texttt{ABCDEF}, Y = \texttt{BCDEFG}
+
+```{r warning = FALSE, message = FALSE}
+# target_right
+gen <- fastaFileGenerator(corpus.dir = file_path,
+                          batch.size = 1,
+                          maxlen = 6,
+                          vocabulary = vocabulary,
+                          output_format = "target_right")
+z <- gen()
+x <- z[[1]][1,,] 
+y <- z[[2]] 
+colnames(x) <- vocabulary
+colnames(y) <- vocabulary
+x # abcdef
+y # g 
+
+# target_middle_lstm
+gen <- fastaFileGenerator(corpus.dir = file_path,
+                          batch.size = 1,
+                          maxlen = 6,
+                          vocabulary = vocabulary,
+                          output_format = "target_middle_lstm")
+z <- gen()
+x_1 <- z[[1]][[1]][1,,] 
+x_2 <- z[[1]][[2]][1,,] 
+y <- z[[2]] 
+colnames(x_1) <- vocabulary
+colnames(x_2) <- vocabulary
+colnames(y) <- vocabulary
+x_1 # abc
+x_2 # gfe
+y # d 
+
+# target_middle_cnn
+gen <- fastaFileGenerator(corpus.dir = file_path,
+                          batch.size = 1,
+                          maxlen = 6,
+                          vocabulary = vocabulary,
+                          output_format = "target_middle_cnn")
+z <- gen()
+x <- z[[1]][1,,]
+y <- z[[2]]
+colnames(x) <- vocabulary
+colnames(y) <- vocabulary
+x # abcefg
+y # d
+
+# wavenet
+gen <- fastaFileGenerator(corpus.dir = file_path,
+                          batch.size = 1,
+                          maxlen = 6,
+                          vocabulary = vocabulary,
+                          output_format = "wavenet")
+z <- gen()
+x <- z[[1]][1,,] 
+y <- z[[2]][1,,]
+colnames(x) <- vocabulary
+colnames(y) <- vocabulary
+x # abcdef
+y # bcdefg
+```
+
+
+### padding
+
+If the sequence is too short to create a single sample, we can pad the sequence with zero-vectors. If `padding = FALSE` the generator will go to next file/ fasta entry until it finds a sequence long enough for a sample.
+
+```{r warning = FALSE, message = FALSE}
+gen <- fastaFileGenerator(corpus.dir = file_path,
+                          batch.size = 1,
+                          maxlen = 15, # maxlen is longer than sequence
+                          vocabulary = vocabulary,
+                          step = 3,
+                          padding = TRUE,
+                          output_format = "target_right")
+z <- gen()
+x <- z[[1]][1,,] 
+y <- z[[2]] 
+colnames(x) <- vocabulary
+colnames(y) <- vocabulary
+x # first 4 entries are zero-vectors
+y
+```
+
+### ambiguous_nuc
+
+A sequence might contain a character that does not lie inside our desired vocabulary. For example, let's assume we discard \texttt{e} from our vocabulary.
+We have 4 options to handle this situation
+
+```{r warning = FALSE, message = FALSE}
+vocabulary <- c("a", "b", "c", "d", "f", "g", "h", "i") # exclude "e" from vocabulary
+
+# zero
+gen <- fastaFileGenerator(corpus.dir = file_path,
+                          batch.size = 1,
+                          maxlen = 6,
+                          vocabulary = vocabulary,
+                          output_format = "target_right",
+                          ambiguous_nuc = "zeros" # encode "x" as zero vector
+) 
+z <- gen()
+x <- z[[1]][1,,] 
+colnames(x) <- vocabulary
+x # fifth row is zero vector 
+
+# equal
+gen <- fastaFileGenerator(corpus.dir = file_path,
+                          batch.size = 1,
+                          maxlen = 6,
+                          vocabulary = vocabulary,
+                          output_format = "target_right",
+                          ambiguous_nuc = "equal" 
+) 
+z <- gen()
+x <- z[[1]][1,,]
+colnames(x) <- vocabulary
+x # fifth row is 1/8 for every entry 
+
+# empirical
+gen <- fastaFileGenerator(corpus.dir = file_path,
+                          batch.size = 1,
+                          maxlen = 6,
+                          vocabulary = vocabulary,
+                          output_format = "target_right",
+                          ambiguous_nuc = "empirical" 
+) 
+z <- gen()
+x <- z[[1]][1,,] 
+colnames(x) <- vocabulary
+x # fifth row is distribuation of file
+
+# discard
+gen <- fastaFileGenerator(corpus.dir = file_path,
+                          batch.size = 1,
+                          maxlen = 6,
+                          vocabulary = vocabulary,
+                          output_format = "target_right",
+                          ambiguous_nuc = "discard" 
+) 
+z <- gen()
+x <- z[[1]][1,,]
+colnames(x) <- vocabulary
+x # first sample with only characters from vocabulary is fghiii|i
+```
+
+### proportion_per_file
+
+The `proportion_per_file` argument gives the option to use a random subset instead of the full sequence. 
+
+```{r warning = FALSE, message = FALSE}
+set.seed(123)
+vocabulary <- c("a", "b", "c", "d", "e", "f", "g", "h", "i")
+cat("sequence is ", nchar(sequence), "characters long \n")
+gen <- fastaFileGenerator(corpus.dir = file_path,
+                          batch.size = 1,
+                          maxlen = 5,
+                          vocabulary = vocabulary,
+                          output_format = "target_right",
+                          # take random subsequence using 50% of sequence 
+                          proportion_per_file = 0.5 
+)
+z <- gen()
+x <- z[[1]][1, , ]
+y <- z[[2]]
+colnames(x) <- vocabulary
+colnames(y) <- vocabulary
+x # defgh
+y # i
+```
+
+## Additional input vector
+
+It is possible to feed a network additional information associated to a sequence. This information needs to be in a csv file. If all sequences in one file share the same label, the csv file should have one column named "file". If the label gets mapped to the header name, the csv file needs to have a column names "header". 
+
+We may add some additional input to our dummy data
+
+```{r warning = FALSE, message = FALSE}
+dummy_files <- list.files(file.path(dir_path, "train_files_1"))
+dummy_files
+
+df <- data.frame(file = dummy_files,
+                 label_1 = c(0, 1), label_2 = c(1, 0), label_3 = c(1, 0))
+df
+write.csv(x = df, file = file.path(dir_path, "add_input.csv"), row.names = FALSE)
+```
+
+If we add the path to the csv file, the generator will map additional input to sequences: 
+
+```{r warning = FALSE, message = FALSE}
+gen <- fastaFileGenerator(corpus.dir = file.path(dir_path, "train_files_1"),
+                          batch.size = 1,
+                          maxlen = 5,
+                          output_format = "target_right",
+                          added_label_path = file.path(dir_path, "add_input.csv"),
+                          add_input_as_seq = FALSE # don't treat input as sequence
+)
+z <- gen()
+added_label_input <- z[[1]][[1]]
+added_label_input
+sequence_input <- z[[1]][[2]]
+sequence_input[1, , ]
+target <- z[[2]] 
+target
+```
+
+If we want to train a network with additional labels, we have to add an additional input layer.
+
+```{r warning = FALSE, message = FALSE}
+model <- create_model_lstm_cnn(
+  maxlen = 5,
+  layer_lstm = c(8, 8),
+  layer_dense = c(4),
+  label_input = 3 # additional input vector has length 3
+)
+
+trainNetwork(train_type = "lm", 
+             model = model,
+             path = file.path(dir_path, "train_files_1"),
+             path.val = file.path(dir_path, "validation_files_1"),
+             added_label_path = file.path(dir_path, "add_input.csv"),
+             steps.per.epoch = 5,
+             batch.size = 8,
+             epochs = 2
+)
+```
+
+## Tensorboard
+
+We can use tensorboard to monitor our training runs. To track the runs, we have to specify a path for tensorboard files and give the run a unique name.   
+
+```{r warning = FALSE, message = FALSE}
+tensorboard_path <- file.path(dir_path, "tensorboard")
+if (!dir.exists(tensorboard_path)) dir.create(tensorboard_path)
+model <- create_model_lstm_cnn()
+run.name <- "run_1"
+trainNetwork(train_type = "lm", 
+             model = model,
+             path = train_path_1,
+             path.val = validation_path_1,
+             steps.per.epoch = 5, 
+             batch.size = 8,
+             epochs = 10,
+             run.name = run.name,
+             tensorboard.log = tensorboard_path,
+             output = list(none = FALSE,
+                           checkpoints = FALSE,
+                           tensorboard = TRUE, # enable tensorboard 
+                           log = FALSE,
+                           serialize_model = FALSE, 
+                           full_model = FALSE),       
+             output_format = "target_right" 
+)
+
+# open tensorboard in browser
+tensorflow::tensorboard(tensorboard_path)
+```
+
+The "SCALARS" tab displays accuracy, loss, learning rate and percentage of files seen for each epoch.
+
+The "TEXT" tab shows the `trainNetwork` call as text.
+
+The "HPARAM" tab tracks the hpyerparameters of the different runs (maxlen, batch size etc.).
+
+Further tensorboard documentation can be found [here](https://www.tensorflow.org/tensorboard/get_started).
+
+## Checkpoints
+
+We can save the architecture and weights of a model after every epoch using checkpoints. The checkpoints get stored in 
+h5 format. The  file names contain the corresponding epoch, loss and accuracy 
+
+```{r warning = FALSE, message = FALSE}
+checkpoint_path <- file.path(dir_path, "checkpoints")
+if (!dir.exists(checkpoint_path)) dir.create(checkpoint_path)
+model <- create_model_lstm_cnn()
+run.name <- "run_2"
+trainNetwork(train_type = "lm", 
+             model = model,
+             path = train_path_1,
+             path.val = validation_path_1,
+             steps.per.epoch = 5, 
+             batch.size = 8,
+             epochs = 10,
+             run.name = run.name,
+             checkpoint_path = checkpoint_path,  
+             save_best_only = TRUE, # only save model if loss improves
+             save_weights_only = FALSE, # save architecture and weights
+             output = list(none = FALSE,
+                           checkpoints = TRUE, # enable checkpoints
+                           tensorboard = FALSE,  
+                           log = FALSE,
+                           serialize_model = FALSE, 
+                           full_model = FALSE),       
+             output_format = "target_right" 
+)
+```
+
+After training, we can now load a trained model and continue training or use the model for predictions/inference.
+
+```{r warning = FALSE, message = FALSE}
+cp_run_path <- file.path(checkpoint_path, paste0(run.name, "_checkpoints"))
+checkpoints <- list.files(cp_run_path)
+checkpoints
+last_checkpoint <- checkpoints[length(checkpoints)]
+
+# load trained model and compile
+model <- keras::load_model_hdf5(file.path(cp_run_path, last_checkpoint), compile = FALSE)
+model <- keras::load_weights_model_hdf5(model, file.path(cp_run_path, last_checkpoint))
+optimizer <-  keras::optimizer_adam(lr = 0.01)
+model %>% keras::compile(loss = "categorical_crossentropy", optimizer = optimizer, metrics = c("acc"))
+
+# continue training
+trainNetwork(train_type = "lm", 
+             model = model,
+             path = train_path_1,
+             path.val = validation_path_1,
+             steps.per.epoch = 5, 
+             batch.size = 8,
+             epochs = 2,
+             run.name = "continue_from_checkpoint",
+             output_format = "target_right" 
+)
+```
+

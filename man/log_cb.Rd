@@ -2,16 +2,10 @@
 % Please edit documentation in R/callbacks.R
 \name{log_cb}
 \alias{log_cb}
-\title{Log callback}
+\title{log callback}
 \usage{
-log_cb(path_log, run_name)
-}
-\arguments{
-\item{path_log}{Path to output directory.}
-
-\item{run_name}{Name of output file is run_name + ".csv".}
+log_cb(run.name)
 }
 \description{
-Log callback
+log callback
 }
-\keyword{internal}

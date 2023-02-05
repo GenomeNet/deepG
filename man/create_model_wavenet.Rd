@@ -2,7 +2,7 @@
 % Please edit documentation in R/create_model.R
 \name{create_model_wavenet}
 \alias{create_model_wavenet}
-\title{Create wavenet model}
+\title{create wavenet model}
 \usage{
 create_model_wavenet(
   filters = 16,
@@ -15,10 +15,8 @@ create_model_wavenet(
   output_channels = 4,
   output_activation = "softmax",
   solver = "adam",
-  learning_rate = 0.001,
-  compile = TRUE,
-  verbose = TRUE,
-  model_seed = NULL
+  learning.rate = 0.001,
+  compile = TRUE
 )
 }
 \arguments{
@@ -32,8 +30,6 @@ length of the 1D convolution window.}
 model - the dilation rate of each block `i` is calculated by `2^i`. If a vector,
 then it's used as the dilation rate of each residual block.}
 
-\item{maxlen}{Length of predictor sequence.}
-
 \item{input_tensor}{Tensor to use as input for the model. Usually a 3d tensor.}
 
 \item{initial_kernel_size}{kernel size of the first causal convolution.}
@@ -43,23 +39,7 @@ then it's used as the dilation rate of each residual block.}
 \item{output_channels}{number of channels in the output.}
 
 \item{output_activation}{activation function for the last layer. Default: 'softmax'}
-
-\item{solver}{Optimization method, options are \verb{"adam", "adagrad", "rmsprop"} or \code{"sgd"}.}
-
-\item{learning_rate}{Learning rate for optimizer.}
-
-\item{compile}{Whether to compile the model.}
-
-\item{verbose}{Boolean.}
-
-\item{model_seed}{Set seed for model parameters in tensorflow if not \code{NULL}.}
 }
 \description{
-Creates network architecture as described \href{https://arxiv.org/abs/1609.03499}{here}. Implementation
-uses code from \href{https://github.com/r-tensorflow/wavenet}{here}.
-}
-\examples{
-
-model <- create_model_wavenet(residual_blocks = 2^rep(1:4, 2), maxlen = 1000)
-
+create wavenet model
 }

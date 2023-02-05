@@ -9,4 +9,3 @@ check_layer_name(model, layer_name)
 \description{
 Check if layer is in model
 }
-\keyword{internal}

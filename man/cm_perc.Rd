@@ -9,4 +9,3 @@ cm_perc(cm, round_dig = 2)
 \description{
 Transform confusion matrix with total numbers to matrix with percentages.
 }
-\keyword{internal}

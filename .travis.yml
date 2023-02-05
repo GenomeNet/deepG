@@ -1,0 +1,40 @@
+language: r
+sudo: required
+cache: packages
+dist: xenial
+warnings_are_errors: false
+addons:
+  apt:
+    packages:
+    - build-essential
+    - libxml2-dev
+    - autoconf
+    - libtool
+    - subversion
+    - libmagick++-dev
+env:
+  global:
+  - PKG_CFLAGS="-pedantic"
+  - _R_CHECK_CRAN_INCOMING_=FALSE
+  - ASAN="-fsanitize=address -fno-omit-frame-pointer"
+  - HDF5_RELEASE_URL="https://support.hdfgroup.org/ftp/HDF5/releases"
+  - LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/lib
+  - CODECOV_TOKEN="e2914fef-6e65-4145-b931-03d31277099f"
+  - secure: TR93h4r1eTsjpMqd2FwYcqe4r9ERBWCTss9r8fEF4sIYUkUYduEsVK04PzLO1Sx6t1lQ1bgelrUig7FCc0Hhjwgz+afu1s28E3kccnRUWYAZCEX6zamLWlHuTw0N79nnv7iZGud+k7eeel/Xpn2b8CF+/5I7bnrtjpicPS445Au26qc2/nBXaxf6WRw1XOmyKmGY9N952QqZHXAMFJN90MUEnf/XxnCG5Xwe2PxLyOSW1/5eQPZcVJfOg90cdAF+66aPe4ko8JYMkvINMvzMxIM9NH273V/KUsRH3Nu1EhVT6OmM1XpJMMCmG0w8n/HQss5yrf8nzR0abvb7b3hYFDQfeGcYYQ8V+Fy3UT8U1/XlbxXnvOZqyv/FDIeZQjw3Z2KDnxy9zWnoqHuZO9lq55lvHWkzIiaSB2bLs9AZaBJS7j7MW7P8KIWqD8a5IRMTc4f680hRcs2fqcTdE0o/uI3whkUni4RDikBLgv8aCBthwRefGSxs+k2J21K7HAaTk7+TBMDZMu4vsSkjut1hXVy7uC+DMEwydzsmWxQnKi/GOhUwHFEg7M0BqUyngjTKFXLOLZH5RzdvvIsw5rLFRMot+Rk1SMqxtfu7LYNggik0FikyznmEnsvhlm6et5v5plto6OIHYCWcDQRsIKaw1GnwjFwMW5pBUyHFLMs5Pe8=
+  matrix:
+  - HDF5_VERSION=1.10.1
+before_install:
+  - sudo apt-get update
+  - chmod +x travis_setup.sh
+  - "./travis_setup.sh"
+  - R -e "install.packages(c('hdf5r', 'devtools','pkgload', 'pkgdown', 'covr', 'tensorflow'))"
+before_script:
+- R -e "tensorflow::install_tensorflow(version = '2.0.0', method = 'virtualenv')"
+- R -e 'tensorflow::tf_config()'
+- R --no-save <<< 'pkgload::load_all(); devtools::document()'
+after_success:
+- Rscript -e 'covr::codecov()'
+notifications:
+  slack: bifo-hzi:LlCI7DQETUjGybPppKUfGJCA
+  on_success: change
+  on_failure: change

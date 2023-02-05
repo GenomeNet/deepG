@@ -2,50 +2,10 @@
 % Please edit documentation in R/write_dummy_data.R
 \name{create_dummy_data}
 \alias{create_dummy_data}
-\title{Write random sequences to fasta file}
+\title{create random sequences and write to fasta file}
 \usage{
-create_dummy_data(
-  file_path,
-  num_files,
-  header = "header",
-  seq_length,
-  num_seq,
-  fasta_name_start = "file",
-  write_to_file_path = FALSE,
-  prob = NULL,
-  vocabulary = c("a", "c", "g", "t")
-)
-}
-\arguments{
-\item{file_path}{Output directory; can also be a file name but only possible if \code{write_to_file_path = TRUE} and
-\code{num_files = 1}).}
-
-\item{num_files}{Number of files to create.}
-
-\item{header}{Fasta header name.}
-
-\item{seq_length}{Length of one sequence.}
-
-\item{num_seq}{Number of sequences per file.}
-
-\item{fasta_name_start}{Beginning string of file name. Output files are named fasta_name_start + _i.fasta where i is an integer index.}
-
-\item{write_to_file_path}{Whether to write output directly to \code{file_path}, i.e. file_path is not a directory.}
-
-\item{prob}{Probability of each character in the \code{vocabulary} to be sampled. If \code{NULL} each character has same probability.}
-
-\item{vocabulary}{Set of characters to sample sequences from.}
+create_dummy_data(file_path, num_files, seq_length, num_seq, vocabulary)
 }
 \description{
-Create random sequences from predefined vocabulary and write to fasta file.
-}
-\examples{
-path_output <- tempfile()
-dir.create(path_output)
-create_dummy_data(file_path = path_output,
-                  num_files = 3,
-                  seq_length = 11, 
-                  num_seq = 5,                   
-                  vocabulary = c("a", "c", "g", "t"))
-list.files(path_output)                   
+create random sequences and write to fasta file
 }

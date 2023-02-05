@@ -3,16 +3,17 @@
 \docType{data}
 \name{ecoli}
 \alias{ecoli}
-\title{Ecoli genome}
+\title{E. coli genome for evaluation 
+Can be loaded to workspace via data(ecoli)}
 \format{
-Large character of 4.64 MB
+Large character of 4.4 Mb
 }
 \usage{
 ecoli
 }
 \description{
-E. coli genome for evaluation.
-Can be loaded to workspace via \code{data(ecoli)}.
+E. coli genome for evaluation 
+Can be loaded to workspace via data(ecoli)
 }
 \references{
 \url{https://science.sciencemag.org/content/277/5331/1453.long}

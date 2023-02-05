@@ -2,15 +2,10 @@
 % Please edit documentation in R/callbacks.R
 \name{validation_after_training_cb}
 \alias{validation_after_training_cb}
-\title{Validation after training callback}
+\title{Do validation after training finished}
 \usage{
 validation_after_training_cb(gen.val, validation_steps)
 }
-\arguments{
-\item{gen.val}{Validation generator}
-
-\item{validation_steps}{Number of validation steps.}
-}
 \description{
-Do validation only once at end of training.
+Do validation after training finished
 }

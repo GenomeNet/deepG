@@ -14,4 +14,3 @@ gradients_stepwise(
 \description{
 Compute gradients stepwise (one batch at a time)
 }
-\keyword{internal}

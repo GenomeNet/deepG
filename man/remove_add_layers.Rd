@@ -7,6 +7,7 @@
 remove_add_layers(
   model = NULL,
   layer_name = NULL,
+  layer_depth = NULL,
   dense_layers = NULL,
   last_activation = list("softmax"),
   output_names = NULL,
@@ -15,20 +16,19 @@ remove_add_layers(
   dropout = NULL,
   freeze_base_model = FALSE,
   compile = FALSE,
-  learning_rate = 0.001,
-  solver = "adam",
-  model_seed = NULL
+  lr = 0.001,
+  solver = "adam"
 )
 }
 \arguments{
-\item{model}{A keras model.}
+\item{model}{A keras model. If model and model_path are both not NULL, model_path will be used.}
 
 \item{layer_name}{Name of last layer to use from old model.}
 
-\item{dense_layers}{List of vectors specifying number of units for each dense layer. If this is a list of length > 1, model
+\item{dense_layers}{List of vectors specifiying number of units for each dense layer. If this is a list of length > 1, model 
 has multiple output layers.}
 
-\item{last_activation}{List of activations for last entry for each list entry from \code{dense_layers}. Either \code{"softmax"}, \code{"sigmoid"} or \code{"linear"}.}
+\item{last_activation}{List of activations for last entry for each list entry from \code{dense_layers}. Either "softmax" or "sigmoid".}
 
 \item{output_names}{List of names for each output layer.}
 
@@ -40,36 +40,12 @@ has multiple output layers.}
 
 \item{freeze_base_model}{Whether to freeze all weights before new dense layers.}
 
-\item{compile}{Boolean, whether to compile the new model.}
+\item{compile}{Boolean, whether the new model is compiled or not}
 
-\item{learning_rate}{Learning rate if \code{compile = TRUE}, default learning rate of the old model}
+\item{lr}{learning rate if compile == TRUE, default -> learning rate of the old model}
 
-\item{solver}{Optimization method, options are \verb{"adam", "adagrad", "rmsprop"} or \code{"sgd"}.}
-
-\item{model_seed}{Set seed for model parameters in tensorflow if not \code{NULL}.}
+\item{solver}{"adam", "adagrad", "rmsprop" or "sgd" if compile == TRUE, default -> solver of the old model}
 }
 \description{
-Function takes a model as input and removes all layers after a certain layer, specified in \code{layer_name} argument.
-Optional to add dense layers on top of pruned model. Model can have multiple output layers with separate loss/activation functions.
-You can freeze all the weights of the pruned model by setting \code{freeze_base_model = TRUE}.
-}
-\examples{
-model_1 <- create_model_lstm_cnn(layer_lstm = c(64, 64),
-                                 maxlen = 50,
-                                 layer_dense = c(32, 4), 
-                                 verbose = FALSE)
-# get name of second to last layer 
-num_layers <- length(model_1$get_config()$layers)
-layer_name <- model_1$get_config()$layers[[num_layers-1]]$name
-# add dense layer with multi outputs and separate loss/activations functions
-model_2 <- remove_add_layers(model = model_1,
-                             layer_name = layer_name,
-                             dense_layers = list(c(32, 16, 1), c(8, 1), c(12, 5)),
-                             loss = list("binary_crossentropy", "mae", "categorical_crossentropy"),
-                             last_activation = list("sigmoid", "linear", "softmax"),
-                             freeze_base_model = TRUE,
-                             output_names = list("out_1_binary_classsification", 
-                                                 "out_2_regression", 
-                                                 "out_3_classification")
-) 
+Remove layers from model and add dense layers
 }

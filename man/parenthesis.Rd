@@ -3,16 +3,17 @@
 \docType{data}
 \name{parenthesis}
 \alias{parenthesis}
-\title{Parenthesis data}
+\title{Training dataset of synthetic parenthesis language
+Can be loaded to workspace via data(parenthesis)}
 \format{
-Large character of 1.00 MB
+Large character of 4.9 Mb
 }
 \usage{
 parenthesis
 }
 \description{
-Training dataset of synthetic parenthesis language.
-Can be loaded to workspace via \code{data(parenthesis)}.
+Training dataset of synthetic parenthesis language
+Can be loaded to workspace via data(parenthesis)
 }
 \references{
 \url{http://github.com/philippmuench}

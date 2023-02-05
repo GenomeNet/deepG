@@ -12,4 +12,3 @@ get_hyper_param(model)
 \description{
 Extract hyperparameters from model
 }
-\keyword{internal}

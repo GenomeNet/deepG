@@ -1,14 +1,8 @@
-pandoc: 2.3.1
-pkgdown: 2.0.5
+pandoc: '2.2'
+pkgdown: 1.4.1
 pkgdown_sha: ~
-articles:
-  data_generator: data_generator.html
-  getting_started: getting_started.html
-  integrated_gradient: integrated_gradient.html
-  training_types: training_types.html
-  using_tb: using_tb.html
-last_built: 2023-01-25T08:18Z
+articles: []
 urls:
-  reference: https://genomenet.github.io/deepG/reference
-  article: https://genomenet.github.io/deepG/articles
+  reference: https://hiddengenome.github.io/deepG//reference
+  article: https://hiddengenome.github.io/deepG//articles
 

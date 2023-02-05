@@ -2,11 +2,10 @@
 % Please edit documentation in R/preprocess.R
 \name{slice_tensor}
 \alias{slice_tensor}
-\title{Divide tensor to list of subsets}
+\title{Devide tensor to list of subsets}
 \usage{
 slice_tensor(tensor, target_split)
 }
 \description{
-Divide tensor to list of subsets
+Devide tensor to list of subsets
 }
-\keyword{internal}

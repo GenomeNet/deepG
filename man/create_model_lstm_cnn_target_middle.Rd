@@ -2,19 +2,22 @@
 % Please edit documentation in R/create_model.R
 \name{create_model_lstm_cnn_target_middle}
 \alias{create_model_lstm_cnn_target_middle}
-\title{Create LSTM/CNN network to predict middle part of a sequence}
+\title{Creates LSTM/CNN network}
 \usage{
 create_model_lstm_cnn_target_middle(
   maxlen = 50,
-  dropout_lstm = 0,
-  recurrent_dropout_lstm = 0,
+  dropout = 0,
+  recurrent_dropout = 0,
   layer_lstm = 128,
   solver = "adam",
-  learning_rate = 0.001,
-  vocabulary_size = 4,
+  learning.rate = 0.001,
+  use.multiple.gpus = FALSE,
+  merge.on.cpu = TRUE,
+  gpu.num = 2,
+  vocabulary.size = 4,
   bidirectional = FALSE,
   stateful = FALSE,
-  batch_size = NULL,
+  batch.size = NULL,
   padding = "same",
   compile = TRUE,
   layer_dense = NULL,
@@ -28,89 +31,57 @@ create_model_lstm_cnn_target_middle(
   label_noise_matrix = NULL,
   last_layer_activation = "softmax",
   loss_fn = "categorical_crossentropy",
-  num_output_layers = 1,
-  f1_metric = FALSE,
-  verbose = TRUE,
-  batch_norm_momentum = 0.99,
-  model_seed = NULL
+  num_output_layers = 1
 )
 }
 \arguments{
 \item{maxlen}{Length of predictor sequence.}
 
-\item{dropout_lstm}{Fraction of the units to drop for inputs.}
+\item{dropout}{Fraction of the units to drop for inputs.}
 
-\item{recurrent_dropout_lstm}{Fraction of the units to drop for recurrent state.}
+\item{recurrent_dropout}{Fraction of the units to drop for recurrent state.}
 
 \item{layer_lstm}{Number of cells per network layer. Can be a scalar or vector.}
 
-\item{solver}{Optimization method, options are \verb{"adam", "adagrad", "rmsprop"} or \code{"sgd"}.}
+\item{solver}{Optimization method, options are "adam", "adagrad", "rmsprop" or "sgd".}
 
-\item{learning_rate}{Learning rate for optimizer.}
+\item{learning.rate}{Learning rate for optimizer.}
 
-\item{vocabulary_size}{Number of unique character in vocabulary.}
+\item{use.multiple.gpus}{If true, multi_gpu_model() will be used based on gpu_num.}
+
+\item{merge.on.cpu}{True on default, false recommend if the server supports NVlink, only relevant if use.multiple.gpu is true.}
+
+\item{gpu.num}{Number of GPUs to be used, only relevant if multiple_gpu is true.}
+
+\item{vocabulary.size}{Number of unique character in vocabulary.}
 
 \item{bidirectional}{Use bidirectional wrapper for lstm layers.}
 
 \item{stateful}{Boolean. Whether to use stateful LSTM layer.}
 
-\item{batch_size}{Number of samples that are used for one network update. Only used if \code{stateful = TRUE}.}
+\item{batch.size}{Number of samples that are used for one network update. Only used if \code{stateful = TRUE}.}
 
-\item{padding}{Padding of CNN layers, e.g. \verb{"same", "valid"} or \code{"causal"}.}
+\item{padding}{Padding of CNN layers, e.g. "same", "valid" or "causal".}
 
 \item{compile}{Whether to compile the model.}
 
-\item{layer_dense}{Vector specifying number of neurons per dense layer after last LSTM or CNN layer (if no LSTM used).}
+\item{layer_dense}{Dense layers of size layer_dense after last LSTM (or last CNN if \code{layers.lstm = 0}) layer.}
 
-\item{kernel_size}{Size of 1d convolutional layers. For multiple layers, assign a vector. (e.g, \code{rep(3,2)} for two layers and kernel size 3)}
+\item{kernel_size}{Size of 1d convolutional layer.}
 
-\item{filters}{Number of filters. For multiple layers, assign a vector.}
+\item{filters}{Number of filters.}
 
-\item{pool_size}{Integer, size of the max pooling windows. For multiple layers, assign a vector.}
+\item{pool_size}{Integer, size of the max pooling windows.}
 
-\item{strides}{Stride values. For multiple layers, assign a vector.}
+\item{strides}{Stide length of convolution.}
 
-\item{label_input}{Integer or \code{NULL}. If not \code{NULL}, adds additional input layer of \code{label_input} size.}
-
-\item{zero_mask}{Boolean, whether to apply zero masking before LSTM layer. Only used if model does not use any CNN layers.}
-
-\item{label_smoothing}{Float in [0, 1]. If 0, no smoothing is applied. If > 0, loss between the predicted
-labels and a smoothed version of the true labels, where the smoothing squeezes the labels towards 0.5.
-The closer the argument is to 1 the more the labels get smoothed.}
-
-\item{label_noise_matrix}{Matrix of label noises. Every row stands for one class and columns for percentage of labels in that class.
-If first label contains 5 percent wrong labels and second label no noise, then
-
-\code{label_noise_matrix <- matrix(c(0.95, 0.05, 0, 1), nrow = 2, byrow = TRUE )}}
-
-\item{last_layer_activation}{Either \code{"sigmoid"} or \code{"softmax"}.}
-
-\item{loss_fn}{Either \code{"categorical_crossentropy"} or \code{"binary_crossentropy"}. If \code{label_noise_matrix} given, will use custom \code{"noisy_loss"}.}
-
-\item{num_output_layers}{Number of output layers.}
-
-\item{f1_metric}{Whether to add F1 metric.}
-
-\item{verbose}{Boolean.}
-
-\item{batch_norm_momentum}{Momentum for the moving mean and the moving variance.}
-
-\item{model_seed}{Set seed for model parameters in tensorflow if not \code{NULL}.}
+\item{label_input}{Integer or NULL. If not NULL, adds additional input layer of \code{label_input} size.}
 }
 \description{
-Creates a network consisting of an arbitrary number of CNN, LSTM and dense layers.
-Function creates two sub networks consisting each of (optional) CNN layers followed by an arbitrary number of LSTM layers. Afterwards the last LSTM layers
-get concatenated and followed by one or more dense layers. Last layer is a dense layer.
-Network tries to predict target in the middle of a sequence. If input is AACCTAAGG, input tensors should correspond to x1 = AACC, x2 = GGAA and y = T.
-}
-\examples{
-create_model_lstm_cnn_target_middle(
-  maxlen = 500,
-  vocabulary_size = 4,
-  kernel_size = c(8, 8, 8),
-  filters = c(16, 32, 64),
-  pool_size = c(3, 3, 3),
-  layer_lstm = c(32, 64),
-  layer_dense = c(128, 4),
-  learning_rate = 0.001)
+Creates a network consisting of an arbitrary number of CNN, LSTM and dense layers. 
+Last layer is a dense layer with softmax activation.
+Network tries to predict target in the middle of a sequence. If input is AACCTAAGG, input tensors should correspond to x1 = AACC, x2 = GGAA and y = T 
+(set \code{target_middle = TRUE} in \code{trainNetwork} function).  
+Function creates two sub networks consisting each of an (optional) CNN layer followed by an arbitrary number of LSTM layers. Afterwards the last LSTM layers
+get concatenated and followed by a dense layers.
 }

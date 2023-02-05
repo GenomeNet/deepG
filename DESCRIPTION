@@ -1,54 +1,37 @@
 Package: deepG
-Title: Deep Learning for Genome Sequence Data
-Version: 0.2.1-9000
+Type: Package
+Title: deepG
+Version: 0.2.0
 Encoding: UTF-8
+Author: Philipp C. Muench
 Authors@R: c(
-       person(given = "Philipp",
-              family = "Münch",
-              role = "aut",
-              email = "philipp.muench@helmholtz-hzi.de"),
-       person(given = "René",
-              family = "Mreches",
-              role = "aut",
-              email = "rene.mreches@helmholtz-hzi.de"),
-       person(given = "Martin",
-              family = "Binder",
-              role = c("aut", "cre"),
-              email = "developer.mb706@mb706.com"),
-       person(given = "Hüseyin Anil",
-              family = "Gündüz",
-              role = "aut",
-              email = "anil.guenduez@stat.uni-muenchen.de"),
-       person(given = "Xiao-Yin",
-              family = "To",
-              role = "aut",
-              email = "x.to@stat.uni-muenchen.de"),        
-       person(given = "Alice",
-              family = "McHardy",
-              role = "aut",
-              email = "alice.mchardy@helmholtz-hzi.de")
-     )
-Description: 'deepG' is a toolbox for training and applying deep learning models for genomic sequence data.
-  Applications include data preprocessing, model fitting, model evaluation, model optimization and inference.
-  A few genomic datasets for testing are provided, as is the possibility to extract deep representations.
-License: AGPL-3 + file LICENSE
-URL: https://github.com/GenomeNet/deepG,
-    https://genomenet.github.io/deepG/
-BugReports: https://github.com/GenomeNet/deepG/issues
-Roxygen: list(markdown = TRUE)
+    person(given = "Philipp Muench",
+    role = c("aut", "cre"), 
+    email = "pmu15@helmholtz-hzi.de"))
+Maintainer: Philipp Muench <pmu15@helmholtz-hzi.de>
+Description: deepG is a R library that contains a collection of scripts required for LSTM models generation and analysis. It also comes with genomic datasets for testing and the possibility to extrect cell response. 
+License: AGPL_3 + file LICENSE
 Depends:
     R (>= 3.5.0)
 Imports:
-    hdf5r,
     tensorflow,
     reticulate,
     keras,
     data.table,
+    methods,
     abind,
     stringr,
     purrr,
+    tokenizers,
+    readr,
+    tm,
     magrittr,
     dplyr,
+    remotes,
+    hdf5r,
+    xfun,
+    Rtsne,
+    plyr,
     ggplot2,
     yardstick,
     jpeg,
@@ -56,11 +39,6 @@ Imports:
     microseq
 Remotes: r-tensorflow/wavenet
 NeedsCompilation: yes
-RoxygenNote: 7.2.0
+RoxygenNote: 7.1.1
 Suggests: 
-    testthat,
-    circlize,
-    pROC,
-    PRROC,
-    ComplexHeatmap,
-    checkmate
+    testthat
