@@ -780,4 +780,3 @@ trainNetwork <- function(train_type = "lm",
   }
   return(history)
 }
-va
