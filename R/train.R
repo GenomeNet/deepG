@@ -734,11 +734,12 @@ trainNetwork <- function(train_type = "lm",
       )
 
     # if (validation_only_after_training) {
+    if (validation_steps) {
       history$val_loss <- model$val_loss
       history$val_acc <- model$val_acc
       model$val_loss <- NULL
       model$val_acc <- NULL
-    # }
+    }
   } else {
 
     model <- keras::set_weights(model, model_weights)
@@ -779,3 +780,4 @@ trainNetwork <- function(train_type = "lm",
   }
   return(history)
 }
+va
