@@ -666,7 +666,7 @@ trainNetwork <- function(train_type = "lm",
 
 #  if (validation_only_after_training) {
     if (!train_with_gen) stop("Validation after training only implemented for generator")
-    callbacks <- c(callbacks, validation_after_training_cb(gen.val = gen.val, validation_steps = validation_steps))
+    if (validation_steps > 0) callbacks <- c(callbacks, validation_after_training_cb(gen.val = gen.val, validation_steps = validation_steps))
     callback_names <- c(callback_names, "validation_after_training")
 #  }
 
