@@ -721,7 +721,7 @@ trainNetwork <- function(train_type = "lm",
     model <- keras::set_weights(model, model_weights)
     history <-
       model %>% keras::fit(
-        generator = gen,
+        x = gen,
         validation_data = validation_data,
         validation_steps = validation_steps,
         steps_per_epoch = steps.per.epoch,
