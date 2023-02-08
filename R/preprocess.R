@@ -1331,17 +1331,28 @@ reverse_complement_tensor <- function(x) {
 }
 
 
+get_pos_enc <- function(pos, i, d_model, n = 10000) {
+  
+  pw <- (2 * floor(i/2)) / d_model
+  angle_rates <- 1 / (n ^ pw)
+  angle <- pos * angle_rates
+  pos_enc <- ifelse(i %% 2 == 0, sin(angle), cos(angle))
+  return(pos_enc)
+}  
+
 positional_encoding <- function(seq_len, d_model, n=10000) {
+  
   P = matrix(0, nrow = seq_len, ncol = d_model)
-  for (k in 0:(seq_len - 1)) {
-    for (i in 0:(floor(d_model/2) - 1)) {
-      denominator <- n^(2*i/d_model)
-      P[k + 1, i + 1] <- sin(k/denominator)
-      P[k + 1, i + (1 + floor(d_model/2))] <- cos(k/denominator)
+  
+  for (pos in 0:(seq_len - 1)) {
+    for (i in 0:(d_model - 1)) {
+      P[pos + 1, i + 1] <- get_pos_enc(pos, i, d_model, n)
     }
   }
+  
   return(P)
 }
+
 
 plot_cm <- function(cm, perc = FALSE, cm_labels, round_dig = 2, text_size = 1) {
   
