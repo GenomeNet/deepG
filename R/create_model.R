@@ -2422,7 +2422,7 @@ attention_block <- function(inputs, head_size, num_heads, dropout = 0, res_conne
   x <- inputs %>% norm_layer
   multi_head_layer <- tensorflow::tf$keras$layers$MultiHeadAttention(
     key_dim=head_size, num_heads=num_heads, dropout=dropout)
-  x <- multi_head_layer(query = x, value = x)
+  x <- multi_head_layer(query = x, value = x, key = x)
   dropout_layer <- tensorflow::tf$keras$layers$Dropout(dropout)
   x <- x %>% dropout_layer
   if (res_connection) x <- x + inputs
@@ -2494,7 +2494,7 @@ create_model_transformer <- function(maxlen,
   if (pos_encoding == "sinusoid") { 
     pe_matrix <- positional_encoding(maxlen, d_model = vocabulary_size, n = n) 
     output_tensor <- keras::layer_lambda(input_tensor, f = function(x) {
-      tensorflow::tf$math$add(x, pe_matrix)
+      x + pe_matrix
     })
   } 
   if (pos_encoding == "embedding") { 
@@ -2502,7 +2502,7 @@ create_model_transformer <- function(maxlen,
     position_indices <- tensorflow::tf$range(as.integer(maxlen), dtype = "int32") 
     embedded_indices <- position_embedding_layer(position_indices)
     output_tensor <- keras::layer_lambda(input_tensor, f = function(x) {
-      tensorflow::tf$math$add(x, embedded_indices)
+      x + embedded_indices
     })
   }
   
