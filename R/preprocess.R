@@ -976,6 +976,7 @@ count_files <- function(path, format = "fasta", train_type,
 list_fasta_files <- function(path_corpus, format, file_filter) {
   
   fasta.files <- list()
+  path_corpus <- unlist(path_corpus)
   
   for (i in 1:length(path_corpus)) {
     
