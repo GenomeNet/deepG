@@ -298,6 +298,9 @@ add_hparam_list <- function(model, argg) {
   argg["padding"] <- paste(as.character(argg$padding), collapse = " ")
   argg["use_bias"] <- paste(as.character(argg$use_bias), collapse = " ")
   argg["input_label_list"] <- paste(as.character(argg$layer_dense), collapse = " ")
+  argg["num_heads"] <- paste(as.character(argg$num_heads), collapse = " ")
+  argg["head_size"] <- paste(as.character(argg$head_size), collapse = " ")
+  argg["dropout"] <- paste(as.character(argg$dropout), collapse = " ")
   argg["input_tensor"] <- NULL
   argg["label_inputs"] <- NULL
   argg["f1"] <- NULL
@@ -348,6 +351,7 @@ add_hparam_list <- function(model, argg) {
   argg["number_of_cnn_layers"] <- paste(as.character(argg$number_of_cnn_layers), collapse = " ")
   argg["feature_ext_model"] <- NULL
   argg["pe_matrix"] <- NULL
+  argg["position_embedding_layer"] <- NULL 
   
   model$hparam <- argg
   model

@@ -1146,9 +1146,8 @@ remove_add_layers <- function(model = NULL,
   if (verbose) {
     print("New model: ")
     print(model_new)
-    layerList <- keras::get_config(model_new)["layers"]
-    for (i in 1:length(layerList)) {
-      cat(layerList[[i]]$config$name , "trainable:" , layerList[[i]]$config$trainable, "\n")
+    for (i in 1:length(model_new$layers)) {
+      cat(model_new$layers[[i]]$name , "trainable:" , model_new$layers[[i]]$trainable, "\n")
     }
   }
   
@@ -1256,10 +1255,10 @@ merge_models <- function(models, layer_names, layer_dense, solver = "adam",
 #' 
 #' @keywords internal
 check_layer_name <- function(model, layer_name) {
-  num_layers <- length(model$get_config()$layers)
+  num_layers <- length(model$layers)
   layer_names <- vector("character")
   for (i in 1:num_layers) {
-    layer_names[i] <- model$get_config()$layers[[i]]$name
+    layer_names[i] <- model$layers[[i]]$name
   }
   if (!(layer_name %in% layer_names)) {
     message <- paste0("Model has no layer named ", "'", layer_name, "'")
