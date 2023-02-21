@@ -416,3 +416,28 @@ exp_decay <- function(lrmax = 0.005,
                       epoch = NULL) {
   return(lrmax * exp(-mult * epoch))
 }
+
+
+
+euclidean_distance <- function(vects) {
+  x <- vects[[1]]
+  y <- vects[[2]]
+  sum_square <- tensorflow::tf$math$reduce_sum(tensorflow::tf$math$square(x - y), axis=1L, keepdims=TRUE)
+  return(tensorflow::tf$math$sqrt(tensorflow::tf$math$maximum(sum_square, tensorflow::tf$keras$backend$epsilon())))
+}
+
+loss_cl <- function(margin=1) {
+  
+  contrastive_loss <- function(y_true, y_pred) {
+    
+    square_pred <- tensorflow::tf$math$square(y_pred)
+    margin_square <- tensorflow::tf$math$square(tf$math$maximum(margin - (y_pred), 0))
+    l <- tensorflow::tf$math$reduce_mean(
+      (1 - y_true) * square_pred + (y_true) * margin_square
+    )
+    return(l)
+  }
+  
+  return(contrastive_loss)
+  
+}

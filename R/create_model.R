@@ -1776,47 +1776,51 @@ create_model_lstm_cnn_multi_input <- function(
   y <- y %>% keras::layer_dense(units = num_targets, activation = last_layer_activation)
   model <- keras::keras_model(inputs = input_list, outputs = y)
   
-  # choose optimization method
-  optimizer <- set_optimizer(solver, learning_rate) 
-  
-  #add metrics
-  cm_dir <- file.path(tempdir(), paste(sample(letters, 7), collapse = ""))
-  while (dir.exists(cm_dir)) {
+  if (compile) {
+    # choose optimization method
+    optimizer <- set_optimizer(solver, learning_rate) 
+    
+    #add metrics
     cm_dir <- file.path(tempdir(), paste(sample(letters, 7), collapse = ""))
-  }
-  dir.create(cm_dir)
-  model$cm_dir <- cm_dir
-  
-  #add metrics
-  if (loss_fn == "binary_crossentropy") {
-    model_metrics <- c(tf$keras$metrics$BinaryAccuracy(name = "acc"))
-  } else {
-    model_metrics <- c("acc")
-  } 
-  
-  if (loss_fn == "categorical_crossentropy") {
-    
-    macro_average_cb <- balanced_acc_wrapper(num_targets, cm_dir)
-    model_metrics <- c(macro_average_cb, "acc")
-    
-    if (f1_metric) {
-      f1 <- f1_wrapper(num_targets)
-      model_metrics <- c(model_metrics, f1)
+    while (dir.exists(cm_dir)) {
+      cm_dir <- file.path(tempdir(), paste(sample(letters, 7), collapse = ""))
     }
+    dir.create(cm_dir)
+    model$cm_dir <- cm_dir
+    
+    #add metrics
+    if (loss_fn == "binary_crossentropy") {
+      model_metrics <- c(tf$keras$metrics$BinaryAccuracy(name = "acc"))
+    } else {
+      model_metrics <- c("acc")
+    } 
+    
+    if (loss_fn == "categorical_crossentropy") {
+      
+      macro_average_cb <- balanced_acc_wrapper(num_targets, cm_dir)
+      model_metrics <- c(macro_average_cb, "acc")
+      
+      if (f1_metric) {
+        f1 <- f1_wrapper(num_targets)
+        model_metrics <- c(model_metrics, f1)
+      }
+    }
+    
+    if (auc_metric) {
+      auc <- auc_wrapper(model_output_size = layer_dense[length(layer_dense)],
+                         loss = loss_fn)
+      model_metrics <- c(model_metrics, auc)
+    }
+    
+    model %>% keras::compile(loss = loss_fn,
+                             optimizer = optimizer, metrics = model_metrics)
+    
+    model$cm_dir <- cm_dir
+    
   }
-  
-  if (auc_metric) {
-    auc <- auc_wrapper(model_output_size = layer_dense[length(layer_dense)],
-                       loss = loss_fn)
-    model_metrics <- c(model_metrics, auc)
-  }
-  
-  model %>% keras::compile(loss = loss_fn,
-                           optimizer = optimizer, metrics = model_metrics)
   
   argg <- c(as.list(environment()))
   model <- add_hparam_list(model, argg)
-  model$cm_dir <- cm_dir
   
   if (verbose) summary(model)
   return_model <- model
@@ -2626,4 +2630,119 @@ compile_model <- function(model, solver, learning_rate, loss_fn, label_smoothing
   
   model
   
+}
+
+get_layer_names <- function(model) {
+  
+  n <- length(model$layers)
+  layer_names <- vector("character", n)
+  for (i in 1:n) {
+    layer_names[i] <- model$layers[[i]]$name
+  }
+  layer_names
+} 
+
+#' @title Create siamese network with contrastive loss
+#'
+#' @description Siamese network can be trained to maximize the distance
+#' between embeddings of inputs.
+#' Implements approach as described [here](https://keras.io/examples/vision/siamese_contrastive/).
+#'
+#' @inheritParams create_model_lstm_cnn
+#' @param margin Integer, defines the baseline for distance for which pairs should be classified as dissimilar.
+#' @param layer_dense Vector containing number of neurons per dense layer, before euclidean distance layer.
+#' @examples
+#' model <- create_model_siamese_network(
+#'   maxlen = 50,
+#'   layer_dense = 16,
+#'   kernel_size = 12,
+#'   filters = 4,
+#'   pool_size = 3,
+#'   learning_rate = 0.001,
+#'   margin = 1) 
+#' @export
+create_model_siamese_network <- function(
+  maxlen = 50,
+  dropout_lstm = 0,
+  recurrent_dropout_lstm = 0,
+  layer_lstm = NULL,
+  layer_dense = c(4),
+  kernel_size = NULL,
+  filters = NULL,
+  strides = NULL,
+  pool_size = NULL,
+  solver = "adam",
+  learning_rate = 0.001,
+  vocabulary_size = 4,
+  bidirectional = FALSE,
+  compile = TRUE,
+  padding = "same",
+  dilation_rate = NULL,
+  gap = FALSE,
+  use_bias = TRUE,
+  residual_block = FALSE,
+  residual_block_length = 1,
+  size_reduction_1Dconv = FALSE,
+  zero_mask = FALSE,
+  margin = 1,
+  verbose = TRUE,
+  batch_norm_momentum = 0.99,
+  model_seed = NULL) {
+  
+  model_base <- create_model_lstm_cnn_multi_input(
+    maxlen = maxlen,
+    dropout_lstm = dropout_lstm,
+    recurrent_dropout_lstm = recurrent_dropout_lstm,
+    layer_lstm = layer_lstm,
+    solver = solver,
+    learning_rate = learning_rate,
+    vocabulary_size =  vocabulary_size,
+    bidirectional = bidirectional,
+    batch_size = NULL,
+    compile = FALSE,
+    kernel_size = kernel_size,
+    filters = filters,
+    strides = strides,
+    pool_size = pool_size,
+    padding = padding,
+    dilation_rate = dilation_rate,
+    gap = gap,
+    use_bias = use_bias,
+    zero_mask = zero_mask,
+    samples_per_target = 2,
+    batch_norm_momentum = batch_norm_momentum,
+    verbose = FALSE,
+    model_seed = model_seed)
+  
+  layer_names <- get_layer_names(model_base)
+  layer_name <- layer_names[stringr::str_detect(layer_names, "add")]
+  model_base <- model_base$layers[[3]]
+  input_base <- model_base$input
+  
+  if (length(layer_dense) > 0) {
+    for (i in 1:(length(layer_dense))) {
+      if (i == 1) model_base <- model_base$output %>% keras::layer_dense(units = layer_dense[i], activation = "tanh")
+      if (i > 1) model_base <- model_base %>% keras::layer_dense(units = layer_dense[i], activation = "tanh")
+    }
+  }
+  
+  model_base <- keras::keras_model(inputs = input_base, outputs = model_base)
+  
+  input_1 <- keras::layer_input(shape = c(maxlen, vocabulary_size))
+  input_2 <- keras::layer_input(shape = c(maxlen, vocabulary_size))
+  tower_1 <- input_1 %>% model_base
+  tower_2 <- input_2 %>% model_base
+  
+  outputs <- keras::layer_lambda(list(tower_1, tower_2), euclidean_distance)
+  outputs <- outputs %>% keras::layer_batch_normalization(momentum = batch_norm_momentum)
+  outputs <- outputs %>% keras::layer_dense(units = 1, activation = "sigmoid")
+  model <- keras::keras_model(inputs = list(input_1, input_2), outputs = outputs)
+  
+  if (compile) {
+    model %>% compile(loss = loss_cl(margin=margin),
+                      optimizer = set_optimizer(solver, learning_rate),
+                      metrics="accuracy")
+  }
+  
+  model
 }
