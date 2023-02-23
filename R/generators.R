@@ -2765,7 +2765,7 @@ generator_rds <- function(rds_folder, batch_size, path_file_log = NULL,
   # TODO: adjust for different input fomrat (input mix of 3D and 1D etc.)
   multi_input <- ifelse(is.list(x_complete), TRUE, FALSE)
   multi_output <- ifelse(length(rds_file) > 1 && is.list(rds_file[[2]]), TRUE, FALSE)
-
+  
   if (multi_input) {
     x_dim_list <- list()
     size_splits_in <- list()
@@ -2799,7 +2799,8 @@ generator_rds <- function(rds_folder, batch_size, path_file_log = NULL,
       y_complete <- tensorflow::tf$concat(y_complete,
                                           axis = as.integer(length(y_dim_list[[1]]) - 1)) %>% as.array()
     } 
-    y_dim_start <- dim(y_complete)
+    #y_dim_start <- dim(y_complete)
+    if (is.null(y_dim_start)) y_dim_start <- length(y_complete)
     
     if (x_dim_start[1] != y_dim_start[1]) {
       stop("Different number of samples for input and target")
@@ -2880,6 +2881,7 @@ generator_rds <- function(rds_folder, batch_size, path_file_log = NULL,
               y_complete <<- rds_file[[2]]
             }
             y_dim <<- dim(y_complete)
+            #if (is.null(y_dim)) y_dim <<- length(y_complete)
           }
           
           if (!is_lm && (x_dim[1] != y_dim[1])) {
