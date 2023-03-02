@@ -1566,6 +1566,7 @@ create_model_lstm_cnn_time_dist <- function(
 #' @inheritParams create_model_lstm_cnn
 #' @param samples_per_target Number of samples to combine for one target.
 #' @param num_input_layers Number of input layers.
+#' @param dropout_dense Vector of dropout rates between dense layers. No dropout if `NULL`.
 #' @examples
 #' create_model_lstm_cnn_multi_input(
 #'   maxlen = 50,
@@ -1584,6 +1585,7 @@ create_model_lstm_cnn_multi_input <- function(
   recurrent_dropout_lstm = 0,
   layer_lstm = NULL,
   layer_dense = c(4),
+  dropout_dense = NULL,
   solver = "adam",
   learning_rate = 0.001,
   vocabulary_size = 4,
@@ -1612,6 +1614,7 @@ create_model_lstm_cnn_multi_input <- function(
   model_seed = NULL) {
   
   layer_dense <- as.integer(layer_dense)
+  if (!is.null(dropout_dense)) stopifnot(length(dropout_dense) == length(layer_dense))
   if (!is.null(model_seed)) tensorflow::tf$random$set_seed(model_seed)
   num_targets <- layer_dense[length(layer_dense)]
   layers.lstm <- length(layer_lstm)
@@ -1769,6 +1772,7 @@ create_model_lstm_cnn_multi_input <- function(
   
   if (length(layer_dense) > 1) {
     for (i in 1:(length(layer_dense) - 1)) {
+      if (!is.null(dropout_dense)) y <- y %>% keras::layer_dropout(dropout_dense[i])
       y <- y %>% keras::layer_dense(units = layer_dense[i], activation = "relu")
     }
   }
@@ -2667,6 +2671,7 @@ create_model_siamese_network <- function(
   recurrent_dropout_lstm = 0,
   layer_lstm = NULL,
   layer_dense = c(4),
+  dropout_dense = NULL,
   kernel_size = NULL,
   filters = NULL,
   strides = NULL,
@@ -2688,6 +2693,8 @@ create_model_siamese_network <- function(
   verbose = TRUE,
   batch_norm_momentum = 0.99,
   model_seed = NULL) {
+  
+  if (!is.null(dropout_dense)) stopifnot(length(dropout_dense) == length(layer_dense))
   
   model_base <- create_model_lstm_cnn_multi_input(
     maxlen = maxlen,
@@ -2713,14 +2720,23 @@ create_model_siamese_network <- function(
     batch_norm_momentum = batch_norm_momentum,
     verbose = FALSE,
     model_seed = model_seed)
- 
+  
   model_base <- model_base$layers[[3]]
   input_base <- model_base$input
   
   if (length(layer_dense) > 0) {
     for (i in 1:(length(layer_dense))) {
-      if (i == 1) model_base <- model_base$output %>% keras::layer_dense(units = layer_dense[i], activation = "tanh")
-      if (i > 1) model_base <- model_base %>% keras::layer_dense(units = layer_dense[i], activation = "tanh")
+      if (!is.null(dropout_dense) & i == 1) {
+        model_base <- model_base$output %>% keras::layer_dropout(dropout_dense[i])
+        model_base <- model_base %>% keras::layer_dense(units = layer_dense[i], activation = "tanh")
+      } 
+      if (i == 1 & is.null(dropout_dense)) {
+        model_base <- model_base$output %>% keras::layer_dense(units = layer_dense[i], activation = "tanh")
+      }
+      if (i > 1) {
+        if (!is.null(dropout_dense)) model_base <- model_base %>% keras::layer_dropout(dropout_dense[i])
+        model_base <- model_base %>% keras::layer_dense(units = layer_dense[i], activation = "tanh")
+      }
     }
   }
   
@@ -2737,9 +2753,9 @@ create_model_siamese_network <- function(
   model <- keras::keras_model(inputs = list(input_1, input_2), outputs = outputs)
   
   if (compile) {
-    model %>% compile(loss = loss_cl(margin=margin),
-                      optimizer = set_optimizer(solver, learning_rate),
-                      metrics="accuracy")
+    model %>% keras::compile(loss = loss_cl(margin=margin),
+                             optimizer = set_optimizer(solver, learning_rate),
+                             metrics="accuracy")
   }
   
   if (verbose) print(model)
