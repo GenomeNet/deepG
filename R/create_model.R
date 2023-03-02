@@ -2695,7 +2695,7 @@ create_model_siamese_network <- function(
   model_seed = NULL) {
   
   if (!is.null(dropout_dense)) stopifnot(length(dropout_dense) == length(layer_dense))
-  
+
   model_base <- create_model_lstm_cnn_multi_input(
     maxlen = maxlen,
     dropout_lstm = dropout_lstm,
@@ -2759,6 +2759,5 @@ create_model_siamese_network <- function(
   }
   
   if (verbose) print(model)
-  
   model
 }
