@@ -8,6 +8,7 @@
 #' @param recurrent_dropout_lstm Fraction of the units to drop for recurrent state.
 #' @param layer_lstm Number of cells per network layer. Can be a scalar or vector.
 #' @param layer_dense Vector specifying number of neurons per dense layer after last LSTM or CNN layer (if no LSTM used).
+#' @param dropout_dense Dropout rates between dense layers. No dropout if `ǸULL`.
 #' @param solver Optimization method, options are `"adam", "adagrad", "rmsprop"` or `"sgd"`.
 #' @param learning_rate Learning rate for optimizer.
 #' @param bidirectional Use bidirectional wrapper for lstm layers.
@@ -65,6 +66,7 @@ create_model_lstm_cnn <- function(
   recurrent_dropout_lstm = 0,
   layer_lstm = NULL,
   layer_dense = c(4),
+  dropout_dense = NULL,
   kernel_size = NULL,
   filters = NULL,
   strides = NULL,
@@ -387,19 +389,27 @@ create_model_lstm_cnn <- function(
   
   if (length(layer_dense) > 1) {
     for (i in 1:(length(layer_dense) - 1)) {
+      if (!is.null(dropout_dense)) output_tensor <- output_tensor %>% keras::layer_dropout(dropout_dense[i])
       output_tensor <- output_tensor %>% keras::layer_dense(units = layer_dense[i], activation = "relu")
     }
   }
   
   if (num_output_layers == 1) {
+    if (!is.null(dropout_dense)) output_tensor <- output_tensor %>% keras::layer_dropout(dropout_dense[length(dropout_dense)])
     output_tensor <- output_tensor %>%
       keras::layer_dense(units = num_targets, activation = last_layer_activation)
   } else {
     output_list <- list()
     for (i in 1:num_output_layers) {
       layer_name <- paste0("output_", i, "_", num_output_layers)
-      output_list[[i]] <- output_tensor %>%
-        keras::layer_dense(units = num_targets, activation = last_layer_activation, name = layer_name)
+      if (!is.null(dropout_dense)) {
+        output_list[[i]] <- output_tensor %>% keras::layer_dropout(dropout_dense[length(dropout_dense)])
+        output_list[[i]] <- output_list[[i]] %>%
+          keras::layer_dense(units = num_targets, activation = last_layer_activation, name = layer_name)
+      } else {
+        output_list[[i]] <- output_tensor %>%
+          keras::layer_dense(units = num_targets, activation = last_layer_activation, name = layer_name)
+      }
     }
   }
   
@@ -2436,6 +2446,83 @@ attention_block <- function(inputs, head_size, num_heads, dropout = 0, res_conne
   return(x)
 }
 
+#' Layer for positional embedding
+#' 
+#' @inheritParams create_model_transformer
+#' @param load_r6 Whether to load the R6 layer class.
+#' @export
+layer_pos_embedding_wrapper <- function(maxlen = 100, vocabulary_size = 4, load_r6 = FALSE) {
+  
+  layer_pos_embedding <- keras::new_layer_class(
+    "layer_pos_embedding",
+    initialize = function(maxlen = 100, vocabulary_size = 4, ...) {
+      super$initialize(...)
+      self$position_embeddings <- tensorflow::tf$keras$layers$Embedding(as.integer(maxlen), as.integer(vocabulary_size))
+      self$maxlen <- as.integer(maxlen)
+      self$vocabulary_size <- as.integer(vocabulary_size)
+    },
+    
+    call = function(inputs) {
+      positions <- tensorflow::tf$range(self$maxlen, dtype = "int32") 
+      embedded_positions <- self$position_embeddings(positions)
+      inputs + embedded_positions
+    },
+    
+    get_config = function() {
+      config <- super$get_config()
+      config$maxlen <- self$maxlen
+      config$vocabulary_size <- self$vocabulary_size
+      config
+    }
+  )
+  
+  if (load_r6) {
+    return(layer_pos_embedding)
+  } else {
+    return(layer_pos_embedding(maxlen=maxlen, vocabulary_size=vocabulary_size))
+  }
+  
+}
+
+#' Layer for positional encoding
+#' 
+#' @inheritParams create_model_transformer
+#' @param load_r6 Whether to load the R6 layer class.
+#' @export
+layer_pos_sinusoid_wrapper <- function(maxlen = 100, vocabulary_size = 4, n = 10000, load_r6 = FALSE) {
+  
+  layer_pos_sinusoid <- keras::new_layer_class(
+    "layer_pos_sinusoid",
+    initialize = function(maxlen = 100, vocabulary_size = 4, n = 10000, ...) {
+      super$initialize(...)
+      self$maxlen <- as.integer(maxlen)
+      self$vocabulary_size <- vocabulary_size
+      self$n <- as.integer(n)
+      self$pe_matrix <- positional_encoding(seq_len = maxlen,
+                                            d_model = vocabulary_size,
+                                            n = n)
+    },
+    
+    call = function(inputs) {
+      inputs + self$pe_matrix
+    },
+    
+    get_config = function() {
+      config <- super$get_config()
+      config$maxlen <- self$maxlen
+      config$vocabulary_size <- self$vocabulary_size
+      config$n <- self$n
+      config
+    }
+  )
+  
+  if (load_r6) {
+    return(layer_pos_sinusoid)
+  } else {
+    return(layer_pos_sinusoid(maxlen=maxlen, vocabulary_size=vocabulary_size, n=n))
+  }
+  
+}
 
 #' Create transformer model
 #'
@@ -2451,9 +2538,9 @@ attention_block <- function(inputs, head_size, num_heads, dropout = 0, res_conne
 #' @param n Frequency of sine waves for positional encoding. Only applied if `pos_encoding = "sinusoid"`.
 #' @param dropout Vector of dropout rates after attention block(s). 
 #' @param dropout_dense Dropout for dense layers.
-#' @param flatten_method How to process output of last attention block. Can be `"gap_channels_last"`, `"gap_channels_first"`
+#' @param flatten_method How to process output of last attention block. Can be `"gap_channels_last"`, `"gap_channels_first"`, `"none"`,
 #' or `"flatten"`. If `"gap_channels_last"` or `"gap_channels_first"`, will apply global average pooling. If `"flatten"`, will flatten 
-#' output after last attention block.
+#' output after last attention block. If `"none"` no flatting applied.
 #' @examples 
 #' 
 #' model <- create_model_transformer(maxlen = 50,
@@ -2485,7 +2572,7 @@ create_model_transformer <- function(maxlen,
   
   stopifnot(length(head_size) == length(num_heads))
   stopifnot(length(head_size) == length(dropout))
-  stopifnot(flatten_method %in% c("gap_channels_last", "gap_channels_first", "flatten"))
+  stopifnot(flatten_method %in% c("gap_channels_last", "gap_channels_first", "flatten", "none"))
   stopifnot(pos_encoding %in% c("sinusoid", "embedding"))
   num_dense_layers <- length(layer_dense)
   num_attention_blocks <- length(head_size)
@@ -2499,19 +2586,12 @@ create_model_transformer <- function(maxlen,
   
   # positional encoding 
   if (pos_encoding == "sinusoid") { 
-    pe_matrix <- positional_encoding(maxlen, d_model = vocabulary_size, n = n) 
-    output_tensor <- keras::layer_lambda(input_tensor, f = function(x) {
-      x + pe_matrix
-    })
+    pos_enc_layer <- layer_pos_sinusoid_wrapper(maxlen = maxlen, vocabulary_size = vocabulary_size, n = n)
   } 
   if (pos_encoding == "embedding") { 
-    position_embedding_layer <- tensorflow::tf$keras$layers$Embedding(maxlen, vocabulary_size)
-    position_indices <- tensorflow::tf$range(as.integer(maxlen), dtype = "int32") 
-    embedded_indices <- position_embedding_layer(position_indices)
-    output_tensor <- keras::layer_lambda(input_tensor, f = function(x) {
-      x + embedded_indices
-    })
+    pos_enc_layer <- layer_pos_embedding_wrapper(maxlen = maxlen, vocabulary_size = vocabulary_size)
   }
+  output_tensor <- input_tensor %>% pos_enc_layer
   
   # attention blocks
   for (i in 1:num_attention_blocks) {
@@ -2564,6 +2644,9 @@ create_model_transformer <- function(maxlen,
   
 }
 
+#' Compile model
+#' @inheritParams create_model_lstm_cnn
+#' @export
 compile_model <- function(model, solver, learning_rate, loss_fn, label_smoothing = 0,
                           num_output_layers = 1, label_noise_matrix = NULL,
                           bal_acc = FALSE, f1_metric = FALSE, auc_metric = FALSE) {
@@ -2695,7 +2778,7 @@ create_model_siamese_network <- function(
   model_seed = NULL) {
   
   if (!is.null(dropout_dense)) stopifnot(length(dropout_dense) == length(layer_dense))
-
+  
   model_base <- create_model_lstm_cnn_multi_input(
     maxlen = maxlen,
     dropout_lstm = dropout_lstm,
