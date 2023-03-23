@@ -10,6 +10,7 @@ create_model_lstm_cnn(
   recurrent_dropout_lstm = 0,
   layer_lstm = NULL,
   layer_dense = c(4),
+  dropout_dense = NULL,
   kernel_size = NULL,
   filters = NULL,
   strides = NULL,
@@ -53,6 +54,8 @@ create_model_lstm_cnn(
 \item{layer_lstm}{Number of cells per network layer. Can be a scalar or vector.}
 
 \item{layer_dense}{Vector specifying number of neurons per dense layer after last LSTM or CNN layer (if no LSTM used).}
+
+\item{dropout_dense}{Dropout rates between dense layers. No dropout if \code{ǸULL}.}
 
 \item{kernel_size}{Size of 1d convolutional layers. For multiple layers, assign a vector. (e.g, \code{rep(3,2)} for two layers and kernel size 3)}
 

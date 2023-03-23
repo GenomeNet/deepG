@@ -10,8 +10,8 @@ create_model_transformer(
   pos_encoding = "sinusoid",
   head_size = 4L,
   num_heads = 5L,
+  ff_dim = 8,
   dropout = 0,
-  res_connection = TRUE,
   n = 10000,
   layer_dense = 2,
   dropout_dense = NULL,
@@ -38,13 +38,13 @@ create_model_transformer(
 If \code{"sinusoid"}, will add sine waves of different frequencies to input.
 If \code{"embedding"}, model learns positional embedding.}
 
-\item{head_size}{Vector of dimensions of attention keys for each block.}
+\item{head_size}{Dimensions of attention key.}
 
 \item{num_heads}{Number of attention heads.}
 
-\item{dropout}{Vector of dropout rates after attention block(s).}
+\item{ff_dim}{Units of first dense layer between attention blocks.}
 
-\item{res_connection}{Whether to add residual connection between attention blocks.}
+\item{dropout}{Vector of dropout rates after attention block(s).}
 
 \item{n}{Frequency of sine waves for positional encoding. Only applied if \code{pos_encoding = "sinusoid"}.}
 
@@ -52,9 +52,9 @@ If \code{"embedding"}, model learns positional embedding.}
 
 \item{dropout_dense}{Dropout for dense layers.}
 
-\item{flatten_method}{How to process output of last attention block. Can be \code{"gap_channels_last"}, \code{"gap_channels_first"}
+\item{flatten_method}{How to process output of last attention block. Can be \code{"gap_channels_last"}, \code{"gap_channels_first"}, \code{"none"},
 or \code{"flatten"}. If \code{"gap_channels_last"} or \code{"gap_channels_first"}, will apply global average pooling. If \code{"flatten"}, will flatten
-output after last attention block.}
+output after last attention block. If \code{"none"} no flatting applied.}
 
 \item{last_layer_activation}{Either \code{"sigmoid"} or \code{"softmax"}.}
 
@@ -89,6 +89,7 @@ Creates transformer network for classification. Model can consist of several sta
 \examples{
 
 model <- create_model_transformer(maxlen = 50,
-            head_size=c(4,7), num_heads=c(5,8), dropout=c(0.3,0.5))
+                                  head_size=c(10,12), num_heads=c(7,8), ff_dim=c(5,9), 
+                                  dropout=c(0.3, 0.5))
 
 }
