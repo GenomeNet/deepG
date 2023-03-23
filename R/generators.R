@@ -822,11 +822,11 @@ generator_fasta_label_header_csv <- function(path_corpus,
   additional_labels <- !is.null(added_label_path)
   seq_vector <- NULL
   
-  # adjust maxlen for n_gram
-  if (!is.null(n_gram)) {
-    stop("n-gram encoding not implemented yet for classification")
-    maxlen <- maxlen + n_gram - 1
-  }
+  # # adjust maxlen for n_gram
+  # if (!is.null(n_gram)) {
+  #   stop("n-gram encoding not implemented yet for classification")
+  #   maxlen <- maxlen + n_gram - 1
+  # }
   
   for (i in letters) {
     if (!(i %in% stringr::str_to_lower(vocabulary))) {
@@ -1583,11 +1583,11 @@ generator_fasta_label_folder <- function(path_corpus,
   ambiguous_nuc <- ambiguous_nuc
   proportion_per_seq <- proportion_per_seq
   
-  # adjust maxlen for n_gram
-  if (!is.null(n_gram)) {
-    stop("n-gram encoding not implemented yet for classification")
-    maxlen <- maxlen + n_gram - 1
-  }
+  # # adjust maxlen for n_gram
+  # if (!is.null(n_gram)) {
+  #   stop("n-gram encoding not implemented yet for classification")
+  #   maxlen <- maxlen + n_gram - 1
+  # }
   
   if (split_seq) {
     maxlen <- maxlen + 1
@@ -2799,9 +2799,8 @@ generator_rds <- function(rds_folder, batch_size, path_file_log = NULL,
       y_complete <- tensorflow::tf$concat(y_complete,
                                           axis = as.integer(length(y_dim_list[[1]]) - 1)) %>% as.array()
     } 
-    #y_dim_start <- dim(y_complete)
+    y_dim_start <- dim(y_complete)
     if (is.null(y_dim_start)) y_dim_start <- length(y_complete)
-    
     if (x_dim_start[1] != y_dim_start[1]) {
       stop("Different number of samples for input and target")
     }
