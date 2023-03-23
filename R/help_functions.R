@@ -347,9 +347,10 @@ add_hparam_list <- function(model, argg) {
   argg["output_tensor"] <- NULL
   argg["output_tensor_1"] <- NULL
   argg["output_tensor_2"] <- NULL
-
+  argg[["attn_block"]] <- NULL
   argg["feature_ext_model"] <- NULL
-
+  argg["ff_dim"] <- NULL
+  argg["pos_enc_layer"] <- NULL
   argg["number_of_cnn_layers"] <- paste(as.character(argg$number_of_cnn_layers), collapse = " ")
   argg["feature_ext_model"] <- NULL
   argg["pe_matrix"] <- NULL
