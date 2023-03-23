@@ -2432,20 +2432,6 @@ load_cp <- function(cp_path, cp_filter = NULL, ep_index = NULL, compile = FALSE,
   
 }
 
-attention_block <- function(inputs, head_size, num_heads, dropout = 0, res_connection = TRUE) {
-  
-  # Normalization and Attention
-  norm_layer <- tensorflow::tf$keras$layers$LayerNormalization(epsilon=1e-6, axis=-1L)
-  x <- inputs %>% norm_layer
-  multi_head_layer <- tensorflow::tf$keras$layers$MultiHeadAttention(
-    key_dim=head_size, num_heads=num_heads, dropout=dropout)
-  x <- multi_head_layer(query = x, value = x, key = x)
-  dropout_layer <- tensorflow::tf$keras$layers$Dropout(dropout)
-  x <- x %>% dropout_layer
-  if (res_connection) x <- x + inputs
-  return(x)
-}
-
 #' Layer for positional embedding
 #' 
 #' @inheritParams create_model_transformer
@@ -2524,6 +2510,62 @@ layer_pos_sinusoid_wrapper <- function(maxlen = 100, vocabulary_size = 4, n = 10
   
 }
 
+
+layer_transformer_block_wrapper <- function(num_heads = 2, head_size = 4, dropout_rate, ff_dim,  
+                                            vocabulary_size = 4, load_r6 = FALSE) {
+  
+  layer_transformer_block <- keras::new_layer_class(
+    "layer_transformer_block",
+    initialize = function(num_heads, head_size, dropout_rate, ff_dim, vocabulary_size, ...) {
+      super$initialize(...)
+      self$num_heads <- num_heads
+      self$head_size <- head_size
+      self$dropout_rate <- dropout_rate
+      self$ff_dim <- ff_dim
+      self$vocabulary_size <- vocabulary_size
+      self$att <- tensorflow::tf$keras$layers$MultiHeadAttention(num_heads=as.integer(num_heads),
+                                                                 key_dim=as.integer(head_size))
+      self$ffn <- keras::keras_model_sequential() %>% keras::layer_dense(as.integer(ff_dim), activation="relu") %>%
+        keras::layer_dense(as.integer(vocabulary_size))
+      
+      self$layernorm1 <- keras::layer_layer_normalization(epsilon=1e-6)
+      self$layernorm2 <- keras::layer_layer_normalization(epsilon=1e-6)
+      self$dropout1 <- keras::layer_dropout(rate=dropout_rate)
+      self$dropout2 <- keras::layer_dropout(rate=dropout_rate)
+    },
+    
+    call = function(inputs) {
+      attn_output <- self$att(inputs, inputs)
+      attn_output <- self$dropout1(attn_output)
+      out1 <- self$layernorm1(inputs + attn_output)
+      ffn_output <- self$ffn(out1)
+      ffn_output <- self$dropout2(ffn_output)
+      return(self$layernorm2(out1 + ffn_output))
+    },
+    
+    get_config = function() {
+      config <- super$get_config()
+      config$num_heads <- self$num_heads
+      config$head_size <- self$head_size
+      config$dropout_rate <- self$dropout_rate
+      config$ff_dim <- self$ff_dim
+      config$vocabulary_size <- self$vocabulary_size
+      config
+    }
+  )
+  
+  if (load_r6) {
+    return(layer_transformer_block)
+  } else {
+    return(layer_transformer_block(num_heads=num_heads,
+                                   head_size=head_size,
+                                   dropout_rate=dropout_rate,
+                                   vocabulary_size=vocabulary_size,
+                                   ff_dim=ff_dim))
+  }
+  
+}
+
 #' Create transformer model
 #'
 #' Creates transformer network for classification. Model can consist of several stacked attention blocks.
@@ -2533,9 +2575,9 @@ layer_pos_sinusoid_wrapper <- function(maxlen = 100, vocabulary_size = 4, n = 10
 #' @param pos_encoding Either `"sinusoid"` or `"embedding"`. How to add positional information.
 #' If `"sinusoid"`, will add sine waves of different frequencies to input.
 #' If `"embedding"`, model learns positional embedding.
-#' @param head_size Vector of dimensions of attention keys for each block.
-#' @param res_connection Whether to add residual connection between attention blocks.
+#' @param head_size Dimensions of attention key.
 #' @param n Frequency of sine waves for positional encoding. Only applied if `pos_encoding = "sinusoid"`.
+#' @param ff_dim Units of first dense layer between attention blocks.
 #' @param dropout Vector of dropout rates after attention block(s). 
 #' @param dropout_dense Dropout for dense layers.
 #' @param flatten_method How to process output of last attention block. Can be `"gap_channels_last"`, `"gap_channels_first"`, `"none"`,
@@ -2544,16 +2586,17 @@ layer_pos_sinusoid_wrapper <- function(maxlen = 100, vocabulary_size = 4, n = 10
 #' @examples 
 #' 
 #' model <- create_model_transformer(maxlen = 50,
-#'             head_size=c(4,7), num_heads=c(5,8), dropout=c(0.3,0.5))
+#'                                   head_size=c(10,12), num_heads=c(7,8), ff_dim=c(5,9), 
+#'                                   dropout=c(0.3, 0.5))
 #' 
 #' @export
 create_model_transformer <- function(maxlen,
                                      vocabulary_size = 4,
                                      pos_encoding = "sinusoid",
-                                     head_size=4L,
-                                     num_heads=5L,
+                                     head_size = 4L,
+                                     num_heads = 5L,
+                                     ff_dim = 8,
                                      dropout=0,
-                                     res_connection = TRUE,
                                      n = 10000, # pos emb frequency
                                      layer_dense = 2,
                                      dropout_dense = NULL,
@@ -2572,13 +2615,14 @@ create_model_transformer <- function(maxlen,
   
   stopifnot(length(head_size) == length(num_heads))
   stopifnot(length(head_size) == length(dropout))
+  stopifnot(length(head_size) == length(ff_dim))
   stopifnot(flatten_method %in% c("gap_channels_last", "gap_channels_first", "flatten", "none"))
   stopifnot(pos_encoding %in% c("sinusoid", "embedding"))
   num_dense_layers <- length(layer_dense)
-  num_attention_blocks <- length(head_size)
   head_size <- as.integer(head_size)
   num_heads <- as.integer(num_heads)
   maxlen <- as.integer(maxlen)
+  num_attention_blocks <- length(num_heads)
   vocabulary_size <-  as.integer(vocabulary_size)
   if (!is.null(model_seed)) tensorflow::tf$random$set_seed(model_seed)
   
@@ -2595,11 +2639,14 @@ create_model_transformer <- function(maxlen,
   
   # attention blocks
   for (i in 1:num_attention_blocks) {
-    output_tensor <- attention_block(inputs = output_tensor,
-                                     head_size = head_size[i],
-                                     num_heads = num_heads[i],
-                                     dropout = dropout[i])
-    
+    attn_block <- layer_transformer_block_wrapper(
+      num_heads = num_heads[i],
+      head_size = head_size[i],
+      dropout_rate = dropout[i],
+      ff_dim = ff_dim[i],
+      vocabulary_size = vocabulary_size,
+      load_r6 = FALSE)
+    output_tensor <- output_tensor %>% attn_block
   }
   
   # flatten
