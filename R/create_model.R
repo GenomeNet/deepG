@@ -2535,7 +2535,7 @@ layer_transformer_block_wrapper <- function(num_heads = 2, head_size = 4, dropou
     },
     
     call = function(inputs) {
-      attn_output <- self$att(inputs, inputs)
+      attn_output <- self$att(inputs, inputs, inputs)
       attn_output <- self$dropout1(attn_output)
       out1 <- self$layernorm1(inputs + attn_output)
       ffn_output <- self$ffn(out1)
@@ -2577,7 +2577,7 @@ layer_transformer_block_wrapper <- function(num_heads = 2, head_size = 4, dropou
 #' If `"embedding"`, model learns positional embedding.
 #' @param head_size Dimensions of attention key.
 #' @param n Frequency of sine waves for positional encoding. Only applied if `pos_encoding = "sinusoid"`.
-#' @param ff_dim Units of first dense layer between attention blocks.
+#' @param ff_dim Units of first dense layer after attention blocks.
 #' @param dropout Vector of dropout rates after attention block(s). 
 #' @param dropout_dense Dropout for dense layers.
 #' @param flatten_method How to process output of last attention block. Can be `"gap_channels_last"`, `"gap_channels_first"`, `"none"`,
@@ -2699,6 +2699,7 @@ compile_model <- function(model, solver, learning_rate, loss_fn, label_smoothing
                           bal_acc = FALSE, f1_metric = FALSE, auc_metric = FALSE) {
   
   optimizer <- set_optimizer(solver, learning_rate) 
+  if (num_output_layers == 1) num_targets <- model$output_shape[[2]]
   
   #add metrics
   if (loss_fn == "binary_crossentropy") {
