@@ -359,3 +359,44 @@ add_hparam_list <- function(model, argg) {
   model$hparam <- argg
   model
 }
+
+
+get_maxlen <- function(model, set_learning, target_middle, read_data, split_seq) {
+  if (is.null(set_learning)) {
+    num_in_layers <- length(model$inputs)
+    if (num_in_layers == 1) {
+      maxlen <- model$input$shape[[2]]
+    } else {
+      if (!target_middle & !read_data & !split_seq) {
+        maxlen <- model$input[[num_in_layers]]$shape[[2]]
+      } else {
+        maxlen <- model$inputs[[num_in_layers - 1]]$shape[[2]] + model$inputs[[num_in_layers]]$shape[[2]]
+      }
+    }
+  } else {
+    maxlen <- set_learning$maxlen
+  }
+}
+
+# combine lists containing x, y and sample weight subsets
+reorder_masked_lm_lists <- function(array_lists, include_sw = NULL) {
+  
+  if (is.null(include_sw)) include_sw <- FALSE
+  x <- list()
+  y <- list()
+  sw <- list()
+  for (i in 1:length(array_lists)) {
+    x[[i]] <- array_lists[[i]]$x
+    y[[i]] <- array_lists[[i]]$y
+    if (include_sw) sw[[i]] <- array_lists[[i]]$sample_weight
+  }
+  x <- abind::abind(x, along = 1)
+  y <- abind::abind(y, along = 1)
+  if (include_sw) sw <- abind::abind(sw, along = 1)
+  if (include_sw) {
+    return(list(x=x, y=y, sw=sw))
+  } else {
+    return(list(x=x, y=y))
+  }
+
+}

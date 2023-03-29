@@ -304,13 +304,13 @@ seq_encoding_lm <- function(sequence = NULL, maxlen, vocabulary, start_ind, ambi
 #' @export
 seq_encoding_label <- function(sequence = NULL, maxlen, vocabulary, start_ind, ambiguous_nuc = "zero", nuc_dist = NULL,
                                quality_vector = NULL, use_coverage = FALSE, max_cov = NULL,
-                               cov_vector = NULL, n_gram = NULL, n_gram_stride = 1,
+                               cov_vector = NULL, n_gram = NULL, n_gram_stride = 1, masked_lm = NULL,
                                char_sequence = NULL, tokenizer = NULL, adjust_start_ind = FALSE) {
   
   ## TODO: add discard_amb_nt
-  
   use_quality <- ifelse(is.null(quality_vector), FALSE, TRUE)
   discard_amb_nt <- FALSE
+  maxlen_original <- maxlen
   
   if (!is.null(char_sequence)) {
     
@@ -334,21 +334,37 @@ seq_encoding_label <- function(sequence = NULL, maxlen, vocabulary, start_ind, a
     sequence <- keras::texts_to_sequences(tokenizer, sequence)[[1]] - 1
   }
   
+  if (adjust_start_ind) start_ind <- start_ind - start_ind[1] + 1
+  
   if (is.null(n_gram_stride)) n_gram_stride <- 1
   voc_len <- length(vocabulary)
   if (!is.null(n_gram)) {
     sequence <- int_to_n_gram(int_seq = sequence, n = n_gram, voc_size = length(vocabulary))
-    maxlen <- maxlen - n_gram + 1
+    maxlen <- ceiling((maxlen - n_gram + 1)/n_gram_stride)
     voc_len <- length(vocabulary)^n_gram
   }
   
-  if (adjust_start_ind) start_ind <- start_ind - start_ind[1] + 1
   numberOfSamples <- length(start_ind)
   
-  # every row in z one-hot encodes one character in sequence, oov is zero-vector
-  z  <- keras::to_categorical(sequence, num_classes = voc_len + 2)[ , -c(1, voc_len + 2)]
-  z <- matrix(z, ncol = voc_len)
-  
+  if (!is.null(masked_lm)) {
+    l <- mask_seq(int_seq = sequence,
+                  mask_rate = masked_lm$mask_rate,
+                  random_rate = masked_lm$random_rate,
+                  identity_rate = masked_lm$identity_rate,
+                  voc_len = voc_len)
+    masked_seq <- l$masked_seq
+    sample_weight_seq <- l$sample_weight_seq
+    # every row in z one-hot encodes one character in sequence, oov is zero-vector
+    z_masked <- keras::to_categorical(masked_seq, num_classes = voc_len + 2)[ , -c(1)]
+    z_masked <- matrix(z_masked, ncol = voc_len + 1)
+    z  <- keras::to_categorical(sequence, num_classes = voc_len + 2)[ , -c(1)]
+    z <- matrix(z, ncol = voc_len + 1)
+  } else {
+    # every row in z one-hot encodes one character in sequence, oov is zero-vector
+    z  <- keras::to_categorical(sequence, num_classes = voc_len + 2)[ , -c(1, voc_len + 2)]
+    z <- matrix(z, ncol = voc_len)
+  }
+
   if (use_quality) {
     ones_pos <- apply(z, 1, which.max)
     is_zero_row <- apply(z == 0, 1, all)
@@ -367,33 +383,37 @@ seq_encoding_label <- function(sequence = NULL, maxlen, vocabulary, start_ind, a
     z[amb_nuc_pos, ] <- matrix(rep(nuc_dist, length(amb_nuc_pos)), nrow = length(amb_nuc_pos), byrow = TRUE)
   }
   
-  # if (ambiguous_nuc == "discard") {
-  #   amb_nuc_pos <- which(sequence == (voc_len + 1))
-  #   if (length(amb_nuc_pos) > 0) {
-  #     stop("sequence contains ambiguous nucleotides")
-  #   }
-  # }
-  
   if (use_coverage) {
     z <- z * (cov_vector/max_cov)
   }
   
-  x <- array(0, dim = c(numberOfSamples, maxlen, voc_len))
-  for (i in 1:numberOfSamples) {
-    start <- start_ind[i]
-    x[i, , ] <- z[start : (start + maxlen - 1), ]
-  }
-  
-  if (!is.null(n_gram) & n_gram_stride > 1) {
-    index <- seq(1, dim(x)[2], n_gram_stride)
-    if (length(index) == 1) {
-      x <- array(x[ , index, ], dim = c(numberOfSamples, 1, voc_len))
-    } else {
-      x <- x[ , index, ]
+  if (is.null(masked_lm)) {
+    
+    x <- array(0, dim = c(numberOfSamples, maxlen, voc_len))
+    for (i in 1:numberOfSamples) {
+      start <- start_ind[i]
+      subset_index <- seq(start, (start + maxlen_original - 1), by = n_gram_stride)
+        x[i, , ] <- z[subset_index, ]
     }
+    return(x)
+    
+  } else {
+    
+    x <- array(0, dim = c(numberOfSamples, maxlen, voc_len + 1))
+    y <- array(0, dim = c(numberOfSamples, maxlen, voc_len + 1))
+    sw <- array(0, dim = c(numberOfSamples, maxlen))
+    
+    for (i in 1:numberOfSamples) {
+      start <- start_ind[i]
+      subset_index <- seq(start, (start + maxlen - 1), by = n_gram_stride)
+      x[i, , ] <- z_masked[subset_index, ]
+      y[i, , ] <- z[subset_index, ]
+      sw[i, ] <- sample_weight_seq[subset_index]
+    }
+    return(list(x=x, y=y, sample_weight=sw))
+    
   }
   
-  return(x)
 }
 
 #' Computes start position of samples
@@ -1402,4 +1422,51 @@ subset_tensor <- function(tensor, subset_index, dim_n) {
   if (length(subset_index) == 1 & dim_n > 1) {
     subset_tensor <- tensorflow::tf$expand_dims(subset_tensor, axis = 0L)
   }
+}
+
+
+mask_seq <- function(int_seq,
+                     mask_rate = NULL,
+                     random_rate = NULL,
+                     identity_rate = NULL,
+                     voc_len) {
+  
+  mask_token <- voc_len + 1
+  
+  if (is.null(mask_rate)) mask_rate <- 0
+  if (is.null(random_rate)) random_rate <- 0
+  if (is.null(identity_rate)) identity_rate <- 0
+  mask_perc <- mask_rate + random_rate + identity_rate
+  
+  # don't mask padding or oov positions 
+  valid_pos <- which(int_seq != 0 | int_seq != mask_token) 
+  
+  num_mask_pos <- ceiling(mask_rate * length(valid_pos))
+  num_random_pos <- ceiling(random_rate * length(valid_pos))
+  num_identity_pos <- ceiling(identity_rate * length(valid_pos))
+  num_all_pos <- num_mask_pos + num_random_pos + num_identity_pos
+  all_pos <- sample(valid_pos, num_all_pos)
+  
+  sample_weight_seq <- rep(0, length(int_seq))
+  sample_weight_seq[all_pos] <- 1
+  
+  if (num_mask_pos > 0) {
+    mask_index <- sample(all_pos, num_mask_pos)
+    all_pos <- setdiff(all_pos, mask_index)
+    int_seq[mask_index] <- mask_token
+  }
+  if (num_random_pos > 0) {
+    random_index <- sample(all_pos, num_random_pos)
+    all_pos <- setdiff(all_pos, random_index)
+    int_seq[random_index] <- sample(1:voc_len, num_random_pos, replace = TRUE)
+  }
+  # if (num_identity_pos > 0) {
+  #   identity_index_index <- sample(all_pos, num_identity_index_pos)
+  # }
+
+  # mask oov tokens
+  sample_weight_seq[int_seq == mask_token] <- 1
+  
+  return(list(masked_seq = int_seq, sample_weight_seq = sample_weight_seq))
+  
 }
