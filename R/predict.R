@@ -328,7 +328,7 @@ predict_model_one_seq <- function(path_model = NULL, layer_name = NULL, sequence
       x <- x[ , c(index_x_1, index_x_2), ]
     } 
     
-    if (reverse_complement_encoding) x <- list(one_hot_batch, reverse_complement_tensor(x))
+    if (reverse_complement_encoding) x <- list(x, reverse_complement_tensor(x))
     
     y <- predict(model, x, verbose = 0)
     if (!is.null(round_digits)) y <- round(y, round_digits)
