@@ -217,7 +217,8 @@ train_model <- function(train_type = "lm",
                         n_gram_stride = 1,
                         masked_lm = NULL,
                         random_sampling = FALSE,
-                        add_noise = NULL) {
+                        add_noise = NULL,
+                        use_multiprocessing = FALSE) {
   
   # initialize metrics, temporary fix
   model <- manage_metrics(model)
@@ -488,6 +489,7 @@ train_model <- function(train_type = "lm",
       callbacks = callbacks,
       epochs = epochs,
       class_weight = class_weight,
+      use_multiprocessing = use_multiprocessing,
       verbose = print_scores)
   }
   
