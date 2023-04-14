@@ -398,5 +398,236 @@ reorder_masked_lm_lists <- function(array_lists, include_sw = NULL) {
   } else {
     return(list(x=x, y=y))
   }
+  
+}
 
+# stack 
+
+create_x_y_tensors_lm <- function(sequence_list, nuc_dist_list, target_middle,
+                                  maxlen, vocabulary, ambiguous_nuc,
+                                  start_index_list, quality_list, target_len,
+                                  coverage_list, use_coverage, max_cov,n_gram,
+                                  n_gram_stride, output_format, wavenet_format) {
+  
+  if (!wavenet_format) {
+    
+    array_list <- purrr::map(1:length(sequence_list),
+                             ~seq_encoding_lm(sequence_list[[.x]], nuc_dist = nuc_dist_list[[.x]], adjust_start_ind = TRUE,
+                                              maxlen = maxlen, vocabulary = vocabulary, ambiguous_nuc = ambiguous_nuc,
+                                              start_ind =  start_index_list[[.x]], 
+                                              quality_vector = quality_list[[.x]], target_len = target_len,
+                                              cov_vector = coverage_list[[.x]], use_coverage = use_coverage, max_cov = max_cov,
+                                              n_gram = n_gram, n_gram_stride = n_gram_stride, output_format = output_format)
+    )
+    
+    if (!is.list(array_list[[1]][[2]])) {
+      if (!target_middle) {
+        x <- array_list[[1]][[1]]
+        y <- array_list[[1]][[2]]
+        if (length(array_list) > 1) {
+          for (i in 2:length(array_list)) {
+            x <- abind::abind(x, array_list[[i]][[1]], along = 1)
+            y <- rbind(y, array_list[[i]][[2]])
+          }
+        }
+        
+        # coerce y type to matrix
+        if (dim(x)[1] == 1) {
+          if (is.null(n_gram)) {
+            dim(y) <-  c(1, length(vocabulary))
+          } else {
+            dim(y) <-  c(1, length(vocabulary)^n_gram)
+          }
+        }
+      } else {
+        x_1 <- array_list[[1]][[1]][[1]]
+        x_2 <- array_list[[1]][[1]][[2]]
+        y <- array_list[[1]][[2]]
+        if (length(array_list) > 1) {
+          for (i in 2:length(array_list)) {
+            x_1 <- abind::abind(x_1, array_list[[i]][[1]][[1]], along = 1)
+            x_2 <- abind::abind(x_2, array_list[[i]][[1]][[2]], along = 1)
+            y <- rbind(y, array_list[[i]][[2]])
+          }
+        }
+        x <- list(x_1, x_2)
+        
+        # coerce y type to matrix
+        if (dim(x_1)[1] == 1) {
+          if (is.null(n_gram)) {
+            dim(y) <-  c(1, length(vocabulary))
+          } else {
+            dim(y) <-  c(1, length(vocabulary)^n_gram)
+          }
+        }
+      }
+    } else {
+      if (!target_middle) {
+        x <- array_list[[1]][[1]]
+        y <- array_list[[1]][[2]]
+        if (length(array_list) > 1) {
+          for (i in 2:length(array_list)) {
+            x <- abind::abind(x, array_list[[i]][[1]], along = 1)
+            for (j in 1:length(y)) {
+              y[[j]] <- rbind(y[[j]], array_list[[i]][[2]][[j]] )
+            }
+          }
+        }
+        
+        # coerce y type to matrix
+        if (dim(x)[1] == 1) {
+          for (i in 1:length(y)) {
+            if (is.null(n_gram)) {
+              dim(y[[i]]) <-  c(1, length(vocabulary))
+            } else {
+              dim(y[[i]]) <-  c(1, length(vocabulary)^n_gram)
+            }
+          }
+        }
+      } else {
+        x_1 <- array_list[[1]][[1]][[1]]
+        x_2 <- array_list[[1]][[1]][[2]]
+        y <- array_list[[1]][[2]]
+        if (length(array_list) > 1) {
+          for (i in 2:length(array_list)) {
+            x_1 <- abind::abind(x_1, array_list[[i]][[1]][[1]], along = 1)
+            x_2 <- abind::abind(x_2, array_list[[i]][[1]][[2]], along = 1)
+            for (j in 1:length(y)) {
+              y[[j]] <- rbind(y[[j]], array_list[[i]][[2]][[j]] )
+            }
+          }
+        }
+        x <- list(x_1, x_2)
+        
+        # coerce y type to matrix
+        if (dim(x_1)[1] == 1) {
+          for (i in 1:length(y)) {
+            if (is.null(n_gram)) {
+              dim(y[[i]]) <-  c(1, length(vocabulary))
+            } else {
+              dim(y[[i]]) <-  c(1, length(vocabulary)^n_gram)
+            }
+          }
+        }
+      }
+    }
+    
+    # wavenet format
+  } else {
+    
+    if (target_len > 1) {
+      stop("target_len must be 1 when using wavenet_format")
+    }
+    
+    # one hot encode strings collected in sequence_list and connect arrays
+    array_list <- purrr::map(1:length(sequence_list),
+                             ~seq_encoding_lm(sequence_list[[.x]], ambiguous_nuc = ambiguous_nuc, adjust_start_ind = TRUE,
+                                              maxlen = maxlen, vocabulary = vocabulary, nuc_dist = nuc_dist_list[[.x]],
+                                              start_ind =  start_index_list[[.x]], 
+                                              quality_vector = quality_list[[.x]], n_gram = n_gram,
+                                              cov_vector = coverage_list[[.x]], use_coverage = use_coverage, max_cov = max_cov,
+                                              output_format = output_format)
+    )
+    
+    x <- array_list[[1]][[1]]
+    y <- array_list[[1]][[2]]
+    if (length(array_list) > 1) {
+      for (i in 2:length(array_list)) {
+        x <- abind::abind(x, array_list[[i]][[1]], along = 1)
+        y <- abind::abind(y, array_list[[i]][[2]], along = 1)
+      }
+    }
+  }
+  return(list(x, y))
+  
+}
+
+# 
+slice_tensor_lm <- function(xy, output_format, target_len, n_gram, total_seq_len, return_int) {
+  
+  xy_dim <- dim(xy)
+
+  if (!is.null(n_gram)) {
+    target_len <- floor(target_len/n_gram)
+  }
+  
+  if (output_format == "target_right") {
+    x_index <- 1:(xy_dim[2] - target_len)
+    if (return_int) {
+      x <- xy[ , x_index, drop=FALSE]
+      y <- xy[ , -x_index]
+    } else {
+      x <- xy[ , x_index, , drop=FALSE]
+      y <- xy[ , -x_index, ]
+    }
+  }
+  
+  if (output_format == "wavenet") {
+    
+    if (target_len != 1) {
+      stop("Target length must be 1 for wavenet model")
+    }
+    x_index <- 1:(xy_dim[2] - target_len)
+    y_index <- 2:dim(xy[2])
+    if (return_int) {
+      x <- xy[ , x_index, drop=FALSE]
+      y <- xy[ , y_index]
+    } else {
+      x <- xy[ , x_index, , drop=FALSE]
+      y <- xy[ , y_index, ]
+    }
+    
+  }
+  
+  if (output_format == "target_middle_cnn") {
+   
+    seq_middle <- ceiling(xy_dim[2]/2)
+    y_index <- (1:target_len) + (seq_middle - ceiling(target_len/2))
+    if (return_int) {
+      x <- xy[ , -y_index, drop=FALSE]
+      y <- xy[ , y_index]
+    } else {
+      x <- xy[ , -y_index, , drop=FALSE]
+      y <- xy[ , y_index, ]
+    }
+    
+  }
+  
+  if (output_format == "target_middle_lstm") {
+    
+    seq_middle <- ceiling(xy_dim[2]/2)
+    y_index <- (1:target_len) + (seq_middle - ceiling(target_len/2))
+    
+    if (return_int) {
+      x1 <- xy[ , 1:(min(y_index) - 1), drop=FALSE]
+      # reverse order of x2
+      x2 <- xy[ , xy_dim[2] : (max(y_index) + 1), drop=FALSE]
+      y <- xy[ , y_index]
+    } else {
+      x1 <- xy[ , 1:(min(y_index) - 1), , drop=FALSE]
+      # reverse order of x2
+      x2 <- xy[ ,  xy_dim[2] : (max(y_index) + 1), , drop=FALSE]
+      y <- xy[ , y_index, ]
+    }
+    
+    x <- list(x1, x2)
+    
+  }
+  
+  if (target_len == 1 & xy_dim[1] == 1) {
+    y <- matrix(y, nrow = 1)
+  }
+  
+  return(list(x=x, y=y))
+  
+}
+
+add_dim <- function(x) {
+  
+  if (is.null(dim(x))) {
+    return(matrix(x, nrow = 1))
+  } else {
+    return(array(x, dim = c(1, dim(x))))
+  }
+  
 }
