@@ -2437,13 +2437,24 @@ load_cp <- function(cp_path, cp_filter = NULL, ep_index = NULL, compile = FALSE,
 #' @inheritParams create_model_transformer
 #' @param load_r6 Whether to load the R6 layer class.
 #' @export
-layer_pos_embedding_wrapper <- function(maxlen = 100, vocabulary_size = 4, load_r6 = FALSE) {
+layer_pos_embedding_wrapper <- function(maxlen = 100, vocabulary_size = 4, load_r6 = FALSE, embed_dim = NULL) {
   
   layer_pos_embedding <- keras::new_layer_class(
     "layer_pos_embedding",
-    initialize = function(maxlen = 100, vocabulary_size = 4, ...) {
+    
+    initialize = function(maxlen, vocabulary_size, embed_dim, ...) {
       super$initialize(...)
-      self$position_embeddings <- tensorflow::tf$keras$layers$Embedding(as.integer(maxlen), as.integer(vocabulary_size))
+      if (!is.null(embed_dim)) {
+        self$token_emb <- tensorflow::tf$keras$layers$Embedding(input_dim = as.integer(vocabulary_size),
+                                                                output_dim = as.integer(embed_dim))
+        self$position_embeddings <- tensorflow::tf$keras$layers$Embedding(input_dim = as.integer(maxlen),
+                                                                          output_dim = as.integer(embed_dim))
+        self$embed_dim <- as.integer(embed_dim)
+      } else {
+        self$position_embeddings <- tensorflow::tf$keras$layers$Embedding(input_dim = as.integer(maxlen),
+                                                                          output_dim = as.integer(vocabulary_size))
+        self$embed_dim <- NULL
+      }
       self$maxlen <- as.integer(maxlen)
       self$vocabulary_size <- as.integer(vocabulary_size)
     },
@@ -2451,6 +2462,7 @@ layer_pos_embedding_wrapper <- function(maxlen = 100, vocabulary_size = 4, load_
     call = function(inputs) {
       positions <- tensorflow::tf$range(self$maxlen, dtype = "int32") 
       embedded_positions <- self$position_embeddings(positions)
+      if (!is.null(self$embed_dim)) inputs <- self$token_emb(inputs)
       inputs + embedded_positions
     },
     
@@ -2458,6 +2470,7 @@ layer_pos_embedding_wrapper <- function(maxlen = 100, vocabulary_size = 4, load_
       config <- super$get_config()
       config$maxlen <- self$maxlen
       config$vocabulary_size <- self$vocabulary_size
+      config$embed_dim <- self$embed_dim
       config
     }
   )
@@ -2465,7 +2478,7 @@ layer_pos_embedding_wrapper <- function(maxlen = 100, vocabulary_size = 4, load_
   if (load_r6) {
     return(layer_pos_embedding)
   } else {
-    return(layer_pos_embedding(maxlen=maxlen, vocabulary_size=vocabulary_size))
+    return(layer_pos_embedding(maxlen=maxlen, vocabulary_size=vocabulary_size, embed_dim=embed_dim))
   }
   
 }
@@ -2475,21 +2488,44 @@ layer_pos_embedding_wrapper <- function(maxlen = 100, vocabulary_size = 4, load_
 #' @inheritParams create_model_transformer
 #' @param load_r6 Whether to load the R6 layer class.
 #' @export
-layer_pos_sinusoid_wrapper <- function(maxlen = 100, vocabulary_size = 4, n = 10000, load_r6 = FALSE) {
+layer_pos_sinusoid_wrapper <- function(maxlen = 100, vocabulary_size = 4, n = 10000, load_r6 = FALSE, embed_dim = NULL) {
   
   layer_pos_sinusoid <- keras::new_layer_class(
     "layer_pos_sinusoid",
-    initialize = function(maxlen = 100, vocabulary_size = 4, n = 10000, ...) {
+    initialize = function(maxlen, vocabulary_size, n, embed_dim, ...) {
       super$initialize(...)
       self$maxlen <- as.integer(maxlen)
       self$vocabulary_size <- vocabulary_size
       self$n <- as.integer(n)
       self$pe_matrix <- positional_encoding(seq_len = maxlen,
-                                            d_model = vocabulary_size,
+                                            d_model = ifelse(is.null(embed_dim),
+                                                             as.integer(vocabulary_size),
+                                                             as.integer(embed_dim)),  
                                             n = n)
+      
+      if (!is.null(embed_dim)) {
+        self$token_emb <- tensorflow::tf$keras$layers$Embedding(input_dim = vocabulary_size, output_dim = as.integer(embed_dim))
+        self$embed_dim <- as.integer(embed_dim)
+      } else {
+        self$embed_dim <- NULL
+      } 
+      
+      # self$position_embedding <- tensorflow::tf$keras$layers$Embedding(
+      #   input_dim = as.integer(maxlen),
+      #   output_dim = ifelse(is.null(embed_dim),
+      #                       as.integer(vocabulary_size),
+      #                       as.integer(embed_dim)), 
+      #   weights = list(pe_matrix),
+      #   trainable = FALSE,
+      #   name="position_embedding"
+      # )(tensorflow::tf$range(start=0, limit=as.integer(maxlen), delta=1))
+      
     },
     
     call = function(inputs) {
+      if (!is.null(self$embed_dim)) {
+        inputs <- self$token_emb(inputs)
+      } 
       inputs + self$pe_matrix
     },
     
@@ -2498,6 +2534,8 @@ layer_pos_sinusoid_wrapper <- function(maxlen = 100, vocabulary_size = 4, n = 10
       config$maxlen <- self$maxlen
       config$vocabulary_size <- self$vocabulary_size
       config$n <- self$n
+      config$embed_dim <- self$embed_dim
+      config$pe_matrix <- self$pe_matrix
       config
     }
   )
@@ -2505,28 +2543,30 @@ layer_pos_sinusoid_wrapper <- function(maxlen = 100, vocabulary_size = 4, n = 10
   if (load_r6) {
     return(layer_pos_sinusoid)
   } else {
-    return(layer_pos_sinusoid(maxlen=maxlen, vocabulary_size=vocabulary_size, n=n))
+    return(layer_pos_sinusoid(maxlen=maxlen, vocabulary_size=vocabulary_size, n=n,
+                              embed_dim = embed_dim))
   }
   
 }
 
 
 layer_transformer_block_wrapper <- function(num_heads = 2, head_size = 4, dropout_rate, ff_dim,  
-                                            vocabulary_size = 4, load_r6 = FALSE) {
+                                            vocabulary_size = 4, load_r6 = FALSE, embed_dim = NULL) {
   
   layer_transformer_block <- keras::new_layer_class(
     "layer_transformer_block",
-    initialize = function(num_heads, head_size, dropout_rate, ff_dim, vocabulary_size, ...) {
+    initialize = function(num_heads, head_size, dropout_rate, ff_dim, vocabulary_size, embed_dim, ...) {
       super$initialize(...)
       self$num_heads <- num_heads
       self$head_size <- head_size
       self$dropout_rate <- dropout_rate
       self$ff_dim <- ff_dim
+      self$embed_dim <- as.integer(embed_dim)
       self$vocabulary_size <- vocabulary_size
       self$att <- tensorflow::tf$keras$layers$MultiHeadAttention(num_heads=as.integer(num_heads),
                                                                  key_dim=as.integer(head_size))
       self$ffn <- keras::keras_model_sequential() %>% keras::layer_dense(as.integer(ff_dim), activation="relu") %>%
-        keras::layer_dense(as.integer(vocabulary_size))
+        keras::layer_dense(ifelse(is.null(embed_dim), as.integer(vocabulary_size), as.integer(embed_dim)))
       
       self$layernorm1 <- keras::layer_layer_normalization(epsilon=1e-6)
       self$layernorm2 <- keras::layer_layer_normalization(epsilon=1e-6)
@@ -2540,7 +2580,8 @@ layer_transformer_block_wrapper <- function(num_heads = 2, head_size = 4, dropou
       out1 <- self$layernorm1(inputs + attn_output)
       ffn_output <- self$ffn(out1)
       ffn_output <- self$dropout2(ffn_output)
-      return(self$layernorm2(out1 + ffn_output))
+      seq_output <- self$layernorm2(out1 + ffn_output)
+      return(seq_output)
     },
     
     get_config = function() {
@@ -2550,6 +2591,7 @@ layer_transformer_block_wrapper <- function(num_heads = 2, head_size = 4, dropou
       config$dropout_rate <- self$dropout_rate
       config$ff_dim <- self$ff_dim
       config$vocabulary_size <- self$vocabulary_size
+      config$embed_dim <- self$embed_dim
       config
     }
   )
@@ -2561,6 +2603,7 @@ layer_transformer_block_wrapper <- function(num_heads = 2, head_size = 4, dropou
                                    head_size=head_size,
                                    dropout_rate=dropout_rate,
                                    vocabulary_size=vocabulary_size,
+                                   embed_dim = embed_dim,
                                    ff_dim=ff_dim))
   }
   
@@ -2575,6 +2618,8 @@ layer_transformer_block_wrapper <- function(num_heads = 2, head_size = 4, dropou
 #' @param pos_encoding Either `"sinusoid"` or `"embedding"`. How to add positional information.
 #' If `"sinusoid"`, will add sine waves of different frequencies to input.
 #' If `"embedding"`, model learns positional embedding.
+#' @param embed_dim Dimension for token embedding. No embedding if `NULL`. Should be used when input is not one-hot encoded
+#' (integer sequence).
 #' @param head_size Dimensions of attention key.
 #' @param n Frequency of sine waves for positional encoding. Only applied if `pos_encoding = "sinusoid"`.
 #' @param ff_dim Units of first dense layer after attention blocks.
@@ -2592,6 +2637,7 @@ layer_transformer_block_wrapper <- function(num_heads = 2, head_size = 4, dropou
 #' @export
 create_model_transformer <- function(maxlen,
                                      vocabulary_size = 4,
+                                     embed_dim = NULL,
                                      pos_encoding = "sinusoid",
                                      head_size = 4L,
                                      num_heads = 5L,
@@ -2626,14 +2672,20 @@ create_model_transformer <- function(maxlen,
   vocabulary_size <-  as.integer(vocabulary_size)
   if (!is.null(model_seed)) tensorflow::tf$random$set_seed(model_seed)
   
-  input_tensor <- keras::layer_input(shape = c(maxlen, vocabulary_size))
+  if (is.null(embed_dim)) {
+    input_tensor <- keras::layer_input(shape = c(maxlen, vocabulary_size))
+  } else {
+    input_tensor <- keras::layer_input(shape = c(maxlen))
+  }
   
   # positional encoding 
   if (pos_encoding == "sinusoid") { 
-    pos_enc_layer <- layer_pos_sinusoid_wrapper(maxlen = maxlen, vocabulary_size = vocabulary_size, n = n)
+    pos_enc_layer <- layer_pos_sinusoid_wrapper(maxlen = maxlen, vocabulary_size = vocabulary_size,
+                                                n = n, embed_dim = embed_dim)
   } 
   if (pos_encoding == "embedding") { 
-    pos_enc_layer <- layer_pos_embedding_wrapper(maxlen = maxlen, vocabulary_size = vocabulary_size)
+    pos_enc_layer <- layer_pos_embedding_wrapper(maxlen = maxlen, vocabulary_size = vocabulary_size,
+                                                 embed_dim = embed_dim)
   }
   output_tensor <- input_tensor %>% pos_enc_layer
   
@@ -2644,6 +2696,7 @@ create_model_transformer <- function(maxlen,
       head_size = head_size[i],
       dropout_rate = dropout[i],
       ff_dim = ff_dim[i],
+      embed_dim = embed_dim,
       vocabulary_size = vocabulary_size,
       load_r6 = FALSE)
     output_tensor <- output_tensor %>% attn_block
@@ -2719,6 +2772,14 @@ compile_model <- function(model, solver, learning_rate, loss_fn, label_smoothing
     
     if (loss_fn == "categorical_crossentropy") {
       
+      if (length(model$outputs) == 1 & length(model$output_shape) == 3) {
+        loss_fn <- tensorflow::tf$keras$losses$CategoricalCrossentropy(
+          label_smoothing=label_smoothing,
+          reduction=tensorflow::tf$keras$losses$Reduction$NONE,
+          name='categorical_crossentropy'
+        )
+      }
+      
       if (bal_acc) {
         macro_average_cb <- balanced_acc_wrapper(num_targets, cm_dir)
         model_metrics <- c(macro_average_cb, "acc")
@@ -2777,9 +2838,9 @@ get_layer_names <- function(model) {
   layer_names
 } 
 
-#' @title Create siamese network with contrastive loss
+#' @title Create twin network with contrastive loss
 #'
-#' @description Siamese network can be trained to maximize the distance
+#' @description Twin network can be trained to maximize the distance
 #' between embeddings of inputs.
 #' Implements approach as described [here](https://keras.io/examples/vision/siamese_contrastive/).
 #'
@@ -2787,7 +2848,7 @@ get_layer_names <- function(model) {
 #' @param margin Integer, defines the baseline for distance for which pairs should be classified as dissimilar.
 #' @param layer_dense Vector containing number of neurons per dense layer, before euclidean distance layer.
 #' @examples
-#' model <- create_model_siamese_network(
+#' model <- create_model_twin_network(
 #'   maxlen = 50,
 #'   layer_dense = 16,
 #'   kernel_size = 12,
@@ -2796,7 +2857,7 @@ get_layer_names <- function(model) {
 #'   learning_rate = 0.001,
 #'   margin = 1) 
 #' @export
-create_model_siamese_network <- function(
+create_model_twin_network <- function(
   maxlen = 50,
   dropout_lstm = 0,
   recurrent_dropout_lstm = 0,
