@@ -31,7 +31,6 @@ generator_fasta_label_folder(
   add_input_as_seq = NULL,
   skip_amb_nuc = NULL,
   max_samples = NULL,
-  split_seq = FALSE,
   concat_seq = NULL,
   file_filter = NULL,
   use_coverage = NULL,
@@ -39,7 +38,9 @@ generator_fasta_label_folder(
   sample_by_file_size = FALSE,
   n_gram = NULL,
   n_gram_stride = 1,
-  add_noise = NULL
+  masked_lm = NULL,
+  add_noise = NULL,
+  return_int = FALSE
 )
 }
 \arguments{
@@ -107,10 +108,6 @@ csv file (if vocabulary = c("A", "C", "G", "T")).  If \code{add_input_as_seq} is
 \item{max_samples}{Maximum number of samples to use from one file. If not \code{NULL} and file has more than \code{max_samples} samples, will randomly choose a
 subset of \code{max_samples} samples.}
 
-\item{split_seq}{Split input sequence into two sequences while removing nucleotide in middle. If input is \verb{x_1,..., x_(n+1)}, input gets split into
-\verb{input_1 = x_1,..., x_m} and \verb{input_2 = x_(n+1),..., x_(m+2)} where \code{m = ceiling((n+1)/2)} and \code{n = maxlen}. Note that \code{x_(m+1)} is not used. Can be used for transfer learning,
-when switching from language model trained with target in middle to label classification.}
-
 \item{concat_seq}{Character string or \code{NULL}. If not \code{NULL} all entries from file get concatenated to one sequence with \code{concat_seq} string between them.
 Example: If 1.entry AACC, 2. entry TTTG and \code{concat_seq = "ZZZ"} this becomes AACCZZZTTTG.}
 
@@ -129,6 +126,16 @@ will randomly select 5 entries.}
 
 \item{n_gram_stride}{Step size for n-gram encoding. For AACCGGTT with \code{n-gram = 4} and \code{n_gram_stride = 2}, generator encodes
 \verb{(AACC), (CCGG), (GGTT)}; for \code{n_gram_stride = 4} generator encodes \verb{(AACC), (GGTT)}.}
+
+\item{masked_lm}{If not \code{NULL}, input and target are equal except some parts of the input are masked or random.
+Must be list with the following arguments:
+\itemize{
+\item \code{mask_rate}: Rate of input to mask (rate of input to replace with mask token).
+\item \code{random_rate}: Rate of input to set to random token.
+\item \code{identity_rate}: Rate of input where sample weights are applied but input and output are identical.
+\item \code{include_sw}: Whether to include sample weigths.
+\item \code{block_len} (optional): Masked/random/itentity regions appear in blocks of size \code{block_len}.
+}}
 
 \item{add_noise}{\code{NULL} or list of arguments. If not \code{NULL}, list must contain the following arguments: \code{noise_type} can be \code{"normal"} or \code{"uniform"};
 optional arguments \code{sd} or \code{mean} if noise_type is \code{"normal"} (default is \code{sd=1} and \code{mean=0}) or \verb{min, max} if \code{noise_type} is \code{"uniform"}

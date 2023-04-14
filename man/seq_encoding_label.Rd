@@ -17,9 +17,11 @@ seq_encoding_label(
   cov_vector = NULL,
   n_gram = NULL,
   n_gram_stride = 1,
+  masked_lm = NULL,
   char_sequence = NULL,
   tokenizer = NULL,
-  adjust_start_ind = FALSE
+  adjust_start_ind = FALSE,
+  return_int = FALSE
 )
 }
 \arguments{
@@ -56,6 +58,8 @@ Coverage information must be contained in fasta header: there must be a string \
 \item{tokenizer}{A keras tokenizer.}
 
 \item{adjust_start_ind}{Whether to shift values in \code{start_ind} to start at 1: for example (5,11,25) becomes (1,7,21).}
+
+\item{return_int}{Whether to return integer encoding or one-hot encoding.}
 }
 \description{
 Returns encoding for integer or character sequence.

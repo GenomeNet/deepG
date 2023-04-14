@@ -7,6 +7,7 @@
 create_model_transformer(
   maxlen,
   vocabulary_size = 4,
+  embed_dim = NULL,
   pos_encoding = "sinusoid",
   head_size = 4L,
   num_heads = 5L,
@@ -34,6 +35,9 @@ create_model_transformer(
 
 \item{vocabulary_size}{Number of unique character in vocabulary.}
 
+\item{embed_dim}{Dimension for token embedding. No embedding if \code{NULL}. Should be used when input is not one-hot encoded
+(integer sequence).}
+
 \item{pos_encoding}{Either \code{"sinusoid"} or \code{"embedding"}. How to add positional information.
 If \code{"sinusoid"}, will add sine waves of different frequencies to input.
 If \code{"embedding"}, model learns positional embedding.}
@@ -42,7 +46,7 @@ If \code{"embedding"}, model learns positional embedding.}
 
 \item{num_heads}{Number of attention heads.}
 
-\item{ff_dim}{Units of first dense layer between attention blocks.}
+\item{ff_dim}{Units of first dense layer after attention blocks.}
 
 \item{dropout}{Vector of dropout rates after attention block(s).}
 

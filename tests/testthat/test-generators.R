@@ -128,8 +128,6 @@ test_that("Checking the generator for the Fasta files", {
   expect_is(gen()[[1]], "array")
   expect_is(gen()[[2]], "matrix")
   
-  expect_message(generator_fasta_lm(testpath, batch_size = batch_size, maxlen = maxlen,
-                                    verbose = T))
   expect_silent(generator_fasta_lm(testpath, batch_size = batch_size, maxlen = maxlen))
   
   expect_type(gen()[[1]], "double")
@@ -1774,9 +1772,9 @@ test_that("Checking the generator for the Fasta files", {
       0, 0, 0, 1,
       0, 0, 1, 0),
     byrow = TRUE,  ncol = 4)
-  expect_equivalent(arrays[[2]][[1]], m1)
-  expect_equivalent(arrays[[2]][[2]], m2)
-  expect_equivalent(arrays[[2]][[3]], m3)
+  expect_equivalent(arrays[[2]][ ,1 , ], m1)
+  expect_equivalent(arrays[[2]][ ,2 , ], m2)
+  expect_equivalent(arrays[[2]][ ,3 , ], m3)
   
   # 3 targets, target middle cnn
   
@@ -1830,9 +1828,9 @@ test_that("Checking the generator for the Fasta files", {
       0, 0, 1, 0,
       1, 0, 0, 0),
     byrow = TRUE,  ncol = 4)
-  expect_equivalent(arrays[[2]][[1]], m1)
-  expect_equivalent(arrays[[2]][[2]], m2)
-  expect_equivalent(arrays[[2]][[3]], m3)
+  expect_equivalent(arrays[[2]][ ,1 , ], m1)
+  expect_equivalent(arrays[[2]][ ,2 , ], m2)
+  expect_equivalent(arrays[[2]][ ,3 , ], m3)
   
   # 3 targets, target middle lstm
   
@@ -1896,9 +1894,9 @@ test_that("Checking the generator for the Fasta files", {
       0, 0, 1, 0,
       1, 0, 0, 0),
     byrow = TRUE,  ncol = 4)
-  expect_equivalent(arrays[[2]][[1]], m1)
-  expect_equivalent(arrays[[2]][[2]], m2)
-  expect_equivalent(arrays[[2]][[3]], m3)
+  expect_equivalent(arrays[[2]][ ,1 , ], m1)
+  expect_equivalent(arrays[[2]][ ,2 , ], m2)
+  expect_equivalent(arrays[[2]][ ,3 , ], m3)
   
   # coverage + set learning for label_folder 
   
@@ -2287,33 +2285,6 @@ test_that("Checking the generator for the Fasta files", {
     expect_equivalent(length(first_input), 0)
   }
   
-  # n-gram fasta 
-  
-  test_path <- "fasta_2"
-  n_gram <- 3
-  gen <- generator_fasta_lm(path_corpus = test_path,
-                            batch_size = 2,
-                            maxlen = 2,
-                            step = 1, 
-                            padding = FALSE,
-                            target_len = 6,
-                            n_gram = n_gram,
-                            n_gram_stride = n_gram)
-  
-  arrays <- gen()
-  y <- arrays[[2]]
-  y_1_n_gram <- apply(y[[1]], 1, which.max)
-  y_2_n_gram <- apply(y[[2]], 1, which.max)
-  
-  int_seq <- c(1,1,2)
-  expect_equivalent(y_1_n_gram[1], 1 + sum(4^((n_gram-1):0) * (int_seq))) # ccg
-  int_seq <- c(2,3,3)
-  expect_equivalent(y_2_n_gram[1], 1 + sum(4^((n_gram-1):0) * (int_seq))) # gtt
-  int_seq <- c(0,0,3)
-  expect_equivalent(y_1_n_gram[2], 1 + sum(4^((n_gram-1):0) * (int_seq))) # aat
-  int_seq <- c(3,3,3)
-  expect_equivalent(y_2_n_gram[2], 1 + sum(4^((n_gram-1):0) * (int_seq))) # ttt
-  
   # n-gram rds
   
   n_gram <- 3
@@ -2493,5 +2464,182 @@ test_that("Checking the generator for the Fasta files", {
       expect_equivalent(max(y1[i,]) + 10, min(y2[i,]))
     }
   }
+  
+  # integer encoding label header #
+  
+  testpath <- file.path("fasta_2")
+  gen <- generator_fasta_label_header_csv(path_corpus = testpath, batch_size = 5, maxlen = 3, step = 2, vocabulary = c("a", "c", "g", "t"),
+                                          reverse_complement = FALSE, vocabulary_label = c("w", "x", "y"), return_int = TRUE)
+  
+  arrays <- gen()
+  
+  expect_equivalent(arrays[[1]][1, 1], 1) # A  
+  expect_equivalent(arrays[[1]][1, 2], 1) # A
+  expect_equivalent(arrays[[1]][1, 3], 2) # C
+  expect_equivalent(arrays[[2]][1, ], c(1, 0, 0)) # W 
+  
+  expect_equivalent(arrays[[1]][5, 1], 1) # A  
+  expect_equivalent(arrays[[1]][5, 2], 1) # A
+  expect_equivalent(arrays[[1]][5, 3], 4) # T
+  expect_equivalent(arrays[[2]][5, ], c(0, 1, 0)) # W 
+  
+  
+  gen <- generator_fasta_label_header_csv(path_corpus = testpath, batch_size = 5, maxlen = 8, step = 2, vocabulary = c("a", "c", "g", "t"),
+                                          reverse_complement = FALSE, vocabulary_label = c("w", "x", "y"), return_int = TRUE)
+  
+  arrays <- gen()
+  expect_equivalent(arrays[[2]][1, ], c(1, 0, 0))  
+  expect_equivalent(arrays[[2]][2, ], c(0, 1, 0))  
+  expect_equivalent(arrays[[2]][3, ], c(0, 0, 1))  
+  expect_equivalent(arrays[[2]][4, ], c(0, 1, 0))  
+  expect_equivalent(arrays[[2]][5, ], c(0, 1, 0))  
+  
+  arrays <- gen()
+  expect_equivalent(arrays[[1]][5, 1], 3) 
+  expect_equivalent(arrays[[1]][5, 2], 3) 
+  expect_equivalent(arrays[[1]][5, 3], 3) 
+  expect_equivalent(arrays[[1]][5, 4], 3) 
+  expect_equivalent(arrays[[1]][5, 5], 4) 
+  expect_equivalent(arrays[[1]][5, 6], 4) 
+  expect_equivalent(arrays[[1]][5, 7], 4) 
+  expect_equivalent(arrays[[1]][5, 8], 4) 
+  expect_equivalent(arrays[[2]][1, ], c(0, 0, 1))  
+  expect_equivalent(arrays[[2]][2, ], c(0, 0, 1))  
+  expect_equivalent(arrays[[2]][3, ], c(1, 0, 0))  
+  expect_equivalent(arrays[[2]][4, ], c(0, 1, 0))  
+  expect_equivalent(arrays[[2]][5, ], c(0, 0, 1))  
+  
+  
+  gen <- generator_fasta_label_header_csv(path_corpus = testpath, batch_size = 8, maxlen = 7, step = 2, vocabulary = c("a", "c", "g", "t"),
+                                          reverse_complement = FALSE, vocabulary_label = c("w", "x", "y"), return_int = TRUE)
+  
+  arrays <- gen()
+  
+  # go through a/b.fasta once discard samples with target z
+  expect_equivalent(arrays[[1]][8, 1], 1) # A  
+  expect_equivalent(arrays[[1]][8, 2], 1) # A
+  expect_equivalent(arrays[[1]][8, 3], 2) # C
+  expect_equivalent(arrays[[2]][8, ], c(1, 0, 0)) # W 
+  
+  # label folder with integer encoding
+  
+  directories <- c("label_folder/x", "label_folder/y", "label_folder/z")
+  val <- FALSE
+  generator_initialize(directories = directories,
+                       format = "fasta",
+                       batch_size = 6,
+                       maxlen = 2,
+                       return_int = TRUE,
+                       vocabulary = c("a", "c", "g", "t"),
+                       step = 2)
+  
+  gen <- generator_fasta_label_folder_wrapper(val = val, path = directories)
+  arrays <- gen()
+  expect_equivalent(arrays[[1]][1, 1], 1)
+  expect_equivalent(arrays[[1]][1, 2], 2) 
+  expect_equivalent(arrays[[1]][2, 1], 1)
+  expect_equivalent(arrays[[1]][2, 2], 2) 
+  expect_equivalent(arrays[[1]][3, 1], 3)
+  expect_equivalent(arrays[[1]][3, 2], 2) 
+  expect_equivalent(arrays[[1]][4, 1], 3)
+  expect_equivalent(arrays[[1]][4, 2], 2) 
+  expect_equivalent(arrays[[1]][5, 1], 4)
+  expect_equivalent(arrays[[1]][5, 2], 4) 
+  expect_equivalent(arrays[[1]][6, 1], 4)
+  expect_equivalent(arrays[[1]][6, 2], 4) 
+  
+  expect_equivalent(arrays[[2]][1,  ], c(1, 0, 0)) 
+  expect_equivalent(arrays[[2]][2,  ], c(1, 0, 0))
+  expect_equivalent(arrays[[2]][3,  ], c(0, 1, 0)) 
+  expect_equivalent(arrays[[2]][4,  ], c(0, 1, 0))
+  expect_equivalent(arrays[[2]][5,  ], c(0, 0, 1)) 
+  expect_equivalent(arrays[[2]][6,  ], c(0, 0, 1))
+  
+  
+  # test skipping file 
+  for (i in 1:2) {
+    arrays <- gen()
+  }
+  
+  expect_equivalent(arrays[[1]][1, 1], 1)
+  expect_equivalent(arrays[[1]][1, 2], 2) 
+  expect_equivalent(arrays[[1]][2, 1], 1)
+  expect_equivalent(arrays[[1]][2, 2], 3) 
+  expect_equivalent(arrays[[1]][3, 1], 2)
+  expect_equivalent(arrays[[1]][3, 2], 3) 
+  expect_equivalent(arrays[[1]][4, 1], 2)
+  expect_equivalent(arrays[[1]][4, 2], 3) 
+  expect_equivalent(arrays[[1]][5, 1], 1)
+  expect_equivalent(arrays[[1]][5, 2], 1) 
+  expect_equivalent(arrays[[1]][6, 1], 1)
+  expect_equivalent(arrays[[1]][6, 2], 1) 
+  
+  expect_equivalent(arrays[[2]][1,  ], c(1, 0, 0)) 
+  expect_equivalent(arrays[[2]][2,  ], c(1, 0, 0))
+  expect_equivalent(arrays[[2]][3,  ], c(0, 1, 0)) 
+  expect_equivalent(arrays[[2]][4,  ], c(0, 1, 0))
+  expect_equivalent(arrays[[2]][5,  ], c(0, 0, 1)) 
+  expect_equivalent(arrays[[2]][6,  ], c(0, 0, 1))
+  
+  
+  # n-gram integer encoding, label folder #
+  
+  directories <- c("label_folder/x", "label_folder/y", "label_folder/z")
+  gen <- get_generator(path = directories,
+                       train_type = "label_folder",
+                       batch_size = 6,
+                       maxlen = 12,
+                       padding = TRUE,
+                       n_gram = 3,
+                       n_gram_stride = 2, 
+                       return_int = TRUE,
+                       vocabulary = c("a", "c", "g", "t"),
+                       step = 2)
+  
+  arrays <- gen()
+  x <- arrays[[1]]
+  y <- arrays[[2]]
+  expect_equivalent(dim(x), c(6, 5))
+  expect_equivalent(x[1, 1], 0) # padding
+  expect_equivalent(x[1, 2], 5) # ACA
+  expect_equivalent(unique(x[5, 1:4]), 0) # padding
+  expect_equivalent(x[5, 5], 64) # TTT = 4^3
+  
+  # n-gram one-hot encoding, label folder #
+  
+  directories <- c("label_folder/x", "label_folder/y", "label_folder/z")
+  gen <- get_generator(path = directories,
+                       train_type = "label_folder",
+                       batch_size = 6,
+                       maxlen = 12,
+                       padding = TRUE,
+                       n_gram = 3,
+                       n_gram_stride = 2, 
+                       return_int = FALSE,
+                       vocabulary = c("a", "c", "g", "t"),
+                       step = 2)
+  
+  arrays <- gen()
+  x <- arrays[[1]]
+  y <- arrays[[2]]
+  expect_equivalent(dim(x), c(6, 5, 64))
+  expect_equivalent(unique(x[1, 1, ]), 0) # padding
+  expect_equivalent(which.max(x[1, 2, ]), 5) # ACA
+  expect_equivalent(unique(as.vector(x[5, 1:4, ])), 0) # padding
+  expect_equivalent(which.max(x[5, 5, ]), 64) # TTT = 4^3
+  
+  # masked lm 
+  
+  testpath <- file.path("fasta_2")
+  masked_lm <- list(mask_rate = 0.10, random_rate = 0.025, identity_rate = 0.025, include_sw = TRUE)
+  gen <- get_generator(path = testpath,
+                       train_type = "masked_lm",
+                       masked_lm = masked_lm,
+                       batch_size = 1,
+                       maxlen = 12,
+                       padding = TRUE,
+                       return_int = FALSE,
+                       step = 2)
+  
   
 })
