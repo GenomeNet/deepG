@@ -218,7 +218,7 @@ train_model <- function(train_type = "lm",
                         masked_lm = NULL,
                         random_sampling = FALSE,
                         add_noise = NULL,
-                        use_multiprocessing = FALSE) {
+                        return_int = FALSE) {
   
   # initialize metrics, temporary fix
   model <- manage_metrics(model)
@@ -408,7 +408,7 @@ train_model <- function(train_type = "lm",
                              train_type = train_type, set_learning = set_learning, file_limit = file_limit,
                              reverse_complement_encoding = reverse_complement_encoding, read_data = read_data,
                              sample_by_file_size = sample_by_file_size, add_noise = add_noise, target_split = target_split,
-                             target_from_csv = target_from_csv, masked_lm = masked_lm,
+                             target_from_csv = target_from_csv, masked_lm = masked_lm, return_int = return_int,
                              path_file_logVal = path_file_logVal, vocabulary_label = vocabulary_label,
                              new_batch_size = new_batch_size, val = TRUE)
   }
@@ -489,7 +489,6 @@ train_model <- function(train_type = "lm",
       callbacks = callbacks,
       epochs = epochs,
       class_weight = class_weight,
-      use_multiprocessing = use_multiprocessing,
       verbose = print_scores)
   }
   
