@@ -146,6 +146,7 @@ predict_model_one_seq <- function(path_model = NULL, layer_name = NULL, sequence
                                   ambiguous_nuc = "zero", padding = "none", format = "fasta", output_dir = NULL,
                                   include_seq = TRUE, reverse_complement_encoding = FALSE, ...) {
   
+  vocabulary <- stringr::str_to_lower(vocabulary)
   stopifnot(mode %in% c("lm", "label"))
   stopifnot(output_type %in% c("h5", "csv"))
   file_output <- !is.null(filename)
@@ -565,6 +566,7 @@ predict_model_one_pred_per_entry <- function(model = NULL, layer_name = NULL, pa
                                              return_states = FALSE, path_model = NULL, reverse_complement_encoding = FALSE, 
                                              include_seq = FALSE, ...) {
   
+  vocabulary <- stringr::str_to_lower(vocabulary)
   file_type <- "h5"
   stopifnot(batch_size > 0)
   stopifnot(!file.exists(filename))
