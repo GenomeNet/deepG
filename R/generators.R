@@ -2103,6 +2103,7 @@ generator_dummy <- function(model, batch_size) {
 #' @inheritParams generator_fasta_label_header_csv
 #' @param rds_folder Path to input files.
 #' @param target_len Number of target nucleotides for language model.
+#' @param delete_used_files Whether to delete file once used. Only applies for rds files. 
 #' @examples 
 #' # create 3 rds files
 #' rds_folder <- tempfile()
@@ -2133,7 +2134,7 @@ generator_rds <- function(rds_folder, batch_size, path_file_log = NULL,
                           max_samples = NULL,
                           proportion_per_seq = NULL,
                           target_len = NULL,
-                          seed = NULL,
+                          seed = NULL, delete_used_files = FALSE,
                           reverse_complement = FALSE,
                           sample_by_file_size = FALSE,
                           n_gram = NULL, n_gram_stride = 1,
@@ -2256,6 +2257,8 @@ generator_rds <- function(rds_folder, batch_size, path_file_log = NULL,
         if (num_files == 1) {
           sample_index <<- 1:x_dim[1]
         } else {
+          
+          if (delete_used_files) file.remove(rds_files[file_index])
           
           read_success <- FALSE
           while (!read_success) {
@@ -2886,7 +2889,8 @@ get_generator <- function(path = NULL,
                           new_batch_size = NULL,
                           masked_lm = NULL,
                           val = FALSE,
-                          return_int = FALSE) {
+                          return_int = FALSE,
+                          delete_used_files = FALSE) {
   
   if (random_sampling) {
     if (use_quality_score) stop("use_quality_score not implemented for random sampling")
@@ -3108,7 +3112,8 @@ get_generator <- function(path = NULL,
                          max_samples = max_samples, proportion_per_seq = proportion_per_seq,
                          sample_by_file_size = sample_by_file_size, add_noise = add_noise,
                          reverse_complement_encoding = reverse_complement_encoding, seed = seed[1],
-                         target_len = target_len, n_gram = n_gram, n_gram_stride = n_gram_stride)
+                         target_len = target_len, n_gram = n_gram, n_gram_stride = n_gram_stride,
+                         delete_used_files = delete_used_files)
     
   }
   

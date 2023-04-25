@@ -218,7 +218,8 @@ train_model <- function(train_type = "lm",
                         masked_lm = NULL,
                         random_sampling = FALSE,
                         add_noise = NULL,
-                        return_int = FALSE) {
+                        return_int = FALSE,
+                        delete_used_files = FALSE) {
   
   # initialize metrics, temporary fix
   model <- manage_metrics(model)
@@ -391,13 +392,13 @@ train_model <- function(train_type = "lm",
                          reverse_complement_encoding = reverse_complement_encoding, read_data = read_data,
                          sample_by_file_size = sample_by_file_size, add_noise = add_noise, target_split = target_split,
                          target_from_csv = target_from_csv, masked_lm = masked_lm,
-                         path_file_logVal = path_file_logVal,
+                         path_file_logVal = path_file_logVal, delete_used_files = delete_used_files,
                          vocabulary_label = vocabulary_label, new_batch_size = new_batch_size, val = FALSE)
     
     gen.val <- get_generator(path = path_val, batch_size = batch_size, model = model,
                              maxlen = maxlen, step = step, shuffle_file_order = shuffle_file_order,
                              vocabulary = vocabulary, seed = seed[2], proportion_entries = proportion_entries,
-                             shuffle_input = shuffle_input, format = format, 
+                             shuffle_input = shuffle_input, format = format, delete_used_files = delete_used_files,
                              path_file_log = path_file_logVal, reverse_complement = reverse_complement, n_gram_stride = n_gram_stride,
                              output_format = output_format, ambiguous_nuc = ambiguous_nuc,
                              proportion_per_seq = proportion_per_seq, skip_amb_nuc = skip_amb_nuc,
@@ -448,7 +449,7 @@ train_model <- function(train_type = "lm",
     z <- gen()
     x <- z[[1]]
     y <- z[[2]]
-
+    
     model <- keras::set_weights(model, model_weights)
     history <-
       model %>% keras::fit(
