@@ -2770,6 +2770,15 @@ compile_model <- function(model, solver, learning_rate, loss_fn, label_smoothing
     dir.create(cm_dir)
     model$cm_dir <- cm_dir
     
+    if (loss_fn == "sparse_categorical_crossentropy") {
+      
+      if (length(model$outputs) == 1 & length(model$output_shape) == 3) {
+        loss_fn <- tensorflow::tf$keras$losses$SparseCategoricalCrossentropy(
+          reduction=tensorflow::tf$keras$losses$Reduction$NONE
+        )
+      }
+    }
+    
     if (loss_fn == "categorical_crossentropy") {
       
       if (length(model$outputs) == 1 & length(model$output_shape) == 3) {
@@ -2779,6 +2788,9 @@ compile_model <- function(model, solver, learning_rate, loss_fn, label_smoothing
           name='categorical_crossentropy'
         )
       }
+    }  
+    
+    if (loss_fn == "categorical_crossentropy" | loss_fn == "sparse_categorical_crossentropy") {
       
       if (bal_acc) {
         macro_average_cb <- balanced_acc_wrapper(num_targets, cm_dir)
@@ -2796,6 +2808,7 @@ compile_model <- function(model, solver, learning_rate, loss_fn, label_smoothing
                          loss = loss_fn)
       model_metrics <- c(model_metrics, auc)
     }
+    
   }
   
   if (label_smoothing > 0 & !is.null(label_noise_matrix)) {
