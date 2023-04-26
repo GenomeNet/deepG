@@ -546,7 +546,7 @@ create_x_y_tensors_lm <- function(sequence_list, nuc_dist_list, target_middle,
 slice_tensor_lm <- function(xy, output_format, target_len, n_gram, total_seq_len, return_int) {
   
   xy_dim <- dim(xy)
-
+  
   if (!is.null(n_gram)) {
     target_len <- floor(target_len/n_gram)
   }
@@ -580,7 +580,7 @@ slice_tensor_lm <- function(xy, output_format, target_len, n_gram, total_seq_len
   }
   
   if (output_format == "target_middle_cnn") {
-   
+    
     seq_middle <- ceiling(xy_dim[2]/2)
     y_index <- (1:target_len) + (seq_middle - ceiling(target_len/2))
     if (return_int) {
@@ -630,4 +630,35 @@ add_dim <- function(x) {
     return(array(x, dim = c(1, dim(x))))
   }
   
+}
+
+shuffle_batches <- function(x, shuffle_index) {
+  
+  if (!is.list(x)) {
+    dim_len <- length(dim(x))
+    x <- shuffle_sample(x, dim_len, shuffle_index)
+  } else {
+    dim_len <- length(dim(x[[1]]))
+    for (i in 1:length(x)) {
+      x[[i]] <- shuffle_sample(x[[i]], dim_len, shuffle_index)
+    }
+  }
+  
+}  
+
+shuffle_sample <- function(x, dim_len, shuffle_index) {
+  
+  if (is.null(dim_len) | dim_len == 1) {
+    x <- x[shuffle_index]
+  }
+  
+  if (dim_len == 2) {
+    x <- x[shuffle_index, ]
+  }
+  
+  if (dim_len == 3) {
+    x <- x[shuffle_index, , ]
+  }
+  
+  return(x)
 }

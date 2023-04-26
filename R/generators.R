@@ -3179,10 +3179,12 @@ dataset_from_gen <- function(output_path,
                              seed = NULL,
                              random_sampling,
                              file_name_start = "batch_",
+                             masked_lm = NULL,
                              ...) {
   
-  stopifnot(train_type %in% c("lm", "label_header", "label_folder", "label_csv"))
+  stopifnot(train_type %in% c("lm", "label_header", "label_folder", "label_csv", "masked_lm"))
   store_format <- ifelse(as_numpy_array, "pickle", "rds")
+  include_sample_weights <- !is.null(masked_lm) && masked_lm$include_sw
   
   if (is.null(step)) step <- maxlen
   if (is.null(seed)) seed <- sample(1:100000, 1)
@@ -3199,6 +3201,7 @@ dataset_from_gen <- function(output_path,
                        set_learning = set_learning,
                        path_file_logVal = NULL,
                        seed = seed,
+                       masked_lm = masked_lm,
                        ...)
   
   for (batch_number in 1:iterations) {
@@ -3206,32 +3209,27 @@ dataset_from_gen <- function(output_path,
     z <- gen()
     x <- z[[1]]
     y <- z[[2]]
+    if (include_sample_weights) sw <- z[[3]]
     
     if (shuffle) {
       shuffle_index <- sample(dim(x)[1])
-      if (!is.list(x)) {
-        x <- x[shuffle_index, , ]
-      } else {
-        for (i in 1:length(x)) {
-          x[[i]] <- x[[i]][shuffle_index, , ]
-        }
-      }
-      if (!is.list(y)) {
-        y <- y[shuffle_index, ]
-      } else {
-        for (i in 1:length(y)) {
-          y[[i]] <- y[[i]][shuffle_index, ]
-        }
-      }
+      x <- shuffle_batches(x, shuffle_index)
+      y <- shuffle_batches(y, shuffle_index)
+      if (include_sample_weights) sw <- shuffle_batches(sw, shuffle_index)
     }
     
     base_path <- file.path(output_path, file_name_start)
     filename <- paste0(base_path, batch_number, ".", store_format)
+    if (include_sample_weights) {
+      out_list <- list(x, y, sw)
+    } else {
+      out_list <- list(x, y)
+    } 
     if (store_format == "pickle") {
-      reticulate::py_save_object(object = reticulate::r_to_py(list(x, y)), filename = filename)
+      reticulate::py_save_object(object = reticulate::r_to_py(out_list), filename = filename)
     }
     if (store_format == "rds") {
-      saveRDS(list(x,y), file = filename)
+      saveRDS(out_list, file = filename)
     }
     
   }  
