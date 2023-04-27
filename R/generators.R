@@ -2045,7 +2045,7 @@ generator_dummy <- function(model, batch_size) {
   
   # sparse loss
   if (!is.null(model$loss) && 
-      stringr::str_detect(stringr::str_to_lower(model$loss$name), "sparse")) {
+      stringr::str_detect(stringr::str_to_lower(model$loss), "sparse")) {
     sparse_loss <- TRUE
   } else {
     sparse_loss <- FALSE
