@@ -313,6 +313,7 @@ seq_encoding_label <- function(sequence = NULL, maxlen, vocabulary, start_ind, a
   use_quality <- ifelse(is.null(quality_vector), FALSE, TRUE)
   discard_amb_nt <- FALSE
   maxlen_original <- maxlen
+  if (return_int) ambiguous_nuc <- "zero"
   
   if (!is.null(char_sequence)) {
     
