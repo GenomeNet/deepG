@@ -2312,14 +2312,17 @@ get_output_activations <- function(model) {
 # temporary fix for metric bugs
 manage_metrics <- function(model, compile = FALSE) {
   
-  dummy_gen <- generator_dummy(model,batch_size = 1)
+  dummy_gen <- generator_dummy(model, batch_size = 1)
   z <- dummy_gen()
+  x <- z[[1]]
+  y <- z[[2]]
+  
   if (length(model$metrics) == 0) {
     suppressMessages(
-      eval <- model$evaluate(z[[1]], z[[2]], verbose = 0L)
+      eval <- model$evaluate(x, y, verbose = 0L)
     )
   }
-  
+
   if (compile) {
     metric_names <- vector("character", length(model$metrics))
     for (i in 1:length(model$metrics)) {
@@ -2335,7 +2338,7 @@ manage_metrics <- function(model, compile = FALSE) {
                                       optimizer = model$optimizer,
                                       metrics = model$metrics[!index])
     suppressMessages(
-      eval <- model$evaluate(z[[1]], z[[2]], verbose = 0L)
+      eval <- model$evaluate(x, y, verbose = 0L)
     )
   }
   

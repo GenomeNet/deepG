@@ -2028,6 +2028,7 @@ generator_fasta_label_folder_wrapper <- function(val, new_batch_size = NULL,
 #'
 #' @inheritParams generator_fasta_lm
 #' @param model A keras model.
+#' @param sparse_loss Whether to adjust target to sparse loss.
 #' @examples 
 #' model <- create_model_lstm_cnn(
 #'   maxlen = 10,
@@ -2042,6 +2043,14 @@ generator_fasta_label_folder_wrapper <- function(val, new_batch_size = NULL,
 #' @export
 generator_dummy <- function(model, batch_size) {
   
+  # sparse loss
+  if (!is.null(model$loss) && 
+      stringr::str_detect(stringr::str_to_lower(model$loss$name), "sparse")) {
+    sparse_loss <- TRUE
+  } else {
+    sparse_loss <- FALSE
+  }
+
   # stateful model 
   if (!is.null(model$input_shape[[1]][[1]])) {
     batch_size <- model$input_shape[[1]]
@@ -2054,7 +2063,7 @@ generator_dummy <- function(model, batch_size) {
     for (j in 2:length(model$input_shape)) {
       input_dim  <- c(input_dim, model$input_shape[[j]])
     }
-    x <- array(rnorm(n = prod(input_dim)), dim = input_dim)
+    x <- array(runif(n = prod(input_dim)), dim = input_dim)
   } else {
     
     for (i in 1:num_input_layers) {
@@ -2063,7 +2072,7 @@ generator_dummy <- function(model, batch_size) {
       for (j in 2:length(input_list)) {
         input_dim  <- c(input_dim, input_list[[j]])
       }
-      x[[i]] <- array(rnorm(n = prod(input_dim)), dim = input_dim)
+      x[[i]] <- array(runif(n = prod(input_dim)), dim = input_dim)
     }
   }
   
@@ -2074,17 +2083,17 @@ generator_dummy <- function(model, batch_size) {
     for (j in 2:length(model$output_shape)) {
       output_dim  <- c(output_dim, model$output_shape[[j]])
     }
-    y <- array(rnorm(n = prod(output_dim)), dim = output_dim)
+    if (sparse_loss) output_dim <- output_dim[-length(output_dim)]
+    y <- array(runif(n = prod(output_dim)), dim = output_dim)
   } else {
-    
-    
     for (i in 1:num_output_layers) {
       output_dim <- batch_size
       output_list <- model$output_shape[[i]]
       for (j in 2:length(output_list)) {
         output_dim  <- c(output_dim, output_list[[j]])
       }
-      y[[i]] <- array(rnorm(n = prod(output_dim)), dim = output_dim)
+      if (sparse_loss) output_dim <- output_dim[-length(output_dim)]
+      y[[i]] <- array(runif(n = prod(output_dim)), dim = output_dim)
     }
   }
   
