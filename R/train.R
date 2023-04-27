@@ -371,8 +371,7 @@ train_model <- function(train_type = "lm",
   } else {
     path_file_logVal <- NULL
   }
-  
-  
+
   # if no dataset is supplied, external fasta generator will generate batches
   if (train_with_gen) {
     #message("Starting fasta generator...")
@@ -391,7 +390,7 @@ train_model <- function(train_type = "lm",
                          train_type = train_type, set_learning = set_learning, file_limit = file_limit,
                          reverse_complement_encoding = reverse_complement_encoding, read_data = read_data,
                          sample_by_file_size = sample_by_file_size, add_noise = add_noise, target_split = target_split,
-                         target_from_csv = target_from_csv, masked_lm = masked_lm,
+                         target_from_csv = target_from_csv, masked_lm = masked_lm, return_int = return_int,
                          path_file_logVal = path_file_logVal, delete_used_files = delete_used_files,
                          vocabulary_label = vocabulary_label, new_batch_size = new_batch_size, val = FALSE)
     
@@ -440,15 +439,11 @@ train_model <- function(train_type = "lm",
                              target_from_csv = target_from_csv, reset_states = reset_states, early_stopping_time = early_stopping_time,
                              validation_only_after_training = validation_only_after_training)
   
-  # initialize metrics, temporary fix
-  model <- manage_metrics(model)
+  # # initialize metrics, temporary fix
+  # model <- manage_metrics(model)
   
   # training
   if (train_with_gen) {
-    
-    z <- gen()
-    x <- z[[1]]
-    y <- z[[2]]
     
     model <- keras::set_weights(model, model_weights)
     history <-
