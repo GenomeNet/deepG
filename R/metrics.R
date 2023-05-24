@@ -168,15 +168,15 @@ balanced_acc_wrapper <- function(num_targets, cm_dir) {
                                                  },
                                                  
                                                  store_cm = function(self) {
-                                                   if (self$count > 0) {
-                                                     if (self$count %% 2 == 0) {
-                                                       file_name <- file.path(self$cm_dir, paste0("cm_val_", floor(self$count/2) - 1, ".rds"))
+                                                   #if (self$count > 0) {
+                                                     if (self$count %% 2 != 0) {
+                                                       file_name <- file.path(self$cm_dir, paste0("cm_val_", floor(self$count/2), ".rds"))
                                                      } else {
                                                        file_name <- file.path(self$cm_dir, paste0("cm_train_", floor(self$count/2), ".rds"))
                                                      }
                                                      saveRDS(keras::k_eval(self$cm), file_name)
                                                      NULL
-                                                   }
+                                                   #}
                                                  }
                                                  
                                                ))
