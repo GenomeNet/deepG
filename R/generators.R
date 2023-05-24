@@ -3148,6 +3148,7 @@ get_generator <- function(path = NULL,
 #' @param as_numpy_array Store output as list of numpy arrays if `TRUE` (otherwise as R array). 
 #' @param shuffle Whether to shuffle samples within each batch.
 #' @param file_name_start Start of output file names.
+#' @param store_format Either "rds" or "pickle". 
 #' @param ... further generator options. See \code{\link{get_generator}}.
 #' @examples 
 #' # create dummy fasta files
@@ -3182,17 +3183,17 @@ dataset_from_gen <- function(output_path,
                              maxlen = 250,
                              step = NULL,
                              vocabulary = c("a", "c", "g", "t"),
-                             as_numpy_array = FALSE,
                              shuffle = FALSE,
                              set_learning = NULL,
                              seed = NULL,
                              random_sampling,
+                             store_format = "rds",
                              file_name_start = "batch_",
                              masked_lm = NULL,
                              ...) {
   
-  stopifnot(train_type %in% c("lm", "label_header", "label_folder", "label_csv", "masked_lm"))
-  store_format <- ifelse(as_numpy_array, "pickle", "rds")
+  stopifnot(train_type %in% c("lm", "label_header", "label_folder", "label_csv", "masked_lm", "dummy_gen"))
+  stopifnot(store_format %in% c("pickle", "rds"))
   include_sample_weights <- !is.null(masked_lm) && masked_lm$include_sw
   
   if (is.null(step)) step <- maxlen
@@ -3240,6 +3241,9 @@ dataset_from_gen <- function(output_path,
     if (store_format == "rds") {
       saveRDS(out_list, file = filename)
     }
+    # if (store_format == "hdf5") {
+    #   saveRDS(out_list, file = filename)
+    # }
     
   }  
   
