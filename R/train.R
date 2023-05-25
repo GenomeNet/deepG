@@ -750,6 +750,7 @@ train_model_cpc <-
            seed = 1234,
            
            path_file_log = T,
+           train_val_split_csv = NULL,
            file_limit = NULL,
            proportion_per_seq = NULL,
            max_samples = NULL,
@@ -828,24 +829,7 @@ train_model_cpc <-
     ########################################################################################################
     #################################### Preparation: Data, paths metrics ##################################
     ########################################################################################################
-    
-    ####~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ File count ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~####
-    if (is.null(file_filter)) {
-      if (is.null(file_limit)) {
-        if (is.list(path)) {
-          num_files <- 0
-          for (i in seq_along(path)) {
-            num_files <- num_files + length(list.files(path[[i]]))
-          }
-        } else {
-          num_files <- length(list.files(path))
-        }
-      } else {
-        num_files <- file_limit * length(path)
-      }
-    } else {
-      num_files <- length(file_filter[1])
-    }
+
     ####~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Path definition ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~####
     runname <-
       paste0(run_name , format(Sys.time(), "_%y%m%d_%H%M%S"))
@@ -869,6 +853,58 @@ train_model_cpc <-
     if (is.null(preloadGeneratorpath)) {
       GenVConfig <- GenVParams(path_val, shuffle_file_order)
     }
+    
+    # train train_val_ratio via csv file
+    if (!is.null(train_val_split_csv)) {
+      if (is.null(path_val)) {
+        path_val <- path
+      } else {
+        if (!all(unlist(path_val) %in% unlist(path))) {
+          warning("Train/validation split done via file in train_val_split_csv. Only using files from path argument.")
+        }
+        path_val <- path
+      }
+      
+      train_val_file <- read.csv2(train_val_split_csv, header = TRUE, stringsAsFactors = FALSE)
+      if (dim(train_val_file)[2] == 1) {
+        train_val_file <- read.csv(train_val_split_csv, header = TRUE, stringsAsFactors = FALSE)
+      }
+      train_val_file <- dplyr::distinct(train_val_file)
+      
+      if (!all(c("file", "type") %in% names(train_val_file))) {
+        stop("Column names of train_val_split_csv file must be 'file' and 'type'")
+      }
+      
+      if (length(train_val_file$file) != length(unique(train_val_file$file))) {
+        stop("In train_val_split_csv all entires in 'file' column must be unique")
+      }
+      
+      file_filter <- list()
+      file_filter[1] <- train_val_file %>% dplyr::filter(type == "train")
+      file_filter[1] <- as.character(train_files$file)
+      file_filter[2] <- train_val_file %>% dplyr::filter(type == "val" | type == "validation")
+      file_filter[2] <- as.character(val_files$file)
+    }
+    
+    
+    ####~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ File count ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~####
+    if (is.null(file_filter) && is.null(train_val_split_csv)) {
+      if (is.null(file_limit)) {
+        if (is.list(path)) {
+          num_files <- 0
+          for (i in seq_along(path)) {
+            num_files <- num_files + length(list.files(path[[i]]))
+          }
+        } else {
+          num_files <- length(list.files(path))
+        }
+      } else {
+        num_files <- file_limit * length(path)
+      }
+    } else {
+      num_files <- length(file_filter[1])
+    }
+    
     ####~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Creation of generators ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~####
     cat(format(Sys.time(), "%F %R"), ": Preparing the data\n")
     ####~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Training Generator ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~####
