@@ -2445,7 +2445,7 @@ layer_pos_embedding_wrapper <- function(maxlen = 100, vocabulary_size = 4, load_
   layer_pos_embedding <- keras::new_layer_class(
     "layer_pos_embedding",
     
-    initialize = function(maxlen, vocabulary_size, embed_dim, ...) {
+    initialize = function(maxlen=100, vocabulary_size=4, embed_dim=64, ...) {
       super$initialize(...)
       if (!is.null(embed_dim)) {
         self$token_emb <- tensorflow::tf$keras$layers$Embedding(input_dim = as.integer(vocabulary_size),
@@ -2491,7 +2491,7 @@ layer_pos_embedding_wrapper <- function(maxlen = 100, vocabulary_size = 4, load_
 #' @inheritParams create_model_transformer
 #' @param load_r6 Whether to load the R6 layer class.
 #' @export
-layer_pos_sinusoid_wrapper <- function(maxlen = 100, vocabulary_size = 4, n = 10000, load_r6 = FALSE, embed_dim = NULL) {
+layer_pos_sinusoid_wrapper <- function(maxlen = 100, vocabulary_size = 4, n = 10000, load_r6 = FALSE, embed_dim = 64) {
   
   layer_pos_sinusoid <- keras::new_layer_class(
     "layer_pos_sinusoid",
@@ -2552,13 +2552,13 @@ layer_pos_sinusoid_wrapper <- function(maxlen = 100, vocabulary_size = 4, n = 10
   
 }
 
-
-layer_transformer_block_wrapper <- function(num_heads = 2, head_size = 4, dropout_rate, ff_dim,  
-                                            vocabulary_size = 4, load_r6 = FALSE, embed_dim = NULL) {
+#' @export
+layer_transformer_block_wrapper <- function(num_heads = 2, head_size = 4, dropout_rate = 0, ff_dim = 64,  
+                                            vocabulary_size = 4, load_r6 = FALSE, embed_dim = 64) {
   
   layer_transformer_block <- keras::new_layer_class(
     "layer_transformer_block",
-    initialize = function(num_heads, head_size, dropout_rate, ff_dim, vocabulary_size, embed_dim, ...) {
+    initialize = function(num_heads=2, head_size=4, dropout_rate=0, ff_dim=64L, vocabulary_size=4, embed_dim=64, ...) {
       super$initialize(...)
       self$num_heads <- num_heads
       self$head_size <- head_size
@@ -2568,8 +2568,9 @@ layer_transformer_block_wrapper <- function(num_heads = 2, head_size = 4, dropou
       self$vocabulary_size <- vocabulary_size
       self$att <- tensorflow::tf$keras$layers$MultiHeadAttention(num_heads=as.integer(num_heads),
                                                                  key_dim=as.integer(head_size))
-      self$ffn <- keras::keras_model_sequential() %>% keras::layer_dense(as.integer(ff_dim), activation="relu") %>%
-        keras::layer_dense(ifelse(is.null(embed_dim), as.integer(vocabulary_size), as.integer(embed_dim)))
+      
+      self$ffn <- keras::keras_model_sequential() %>% keras::layer_dense(units=as.integer(ff_dim), activation="relu") %>%
+        keras::layer_dense(units=ifelse(is.null(embed_dim), as.integer(vocabulary_size), as.integer(embed_dim)))
       
       self$layernorm1 <- keras::layer_layer_normalization(epsilon=1e-6)
       self$layernorm2 <- keras::layer_layer_normalization(epsilon=1e-6)
@@ -2606,7 +2607,7 @@ layer_transformer_block_wrapper <- function(num_heads = 2, head_size = 4, dropou
                                    head_size=head_size,
                                    dropout_rate=dropout_rate,
                                    vocabulary_size=vocabulary_size,
-                                   embed_dim = embed_dim,
+                                   embed_dim=embed_dim,
                                    ff_dim=ff_dim))
   }
   
