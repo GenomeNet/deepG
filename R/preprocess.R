@@ -1341,6 +1341,12 @@ split_fasta <- function(path_input,
                         delete_input = FALSE) {
   
   fasta_file <- microseq::readFasta(path_input)
+  
+  if (nrow(fasta_file) == 1) {
+    message("fasta file has just one entry")
+    return(NULL)
+  }
+  
   if (shuffle_entries) {
     fasta_file <- fasta_file[sample(nrow(fasta_file)), ]
   }
