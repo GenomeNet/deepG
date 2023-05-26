@@ -438,9 +438,7 @@ train_model <- function(train_type = "lm",
                              save_weights_only = save_weights_only, path_checkpoint = path_checkpoint, save_best_only = save_best_only, gen.val = gen.val,
                              target_from_csv = target_from_csv, reset_states = reset_states, early_stopping_time = early_stopping_time,
                              validation_only_after_training = validation_only_after_training)
-  
-  # # initialize metrics, temporary fix
-  # model <- manage_metrics(model)
+ 
   
   # training
   if (train_with_gen) {
