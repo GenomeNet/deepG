@@ -218,7 +218,11 @@ evaluate_model <- function(path_input,
     num_samples <- 0
     for (file in rds_files) {
       rds_file <- readRDS(file)
-      num_samples <- dim(rds_file[[1]])[1] + num_samples
+      x <- rds_file[[1]]
+      while (is.list(x)) {
+        x <- x[[1]]
+      }
+      num_samples <- dim(x)[1] + num_samples
     }
     number_batches <- ceiling(num_samples/batch_size)
     message_string <- paste0("Evaluate ", num_samples, " samples.")
