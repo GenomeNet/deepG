@@ -361,7 +361,8 @@ add_hparam_list <- function(model, argg) {
 }
 
 
-get_maxlen <- function(model, set_learning, target_middle, read_data, split_seq) {
+get_maxlen <- function(model, set_learning, target_middle, read_data, return_int = FALSE,
+                       n_gram = NULL) {
   if (is.null(set_learning)) {
     num_in_layers <- length(model$inputs)
     if (num_in_layers == 1) {
@@ -373,9 +374,15 @@ get_maxlen <- function(model, set_learning, target_middle, read_data, split_seq)
         maxlen <- model$inputs[[num_in_layers - 1]]$shape[[2]] + model$inputs[[num_in_layers]]$shape[[2]]
       }
     }
+    
+    if (!is.null(n_gram)) {
+      maxlen <- maxlen + n_gram - 1
+    }
+    
   } else {
     maxlen <- set_learning$maxlen
   }
+  return(maxlen)
 }
 
 # combine lists containing x, y and sample weight subsets
