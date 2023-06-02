@@ -1058,7 +1058,14 @@ list_fasta_files <- function(path_corpus, format, file_filter) {
   num_files <- length(fasta.files)
   
   if (!is.null(file_filter)) {
-    fasta.files <- fasta.files[basename(fasta.files) %in% file_filter]
+    
+    # file filter files given with/without absolute path
+    if (all(basename(file_filter) == file_filter)) {
+      fasta.files <- fasta.files[basename(fasta.files) %in% file_filter]
+    } else {
+      fasta.files <- fasta.files[fasta.files %in% file_filter]
+    }
+    
     if (length(fasta.files) < 1) {
       stop_text <- paste0("None of the files from ", unlist(path_corpus),
                           " are present in train_val_split_csv table for either train or validation. \n")
