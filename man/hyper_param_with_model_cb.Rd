@@ -60,6 +60,7 @@ with multiple inputs.
 \item If \code{"lm_rds"}, generator will iterate over set of .rds files and will split tensor according to \code{target_len} argument
 (targets are last \code{target_len} nucleotides of each sequence).
 \item  If \code{"dummy_gen"}, generator creates random data once and repeatedly feeds these to model.
+\item  If \code{"masked_lm"}, generator maskes some parts of the input. See \code{masked_lm} argument for details.
 }}
 
 \item{path}{Path to training data. If \code{train_type} is \code{label_folder}, should be a vector or list

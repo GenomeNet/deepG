@@ -701,6 +701,7 @@ conf_matrix_cb <- function(path_tensorboard, run_name, confMatLabels, cm_dir) {
                           cm_dir = cm_dir)
 }
 
+
 get_callbacks <- function(default_arguments , model, path_tensorboard, run_name, train_type,
                           path_model, path, train_val_ratio, batch_size, epochs, format,
                           max_queue_size, lr_plateau_factor, patience, cooldown, path_checkpoint,
@@ -876,8 +877,6 @@ get_callbacks <- function(default_arguments , model, path_tensorboard, run_name,
     
     model <- model %>% keras::compile(loss = model$loss,
                                       optimizer = model$optimizer, metrics = metrics)
-    
-    #model <- manage_metrics(model)
     
     if (length(confMatLabels) > 16) {
       message("Cannot display confusion matrix with more than 16 labels.")

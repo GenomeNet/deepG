@@ -39,7 +39,8 @@ generator_fasta_label_header_csv(
   reverse_complement_encoding = FALSE,
   n_gram = NULL,
   n_gram_stride = 1,
-  add_noise = NULL
+  add_noise = NULL,
+  return_int = FALSE
 )
 }
 \arguments{

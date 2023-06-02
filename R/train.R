@@ -27,6 +27,7 @@
 #' \item If `"lm_rds"`, generator will iterate over set of .rds files and will split tensor according to `target_len` argument
 #' (targets are last `target_len` nucleotides of each sequence). 
 #' \item  If `"dummy_gen"`, generator creates random data once and repeatedly feeds these to model.
+#' \item  If `"masked_lm"`, generator maskes some parts of the input. See `masked_lm` argument for details.
 #' }
 #' @param model A keras model.
 #' @param path Path to training data. If \code{train_type} is \code{label_folder}, should be a vector or list
@@ -185,6 +186,7 @@ train_model <- function(train_type = "lm",
                         path_file_log = NULL,
                         vocabulary_label = NULL,
                         file_limit = NULL,
+                        maxlen = NULL,
                         reverse_complement = FALSE,
                         reverse_complement_encoding = FALSE,
                         output_format = "target_right",
@@ -202,7 +204,6 @@ train_model <- function(train_type = "lm",
                         validation_only_after_training = FALSE,
                         skip_amb_nuc = NULL,
                         max_samples = NULL,
-                        split_seq = FALSE,
                         class_weight = NULL,
                         concat_seq = NULL,
                         target_len = 1,
@@ -214,8 +215,11 @@ train_model <- function(train_type = "lm",
                         sample_by_file_size = FALSE,
                         n_gram = NULL,
                         n_gram_stride = 1,
+                        masked_lm = NULL,
                         random_sampling = FALSE,
-                        add_noise = NULL) {
+                        add_noise = NULL,
+                        return_int = FALSE,
+                        delete_used_files = FALSE) {
   
   # initialize metrics, temporary fix
   model <- manage_metrics(model)
@@ -228,7 +232,7 @@ train_model <- function(train_type = "lm",
   wavenet_format <- FALSE ; target_middle <- FALSE ; cnn_format <- FALSE
   
   if (train_with_gen) {
-    stopifnot(train_type %in% c("lm", "label_header", "label_folder", "label_csv", "label_rds", "lm_rds", "dummy_gen"))
+    stopifnot(train_type %in% c("lm", "label_header", "label_folder", "label_csv", "label_rds", "lm_rds", "dummy_gen", "masked_lm"))
     stopifnot(ambiguous_nuc %in% c("zero", "equal", "discard", "empirical"))
     stopifnot(length(vocabulary) == length(unique(vocabulary)))
     stopifnot(length(vocabulary_label) == length(unique(vocabulary_label)))
@@ -336,19 +340,8 @@ train_model <- function(train_type = "lm",
   argumentList <- as.list(match.call(expand.dots=FALSE))
   
   # extract maxlen from model
-  if (is.null(set_learning)) {
-    num_in_layers <- length(model$inputs)
-    if (num_in_layers == 1) {
-      maxlen <- model$input$shape[[2]]
-    } else {
-      if (!target_middle & !read_data & !split_seq) {
-        maxlen <- model$input[[num_in_layers]]$shape[[2]]
-      } else {
-        maxlen <- model$inputs[[num_in_layers - 1]]$shape[[2]] + model$inputs[[num_in_layers]]$shape[[2]]
-      }
-    }
-  } else {
-    maxlen <- set_learning$maxlen
+  if (is.null(maxlen)) {
+    maxlen <- get_maxlen(model, set_learning, target_middle, read_data)
   }
   
   if (is.null(step)) step <- maxlen
@@ -378,8 +371,7 @@ train_model <- function(train_type = "lm",
   } else {
     path_file_logVal <- NULL
   }
-  
-  
+
   # if no dataset is supplied, external fasta generator will generate batches
   if (train_with_gen) {
     #message("Starting fasta generator...")
@@ -398,14 +390,14 @@ train_model <- function(train_type = "lm",
                          train_type = train_type, set_learning = set_learning, file_limit = file_limit,
                          reverse_complement_encoding = reverse_complement_encoding, read_data = read_data,
                          sample_by_file_size = sample_by_file_size, add_noise = add_noise, target_split = target_split,
-                         target_from_csv = target_from_csv,
-                         split_seq = split_seq, path_file_logVal = path_file_logVal,
+                         target_from_csv = target_from_csv, masked_lm = masked_lm, return_int = return_int,
+                         path_file_logVal = path_file_logVal, delete_used_files = delete_used_files,
                          vocabulary_label = vocabulary_label, new_batch_size = new_batch_size, val = FALSE)
     
     gen.val <- get_generator(path = path_val, batch_size = batch_size, model = model,
                              maxlen = maxlen, step = step, shuffle_file_order = shuffle_file_order,
                              vocabulary = vocabulary, seed = seed[2], proportion_entries = proportion_entries,
-                             shuffle_input = shuffle_input, format = format, 
+                             shuffle_input = shuffle_input, format = format, delete_used_files = delete_used_files,
                              path_file_log = path_file_logVal, reverse_complement = reverse_complement, n_gram_stride = n_gram_stride,
                              output_format = output_format, ambiguous_nuc = ambiguous_nuc,
                              proportion_per_seq = proportion_per_seq, skip_amb_nuc = skip_amb_nuc,
@@ -416,8 +408,8 @@ train_model <- function(train_type = "lm",
                              train_type = train_type, set_learning = set_learning, file_limit = file_limit,
                              reverse_complement_encoding = reverse_complement_encoding, read_data = read_data,
                              sample_by_file_size = sample_by_file_size, add_noise = add_noise, target_split = target_split,
-                             target_from_csv = target_from_csv,
-                             split_seq = split_seq, path_file_logVal = path_file_logVal, vocabulary_label = vocabulary_label,
+                             target_from_csv = target_from_csv, masked_lm = masked_lm, return_int = return_int,
+                             path_file_logVal = path_file_logVal, vocabulary_label = vocabulary_label,
                              new_batch_size = new_batch_size, val = TRUE)
   }
   
@@ -446,9 +438,7 @@ train_model <- function(train_type = "lm",
                              save_weights_only = save_weights_only, path_checkpoint = path_checkpoint, save_best_only = save_best_only, gen.val = gen.val,
                              target_from_csv = target_from_csv, reset_states = reset_states, early_stopping_time = early_stopping_time,
                              validation_only_after_training = validation_only_after_training)
-  
-  # initialize metrics, temporary fix
-  model <- manage_metrics(model)
+ 
   
   # training
   if (train_with_gen) {
@@ -501,7 +491,7 @@ train_model <- function(train_type = "lm",
   }
   
   message("Training done.")
- 
+  
   return(history)
 }
 
@@ -1054,13 +1044,13 @@ train_model_cpc <-
       
       with(writertrain$as_default(), {
         tensorflow::tf$summary$text("Specification",
-                        paste(
-                          names(tftext),
-                          tftext,
-                          sep = " = ",
-                          collapse = "  \n"
-                        ),
-                        step = 0L)
+                                    paste(
+                                      names(tftext),
+                                      tftext,
+                                      sep = " = ",
+                                      collapse = "  \n"
+                                    ),
+                                    step = 0L)
       })
     }
     
@@ -1140,8 +1130,8 @@ train_model_cpc <-
               TB_loss_acc(writertrain, train_loss, train_acc, epoch)
               with(writertrain$as_default(), {
                 tensorflow::tf$summary$scalar('epoch_lr',
-                                  optimizer$learning_rate,
-                                  step = tensorflow::tf$cast(epoch, "int64"))
+                                              optimizer$learning_rate,
+                                              step = tensorflow::tf$cast(epoch, "int64"))
                 tensorflow::tf$summary$scalar(
                   'training files seen',
                   nrow(
@@ -1157,9 +1147,9 @@ train_model_cpc <-
             }
             # Print epoch result metric values to console
             tensorflow::tf$print(" Train Loss",
-                     train_loss$result(),
-                     ", Train Acc",
-                     train_acc$result())
+                                 train_loss$result(),
+                                 ", Train Acc",
+                                 train_acc$result())
             
             # Save epoch result metric values to history object
             .GlobalEnv$history$params$epochs <- epoch
@@ -1181,9 +1171,9 @@ train_model_cpc <-
             
             # Print epoch result metric values to console
             tensorflow::tf$print(" Validation Loss",
-                     val_loss$result(),
-                     ", Validation Acc",
-                     val_acc$result())
+                                 val_loss$result(),
+                                 ", Validation Acc",
+                                 val_acc$result())
             
             # save results globally for best model saving condition
             if (b == max(seq(batches))) {

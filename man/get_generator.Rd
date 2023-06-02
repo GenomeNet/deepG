@@ -41,13 +41,14 @@ get_generator(
   file_limit = NULL,
   reverse_complement_encoding = FALSE,
   read_data = FALSE,
-  split_seq = FALSE,
   target_split = NULL,
   path_file_logVal = NULL,
   model = NULL,
   vocabulary_label = NULL,
   new_batch_size = NULL,
-  val = FALSE
+  masked_lm = NULL,
+  val = FALSE,
+  return_int = FALSE
 )
 }
 \arguments{
@@ -73,6 +74,7 @@ with multiple inputs.
 \item If \code{"lm_rds"}, generator will iterate over set of .rds files and will split tensor according to \code{target_len} argument
 (targets are last \code{target_len} nucleotides of each sequence).
 \item  If \code{"dummy_gen"}, generator creates random data once and repeatedly feeds these to model.
+\item  If \code{"masked_lm"}, generator maskes some parts of the input. See \code{masked_lm} argument for details.
 }}
 
 \item{batch_size}{Number of samples used for one network update.}
@@ -187,10 +189,6 @@ argument. If \code{buffer_len} is an integer, the subsequences are interspaced w
 
 \item{read_data}{If \code{TRUE} the first element of output is a list of length 2, each containing one part of paired read. Maxlen should be 2*length of one read.}
 
-\item{split_seq}{Split input sequence into two sequences while removing nucleotide in middle. If input is \verb{x_1,..., x_(n+1)}, input gets split into
-\verb{input_1 = x_1,..., x_m} and \verb{input_2 = x_(n+1),..., x_(m+2)} where \code{m = ceiling((n+1)/2)} and \code{n = maxlen}. Note that \code{x_(m+1)} is not used. Can be used for transfer learning,
-when switching from language model trained with target in middle to label classification.}
-
 \item{target_split}{If target gets read from csv file, list of names to divide target tensor into list of tensors.
 Example: if csv file has header names \verb{"file", "label_1", "label_2", "label_3"} and \code{target_split = list(c("label_1", "label_2"), "label_3")},
 this will divide target matrix to list of length 2, where the first element contains columns named \code{"label_1"} and \code{"label_2"} and the
@@ -204,6 +202,16 @@ second entry contains the column named \code{"label_3"}.}
 \code{train_type = "label_header"}.}
 
 \item{new_batch_size}{Batch size after reshaping data for set learning.}
+
+\item{masked_lm}{If not \code{NULL}, input and target are equal except some parts of the input are masked or random.
+Must be list with the following arguments:
+\itemize{
+\item \code{mask_rate}: Rate of input to mask (rate of input to replace with mask token).
+\item \code{random_rate}: Rate of input to set to random token.
+\item \code{identity_rate}: Rate of input where sample weights are applied but input and output are identical.
+\item \code{include_sw}: Whether to include sample weigths.
+\item \code{block_len} (optional): Masked/random/itentity regions appear in blocks of size \code{block_len}.
+}}
 
 \item{val}{Logical, call initialized generator "genY" or "genValY" where Y is an integer between 1 and length of directories.}
 }
