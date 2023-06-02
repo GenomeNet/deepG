@@ -58,7 +58,7 @@ predict_model <- function(output_format = "one_seq", model = NULL, layer_name = 
                           batch_size = 256, verbose = TRUE, return_states = FALSE, 
                           output_type = "h5", padding = "none", use_quality = FALSE, quality_string = NULL,
                           path_model = NULL, mode = "label", lm_format = "target_right", output_dir = NULL,
-                          format = "fasta", include_seq = TRUE, reverse_complement_encoding = FALSE,
+                          format = "fasta", include_seq = FALSE, reverse_complement_encoding = FALSE,
                           ambiguous_nuc = "zero", ...) {
   
   stopifnot(padding %in% c("standard", "self", "none", "maxlen"))
