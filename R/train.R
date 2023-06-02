@@ -880,10 +880,10 @@ train_model_cpc <-
       }
       
       file_filter <- list()
-      file_filter[1] <- train_val_file %>% dplyr::filter(type == "train")
-      file_filter[1] <- as.character(train_files$file)
-      file_filter[2] <- train_val_file %>% dplyr::filter(type == "val" | type == "validation")
-      file_filter[2] <- as.character(val_files$file)
+      file_filter[[1]] <- train_val_file %>% dplyr::filter(type == "train")
+      file_filter[[1]] <- as.character(file_filter[[1]]$file)
+      file_filter[[2]] <- train_val_file %>% dplyr::filter(type == "val" | type == "validation")
+      file_filter[[2]] <- as.character(file_filter[[2]]$file)
     }
     
     
