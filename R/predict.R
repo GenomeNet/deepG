@@ -255,6 +255,8 @@ predict_model_one_seq <- function(path_model = NULL, layer_name = NULL, sequence
   
   if (use_quality) {
     quality_vector <- quality_string %>% quality_to_probability()
+  } else {
+    quality_vector <- NULL
   }
   
   # start of samples
