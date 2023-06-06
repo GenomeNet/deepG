@@ -108,7 +108,7 @@ evaluate_model <- function(path_input,
       maxlen <- model$input[[num_in_layers - 1]]$shape[[2]] + model$input[[num_in_layers]]$shape[[2]]
     }
   }
-  
+  maxlen <- 1000
   if (evaluate_all_files & (format %in% c("fasta", "fastq"))) {
     
     number_batches <- NULL
