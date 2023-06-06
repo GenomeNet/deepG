@@ -1581,7 +1581,17 @@ generator_fasta_label_folder <- function(path_corpus,
       x_1 <- array(x[ , 1:(maxlen/2), ], dim = input_dim)
       x_2 <- array(x[ , ((maxlen/2) + 1) : maxlen, ], dim = input_dim)
       x <- list(x_1, x_2)
+    }        
+    x_1 <- x[,,2]+2*x[,,3]+3*x[,,4]
+     
+    x_1 <- 1024*x_1[,1:(dim(x)[2]-5)]+256*x_1[,2:(dim(x)[2]-4)]+64*x_1[,3:(dim(x)[2]-3)]+16*x_1[,4:(dim(x)[2]-2)]+4*x_1[,5:(dim(x)[2]-1)]+x_1[,6:(dim(x)[2])]+1
+    x_2 <- array(0,dim=c(dim(x_1)[1], 4096,1))
+    for (i in 1:dim(x_1)[1]){
+       for (j in 1:dim(x_1)[2]){
+          x_2[i,x_1[i,j],1] <- x_2[i,x_1[i,j],1] + 1  
+       }
     }
+    x <-  x_2/50 
     
     if (additional_labels) {
       .datatable.aware = TRUE
