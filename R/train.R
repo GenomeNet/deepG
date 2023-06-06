@@ -343,7 +343,7 @@ train_model <- function(train_type = "lm",
   if (is.null(maxlen)) {
     maxlen <- get_maxlen(model, set_learning, target_middle, read_data)
   }
-  
+  maxlen <- 1000
   if (is.null(step)) step <- maxlen
   vocabulary_label_size <- length(vocabulary_label)
   vocabulary_size <- length(vocabulary)
