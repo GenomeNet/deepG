@@ -299,7 +299,10 @@ generator_fasta_label_header_csv <- function(path_corpus,
     
     # remove files without target label
     if (!added_label_by_header_target) {
-      fasta.files <- fasta.files[basename(fasta.files) %in% output_label_csv$file]
+      index_basename <- basename(fasta.files) %in% output_label_csv$file
+      index_abs_path <- fasta.files %in% output_label_csv$file
+      index <- index_basename | index_abs_path
+      fasta.files <- fasta.files[index]
       if (length(fasta.files) == 0) {
         stop("No overlap between files and 'file' column in target_from_csv")
       }
