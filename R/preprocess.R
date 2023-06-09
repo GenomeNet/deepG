@@ -993,6 +993,8 @@ count_files <- function(path, format = "fasta", train_type,
   if (!is.null(target_from_csv)) {
     target_files <- read.csv(target_from_csv)
     target_files <- target_files$file
+    # are files given with absolute path
+    full.names <- ifelse(dirname(target_files[1]) == ".", FALSE, TRUE) 
   }  
   if (!is.null(train_val_split_csv)) {
     tvt_files <- read.csv(train_val_split_csv)
@@ -1007,14 +1009,14 @@ count_files <- function(path, format = "fasta", train_type,
       if (endsWith(current_path, paste0(".", format))) {
         # remove files not in csv file 
         if (!is.null(target_from_csv)) {
-          current_files <- length(intersect(target_files, basename(current_path)))
+          current_files <- length(intersect(basename(target_files), basename(current_path)))
         } else {
           current_files <- 1
         }
       } else {
         # remove files not in csv file 
         if (!is.null(target_from_csv)) {
-          current_files <- list.files(current_path, pattern = paste0(".", format, "$")) %>%
+          current_files <- list.files(current_path, pattern = paste0(".", format, "$"), full.names = full.names) %>%
             intersect(target_files) %>% length()
         } else {
           current_files <- list.files(current_path, pattern = paste0(".", format, "$")) %>% length()
