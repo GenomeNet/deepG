@@ -1380,12 +1380,26 @@ split_fasta <- function(path_input,
   }
 }
 
+
+norm_matrix <- function(m) {
+  m/apply(m, 1, sum)
+}
+
+norm_3d_array <- function(array_3d) {
+  batch_size <- dim(array_3d)[1]
+  norm_tensor <- purrr::map(1:batch_size, ~norm_matrix(array_3d[.x, , ])) %>% keras::k_stack()
+  norm_tensor %>% as.array()
+}
+
 #' Add noise to tensor
 #'
 #' @param noise_type "normal" or "uniform".
 #' @param ... additional arguments for rnorm or runif call.
+#' @param make_abs Whether to return absolute value of x plus noise (non-negative).  
+#' @param read_sim If `TRUE`, sum along feature axis is 1. 
 #' @keywords internal
-add_noise_tensor <- function(x, noise_type, ...) {
+add_noise_tensor <- function(x, noise_type, axis = 1,
+                             make_abs = FALSE, read_sim = FALSE, ...) {
   
   stopifnot(noise_type %in% c("normal", "uniform"))
   random_fn <- ifelse(noise_type == "normal", "rnorm", "runif")
@@ -1393,20 +1407,21 @@ add_noise_tensor <- function(x, noise_type, ...) {
   if (is.list(x)) {
     for (i in 1:length(x)) {
       x_dim <- dim(x[[i]])
-      noise_tensor <- do.call(random_fn, list(n = prod(x_dim[-1]), ...))
+      noise_tensor <- do.call(random_fn, list(n = prod(x_dim[-axis]), ...))
       noise_tensor <- array(noise_tensor, dim = x_dim)
       x[[i]] <- x[[i]] + noise_tensor
     }
   } else {
     x_dim <- dim(x)
-    stopifnot(noise_type %in% c("normal", "uniform"))
-    random_fn <- ifelse(noise_type == "normal", "rnorm", "runif")
-    noise_tensor <- do.call(random_fn, list(n = prod(x_dim[-1]), ...))
+    noise_tensor <- do.call(random_fn, list(n = prod(x_dim[-axis]), ...))
     noise_tensor <- array(noise_tensor, dim = x_dim)
     x <- x + noise_tensor
   }
   
+  if (make_abs) x <- abs(x)
+  if (read_sim) x <- norm_3d_array(x)
   return(x)
+  
 }
 
 reverse_complement_tensor <- function(x) {
