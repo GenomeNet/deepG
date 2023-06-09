@@ -49,7 +49,7 @@
 #' `"AC" ->  (0, 1, 0,..., 0), "TT" -> (0,..., 0, 1)`, where the one-hot vectors have length `length(vocabulary)^n`.
 #' @param add_noise `NULL` or list of arguments. If not `NULL`, list must contain the following arguments: \code{noise_type} can be `"normal"` or `"uniform"`;
 #' optional arguments `sd` or `mean` if noise_type is `"normal"` (default is `sd=1` and `mean=0`) or `min, max` if `noise_type` is `"uniform"`
-#' (default is `min=0, max=1`).
+#' (default is `min=0, max=1`). Additionaly, setting `make_abs = TRUE` returns absolute value of x plus noise. 
 #' @import data.table
 #' @importFrom magrittr %>%
 #' @export
