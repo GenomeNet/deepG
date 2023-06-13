@@ -2053,7 +2053,7 @@ generator_dummy <- function(model, batch_size) {
   } else {
     sparse_loss <- FALSE
   }
-
+  
   # stateful model 
   if (!is.null(model$input_shape[[1]][[1]])) {
     batch_size <- model$input_shape[[1]]
@@ -2861,7 +2861,7 @@ generator_random <- function(
 get_generator <- function(path = NULL,
                           train_type,
                           batch_size,
-                          maxlen = NULL,
+                          maxlen,
                           step = NULL,
                           shuffle_file_order = FALSE,
                           vocabulary = c("A", "C", "G", "T"),
