@@ -1419,6 +1419,9 @@ add_noise_tensor <- function(x, noise_type, axis = 1, noise_freq = 1,
   } else {
     x_dim <- dim(x)
     noise_tensor <- do.call(random_fn, list(n = prod(x_dim[-axis]), ...))
+    print(head(noise_tensor, 1))
+    write.table(noise_tensor[1], "~/noise.csv", append = TRUE, col.names = FALSE,
+                row.names = FALSE)
     noise_tensor <- array(noise_tensor, dim = x_dim)
     x <- x + noise_tensor
   }
