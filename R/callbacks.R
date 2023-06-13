@@ -82,7 +82,7 @@ checkpoint_cb <- function(filepath_checkpoints,
                                    save_weights_only = save_weights_only,
                                    save_best_only = save_best_only,
                                    verbose = 1,
-                                   monitor = "val_acc")
+                                   monitor = "loss")
   
 }
 
@@ -721,16 +721,7 @@ get_callbacks <- function(default_arguments , model, path_tensorboard, run_name,
     # create folder for checkpoints using run_name
     checkpoint_dir <- paste0(path_checkpoint, "/", run_name)
     dir.create(checkpoint_dir, showWarnings = FALSE)
-    if (!is.list(model$output)) {
-      # filename with epoch, validation loss and validation accuracy
-      filepath_checkpoints <- file.path(checkpoint_dir, "Ep.{epoch:03d}-val_loss{val_loss:.2f}-val_acc{val_acc:.3f}.hdf5")
-    } else {
-      filepath_checkpoints <- file.path(checkpoint_dir, "Ep.{epoch:03d}.hdf5")
-      if (save_best_only) {
-        warning("save_best_only not implemented for multi target. Setting save_best_only to FALSE")
-        save_best_only <- FALSE
-      }
-    }
+      filepath_checkpoints <- file.path(checkpoint_dir, "Ep.{epoch:03d}-loss{loss:.3f}.hdf5")
   }
   
   # Check if path_file_log is unique

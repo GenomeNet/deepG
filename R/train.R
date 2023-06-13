@@ -371,7 +371,7 @@ train_model <- function(train_type = "lm",
   } else {
     path_file_logVal <- NULL
   }
-
+  
   # if no dataset is supplied, external fasta generator will generate batches
   if (train_with_gen) {
     #message("Starting fasta generator...")
@@ -413,9 +413,10 @@ train_model <- function(train_type = "lm",
                              new_batch_size = new_batch_size, val = TRUE)
   }
   
-  # skip validation callback
-  if (validation_only_after_training | is.null(train_val_ratio) || train_val_ratio == 0) {
+  # skip validation 
+  if (validation_only_after_training | is.null(train_val_ratio) | is.null(path_val) || train_val_ratio == 0) {
     validation_data <- NULL
+    validation_steps <- NULL
   } else {
     if (train_with_gen) {
       validation_data <- gen.val
@@ -438,7 +439,7 @@ train_model <- function(train_type = "lm",
                              save_weights_only = save_weights_only, path_checkpoint = path_checkpoint, save_best_only = save_best_only, gen.val = gen.val,
                              target_from_csv = target_from_csv, reset_states = reset_states, early_stopping_time = early_stopping_time,
                              validation_only_after_training = validation_only_after_training)
- 
+  
   
   # training
   if (train_with_gen) {
@@ -447,8 +448,8 @@ train_model <- function(train_type = "lm",
     history <-
       model %>% keras::fit(
         x = gen,
-        validation_data = validation_data,
-        validation_steps = validation_steps,
+        #validation_data = validation_data,
+        #validation_steps = validation_steps,
         steps_per_epoch = steps_per_epoch,
         max_queue_size = max_queue_size,
         epochs = epochs,
