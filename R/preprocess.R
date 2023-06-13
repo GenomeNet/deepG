@@ -1394,13 +1394,18 @@ norm_3d_array <- function(array_3d) {
 #' Add noise to tensor
 #'
 #' @param noise_type "normal" or "uniform".
-#' @param ... additional arguments for rnorm or runif call.
+#' @param noise_freq Percentage of how often to apply noise
 #' @param make_abs Whether to return absolute value of x plus noise (non-negative).  
 #' @param read_sim If `TRUE`, sum along feature axis is 1. 
+#' @param ... additional arguments for rnorm or runif call.
 #' @keywords internal
-add_noise_tensor <- function(x, noise_type, axis = 1,
+add_noise_tensor <- function(x, noise_type, axis = 1, noise_freq = 1,
                              make_abs = FALSE, read_sim = FALSE, ...) {
   
+  if (noise_freq != 1) {
+    apply_noise <- runif(1)
+    if (noise_freq > apply_noise) return(x)
+  }
   stopifnot(noise_type %in% c("normal", "uniform"))
   random_fn <- ifelse(noise_type == "normal", "rnorm", "runif")
   
@@ -1414,6 +1419,9 @@ add_noise_tensor <- function(x, noise_type, axis = 1,
   } else {
     x_dim <- dim(x)
     noise_tensor <- do.call(random_fn, list(n = prod(x_dim[-axis]), ...))
+    print(head(noise_tensor, 1))
+    write.table(noise_tensor[1], "~/noise.csv", append = TRUE, col.names = FALSE,
+                row.names = FALSE)
     noise_tensor <- array(noise_tensor, dim = x_dim)
     x <- x + noise_tensor
   }
