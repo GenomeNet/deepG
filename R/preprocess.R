@@ -1394,7 +1394,7 @@ norm_3d_array <- function(array_3d) {
 #' Add noise to tensor
 #'
 #' @param noise_type "normal" or "uniform".
-#' @param noise_freq Percentage of how often to apply noise
+#' @param noise_freq Percentage of how often to apply noise.
 #' @param make_abs Whether to return absolute value of x plus noise (non-negative).  
 #' @param read_sim If `TRUE`, sum along feature axis is 1. 
 #' @param ... additional arguments for rnorm or runif call.
