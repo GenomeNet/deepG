@@ -1019,7 +1019,8 @@ get_hyper_param <- function(model) {
 #' @param dropout List of vectors with dropout rates for each new dense layer.
 #' @param freeze_base_model Whether to freeze all weights before new dense layers.
 #' @param compile Boolean, whether to compile the new model.
-#' @param learning_rate Learning rate if `compile = TRUE`, default learning rate of the old model
+#' @param learning_rate Learning rate if `compile = TRUE`, default learning rate of the old model.
+#' @param flatten Whether to add a flatten layer after `layer_name`.  
 #' @examples
 #' model_1 <- create_model_lstm_cnn(layer_lstm = c(64, 64),
 #'                                  maxlen = 50,
@@ -1052,6 +1053,7 @@ remove_add_layers <- function(model = NULL,
                               compile = FALSE,
                               learning_rate = 0.001,
                               solver = "adam",
+                              flatten = FALSE,
                               model_seed = NULL) {
   
   if (!is.null(model_seed)) tensorflow::tf$random$set_seed(model_seed)
@@ -1105,6 +1107,11 @@ remove_add_layers <- function(model = NULL,
     
     if (freeze_base_model) {
       keras::freeze_weights(model_new)
+    }
+    
+    if (flatten) {
+      out <- model_new$output %>% keras::layer_flatten()
+      model_new <- tensorflow::tf$keras$Model(model_new$input, out)
     }
     
     output_list <- list()
