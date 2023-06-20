@@ -99,7 +99,7 @@ modelstep <-
            train_type = "cpc",
            training = F) {
     ## get batch
-    a <- trainvaldat$X %>% tensorflow::tf$convert_to_tensor()
+    a <- trainvaldat$x %>% tensorflow::tf$convert_to_tensor()
     if (train_type == "Self-GenomeNet") {
       ## get complement 
       a_complement <-
