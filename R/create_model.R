@@ -1012,11 +1012,15 @@ get_hyper_param <- function(model) {
 #' @param model A keras model. 
 #' @param dense_layers List of vectors specifying number of units for each dense layer. If this is a list of length > 1, model
 #' has multiple output layers.
+#' @param shared_dense_layers Vector with number of units for dense layer. These layers will be connected on top of layer in 
+#' argument `layer_name`. Can be used to have shared dense layers, before model has multiple output layers. Don't use if model has just one output layer 
+#' (use only `dense_layers`).   
 #' @param last_activation List of activations for last entry for each list entry from \code{dense_layers}. Either `"softmax"`, `"sigmoid"` or `"linear"`.
 #' @param output_names List of names for each output layer.
 #' @param losses List of loss function for each output.
 #' @param verbose Boolean.
 #' @param dropout List of vectors with dropout rates for each new dense layer.
+#' @param dropout_shared Vectors of dropout rates for dense layer from `shared_dense_layers`.
 #' @param freeze_base_model Whether to freeze all weights before new dense layers.
 #' @param compile Boolean, whether to compile the new model.
 #' @param learning_rate Learning rate if `compile = TRUE`, default learning rate of the old model
@@ -1032,7 +1036,7 @@ get_hyper_param <- function(model) {
 #' model_2 <- remove_add_layers(model = model_1,
 #'                              layer_name = layer_name,
 #'                              dense_layers = list(c(32, 16, 1), c(8, 1), c(12, 5)),
-#'                              loss = list("binary_crossentropy", "mae", "categorical_crossentropy"),
+#'                              losses = list("binary_crossentropy", "mae", "categorical_crossentropy"),
 #'                              last_activation = list("sigmoid", "linear", "softmax"),
 #'                              freeze_base_model = TRUE,
 #'                              output_names = list("out_1_binary_classsification", 
@@ -1043,19 +1047,28 @@ get_hyper_param <- function(model) {
 remove_add_layers <- function(model = NULL,
                               layer_name = NULL,
                               dense_layers = NULL,
+                              shared_dense_layers = NULL,
                               last_activation = list("softmax"),
                               output_names = NULL,
                               losses = NULL,
                               verbose = TRUE,
                               dropout = NULL,
+                              dropout_shared = NULL,
                               freeze_base_model = FALSE,
                               compile = FALSE,
                               learning_rate = 0.001,
                               solver = "adam",
+                              flatten = FALSE,
                               model_seed = NULL) {
   
   if (!is.null(model_seed)) tensorflow::tf$random$set_seed(model_seed)
   if (!is.null(layer_name)) check_layer_name(model, layer_name)
+  if (!is.null(shared_dense_layers) & is.null(dense_layers)) {
+    stop("You need to specify output layers in dense_layers argument")
+  }
+  if (!is.null(shared_dense_layers) & length(dense_layers) == 1) {
+    stop("If your model has just one output layer, use only dense_layers argument (and set shared_dense_layers = NULL).")
+  }
   
   if (!is.list(dense_layers)) {
     dense_layers <- list(dense_layers)
@@ -1105,6 +1118,22 @@ remove_add_layers <- function(model = NULL,
     
     if (freeze_base_model) {
       keras::freeze_weights(model_new)
+    }
+    
+    if (flatten) {
+      out <- model_new$output %>% keras::layer_flatten()
+      model_new <- tensorflow::tf$keras$Model(model_new$input, out)
+    }
+    
+    if (!is.null(shared_dense_layers)) {
+      out <- model_new$output 
+      for (i in 1:length(shared_dense_layers)) {
+        out <- out %>% keras::layer_dense(shared_dense_layers[i], activation = "relu")
+        if (is.null(dropout_shared)) {
+          out <- out %>% keras::layer_dropout(dropout_shared[i])
+        }
+      }
+      model_new <- tensorflow::tf$keras$Model(model_new$input, out)
     }
     
     output_list <- list()
