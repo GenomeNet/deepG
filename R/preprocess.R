@@ -56,7 +56,7 @@
 #' y[2,] # t
 #' @export
 seq_encoding_lm <- function(sequence = NULL, maxlen, vocabulary, start_ind, ambiguous_nuc = "zero",
-                            nuc_dist = NULL, quality_vector = NULL,
+                            nuc_dist = NULL, quality_vector = NULL, return_int = FALSE,
                             target_len = 1, use_coverage = FALSE, max_cov = NULL, cov_vector = NULL,
                             n_gram = NULL, n_gram_stride = 1, output_format = "target_right",
                             char_sequence = NULL, adjust_start_ind = FALSE,
@@ -279,6 +279,7 @@ seq_encoding_lm <- function(sequence = NULL, maxlen, vocabulary, start_ind, ambi
 #' Returns encoding for integer or character sequence.
 #'
 #' @inheritParams seq_encoding_lm
+#' @param return_int Whether to return integer encoding or one-hot encoding.
 #' @examples 
 #' # use integer sequence as input
 #' x <- seq_encoding_label(sequence = c(1,0,5,1,3,4,3,1,4,1,2),
@@ -304,13 +305,15 @@ seq_encoding_lm <- function(sequence = NULL, maxlen, vocabulary, start_ind, ambi
 #' @export
 seq_encoding_label <- function(sequence = NULL, maxlen, vocabulary, start_ind, ambiguous_nuc = "zero", nuc_dist = NULL,
                                quality_vector = NULL, use_coverage = FALSE, max_cov = NULL,
-                               cov_vector = NULL, n_gram = NULL, n_gram_stride = 1,
-                               char_sequence = NULL, tokenizer = NULL, adjust_start_ind = FALSE) {
+                               cov_vector = NULL, n_gram = NULL, n_gram_stride = 1, masked_lm = NULL,
+                               char_sequence = NULL, tokenizer = NULL, adjust_start_ind = FALSE,
+                               return_int = FALSE) {
   
-  ## TODO: add discard_amb_nt
-  
+  ## TODO: add discard_amb_nt, add conditions for return_int
   use_quality <- ifelse(is.null(quality_vector), FALSE, TRUE)
   discard_amb_nt <- FALSE
+  maxlen_original <- maxlen
+  if (return_int) ambiguous_nuc <- "zero"
   
   if (!is.null(char_sequence)) {
     
@@ -334,20 +337,42 @@ seq_encoding_label <- function(sequence = NULL, maxlen, vocabulary, start_ind, a
     sequence <- keras::texts_to_sequences(tokenizer, sequence)[[1]] - 1
   }
   
+  if (adjust_start_ind) start_ind <- start_ind - start_ind[1] + 1
+  numberOfSamples <- length(start_ind)
+  
   if (is.null(n_gram_stride)) n_gram_stride <- 1
   voc_len <- length(vocabulary)
   if (!is.null(n_gram)) {
     sequence <- int_to_n_gram(int_seq = sequence, n = n_gram, voc_size = length(vocabulary))
-    maxlen <- maxlen - n_gram + 1
+    maxlen <- ceiling((maxlen - n_gram + 1)/n_gram_stride)
     voc_len <- length(vocabulary)^n_gram
   }
   
-  if (adjust_start_ind) start_ind <- start_ind - start_ind[1] + 1
-  numberOfSamples <- length(start_ind)
+  if (!is.null(masked_lm)) {
+    l <- mask_seq(int_seq = sequence,
+                  mask_rate = masked_lm$mask_rate,
+                  random_rate = masked_lm$random_rate,
+                  identity_rate = masked_lm$identity_rate,
+                  start_ind = start_ind,
+                  block_len = masked_lm$block_len,
+                  voc_len = voc_len)
+    masked_seq <- l$masked_seq
+    sample_weight_seq <- l$sample_weight_seq
+  }
   
-  # every row in z one-hot encodes one character in sequence, oov is zero-vector
-  z  <- keras::to_categorical(sequence, num_classes = voc_len + 2)[ , -c(1, voc_len + 2)]
-  z <- matrix(z, ncol = voc_len)
+  if (!return_int) {
+    if (!is.null(masked_lm)) {
+      # every row in z one-hot encodes one character in sequence, oov is zero-vector
+      z_masked <- keras::to_categorical(masked_seq, num_classes = voc_len + 2)[ , -c(1)]
+      z_masked <- matrix(z_masked, ncol = voc_len + 1)
+      z <- keras::to_categorical(sequence, num_classes = voc_len + 2)[ , -c(1)]
+      z <- matrix(z, ncol = voc_len + 1)
+    } else {
+      # every row in z one-hot encodes one character in sequence, oov is zero-vector
+      z  <- keras::to_categorical(sequence, num_classes = voc_len + 2)[ , -c(1, voc_len + 2)]
+      z <- matrix(z, ncol = voc_len)
+    }
+  }
   
   if (use_quality) {
     ones_pos <- apply(z, 1, which.max)
@@ -367,33 +392,68 @@ seq_encoding_label <- function(sequence = NULL, maxlen, vocabulary, start_ind, a
     z[amb_nuc_pos, ] <- matrix(rep(nuc_dist, length(amb_nuc_pos)), nrow = length(amb_nuc_pos), byrow = TRUE)
   }
   
-  # if (ambiguous_nuc == "discard") {
-  #   amb_nuc_pos <- which(sequence == (voc_len + 1))
-  #   if (length(amb_nuc_pos) > 0) {
-  #     stop("sequence contains ambiguous nucleotides")
-  #   }
-  # }
-  
   if (use_coverage) {
     z <- z * (cov_vector/max_cov)
   }
   
-  x <- array(0, dim = c(numberOfSamples, maxlen, voc_len))
-  for (i in 1:numberOfSamples) {
-    start <- start_ind[i]
-    x[i, , ] <- z[start : (start + maxlen - 1), ]
-  }
+  remove_end_of_seq <- ifelse(is.null(n_gram), 1, n_gram) 
   
-  if (!is.null(n_gram) & n_gram_stride > 1) {
-    index <- seq(1, dim(x)[2], n_gram_stride)
-    if (length(index) == 1) {
-      x <- array(x[ , index, ], dim = c(numberOfSamples, 1, voc_len))
+  if (!return_int) {
+    if (is.null(masked_lm)) {
+      
+      x <- array(0, dim = c(numberOfSamples, maxlen, voc_len))
+      for (i in 1:numberOfSamples) {
+        start <- start_ind[i]
+        subset_index <- seq(start, (start + maxlen_original - remove_end_of_seq), by = n_gram_stride)
+        x[i, , ] <- z[subset_index, ]
+      }
+      return(x)
+      
     } else {
-      x <- x[ , index, ]
+      
+      x <- array(0, dim = c(numberOfSamples, maxlen, voc_len + 1))
+      y <- array(0, dim = c(numberOfSamples, maxlen, voc_len + 1))
+      sw <- array(0, dim = c(numberOfSamples, maxlen))
+      
+      for (i in 1:numberOfSamples) {
+        start <- start_ind[i]
+        subset_index <- seq(start, (start + maxlen - remove_end_of_seq), by = n_gram_stride)
+        x[i, , ] <- z_masked[subset_index, ]
+        y[i, , ] <- z[subset_index, ]
+        sw[i, ] <- sample_weight_seq[subset_index]
+      }
+      return(list(x=x, y=y, sample_weight=sw))
+      
     }
   }
   
-  return(x)
+  if (return_int) {
+    if (is.null(masked_lm)) {
+      
+      x <- array(0, dim = c(numberOfSamples, maxlen))
+      for (i in 1:numberOfSamples) {
+        start <- start_ind[i]
+        subset_index <- seq(start, (start + maxlen_original - remove_end_of_seq), by = n_gram_stride)
+        x[i, ] <- sequence[subset_index]
+      }
+      return(x)
+      
+    } else {
+      x <- array(0, dim = c(numberOfSamples, maxlen))
+      y <- array(0, dim = c(numberOfSamples, maxlen))
+      sw <- array(0, dim = c(numberOfSamples, maxlen))
+      for (i in 1:numberOfSamples) {
+        start <- start_ind[i]
+        subset_index <- seq(start, (start + maxlen_original - remove_end_of_seq), by = n_gram_stride)
+        x[i, ] <- masked_seq[subset_index]
+        y[i, ] <- sequence[subset_index]
+        sw[i, ] <- sample_weight_seq[subset_index]
+      }
+      return(list(x=x, y=y, sample_weight=sw))
+      
+    }
+  }
+  
 }
 
 #' Computes start position of samples
@@ -420,7 +480,9 @@ seq_encoding_label <- function(sequence = NULL, maxlen, vocabulary, start_ind, a
 #'   vocabulary = c("A", "C", "G", "T"))
 #' @export
 get_start_ind <- function(seq_vector, length_vector, maxlen,
-                          step, train_mode = "label", discard_amb_nuc = FALSE, vocabulary = c("A", "C", "G", "T")) {
+                          step, train_mode = "label", 
+                          discard_amb_nuc = FALSE,
+                          vocabulary = c("A", "C", "G", "T")) {
   
   stopifnot(train_mode == "lm" | train_mode == "label")
   if (!discard_amb_nuc) {
@@ -786,8 +848,9 @@ read_fasta_fastq <- function(format, skip_amb_nuc, file_index, pattern, shuffle_
       fasta.file <- fasta.file[sample(nrow(fasta.file)), ]
     }
     
-    if (reverse_complement & sample(c(TRUE, FALSE), 1)) {
-      fasta.file$Sequence <- microseq::reverseComplement(fasta.file$Sequence)
+    if (reverse_complement) {
+      index <- sample(c(TRUE, FALSE), nrow(fasta.file), replace = TRUE)
+      fasta.file$Sequence[index] <- microseq::reverseComplement(fasta.file$Sequence[index])
     }
     
   }
@@ -930,6 +993,8 @@ count_files <- function(path, format = "fasta", train_type,
   if (!is.null(target_from_csv)) {
     target_files <- read.csv(target_from_csv)
     target_files <- target_files$file
+    # are files given with absolute path
+    full.names <- ifelse(dirname(target_files[1]) == ".", FALSE, TRUE) 
   }  
   if (!is.null(train_val_split_csv)) {
     tvt_files <- read.csv(train_val_split_csv)
@@ -944,14 +1009,14 @@ count_files <- function(path, format = "fasta", train_type,
       if (endsWith(current_path, paste0(".", format))) {
         # remove files not in csv file 
         if (!is.null(target_from_csv)) {
-          current_files <- length(intersect(target_files, basename(current_path)))
+          current_files <- length(intersect(basename(target_files), basename(current_path)))
         } else {
           current_files <- 1
         }
       } else {
         # remove files not in csv file 
         if (!is.null(target_from_csv)) {
-          current_files <- list.files(current_path, pattern = paste0(".", format, "$")) %>%
+          current_files <- list.files(current_path, pattern = paste0(".", format, "$"), full.names = full.names) %>%
             intersect(target_files) %>% length()
         } else {
           current_files <- list.files(current_path, pattern = paste0(".", format, "$")) %>% length()
@@ -995,7 +1060,14 @@ list_fasta_files <- function(path_corpus, format, file_filter) {
   num_files <- length(fasta.files)
   
   if (!is.null(file_filter)) {
-    fasta.files <- fasta.files[basename(fasta.files) %in% file_filter]
+    
+    # file filter files given with/without absolute path
+    if (all(basename(file_filter) == file_filter)) {
+      fasta.files <- fasta.files[basename(fasta.files) %in% file_filter]
+    } else {
+      fasta.files <- fasta.files[fasta.files %in% file_filter]
+    }
+    
     if (length(fasta.files) < 1) {
       stop_text <- paste0("None of the files from ", unlist(path_corpus),
                           " are present in train_val_split_csv table for either train or validation. \n")
@@ -1188,18 +1260,25 @@ create_conf_mat_obj <- function(m, confMatLabels) {
 #' int_to_n_gram(int_seq = c(1,1,2,4,4), n = 2, voc_size = 4)
 #' @export
 int_to_n_gram <- function(int_seq, n, voc_size = 4) {
+  
   encoding_len <- length(int_seq) - n + 1
   n_gram_encoding <- vector("numeric", encoding_len)
   oov_token <- voc_size^n + 1
+  padding_token <- 0
+  
   for (i in 1:encoding_len) {
     int_seq_subset <- int_seq[i:(i + n - 1)]
     
-    if (any(int_seq_subset > voc_size) | prod(int_seq_subset) == 0) {
-      # zero encoding for amb nuc
-      n_gram_encoding[i] <- oov_token
+    if (prod(int_seq_subset) == 0) {
+      n_gram_encoding[i] <- padding_token
     } else {
-      int_seq_subset <- int_seq_subset - 1
-      n_gram_encoding[i] <- 1 + sum(voc_size^((n-1):0) * (int_seq_subset))
+      # encoding for amb nuc
+      if (any(int_seq_subset > voc_size)) {
+        n_gram_encoding[i] <- oov_token
+      } else {
+        int_seq_subset <- int_seq_subset - 1
+        n_gram_encoding[i] <- 1 + sum(voc_size^((n-1):0) * (int_seq_subset))
+      }
     }
   }
   n_gram_encoding
@@ -1369,10 +1448,11 @@ plot_cm <- function(cm, perc = FALSE, cm_labels, round_dig = 2, text_size = 1) {
   cm_plot <- ggplot2::autoplot(cm, type = "heatmap") +
     ggplot2::scale_fill_gradient(low="#D6EAF8", high = "#2E86C1")  +
     ggplot2::theme(axis.text.x =
-                     ggplot2::element_text(angle=90,hjust=1, size = text_size)) +
+                     ggplot2::element_text(angle=90, hjust=1, size = text_size)) +
     ggplot2::theme(axis.text.y =
                      ggplot2::element_text(size = text_size))
   
+  # TODO: add conf mat with ComplexHeatmap for bigger sizes
   cm_plot
   
 }
@@ -1408,4 +1488,79 @@ subset_tensor <- function(tensor, subset_index, dim_n) {
   if (length(subset_index) == 1 & dim_n > 1) {
     subset_tensor <- tensorflow::tf$expand_dims(subset_tensor, axis = 0L)
   }
+}
+
+
+mask_seq <- function(int_seq,
+                     mask_rate = NULL,
+                     random_rate = NULL,
+                     identity_rate = NULL,
+                     block_len = NULL,
+                     start_ind = NULL,
+                     voc_len) {
+  
+  mask_token <- voc_len + 1
+  if (is.null(mask_rate)) mask_rate <- 0
+  if (is.null(random_rate)) random_rate <- 0
+  if (is.null(identity_rate)) identity_rate <- 0
+  mask_perc <- mask_rate + random_rate + identity_rate
+  if (mask_perc > 1) {
+    stop("Sum of mask_rate, random_rate, identity_rate bigger than 1")
+  } 
+  # don't mask padding or oov positions 
+  valid_pos <- which(int_seq != 0 | int_seq != mask_token) 
+  
+  # randomly decide whether to round up or down
+  ceiling_floor <- sample(c(TRUE, FALSE), 3, replace = TRUE)
+  # adjust for block len
+  block_len_adjust <- ifelse(is.null(block_len), 1, block_len) 
+  
+  num_mask_pos <- (mask_rate * length(valid_pos))/block_len_adjust
+  num_mask_pos <- ifelse(ceiling_floor[1], floor(num_mask_pos), ceiling(num_mask_pos))
+  num_random_pos <- (random_rate * length(valid_pos))/block_len_adjust
+  num_random_pos <- ifelse(ceiling_floor[2], floor(num_random_pos), ceiling(num_random_pos))
+  num_identity_pos <- (identity_rate * length(valid_pos))/block_len_adjust
+  num_identity_pos <- ifelse(ceiling_floor[3], floor(num_identity_pos), ceiling(num_identity_pos))
+  num_all_pos <- num_mask_pos + num_random_pos + num_identity_pos
+  if (is.null(block_len)) {
+    all_pos <- sample(valid_pos, num_all_pos)
+  } else {
+    valid_pos_block_len <- seq(from = sample(1:(block_len - 1), 1), to = length(valid_pos), by = block_len)
+    valid_pos <- intersect(valid_pos_block_len, valid_pos)
+    all_pos <- sample(valid_pos, min(num_all_pos, length(valid_pos)))
+  }
+  
+  sample_weight_seq <- rep(0, length(int_seq))
+  if (is.null(block_len)) {
+    sample_weight_seq[all_pos] <- 1
+  } else {
+    all_pos_blocks <- purrr::map(all_pos, ~seq(.x, .x + block_len - 1, by = 1))
+    sample_weight_seq[unlist(all_pos_blocks)] <- 1
+  }
+  
+  if (num_mask_pos > 0) {
+    mask_index <- sample(all_pos, num_mask_pos)
+    all_pos <- setdiff(all_pos, mask_index)
+    if (!is.null(block_len)) {
+      mask_index <- purrr::map(mask_index, ~seq(.x, .x + block_len - 1, by = 1)) %>% 
+        unlist()
+    }
+    int_seq[mask_index] <- mask_token
+  }
+  
+  if (num_random_pos > 0) {
+    random_index <- sample(all_pos, num_random_pos)
+    all_pos <- setdiff(all_pos, random_index)
+    if (!is.null(block_len)) {
+      random_index <- purrr::map(random_index, ~seq(.x, .x + block_len - 1, by = 1)) %>% 
+        unlist()
+    }
+    int_seq[random_index] <- sample(1:voc_len, num_random_pos, replace = TRUE)
+  }
+  
+  # mask oov tokens
+  sample_weight_seq[int_seq == mask_token] <- 1
+  
+  return(list(masked_seq = int_seq, sample_weight_seq = sample_weight_seq))
+  
 }

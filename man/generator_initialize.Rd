@@ -31,7 +31,6 @@ generator_initialize(
   add_input_as_seq = NULL,
   skip_amb_nuc = NULL,
   max_samples = NULL,
-  split_seq = FALSE,
   file_filter = NULL,
   concat_seq = NULL,
   use_coverage = NULL,
@@ -40,7 +39,8 @@ generator_initialize(
   sample_by_file_size = FALSE,
   n_gram = NULL,
   n_gram_stride = 1,
-  add_noise = NULL
+  add_noise = NULL,
+  return_int = FALSE
 )
 }
 \arguments{
@@ -107,10 +107,6 @@ csv file (if vocabulary = c("A", "C", "G", "T")).  If \code{add_input_as_seq} is
 
 \item{max_samples}{Maximum number of samples to use from one file. If not \code{NULL} and file has more than \code{max_samples} samples, will randomly choose a
 subset of \code{max_samples} samples.}
-
-\item{split_seq}{Split input sequence into two sequences while removing nucleotide in middle. If input is \verb{x_1,..., x_(n+1)}, input gets split into
-\verb{input_1 = x_1,..., x_m} and \verb{input_2 = x_(n+1),..., x_(m+2)} where \code{m = ceiling((n+1)/2)} and \code{n = maxlen}. Note that \code{x_(m+1)} is not used. Can be used for transfer learning,
-when switching from language model trained with target in middle to label classification.}
 
 \item{file_filter}{Vector of file names to use from path_corpus.}
 

@@ -52,6 +52,7 @@ tensorflow::install_tensorflow()
 and afterwards install the latest version of deepG from github
 
 ``` r
+# install.packages("devtools")
 devtools::install_github("GenomeNet/deepG")
 ```
 
