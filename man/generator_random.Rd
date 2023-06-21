@@ -31,7 +31,9 @@ generator_random(
   shuffle_input = TRUE,
   reverse_complement_encoding = FALSE,
   proportion_entries = NULL,
-  concat_seq = NULL
+  masked_lm = NULL,
+  concat_seq = NULL,
+  return_int = FALSE
 )
 }
 \arguments{
@@ -53,6 +55,7 @@ with multiple inputs.
 \item If \code{"lm_rds"}, generator will iterate over set of .rds files and will split tensor according to \code{target_len} argument
 (targets are last \code{target_len} nucleotides of each sequence).
 \item  If \code{"dummy_gen"}, generator creates random data once and repeatedly feeds these to model.
+\item  If \code{"masked_lm"}, generator maskes some parts of the input. See \code{masked_lm} argument for details.
 }}
 
 \item{output_format}{Determines shape of output tensor for language model.
@@ -145,6 +148,16 @@ argument. If \code{buffer_len} is an integer, the subsequences are interspaced w
 
 \item{proportion_entries}{Proportion of fasta entries to keep. For example, if fasta file has 50 entries and \code{proportion_entries = 0.1},
 will randomly select 5 entries.}
+
+\item{masked_lm}{If not \code{NULL}, input and target are equal except some parts of the input are masked or random.
+Must be list with the following arguments:
+\itemize{
+\item \code{mask_rate}: Rate of input to mask (rate of input to replace with mask token).
+\item \code{random_rate}: Rate of input to set to random token.
+\item \code{identity_rate}: Rate of input where sample weights are applied but input and output are identical.
+\item \code{include_sw}: Whether to include sample weigths.
+\item \code{block_len} (optional): Masked/random/itentity regions appear in blocks of size \code{block_len}.
+}}
 
 \item{concat_seq}{Character string or \code{NULL}. If not \code{NULL} all entries from file get concatenated to one sequence with \code{concat_seq} string between them.
 Example: If 1.entry AACC, 2. entry TTTG and \code{concat_seq = "ZZZ"} this becomes AACCZZZTTTG.}

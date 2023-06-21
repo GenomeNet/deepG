@@ -37,6 +37,7 @@ train_model(
   path_file_log = NULL,
   vocabulary_label = NULL,
   file_limit = NULL,
+  maxlen = NULL,
   reverse_complement = FALSE,
   reverse_complement_encoding = FALSE,
   output_format = "target_right",
@@ -54,7 +55,6 @@ train_model(
   validation_only_after_training = FALSE,
   skip_amb_nuc = NULL,
   max_samples = NULL,
-  split_seq = FALSE,
   class_weight = NULL,
   concat_seq = NULL,
   target_len = 1,
@@ -66,8 +66,10 @@ train_model(
   sample_by_file_size = FALSE,
   n_gram = NULL,
   n_gram_stride = 1,
+  masked_lm = NULL,
   random_sampling = FALSE,
-  add_noise = NULL
+  add_noise = NULL,
+  use_multiprocessing = FALSE
 )
 }
 \arguments{
@@ -89,6 +91,7 @@ with multiple inputs.
 \item If \code{"lm_rds"}, generator will iterate over set of .rds files and will split tensor according to \code{target_len} argument
 (targets are last \code{target_len} nucleotides of each sequence).
 \item  If \code{"dummy_gen"}, generator creates random data once and repeatedly feeds these to model.
+\item  If \code{"masked_lm"}, generator maskes some parts of the input. See \code{masked_lm} argument for details.
 }}
 
 \item{model}{A keras model.}
@@ -160,6 +163,8 @@ will run for (\code{epochs} - \code{initial_epochs}) rounds and not \code{epochs
 
 \item{file_limit}{Integer or \code{NULL}. If integer, use only specified number of randomly sampled files for training. Ignored if greater than number of files in \code{path}.}
 
+\item{maxlen}{Length of predictor sequence.}
+
 \item{reverse_complement}{Boolean, for every new file decide randomly to use original data or its reverse complement.}
 
 \item{reverse_complement_encoding}{Whether to use both original sequence and reverse complement as two input sequences.}
@@ -216,10 +221,6 @@ second entry contains the column named \code{"label_3"}.}
 \item{max_samples}{Maximum number of samples to use from one file. If not \code{NULL} and file has more than \code{max_samples} samples, will randomly choose a
 subset of \code{max_samples} samples.}
 
-\item{split_seq}{Split input sequence into two sequences while removing nucleotide in middle. If input is \verb{x_1,..., x_(n+1)}, input gets split into
-\verb{input_1 = x_1,..., x_m} and \verb{input_2 = x_(n+1),..., x_(m+2)} where \code{m = ceiling((n+1)/2)} and \code{n = maxlen}. Note that \code{x_(m+1)} is not used. Can be used for transfer learning,
-when switching from language model trained with target in middle to label classification.}
-
 \item{class_weight}{List of weights for output. Order should correspond to \code{vocabulary_label}.
 You can use \code{\link{get_class_weight}} function to estimate class weights:
 
@@ -273,6 +274,16 @@ will randomly select 5 entries.}
 
 \item{n_gram_stride}{Step size for n-gram encoding. For AACCGGTT with \code{n-gram = 4} and \code{n_gram_stride = 2}, generator encodes
 \verb{(AACC), (CCGG), (GGTT)}; for \code{n_gram_stride = 4} generator encodes \verb{(AACC), (GGTT)}.}
+
+\item{masked_lm}{If not \code{NULL}, input and target are equal except some parts of the input are masked or random.
+Must be list with the following arguments:
+\itemize{
+\item \code{mask_rate}: Rate of input to mask (rate of input to replace with mask token).
+\item \code{random_rate}: Rate of input to set to random token.
+\item \code{identity_rate}: Rate of input where sample weights are applied but input and output are identical.
+\item \code{include_sw}: Whether to include sample weigths.
+\item \code{block_len} (optional): Masked/random/itentity regions appear in blocks of size \code{block_len}.
+}}
 
 \item{random_sampling}{Whether samples should be taken from random positions when using \code{max_samples} argument. If \code{FALSE} random
 samples are taken from a consecutive subsequence.}

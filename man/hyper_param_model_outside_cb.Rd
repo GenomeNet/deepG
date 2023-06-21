@@ -45,6 +45,8 @@ can be a single directory or file or a list of directories and/or files.}
 \item{vocabulary_label}{Character vector of possible targets. Targets outside \code{vocabulary_label} will get discarded if
 \code{train_type = "label_header"}.}
 
+\item{maxlen}{Length of predictor sequence.}
+
 \item{epochs}{Number of iterations.}
 
 \item{max_queue_size}{Maximum size for the generator queue.}
