@@ -2385,18 +2385,29 @@ manage_metrics <- function(model, compile = FALSE) {
 #' If a directory, choose checkpoint based on `cp_filter` or `ep_index`.
 #' @param cp_filter Condition to choose checkpoint if `cp_path` is a directory.
 #' Either "acc" for bast validation accuracy, "loss" for best validation loss or "last_ep" for last epoch.
-#' @param ep_index Load checkpoint from specific epoch number.
+#' @param ep_index Load checkpoint from specific epoch number. If not `ǸULL`, has priority over `cp_filter`.
+#' @param compile Whether to load compiled model.
+#' @param re_compile Whether to compile model with parameters from `learning_rate`,
+#' `solver` and `loss`.  
 #' @param verbose Whether to print choosen checkpoint path.
 #' @param loss Loss function. Only used if model gets compiled.
 #' @export
-load_cp <- function(cp_path, cp_filter = NULL, ep_index = NULL, compile = FALSE,
-                    learning_rate = 0.01, solver = "adam",
+load_cp <- function(cp_path, cp_filter = "last_ep", ep_index = NULL, compile = FALSE,
+                    learning_rate = 0.01, solver = "adam", re_compile = FALSE,
                     loss = "categorical_crossentropy", verbose = TRUE) {
+  
+  # custom objects to load transformer architecture
+  custom_objects <- list(
+    "layer_pos_embedding" = layer_pos_embedding_wrapper(load_r6 = TRUE),
+    "layer_pos_sinusoid" = layer_pos_sinusoid_wrapper(load_r6 = TRUE),
+    "layer_transformer_block" = layer_transformer_block_wrapper(load_r6 = TRUE)
+  )
   
   if (!is.null(cp_filter)) {
     stopifnot(cp_filter %in% c("acc", "loss", "last_ep"))
-    if (!is.null(ep_index)) stop("Only one of cp_filter or ep_index arguments can be used.
-                                  Set one of them to NULL.")
+    if (!is.null(ep_index)) {
+      cp_filter <- NULL
+    }
   } 
   
   is_directory <- dir.exists(cp_path)
@@ -2407,7 +2418,7 @@ load_cp <- function(cp_path, cp_filter = NULL, ep_index = NULL, compile = FALSE,
   } else {
     stopifnot(file.exists(cp_path))
     cp <- cp_path
-    model <- keras::load_model_hdf5(cp, compile = FALSE)
+    model <- keras::load_model_hdf5(cp, compile = FALSE, custom_objects = custom_objects)
   } 
   
   if (is_directory & !is.null(cp_filter)) {
@@ -2447,18 +2458,19 @@ load_cp <- function(cp_path, cp_filter = NULL, ep_index = NULL, compile = FALSE,
   
   if (is_directory) {
     cp <- cps[index]
-    model <- keras::load_model_hdf5(cp, compile = FALSE)
+    model <- keras::load_model_hdf5(cp, compile = compile, custom_objects = custom_objects)
   }
   
   if (verbose) {
     cat("Using checkpoint", cp, "\n")
   }
   
-  if (compile) {
-    optimizer <- set_optimizer(solver, learning_rate) 
+  if (re_compile) {
+    optimizer <- set_optimizer(solver, learning_rate)
     model %>% keras::compile(loss = loss,
-                             optimizer = optimizer, metrics = metrics)
-  } 
+                             optimizer = optimizer,
+                             metrics = metrics)
+  }
   
   return(model)
   
