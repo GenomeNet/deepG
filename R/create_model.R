@@ -1128,10 +1128,10 @@ remove_add_layers <- function(model = NULL,
     if (!is.null(shared_dense_layers)) {
       out <- model_new$output 
       for (i in 1:length(shared_dense_layers)) {
-        out <- out %>% keras::layer_dense(shared_dense_layers[i], activation = "relu")
         if (!is.null(dropout_shared)) {
           out <- out %>% keras::layer_dropout(dropout_shared[i])
         }
+        out <- out %>% keras::layer_dense(shared_dense_layers[i], activation = "relu")
       }
       model_new <- tensorflow::tf$keras$Model(model_new$input, out)
     }
@@ -2351,7 +2351,7 @@ manage_metrics <- function(model, compile = FALSE) {
       eval <- model$evaluate(x, y, verbose = 0L)
     )
   }
-
+  
   if (compile) {
     metric_names <- vector("character", length(model$metrics))
     for (i in 1:length(model$metrics)) {
