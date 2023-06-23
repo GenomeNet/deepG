@@ -992,20 +992,27 @@ count_files <- function(path, format = "fasta", train_type,
   num_files <- rep(0, length(path))
   if (!is.null(target_from_csv)) {
     target_files <- read.csv(target_from_csv)
+    if (ncol(target_files) == 1) target_files <- read.csv2(target_from_csv)
     target_files <- target_files$file
     # are files given with absolute path
     full.names <- ifelse(dirname(target_files[1]) == ".", FALSE, TRUE) 
   }  
   if (!is.null(train_val_split_csv)) {
     tvt_files <- read.csv(train_val_split_csv)
+    if (ncol(tvt_files) == 1) tvt_files <- read.csv2(train_val_split_csv)
     train_index <- tvt_files$type == "train"
     tvt_files <- tvt_files$file
-    target_files <- target_files[train_index]
+    target_files <- intersect(tvt_files[train_index], target_files)
   }  
   
   for (i in 1:length(path)) {
     for (k in 1:length(path[[i]])) {
       current_path <- path[[i]][[k]]
+      
+      if (!is.null(train_val_split_csv) & !(current_path %in% target_files)) {
+        next
+      }
+      
       if (endsWith(current_path, paste0(".", format))) {
         # remove files not in csv file 
         if (!is.null(target_from_csv)) {
@@ -1075,6 +1082,8 @@ list_fasta_files <- function(path_corpus, format, file_filter) {
     }
   }
   
+  fasta.files <- gsub(pattern="/+", replacement="/", x = fasta.files)
+  fasta.files <- gsub(pattern="/$", replacement="", x = fasta.files)
   return(fasta.files)
 }
 

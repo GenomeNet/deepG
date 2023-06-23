@@ -275,11 +275,18 @@ train_model <- function(train_type = "lm",
     
     if (!is.null(concat_seq)) {
       if (!is.null(use_coverage)) stop("Coverage encoding not implemented for concat_seq")
-      #if (train_type == "lm") stop("Concatenation not implemented for language model")
     }
     
     # train train_val_ratio via csv file
     if (!is.null(train_val_split_csv)) {
+      
+      train_val_file <- read.csv2(train_val_split_csv, header = TRUE, stringsAsFactors = FALSE)
+      
+      if (is.null(path)) {
+        path <- train_val_file %>% dplyr::filter(type %in% c("train", "val", "validation")) %>% 
+          dplyr::select(file) %>% as.list()
+      }
+      
       if (train_type == "label_folder") {
         stop('train_val_split_csv not implemented for train_type = "label_folder"')
       }
@@ -292,7 +299,6 @@ train_model <- function(train_type = "lm",
         path_val <- path
       }
       
-      train_val_file <- read.csv2(train_val_split_csv, header = TRUE, stringsAsFactors = FALSE)
       if (dim(train_val_file)[2] == 1) {
         train_val_file <- read.csv(train_val_split_csv, header = TRUE, stringsAsFactors = FALSE)
       }
@@ -371,7 +377,7 @@ train_model <- function(train_type = "lm",
   } else {
     path_file_logVal <- NULL
   }
-
+  
   # if no dataset is supplied, external fasta generator will generate batches
   if (train_with_gen) {
     #message("Starting fasta generator...")
@@ -438,7 +444,7 @@ train_model <- function(train_type = "lm",
                              save_weights_only = save_weights_only, path_checkpoint = path_checkpoint, save_best_only = save_best_only, gen.val = gen.val,
                              target_from_csv = target_from_csv, reset_states = reset_states, early_stopping_time = early_stopping_time,
                              validation_only_after_training = validation_only_after_training)
- 
+  
   
   # training
   if (train_with_gen) {
@@ -819,7 +825,7 @@ train_model_cpc <-
     ########################################################################################################
     #################################### Preparation: Data, paths metrics ##################################
     ########################################################################################################
-
+    
     ####~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Path definition ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~####
     runname <-
       paste0(run_name , format(Sys.time(), "_%y%m%d_%H%M%S"))

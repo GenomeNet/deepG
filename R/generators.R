@@ -231,6 +231,7 @@ generator_fasta_label_header_csv <- function(path_corpus,
     }
   }
   
+  use_basename <- TRUE
   discard_amb_nuc <- ifelse(ambiguous_nuc == "discard", TRUE, FALSE)
   vocabulary <- stringr::str_to_lower(vocabulary)
   vocabulary_label <- stringr::str_to_lower(vocabulary_label)
@@ -262,9 +263,9 @@ generator_fasta_label_header_csv <- function(path_corpus,
   tokenizer_target <- keras::fit_text_tokenizer(keras::text_tokenizer(char_level = FALSE, lower = TRUE, filters = "\t\n"),
                                                 vocabulary_label)
   
-  fasta.files <-  list_fasta_files(path_corpus = path_corpus,
-                                   format = format,
-                                   file_filter = file_filter)
+  fasta.files <- list_fasta_files(path_corpus = path_corpus,
+                                  format = format,
+                                  file_filter = file_filter)
   num_files <- length(fasta.files)
   
   if (sample_by_file_size) {
@@ -299,7 +300,13 @@ generator_fasta_label_header_csv <- function(path_corpus,
     
     # remove files without target label
     if (!added_label_by_header_target) {
-      index_basename <- basename(fasta.files) %in% output_label_csv$file
+      # relative path or absolute path
+      if (dirname(output_label_csv$file[1]) == ".") {
+        index_basename <- basename(fasta.files) %in% output_label_csv$file
+      } else {
+        use_basename <- FALSE
+        index_basename <- fasta.files %in% output_label_csv$file
+      }
       index_abs_path <- fasta.files %in% output_label_csv$file
       index <- index_basename | index_abs_path
       fasta.files <- fasta.files[index]
@@ -763,7 +770,9 @@ generator_fasta_label_header_csv <- function(path_corpus,
           label_list[[sequence_list_index]] <- as.character(cut(subsetStartIndices, breaks = c(startNewEntry, length(nucSeq)),
                                                                 labels = header_vector, include.lowest = TRUE, right = FALSE))
         } else {
-          label_list[[sequence_list_index]] <- basename(fasta.files[file_index])
+          ff <- fasta.files[file_index]
+          if (use_basename) ff <- basename(ff)
+          label_list[[sequence_list_index]] <- ff
         }
       }
       
@@ -772,7 +781,9 @@ generator_fasta_label_header_csv <- function(path_corpus,
           output_label_list[[sequence_list_index]] <- as.character(cut(subsetStartIndices, breaks = c(startNewEntry, length(nucSeq)),
                                                                        labels = header_vector, include.lowest = TRUE, right = FALSE))
         } else {
-          output_label_list[[sequence_list_index]] <- basename(fasta.files[file_index])
+          ff <- fasta.files[file_index]
+          if (use_basename) ff <- basename(ff)
+          output_label_list[[sequence_list_index]] <- ff
         }
       }
       
@@ -2053,7 +2064,7 @@ generator_dummy <- function(model, batch_size) {
   } else {
     sparse_loss <- FALSE
   }
-
+  
   # stateful model 
   if (!is.null(model$input_shape[[1]][[1]])) {
     batch_size <- model$input_shape[[1]]
