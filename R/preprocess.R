@@ -1075,6 +1075,8 @@ list_fasta_files <- function(path_corpus, format, file_filter) {
     }
   }
   
+  fasta.files <- gsub(pattern="/+", replacement="/", x = fasta.files)
+  fasta.files <- gsub(pattern="/$", replacement="", x = fasta.files)
   return(fasta.files)
 }
 
