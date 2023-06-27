@@ -1009,8 +1009,8 @@ count_files <- function(path, format = "fasta", train_type,
     for (k in 1:length(path[[i]])) {
       current_path <- path[[i]][[k]]
       
-      if (!is.null(train_val_split_csv) & !(current_path %in% target_files)) {
-        next
+      if (!is.null(train_val_split_csv)) {
+        if (!(current_path %in% target_files)) next
       }
       
       if (endsWith(current_path, paste0(".", format))) {
