@@ -115,7 +115,7 @@ hyper_param_model_outside_cb <- function(path_tensorboard, run_name, wavenet_for
   #hparams$update(model$hparam)
   model_hparams <- vector("list")
   for (i in names(model$hparam)) {
-    model_hparams[[i]] <- model$hparam[i]
+    model_hparams[[i]] <- model$hparam[[i]]
   }
   
   hparams_R <- c(train_hparams, model_hparams)
