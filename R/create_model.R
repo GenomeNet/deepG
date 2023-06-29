@@ -2802,6 +2802,8 @@ compile_model <- function(model, solver, learning_rate, loss_fn, label_smoothing
   #add metrics
   if (loss_fn == "binary_crossentropy") {
     model_metrics <- c(tf$keras$metrics$BinaryAccuracy(name = "acc"))
+  } else if (loss_fn == "sparse_categorical_crossentropy") {
+    model_metrics <- tensorflow::tf$keras$metrics$SparseCategoricalAccuracy()
   } else {
     model_metrics <- c("acc")
   } 
@@ -3011,3 +3013,4 @@ create_model_twin_network <- function(
   if (verbose) print(model)
   model
 }
+
