@@ -990,7 +990,7 @@ count_files <- function(path, format = "fasta", train_type,
                         target_from_csv = NULL, train_val_split_csv = NULL) {
   
   num_files <- rep(0, length(path))
-  if (!is.null(target_from_csv)) {
+  if (!is.null(target_from_csv) & train_type == "label_csv") {
     target_files <- read.csv(target_from_csv)
     if (ncol(target_files) == 1) target_files <- read.csv2(target_from_csv)
     target_files <- target_files$file
