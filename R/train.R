@@ -121,6 +121,7 @@
 #' @param n_gram Encode n nucleotides at once. Can be used for language model for target encoding.
 #' @param n_gram_stride Step size for n-gram encoding. For AACCGGTT with `n-gram = 4` and `n_gram_stride = 2`, generator encodes
 #' `(AACC), (CCGG), (GGTT)`; for `n_gram_stride = 4` generator encodes `(AACC), (GGTT)`.
+#' @param callback_list Can add additional callbacks to `keras::fit` call.  
 #' @examples
 #' # create dummy data
 #' path_train_1 <- tempfile()
@@ -219,7 +220,8 @@ train_model <- function(train_type = "lm",
                         random_sampling = FALSE,
                         add_noise = NULL,
                         return_int = FALSE,
-                        delete_used_files = FALSE) {
+                        delete_used_files = FALSE,
+                        callback_list = NULL) {
   
   # initialize metrics, temporary fix
   model <- manage_metrics(model)
@@ -569,7 +571,8 @@ get_run_name <- function(run_name = NULL, path_tensorboard, path_checkpoint, pat
       if (length(prev_names) > 8) {
         old_names_start <- paste(prev_names[1:2], collapse = ", ")
         old_names_end <- paste(prev_names[(length(prev_names)-1) : length(prev_names)], collapse = ", ")
-        old_names <- paste(old_names_start, ",...,", old_names_end)
+        #old_names <- paste(old_names_start, ",...,", old_names_end) # outputs range of previously used names
+        old_names <- run_name
       } else {
         old_names <- paste(prev_names, collapse = ", ")
       }
