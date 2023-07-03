@@ -702,12 +702,12 @@ conf_matrix_cb <- function(path_tensorboard, run_name, confMatLabels, cm_dir) {
 }
 
 
-get_callbacks <- function(default_arguments , model, path_tensorboard, run_name, train_type,
+get_callbacks <- function(default_arguments, model, path_tensorboard, run_name, train_type,
                           path_model, path, train_val_ratio, batch_size, epochs, format,
                           max_queue_size, lr_plateau_factor, patience, cooldown, path_checkpoint,
                           steps_per_epoch, step, shuffle_file_order, initial_epoch, vocabulary,
                           learning_rate, shuffle_input, vocabulary_label, solver,
-                          file_limit, reverse_complement, wavenet_format,  cnn_format,
+                          file_limit, reverse_complement, wavenet_format, cnn_format,
                           create_model_function = NULL, vocabulary_size, gen_cb, argumentList,
                           maxlen, labelGen, labelByFolder, vocabulary_label_size, tb_images,
                           target_middle, path_file_log, proportion_per_seq,
@@ -721,15 +721,21 @@ get_callbacks <- function(default_arguments , model, path_tensorboard, run_name,
     # create folder for checkpoints using run_name
     checkpoint_dir <- paste0(path_checkpoint, "/", run_name)
     dir.create(checkpoint_dir, showWarnings = FALSE)
-    if (!is.list(model$output)) {
+    if (!is.list(model$output) & !is.null(gen.val)) {
       # filename with epoch, validation loss and validation accuracy
       filepath_checkpoints <- file.path(checkpoint_dir, "Ep.{epoch:03d}-val_loss{val_loss:.2f}-val_acc{val_acc:.3f}.hdf5")
     } else {
-      filepath_checkpoints <- file.path(checkpoint_dir, "Ep.{epoch:03d}.hdf5")
-      if (save_best_only) {
-        warning("save_best_only not implemented for multi target. Setting save_best_only to FALSE")
-        save_best_only <- FALSE
+      
+      if (is.null(gen.val)) {
+        filepath_checkpoints <- file.path(checkpoint_dir, "Ep.{epoch:03d}-loss{loss:.2f}-acc{acc:.3f}.hdf5")
+      } else {
+        filepath_checkpoints <- file.path(checkpoint_dir, "Ep.{epoch:03d}.hdf5")
+        if (save_best_only) {
+          warning("save_best_only not implemented for multi target. Setting save_best_only to FALSE")
+          save_best_only <- FALSE
+        }
       }
+      
     }
   }
   

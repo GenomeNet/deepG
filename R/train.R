@@ -232,6 +232,7 @@ train_model <- function(train_type = "lm",
   if (!is.null(path_tensorboard)) output$tensorboard <- TRUE
   if (!is.null(path_checkpoint)) output$checkpoints <- TRUE
   wavenet_format <- FALSE ; target_middle <- FALSE ; cnn_format <- FALSE
+  if (train_type != "label_csv") target_from_csv <- NULL
   
   if (train_with_gen) {
     stopifnot(train_type %in% c("lm", "label_header", "label_folder", "label_csv", "label_rds", "lm_rds", "dummy_gen", "masked_lm"))
@@ -402,23 +403,29 @@ train_model <- function(train_type = "lm",
                          path_file_logVal = path_file_logVal, delete_used_files = delete_used_files,
                          vocabulary_label = vocabulary_label, new_batch_size = new_batch_size, val = FALSE)
     
-    gen.val <- get_generator(path = path_val, batch_size = batch_size, model = model,
-                             maxlen = maxlen, step = step, shuffle_file_order = shuffle_file_order,
-                             vocabulary = vocabulary, seed = seed[2], proportion_entries = proportion_entries,
-                             shuffle_input = shuffle_input, format = format, delete_used_files = FALSE,
-                             path_file_log = path_file_logVal, reverse_complement = reverse_complement, n_gram_stride = n_gram_stride,
-                             output_format = output_format, ambiguous_nuc = ambiguous_nuc,
-                             proportion_per_seq = proportion_per_seq, skip_amb_nuc = skip_amb_nuc,
-                             use_quality_score = use_quality_score, padding = padding, n_gram = n_gram,
-                             added_label_path = added_label_path, add_input_as_seq = add_input_as_seq,
-                             max_samples = max_samples, concat_seq = concat_seq, target_len = target_len,
-                             file_filter = val_files, use_coverage = use_coverage, random_sampling = random_sampling,
-                             train_type = train_type, set_learning = set_learning, file_limit = file_limit,
-                             reverse_complement_encoding = reverse_complement_encoding, read_data = read_data,
-                             sample_by_file_size = sample_by_file_size, add_noise = add_noise, target_split = target_split,
-                             target_from_csv = target_from_csv, masked_lm = masked_lm, return_int = return_int,
-                             path_file_logVal = path_file_logVal, vocabulary_label = vocabulary_label,
-                             new_batch_size = new_batch_size, val = TRUE)
+    if (!is.null(path_val)) {
+      
+      gen.val <- get_generator(path = path_val, batch_size = batch_size, model = model,
+                               maxlen = maxlen, step = step, shuffle_file_order = shuffle_file_order,
+                               vocabulary = vocabulary, seed = seed[2], proportion_entries = proportion_entries,
+                               shuffle_input = shuffle_input, format = format, delete_used_files = FALSE,
+                               path_file_log = path_file_logVal, reverse_complement = reverse_complement, n_gram_stride = n_gram_stride,
+                               output_format = output_format, ambiguous_nuc = ambiguous_nuc,
+                               proportion_per_seq = proportion_per_seq, skip_amb_nuc = skip_amb_nuc,
+                               use_quality_score = use_quality_score, padding = padding, n_gram = n_gram,
+                               added_label_path = added_label_path, add_input_as_seq = add_input_as_seq,
+                               max_samples = max_samples, concat_seq = concat_seq, target_len = target_len,
+                               file_filter = val_files, use_coverage = use_coverage, random_sampling = random_sampling,
+                               train_type = train_type, set_learning = set_learning, file_limit = file_limit,
+                               reverse_complement_encoding = reverse_complement_encoding, read_data = read_data,
+                               sample_by_file_size = sample_by_file_size, add_noise = add_noise, target_split = target_split,
+                               target_from_csv = target_from_csv, masked_lm = masked_lm, return_int = return_int,
+                               path_file_logVal = path_file_logVal, vocabulary_label = vocabulary_label,
+                               new_batch_size = new_batch_size, val = TRUE)
+    } else {
+      gen.val <- NULL
+    }
+    
   }
   
   # skip validation callback
@@ -426,10 +433,19 @@ train_model <- function(train_type = "lm",
     validation_data <- NULL
   } else {
     if (train_with_gen) {
-      validation_data <- gen.val
+      if (is.null(path_val)) {
+        validation_data <- NULL
+      } else {
+        validation_data <- gen.val
+      } 
     }
   }
-  validation_steps <- ceiling(steps_per_epoch * train_val_ratio)
+  
+  if (is.null(validation_data)) {
+    validation_steps <- NULL
+  } else {
+    validation_steps <- ceiling(steps_per_epoch * train_val_ratio)
+  }
   
   callbacks <- get_callbacks(default_arguments = default_arguments, model = model, path_tensorboard = path_tensorboard, run_name = run_name, train_type = train_type,
                              path_model = path_model, path = path, train_val_ratio = train_val_ratio, batch_size = batch_size, epochs = epochs,
