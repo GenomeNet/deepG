@@ -2200,6 +2200,7 @@ generator_rds <- function(rds_folder, batch_size, path_file_log = NULL,
     include_sw <- ifelse(length(rds_file) == 3, TRUE, FALSE) 
   } else {
     x_complete <- rds_file
+    include_sw <- FALSE
   }
   
   if (!is_lm) y_complete <- rds_file[[2]]
