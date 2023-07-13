@@ -3002,7 +3002,7 @@ get_generator <- function(path = NULL,
                               use_quality_score = use_quality_score, padding = padding, n_gram = n_gram,
                               added_label_path = added_label_path, add_input_as_seq = add_input_as_seq,
                               max_samples = max_samples, concat_seq = concat_seq, target_len = target_len,
-                              file_filter = file_filter, use_coverage = use_coverage, 
+                              file_filter = file_filter, use_coverage = use_coverage, return_int = return_int,
                               sample_by_file_size = sample_by_file_size, add_noise = add_noise)
   }
   
