@@ -1564,7 +1564,7 @@ mask_seq <- function(int_seq,
       random_index <- purrr::map(random_index, ~seq(.x, .x + block_len - 1, by = 1)) %>% 
         unlist()
     }
-    int_seq[random_index] <- sample(1:voc_len, num_random_pos, replace = TRUE)
+    int_seq[random_index] <- sample(1:voc_len, length(random_index), replace = TRUE)
   }
   
   # mask oov tokens
