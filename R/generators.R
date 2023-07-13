@@ -2197,6 +2197,7 @@ generator_rds <- function(rds_folder, batch_size, path_file_log = NULL,
   
   if (is.list(rds_file)) {
     x_complete <- rds_file[[1]]
+    include_sw <- ifelse(length(rds_file) == 3, TRUE, FALSE) 
   } else {
     x_complete <- rds_file
   }
@@ -2245,6 +2246,11 @@ generator_rds <- function(rds_folder, batch_size, path_file_log = NULL,
       stop("Different number of samples for input and target")
     }
   }
+  
+  if (include_sw) {
+    sw_complete <- rds_file[[3]]
+  }
+  
   sample_index <- 1:x_dim_start[1]
   
   if (!is.null(proportion_per_seq)) {
@@ -2271,6 +2277,10 @@ generator_rds <- function(rds_folder, batch_size, path_file_log = NULL,
       y <- vector("list", target_len)
     } else {
       y <- array(0, c(batch_size, y_dim[2]))
+    }
+    
+    if (include_sw) {
+      sw <- array(0, c(batch_size, x_dim[2]))
     }
     
     while (x_index <= batch_size) {
@@ -2313,6 +2323,10 @@ generator_rds <- function(rds_folder, batch_size, path_file_log = NULL,
             x_complete <<- rds_file[[1]]
           } 
           x_dim <<- dim(x_complete)
+          
+          if (include_sw) {
+            sw_complete <<- rds_file[[3]]
+          }
           
           if (!is_lm) {
             if (multi_output) {
@@ -2363,6 +2377,10 @@ generator_rds <- function(rds_folder, batch_size, path_file_log = NULL,
       
       if (!is_lm) {
         y[x_index:(x_index + length(index) - 1), ] <- y_complete[index, ]
+      }
+      
+      if (include_sw) {
+        sw[x_index:(x_index + length(index) - 1), ] <- sw_complete[index, ]
       }
       
       x_index <- x_index + length(index)
