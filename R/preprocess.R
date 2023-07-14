@@ -1360,19 +1360,24 @@ split_fasta <- function(path_input,
   
   fasta_file <- microseq::readFasta(path_input)
   
+  base_name <- basename(stringr::str_remove(path_input, ".fasta"))
+  new_path <- paste0(target_folder, "/", base_name)
+  count <- 1
+  start_index <- 1
+  end_index <- 1
+  
   if (nrow(fasta_file) == 1) {
-    message("fasta file has just one entry")
+    fasta_name <- paste0(new_path, "_", count, ".fasta")
+    microseq::writeFasta(fasta_file, fasta_name)
+    if (delete_input) {
+      file.remove(path_input)
+    }
     return(NULL)
   }
   
   if (shuffle_entries) {
     fasta_file <- fasta_file[sample(nrow(fasta_file)), ]
   }
-  base_name <- basename(stringr::str_remove(path_input, ".fasta"))
-  new_path <- paste0(target_folder, "/", base_name)
-  count <- 1
-  start_index <- 1
-  end_index <- 1
   
   while (end_index < nrow(fasta_file)) {
     end_index <- min(start_index + split_n - 1, nrow(fasta_file))
