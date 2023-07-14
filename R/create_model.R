@@ -2745,7 +2745,7 @@ layer_transformer_block_wrapper <- function(num_heads = 2, head_size = 4, dropou
 create_model_transformer <- function(maxlen,
                                      vocabulary_size = 4,
                                      embed_dim = NULL,
-                                     pos_encoding = "sinusoid",
+                                     pos_encoding = "embedding",
                                      head_size = 4L,
                                      num_heads = 5L,
                                      ff_dim = 8,

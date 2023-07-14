@@ -78,6 +78,7 @@ reduce_lr_cb <- function(patience,
 checkpoint_cb <- function(filepath_checkpoints,
                           save_weights_only,
                           save_best_only) {
+  
   keras::callback_model_checkpoint(filepath = filepath_checkpoints,
                                    save_weights_only = save_weights_only,
                                    save_best_only = save_best_only,
