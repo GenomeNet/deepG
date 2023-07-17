@@ -727,15 +727,15 @@ get_callbacks <- function(default_arguments, model, path_tensorboard, run_name, 
       filepath_checkpoints <- file.path(checkpoint_dir, "Ep.{epoch:03d}-val_loss{val_loss:.2f}-val_acc{val_acc:.3f}.hdf5")
     } else {
       
-      if (is.null(gen.val)) {
-        filepath_checkpoints <- file.path(checkpoint_dir, "Ep.{epoch:03d}-loss{loss:.2f}-acc{acc:.3f}.hdf5")
-      } else {
+      # if (is.null(gen.val)) {
+      #   filepath_checkpoints <- file.path(checkpoint_dir, "Ep.{epoch:03d}-loss{loss:.2f}-acc{acc:.3f}.hdf5")
+      # } else {
         filepath_checkpoints <- file.path(checkpoint_dir, "Ep.{epoch:03d}.hdf5")
         if (save_best_only) {
-          warning("save_best_only not implemented for multi target. Setting save_best_only to FALSE")
+          warning("save_best_only not implemented for multi target or training without validation data. Setting save_best_only to FALSE.")
           save_best_only <- FALSE
         }
-      }
+      #}
       
     }
   }
