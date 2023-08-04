@@ -439,3 +439,13 @@ loss_cl <- function(margin=1) {
   return(contrastive_loss)
   
 }
+
+#' Focal loss for two or more labels
+#' 
+#' @export
+focal_loss_multiclass <- function(y_true, y_pred, gamma = 2.0, alpha = 0.25) {
+  y_pred <- keras::k_clip(y_pred, keras::k_epsilon(), 1.0 - keras::k_epsilon())
+  cd_loss <- -y_true * keras::k_log(y_pred) # categorical cross entropy
+  fl_loss <- alpha * keras::k_pow(1. - y_pred, gamma) * cd_loss
+  return(keras::k_sum(fl_loss, axis = 1))
+}
