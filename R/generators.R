@@ -2057,9 +2057,9 @@ generator_fasta_label_folder_wrapper <- function(val, new_batch_size = NULL,
 #' @export
 generator_dummy <- function(model, batch_size) {
   
-  # sparse loss
+  # sparse loss (TODO: adjust for multi output mixes with sparse/non-sparse loss)
   if (!is.null(model$loss) && 
-      stringr::str_detect(stringr::str_to_lower(model$loss), "sparse")) {
+      any(stringr::str_detect(stringr::str_to_lower(model$loss), "sparse"))) {
     sparse_loss <- TRUE
   } else {
     sparse_loss <- FALSE
@@ -2782,8 +2782,7 @@ generator_random <- function(
                                              start_ind = start_ind[[p]],
                                              ambiguous_nuc = ambiguous_nuc,
                                              n_gram = n_gram, 
-                                             n_gram_stride = n_gram_stride,
-                                             output_format = output_format)
+                                             n_gram_stride = n_gram_stride)
       }
       
       if (train_type != "lm") {
