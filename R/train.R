@@ -253,9 +253,13 @@ train_model <- function(model = NULL,
       }
       if (!is.null(vocabulary_label)) {
         message("Reading vocabulary_label from csv header")
-        output_label_csv <- read.csv2(target_from_csv, header = TRUE, stringsAsFactors = FALSE)
-        if (dim(output_label_csv)[2] == 1) {
-          output_label_csv <- read.csv(target_from_csv, header = TRUE, stringsAsFactors = FALSE)
+        if (!is.data.frame(target_from_csv)) {
+          output_label_csv <- read.csv2(target_from_csv, header = TRUE, stringsAsFactors = FALSE)
+          if (dim(output_label_csv)[2] == 1) {
+            output_label_csv <- read.csv(target_from_csv, header = TRUE, stringsAsFactors = FALSE)
+          }
+        } else {
+          output_label_csv <- target_from_csv
         }
         vocabulary_label <- names(output_label_csv)
         vocabulary_label <- vocabulary_label[vocabulary_label != "file"]

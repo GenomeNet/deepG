@@ -279,9 +279,13 @@ generator_fasta_label_header_csv <- function(path_corpus,
   # target from csv
   if (!is.null(target_from_csv)) {
     .datatable.aware = TRUE
-    output_label_csv <- read.csv2(target_from_csv, header = TRUE, stringsAsFactors = FALSE)
-    if (dim(output_label_csv)[2] == 1) {
-      output_label_csv <- read.csv(target_from_csv, header = TRUE, stringsAsFactors = FALSE)
+    if (!is.data.frame(target_from_csv)) {
+      output_label_csv <- read.csv2(target_from_csv, header = TRUE, stringsAsFactors = FALSE)
+      if (dim(output_label_csv)[2] == 1) {
+        output_label_csv <- read.csv(target_from_csv, header = TRUE, stringsAsFactors = FALSE)
+      }
+    } else {
+      output_label_csv <- target_from_csv
     }
     output_label_csv <- data.table::as.data.table(output_label_csv)
     if ("file" %in% names(output_label_csv) & "header" %in% names(output_label_csv)) {
@@ -2628,9 +2632,13 @@ generator_random <- function(
   # target from csv
   if (label_from_csv) {
     .datatable.aware = TRUE
-    output_label_csv <- utils::read.csv2(target_from_csv, header = TRUE, stringsAsFactors = FALSE)
-    if (dim(output_label_csv)[2] == 1) {
-      output_label_csv <- read.csv(target_from_csv, header = TRUE, stringsAsFactors = FALSE)
+    if (!is.data.frame(target_from_csv)) {
+      output_label_csv <- read.csv2(target_from_csv, header = TRUE, stringsAsFactors = FALSE)
+      if (dim(output_label_csv)[2] == 1) {
+        output_label_csv <- read.csv(target_from_csv, header = TRUE, stringsAsFactors = FALSE)
+      }
+    } else {
+      output_label_csv <- target_from_csv
     }
     output_label_csv <- data.table::as.data.table(output_label_csv)
     stopifnot("file" %in% names(output_label_csv))
