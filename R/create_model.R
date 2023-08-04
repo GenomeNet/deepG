@@ -1604,7 +1604,6 @@ create_model_lstm_cnn_time_dist <- function(
 #'
 #' @inheritParams create_model_lstm_cnn
 #' @param samples_per_target Number of samples to combine for one target.
-#' @param num_input_layers Number of input layers.
 #' @param dropout_dense Vector of dropout rates between dense layers. No dropout if `NULL`.
 #' @examples
 #' create_model_lstm_cnn_multi_input(
@@ -1644,7 +1643,6 @@ create_model_lstm_cnn_multi_input <- function(
   label_noise_matrix = NULL,
   last_layer_activation = "softmax",
   loss_fn = "categorical_crossentropy",
-  num_input_layers = 1,
   auc_metric = FALSE,
   f1_metric = FALSE,
   samples_per_target,
