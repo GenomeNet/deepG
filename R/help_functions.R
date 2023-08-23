@@ -550,7 +550,9 @@ create_x_y_tensors_lm <- function(sequence_list, nuc_dist_list, target_middle,
 }
 
 # 
-slice_tensor_lm <- function(xy, output_format, target_len, n_gram, total_seq_len, return_int) {
+slice_tensor_lm <- function(xy, output_format, target_len, n_gram,
+                            n_gram_stride, 
+                            total_seq_len, return_int) {
   
   xy_dim <- dim(xy)
   
@@ -575,13 +577,13 @@ slice_tensor_lm <- function(xy, output_format, target_len, n_gram, total_seq_len
       stop("Target length must be 1 for wavenet model")
     }
     x_index <- 1:(xy_dim[2] - target_len)
-    y_index <- 2:dim(xy[2])
+    y_index <- 2:dim(xy)[2]
     if (return_int) {
       x <- xy[ , x_index, drop=FALSE]
-      y <- xy[ , y_index]
+      y <- xy[ , y_index, drop=FALSE]
     } else {
       x <- xy[ , x_index, , drop=FALSE]
-      y <- xy[ , y_index, ]
+      y <- xy[ , y_index, , drop=FALSE]
     }
     
   }
@@ -621,13 +623,36 @@ slice_tensor_lm <- function(xy, output_format, target_len, n_gram, total_seq_len
     
   }
   
-  if (target_len == 1 & xy_dim[1] == 1) {
+  if (target_len == 1 & xy_dim[1] == 1 & output_format != "wavenet") {
     y <- matrix(y, nrow = 1)
+  }
+  
+  if (target_len > 1 & xy_dim[1] == 1) {
+    y <- array(y, dim = c(1, dim(y)))
   }
   
   return(list(x=x, y=y))
   
 }
+
+get_x_index <- function() {
+  
+}
+
+n_gram_stride_subset <- function(n_gram_stride, x) {
+  
+  
+  if (length(dim(x)) == 2)  {
+  
+  }
+  
+  if (length(dim(x)) == 3)  {
+    
+  }
+  
+}
+
+
 
 add_dim <- function(x) {
   

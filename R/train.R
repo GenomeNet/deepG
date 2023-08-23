@@ -118,7 +118,6 @@
 #' }
 #' @param random_sampling Whether samples should be taken from random positions when using `max_samples` argument. If `FALSE` random 
 #' samples are taken from a consecutive subsequence.
-#' @param n_gram Encode n nucleotides at once. Can be used for language model for target encoding.
 #' @param n_gram_stride Step size for n-gram encoding. For AACCGGTT with `n-gram = 4` and `n_gram_stride = 2`, generator encodes
 #' `(AACC), (CCGG), (GGTT)`; for `n_gram_stride = 4` generator encodes `(AACC), (GGTT)`.
 #' @param callback_list Add additional callbacks to `keras::fit` call.  

@@ -88,7 +88,13 @@ generator_fasta_lm <- function(path_corpus,
                                return_int = FALSE) {
   
   
-  ##TODO: add check for n-gram
+  ##TODO: add check for n-gram and add 
+  # if (!is.null(n_gram) & !(any(n_gram_stride == c(n_gram, 1)))) {
+  #   stop("When using language model with n_gram encoding, n_gram_stride must be 1 or equal to n_gram")
+  # } 
+  if (!is.null(n_gram) & !n_gram_stride == n_gram) {
+    stop("When using language model with n_gram encoding, n_gram_stride must be equal to n_gram.")
+  }
   
   total_seq_len <- maxlen + target_len
   gen <- generator_fasta_label_folder(path_corpus = path_corpus,
@@ -136,11 +142,13 @@ generator_fasta_lm <- function(path_corpus,
       added_input <- z[1:(length(z)-1)]
       xy <- z[length(z)][[1]]
     }
-    
+    print(dim(xy))
+    #print(xy[1,,])
     xy_list <- slice_tensor_lm(xy = xy,
                                output_format = output_format,
                                target_len = target_len,
                                n_gram = n_gram,
+                               n_gram_stride = n_gram_stride,
                                total_seq_len = total_seq_len,
                                return_int = return_int)
     
@@ -2796,10 +2804,11 @@ generator_random <- function(
       if (train_type != "lm") {
         seq_list[[p]] <- one_hot_sample
       } else {
-        xy_list <- slice_tensor_lm(xy = xy,
+        xy_list <- slice_tensor_lm(xy = one_hot_sample,
                                    output_format = output_format,
                                    target_len = target_len,
                                    n_gram = n_gram,
+                                   n_gram_stride = n_gram_stride,
                                    total_seq_len = total_seq_len,
                                    return_int = return_int)
       }
