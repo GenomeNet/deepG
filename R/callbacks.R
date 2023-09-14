@@ -1,3 +1,87 @@
+#' Create model card
+#' 
+#' Log information about model, hyperparameters, generator options, training data, scores etc 
+#'
+#' @param model_card_path Directory for model card logs.
+#' @export
+model_card_cb <- function(model_card_path = NULL, run_name, argumentList) {
+  
+  model_card_cb_py_class <- reticulate::PyClass("model_card_cb",
+                                                inherit = tensorflow::tf$keras$callbacks$Callback,
+                                                list(
+                                                  
+                                                  `__init__` = function(self, model_card_path, run_name) {
+                                                    self$model_card_path <- model_card_path
+                                                    self$start_time <- Sys.time()
+                                                    self$mc_dir <- file.path(model_card_path, run_name)
+                                                    self$param_list <- list()
+                                                    self$argumentList <- argumentList
+                                                    NULL
+                                                  },
+                                                  
+                                                  # collect all data
+                                                  on_train_begin = function(self, logs) {
+                                                    
+                                                    if (!dir.exists(self$mc_dir)) {
+                                                      dir.create(self$mc_dir)
+                                                    } else {
+                                                      #stop("Directory already exists. Change run_name")
+                                                    }
+                                                    
+                                                    self$param_list <- self$model$hparam
+                                                    self$param_list$train_model_args <- argumentList
+                                                    for (n in names(self$param_list$train_model_args)) {
+                                                      self$param_list$train_model_args[[n]] <- eval(self$param_list$train_model_args[[n]])
+                                                    }
+                                                    self$param_list$train_model_args[["model"]] <- NULL 
+                                                    
+                                                    self$param_list$model_summary <- summary(self$model)
+                                                    
+                                                    gpu_info <- tensorflow::tf$config$list_physical_devices('GPU')
+                                                    self$param_list$gpu_info[["number GPUs"]] <- length(gpu_info)
+                                                    if (length(gpu_info) > 0) {
+                                                      for (i in 1:length(gpu_info)) {
+                                                        self$param_list$gpu_info[[paste0("GPU", i)]] <- 
+                                                          tensorflow::tf$config$experimental$get_device_details(
+                                                            gpu_info[[i]]
+                                                          )
+                                                      }
+                                                    }
+                                                    
+                                                    saveRDS(self$param_list, paste0(self$mc_dir, "/epoch_0_param_list.rds"))
+                                                    
+                                                  },
+                                                  
+                                                  # update training scores
+                                                  on_epoch_end = function(self, epoch, logs) {
+                                                    time_passed <- as.double(difftime(Sys.time(), self$start_time, units = "secs"))
+                                                    self$param_list[["training_time"]] <- time_passed
+                                                    
+                                                    if (epoch == 0) {
+                                                      m <- unlist(logs) 
+                                                      m <- c(m, epoch, time_passed) %>% matrix(nrow = 1) %>% as.data.frame()
+                                                      names(m) <- c(names(logs), "processing_step", "time")
+                                                      self$param_list[["logs"]] <- m
+                                                    } else {
+                                                      m <- unlist(logs) 
+                                                      m <- c(m, epoch, time_passed) 
+                                                      m <- rbind(self$param_list[["logs"]], m)
+                                                      names(m) <- c(names(logs), "processing_step", "time")
+                                                      self$param_list[["logs"]] <- m
+                                                    }
+                                                    
+                                                    saveRDS(self$param_list, paste0(self$mc_dir, "/epoch_", epoch + 1, "_param_list.rds"))
+                                                  }
+                                                  
+                                                ))
+  
+  model_card_cb_py_class(model_card_path = model_card_path,
+                         run_name = run_name)
+  
+}
+
+
+
 #' Stop training callback
 #' 
 #' Stop training after specified time.
@@ -712,7 +796,7 @@ get_callbacks <- function(default_arguments, model, path_tensorboard, run_name, 
                           create_model_function = NULL, vocabulary_size, gen_cb, argumentList,
                           maxlen, labelGen, labelByFolder, vocabulary_label_size, tb_images,
                           target_middle, path_file_log, proportion_per_seq,
-                          train_val_split_csv, n_gram, path_file_logVal,
+                          train_val_split_csv, n_gram, path_file_logVal, model_card,
                           skip_amb_nuc, max_samples, proportion_entries, path_log, output,
                           train_with_gen, random_sampling, reduce_lr_on_plateau,
                           save_weights_only, save_best_only, reset_states, early_stopping_time,
@@ -730,11 +814,11 @@ get_callbacks <- function(default_arguments, model, path_tensorboard, run_name, 
       # if (is.null(gen.val)) {
       #   filepath_checkpoints <- file.path(checkpoint_dir, "Ep.{epoch:03d}-loss{loss:.2f}-acc{acc:.3f}.hdf5")
       # } else {
-        filepath_checkpoints <- file.path(checkpoint_dir, "Ep.{epoch:03d}.hdf5")
-        if (save_best_only) {
-          warning("save_best_only not implemented for multi target or training without validation data. Setting save_best_only to FALSE.")
-          save_best_only <- FALSE
-        }
+      filepath_checkpoints <- file.path(checkpoint_dir, "Ep.{epoch:03d}.hdf5")
+      if (save_best_only) {
+        warning("save_best_only not implemented for multi target or training without validation data. Setting save_best_only to FALSE.")
+        save_best_only <- FALSE
+      }
       #}
       
     }
@@ -851,6 +935,11 @@ get_callbacks <- function(default_arguments, model, path_tensorboard, run_name, 
     if (!train_with_gen) stop("Validation after training only implemented for generator")
     callbacks <- c(callbacks, validation_after_training_cb(gen.val = gen.val, validation_steps = validation_steps))
     callback_names <- c(callback_names, "validation_after_training")
+  }
+  
+  if (!is.null(model_card)) {
+    callbacks <- c(callbacks, model_card_cb(model_card_path = model_card$path_model_card,
+                                            run_name = run_name, argumentList = argumentList))
   }
   
   if (tb_images) {

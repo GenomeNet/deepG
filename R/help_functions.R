@@ -305,7 +305,7 @@ add_hparam_list <- function(model, argg) {
   argg["label_inputs"] <- NULL
   argg["f1"] <- NULL
   argg["multi_acc"] <- NULL
-  argg[["trainable_params"]] <- model$count_params()
+  argg[["number_model_params"]] <- model$count_params()
   for (i in 1:length(argg$label_input)) {
     argg[paste0("input_tensor_", i)] <- NULL
     argg[paste0("label_input_layer_", i)] <- NULL
@@ -338,7 +338,7 @@ add_hparam_list <- function(model, argg) {
     argg[paste0("input_tensor_", i)] <- NULL
     argg[paste0("label_input_layer_", i)] <- NULL
   }
-  argg[["trainable_params"]] <- model$count_params()
+  argg[["number_model_params"]] <- model$count_params()
   argg["label_input"] <- NULL
   argg["label_inputs"] <- NULL
   argg["maxlen_1"] <- NULL
@@ -552,6 +552,8 @@ create_x_y_tensors_lm <- function(sequence_list, nuc_dist_list, target_middle,
 # 
 slice_tensor_lm <- function(xy, output_format, target_len, n_gram,
                             n_gram_stride, 
+                            # maxlen_n_gram = NULL,
+                            # target_len_n_gram = NULL, 
                             total_seq_len, return_int) {
   
   xy_dim <- dim(xy)
@@ -561,7 +563,7 @@ slice_tensor_lm <- function(xy, output_format, target_len, n_gram,
   }
   
   if (output_format == "target_right") {
-    x_index <- 1:(xy_dim[2] - target_len)
+    x_index <- get_x_index(xy_dim, output_format, target_len)
     if (return_int) {
       x <- xy[ , x_index, drop=FALSE]
       y <- xy[ , -x_index]
@@ -635,23 +637,16 @@ slice_tensor_lm <- function(xy, output_format, target_len, n_gram,
   
 }
 
-get_x_index <- function() {
+get_x_index <- function(xy_dim, output_format, target_len) {
   
-}
-
-n_gram_stride_subset <- function(n_gram_stride, x) {
-  
-  
-  if (length(dim(x)) == 2)  {
-  
+  if (output_format == "target_right") {
+    x_index <- 1:(xy_dim[2] - target_len)
   }
   
-  if (length(dim(x)) == 3)  {
-    
-  }
+  #TODO: subset for other formats with n_gram/stride
   
+  return(x_index)
 }
-
 
 
 add_dim <- function(x) {

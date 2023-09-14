@@ -118,9 +118,12 @@
 #' }
 #' @param random_sampling Whether samples should be taken from random positions when using `max_samples` argument. If `FALSE` random 
 #' samples are taken from a consecutive subsequence.
-#' @param n_gram_stride Step size for n-gram encoding. For AACCGGTT with `n-gram = 4` and `n_gram_stride = 2`, generator encodes
+#' @param n_gram_stride Step size for n-gram encoding. For AACCGGTT with `n_gram = 4` and `n_gram_stride = 2`, generator encodes
 #' `(AACC), (CCGG), (GGTT)`; for `n_gram_stride = 4` generator encodes `(AACC), (GGTT)`.
 #' @param callback_list Add additional callbacks to `keras::fit` call.  
+#' @param model_card List of arguments for training parameters of training run. Must contain at least an entry `path_model_card`, i.e. the 
+#' directory where parameters are stored. List can contain additional (optional) arguments, for example 
+#' `model_card = list(path_model_card = "/path/to/logs", description = "transfer learning with BERT model on virus data", ...)`  
 #' @examples
 #' # create dummy data
 #' path_train_1 <- tempfile()
@@ -182,6 +185,7 @@ train_model <- function(model = NULL,
                         lr_plateau_factor = 0.9,
                         patience = 20,
                         cooldown = 1,
+                        model_card = NULL,
                         callback_list = NULL,
                         # generator args
                         train_type = "label_folder",
@@ -228,7 +232,9 @@ train_model <- function(model = NULL,
   # initialize metrics, temporary fix
   model <- manage_metrics(model)
   
-  run_name <- get_run_name(run_name, path_tensorboard, path_checkpoint, path_log, auto_extend = TRUE)
+  run_name <- get_run_name(run_name, path_tensorboard, path_checkpoint, path_log,
+                           path_model_card = model_card$path_model_card,
+                           auto_extend = TRUE)
   train_with_gen <- is.null(dataset)
   output <- list(tensorboard = FALSE, checkpoints = FALSE)
   if (!is.null(path_tensorboard)) output$tensorboard <- TRUE
@@ -353,6 +359,8 @@ train_model <- function(model = NULL,
   
   # function arguments
   argumentList <- as.list(match.call(expand.dots=FALSE))
+  #argumentList <- c(as.list(environment()), list(...)) log default args too
+  argumentList <- argumentList[names(argumentList) != ""]
   
   # extract maxlen from model
   if (is.null(maxlen)) {
@@ -467,8 +475,7 @@ train_model <- function(model = NULL,
                              train_with_gen = train_with_gen, random_sampling = random_sampling, reduce_lr_on_plateau = reduce_lr_on_plateau,
                              save_weights_only = save_weights_only, path_checkpoint = path_checkpoint, save_best_only = save_best_only, gen.val = gen.val,
                              target_from_csv = target_from_csv, reset_states = reset_states, early_stopping_time = early_stopping_time,
-                             validation_only_after_training = validation_only_after_training)
-  
+                             validation_only_after_training = validation_only_after_training, model_card = model_card)
   
   # training
   if (train_with_gen) {
@@ -532,7 +539,7 @@ train_model <- function(model = NULL,
 #'
 #' @param auto_extend If run_name is already present, add "_2" to name. If name already ends with "_x" replace x with x+1.
 #' @keywords internal
-get_run_name <- function(run_name = NULL, path_tensorboard, path_checkpoint, path_log, auto_extend = FALSE) {
+get_run_name <- function(run_name = NULL, path_tensorboard, path_checkpoint, path_log, path_model_card, auto_extend = FALSE) {
   
   if (is.null(run_name)) {
     run_name_new <- as.character(Sys.time()) %>% stringr::str_replace_all(" ", "_")
@@ -541,9 +548,11 @@ get_run_name <- function(run_name = NULL, path_tensorboard, path_checkpoint, pat
   tb_names <- ""
   cp_names <- ""
   log_names <- ""
+  mc_names <- ""
   name_present_tb <- FALSE
   name_present_cp <- FALSE
   name_present_log <- FALSE
+  name_present_mc <- FALSE
   
   if (!is.null(path_tensorboard)) {
     tb_names <- list.files(path_tensorboard)
@@ -557,8 +566,12 @@ get_run_name <- function(run_name = NULL, path_tensorboard, path_checkpoint, pat
     log_names <- list.files(path_log)
     name_present_log <- (run_name %in% log_names) # & any(stringr::str_detect(log_names, run_name)) 
   }
+  if (!is.null(path_model_card)) {
+    mc_names <- list.files(path_model_card)
+    name_present_mc <- (run_name %in% mc_names) # & any(stringr::str_detect(log_names, run_name)) 
+  }
   
-  name_present <- name_present_tb | name_present_cp | name_present_log
+  name_present <- name_present_tb | name_present_cp | name_present_log | name_present_mc
   
   if (name_present & auto_extend) {
     
@@ -570,7 +583,7 @@ get_run_name <- function(run_name = NULL, path_tensorboard, path_checkpoint, pat
       run_name_new <- paste0(run_name, "_2")
     }
     
-    int_ending <- stringr::str_subset(c(tb_names, cp_names, log_names),
+    int_ending <- stringr::str_subset(c(tb_names, cp_names, log_names, mc_names),
                                       paste0("^", stringr::str_remove(run_name, "_\\d+$"))) %>% unique()
     int_ending <- stringr::str_subset(int_ending, "_\\d+$")
     if (length(int_ending) > 0) {
