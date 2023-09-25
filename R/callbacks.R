@@ -34,8 +34,8 @@ model_card_cb <- function(model_card_path = NULL, run_name, argumentList) {
                                                       self$param_list$train_model_args[[n]] <- eval(self$param_list$train_model_args[[n]])
                                                     }
                                                     self$param_list$train_model_args[["model"]] <- NULL 
-                                                    
                                                     self$param_list$model_summary <- summary(self$model)
+                                                    self$param_list$training_start_time <- self$start_time
                                                     
                                                     gpu_info <- tensorflow::tf$config$list_physical_devices('GPU')
                                                     self$param_list$gpu_info[["number GPUs"]] <- length(gpu_info)
