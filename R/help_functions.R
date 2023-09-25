@@ -41,15 +41,19 @@ maxlencalc <- function(plen, nopatches, stride) {
 #'@param optimizer A keras optimizer.
 #'@param history A keras history object.
 #' @keywords internal
-savechecks <- function(cp, runname, model, optimizer, history) {
+savechecks <- function(cp, runname, model, optimizer, history, path_checkpoint) {
   np = import("numpy", convert = F)
   ## define path for saved objects
   modpath <-
-    paste("model_results/models", runname, cp , sep = "/")
+    paste(path_checkpoint, runname, cp, sep = "/")
   ## save model object
   model %>% keras::save_model_hdf5(paste0(modpath, "mod_temp.h5"))
   file.rename(paste0(modpath, "mod_temp.h5"),
               paste0(modpath, "mod.h5"))
+  model %>% keras::save_model_weights_hdf5(paste0(modpath, "weights_temp.h5"))
+  file.rename(paste0(modpath, "weights_temp.h5"),
+              paste0(modpath, "weights.h5"))
+  
   ## save optimizer object
   np$save(
     paste0(modpath, "opt.npy"),
@@ -99,7 +103,7 @@ modelstep <-
            train_type = "cpc",
            training = F) {
     ## get batch
-    a <- trainvaldat$x %>% tensorflow::tf$convert_to_tensor()
+    a <- trainvaldat[[1]] %>% tensorflow::tf$convert_to_tensor()
     if (train_type == "Self-GenomeNet") {
       ## get complement 
       a_complement <-
@@ -116,6 +120,7 @@ modelstep <-
 #'@param pretrained_model The path to a saved keras model.
 #' @keywords internal
 ReadOpt <- function(pretrained_model) {
+  np = import("numpy", convert = F)
   ## Read configuration
   optconf <-
     readRDS(paste(sub("/[^/]+$", "", pretrained_model),
@@ -129,7 +134,7 @@ ReadOpt <- function(pretrained_model) {
     with(tensorflow::tf$python$framework$ops$init_scope(), {
       optimizer$iterations
       optimizer$`_create_hypers`()
-      optimizer$`_create_slots`(model$trainable_weights)
+      optimizer$`_create_slots`(pretrained_model$trainable_weights)
     })
   )
   # Read optimizer weights
@@ -137,7 +142,7 @@ ReadOpt <- function(pretrained_model) {
     np$load(paste(
       sub("/[^/]+$", "", pretrained_model),
       "/",
-      tail(str_remove(
+      tail(stringr::str_remove(
         strsplit(pretrained_model, "/")[[1]], "mod.h5"
       ), 1),
       "opt.npy",
@@ -261,7 +266,7 @@ GenTParams <- function(path,
   
   structure(
     list(
-      path_corpus = path,
+      path = path,
       shuffle_file_order = shuffle_file_orderTrain,
       path_file_log = path_file_log,
       seed = seed
@@ -271,11 +276,12 @@ GenTParams <- function(path,
 }
 
 GenVParams <- function(path_val,
-                       shuffle_file_orderVal) {
+                       shuffle_file_orderVal, path_file_log) {
   checkmate::assertLogical(shuffle_file_orderVal)
   
-  structure(list(path_corpus = path_val[[1]],
-                 shuffle_file_order = shuffle_file_orderVal),
+  structure(list(path = path_val[[1]],
+                 shuffle_file_order = shuffle_file_orderVal,
+                 path_file_log = path_file_log),
             class = "Params")
 }
 
