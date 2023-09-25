@@ -189,7 +189,7 @@ generator_fasta_lm <- function(path_corpus,
 #' Example: if csv file has header names `"file", "label_1", "label_2", "label_3"` and `target_split = list(c("label_1", "label_2"), "label_3")`,
 #' this will divide target matrix to list of length 2, where the first element contains columns named `"label_1"` and `"label_2"` and the
 #' second entry contains the column named `"label_3"`.
-#' @param read_data If `TRUE` the first element of output is a list of length 2, each containing one part of paired read. Maxlen should be 2*length of one read.
+#' @param read_data If `TRUE` the first element of input is a list of length 2, each containing one part of paired read. Maxlen should be 2*length of one read.
 #' @import data.table
 #' @export
 generator_fasta_label_header_csv <- function(path_corpus,
