@@ -606,9 +606,9 @@ generator_fasta_label_header_csv <- function(path_corpus,
     
     .GlobalEnv$.Random.seed <- rngstate
     on.exit(rngstate <<- .GlobalEnv$.Random.seed)
-    iter <- 1
     # loop until enough samples collected
     while(num_samples < batch_size) {
+      iter <- 1
       # loop through sub-sequences/files until sequence of suitable length is found
       while((start_index > length(start_indices)) | length(start_indices) == 0) {
         
@@ -1340,11 +1340,9 @@ generator_fasta_label_folder <- function(path_corpus,
     .GlobalEnv$.Random.seed <- rngstate
     on.exit(rngstate <<- .GlobalEnv$.Random.seed)
     
-    iter <- 1
-    
     # loop until enough samples collected
     while(num_samples < batch_size) {
-      
+      iter <- 1
       # loop through sub-sequences/files until sequence of suitable length is found
       while((start_index > length(start_indices)) | length(start_indices) == 0) {
         # go to next file
@@ -2293,7 +2291,7 @@ generator_rds <- function(rds_folder, batch_size, path_file_log = NULL,
     
     # TODO: adjust for multi input/output
     x_index <- 1
-    x <- array(0, c(batch_size, x_dim[2:3]))
+    x <- array(0, c(batch_size, x_dim[-1]))
     if (is_lm) {
       y <- vector("list", target_len)
     } else {
@@ -2394,7 +2392,13 @@ generator_rds <- function(rds_folder, batch_size, path_file_log = NULL,
       }
       
       # subsetting
-      x[x_index:(x_index + length(index) - 1), , ] <- x_complete[index, , ]
+      if (length(x_dim) == 3) {
+        x[x_index:(x_index + length(index) - 1), , ] <- x_complete[index, , ]  
+      }
+      
+      if (length(x_dim) == 2) {
+        x[x_index:(x_index + length(index) - 1), ] <- x_complete[index, ]  
+      }
       
       if (!is_lm) {
         y[x_index:(x_index + length(index) - 1), ] <- y_complete[index, ]
