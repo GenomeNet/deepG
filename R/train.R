@@ -764,13 +764,15 @@ get_run_name <- function(run_name = NULL, path_tensorboard, path_checkpoint, pat
 #'  
 #' @export
 train_model_cpc <-
-  function(train_type = "CPC",
+  function(arch_type = "CPC",
            ### cpc functions ###
            encoder = NULL,
            context = NULL,
            #### Generator settings ####
            path,
            path_val = NULL,
+           format = "fasta",
+           delete_used_files = FALSE,
            path_checkpoint = NULL,
            path_tensorboard = NULL,
            train_val_ratio = 0.2,
@@ -865,8 +867,13 @@ train_model_cpc <-
     ########################################################################################################
     
     ####~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Path definition ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~####
-    runname <-
-      paste0(run_name , format(Sys.time(), "_%y%m%d_%H%M%S"))
+    # Check if 'a' matches the desired format, already has a datetime
+    if (grepl("_(\\d{6}_\\d{6})$", run_name)) {
+      runname <- run_name
+    } else {
+      runname <-
+        paste0(run_name , format(Sys.time(), "_%y%m%d_%H%M%S"))
+    }
     
     ## Create folder for model
     dir.create(paste(path_checkpoint, runname, sep = "/"))
@@ -876,6 +883,8 @@ train_model_cpc <-
     if (!is.na(path_checkpoint)) {
       path_file_log <-
         paste(path_checkpoint, runname, "filelog.csv", sep = "/")
+      path_file_logV <-
+        paste(path_checkpoint, runname, "filelog_val.csv", sep = "/")
     } else {
       path_file_log <- NULL
     }
@@ -885,7 +894,7 @@ train_model_cpc <-
     GenTConfig <-
       GenTParams(path, shuffle_file_order, path_file_log, seed)
     if (is.null(preloadGeneratorpath)) {
-      GenVConfig <- GenVParams(path_val, shuffle_file_order)
+      GenVConfig <- GenVParams(path_val, shuffle_file_order, path_file_logV)
     }
     
     # train train_val_ratio via csv file
@@ -942,9 +951,11 @@ train_model_cpc <-
     ####~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Creation of generators ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~####
     cat(format(Sys.time(), "%F %R"), ": Preparing the data\n")
     ####~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Training Generator ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~####
-    fastrain <-
-      do.call(generator_fasta_lm,
-              c(GenConfig, GenTConfig, file_filter = file_filter[1]))
+    fastrain <- get_generator(maxlen = maxlen, batch_size = batch_size, step = step, proportion_per_seq = proportion_per_seq, max_samples = max_samples,
+                              path = path, shuffle_file_order = shuffle_file_order, path_file_log = path_file_log, seed = seed,
+                              file_filter = file_filter[1], train_type="lm_rds", format=format, delete_used_files = delete_used_files)
+      # do.call(get_generator,
+      #         c(GenConfig, GenTConfig, ))
     
     
     ####~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Validation Generator ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~####
@@ -952,16 +963,20 @@ train_model_cpc <-
       fasval <-
         readPLGpar(preloadGeneratorpath, batch_size, maxlen, 8, seed)
     } else{
-      fasval <-
-        do.call(
-          generator_fasta_lm,
-          c(
-            GenConfig,
-            GenVConfig,
-            seed = seed,
-            file_filter = file_filter[2]
-          )
-        )
+      fasval <- get_generator(maxlen = maxlen, batch_size = batch_size, step = step, proportion_per_seq = proportion_per_seq, max_samples = max_samples,
+                              path = path_val, shuffle_file_order = shuffle_file_order, path_file_log = path_file_logV, seed = seed,
+                              file_filter = file_filter[1], train_type="lm_rds", format=format, delete_used_files = delete_used_files)
+        # do.call(
+        #   get_generator,
+        #   c(
+        #     GenConfig,
+        #     GenVConfig,
+        #     seed = seed,
+        #     file_filter = file_filter[2], 
+        #     train_type="lm", format=format, 
+        #     delete_used_files = delete_used_files
+        #   )
+        # )
     }
     ####~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Creation of metrics ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~####
     cat(format(Sys.time(), "%F %R"), ": Preparing the metrics\n")
@@ -998,7 +1013,7 @@ train_model_cpc <-
     ########################################################################################################
     ############################################ Model creation ############################################
     ########################################################################################################
-    if (is.null(pretrained_model)) {
+
       ####~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Unsupervised Build from scratch ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~####
       cat(format(Sys.time(), "%F %R"), ": Creating the model\n")
       ## Build encoder
@@ -1017,7 +1032,7 @@ train_model_cpc <-
             batch_size = batch_size,
             steps_to_ignore = stepsmin,
             steps_to_predict = stepsmax,
-            train_type = train_type,
+            train_type = arch_type,
             k = k,
             emb_scale = emb_scale
           )
@@ -1033,12 +1048,14 @@ train_model_cpc <-
       )
       ####~~~~~~~~~~~~~~~~~~~~~~~~~~ Unsupervised Read if pretrained model given ~~~~~~~~~~~~~~~~~~~~~~~~~####
       
-    } else {
+      if (!is.null(pretrained_model)) {
       cat(format(Sys.time(), "%F %R"), ": Loading the trained model.\n")
       ## Read model
-      model <- keras::load_model_hdf5(pretrained_model, compile = F)
-      optimizer <- ReadOpt(pretrained_model)
-      optimizer$learning_rate$assign(learningrate)
+      #model <- keras::load_model_hdf5(pretrained_model, compile = F)
+        # Load the weights into the new model
+        model %>% keras::load_model_weights_hdf5(pretrained_model)
+        optimizer <- ReadOpt(pretrained_model)
+        optimizer$learning_rate$assign(learningrate)
     }
     
     ####~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Saving necessary model objects ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~####
@@ -1074,10 +1091,15 @@ train_model_cpc <-
     if (!is.null(path_tensorboard)) {
       ####~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Initialize Tensorboard writers ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~####
       logdir <- path_tensorboard
+      
+      dir.create(file.path(logdir, runname))
+      dir.create(file.path(logdir, runname, "train"))
+      dir.create(file.path(logdir, runname, "validation"))
+      
       writertrain <-
-        tensorflow::tf$summary$create_file_writer(file.path(logdir, runname, "/train"))
+        tensorflow::tf$summary$create_file_writer(file.path(logdir, runname, "train"))
       writerval <-
-        tensorflow::tf$summary$create_file_writer(file.path(logdir, runname, "/validation"))
+        tensorflow::tf$summary$create_file_writer(file.path(logdir, runname, "validation"))
       
       ####~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Write parameters to Tensorboard ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~####
       tftext <-
@@ -1124,7 +1146,7 @@ train_model_cpc <-
                 out <-
                   modelstep(fastrain(),
                             model,
-                            train_type,
+                            arch_type,
                             TRUE)
                 l <- out[1]
                 acc <- out[2]
@@ -1144,13 +1166,13 @@ train_model_cpc <-
                 out <-
                   modelstep(fasval(),
                             model,
-                            train_type,
+                            arch_type,
                             F)
               } else {
                 out <-
                   modelstep(fasval$gen(),
                             model,
-                            train_type,
+                            arch_type,
                             F)
               }
               l <- out[1]
@@ -1163,6 +1185,33 @@ train_model_cpc <-
             ## Print status of epoch
             if (b %in% seq(0, batches, by = batches / 10)) {
               cat("-")
+              # Specify the path to the folder containing the H5 file
+              folder_path <- file.path(path_checkpoint, runname)
+              
+              # List all files in the folder with the .h5 extension
+              h5_files <-
+                list.files(folder_path, pattern = "\\.h5$", full.names = TRUE)
+              
+              # Check if there are any H5 files in the folder
+              if (length(h5_files) > 0) {
+                # Get the last modification time of the most recent H5 file
+                last_modification_time <-
+                  file.info(h5_files)$mtime
+                
+                # Calculate the time difference in hours
+                time_difference_hours <-
+                  as.numeric(difftime(Sys.time(), last_modification_time, units = "hours"))
+                
+                # Check if the time difference is greater than 2 hours
+                if (min(time_difference_hours) > 2) {
+                  savechecks("backup_time",
+                             runname,
+                             model,
+                             optimizer,
+                             history,
+                             path_checkpoint)
+                }
+              }
             }
           }
           
@@ -1190,6 +1239,7 @@ train_model_cpc <-
               })
             }
             # Print epoch result metric values to console
+            cat(format(Sys.time(), "%F %R"), ": Training Step Done\n")
             tensorflow::tf$print(" Train Loss",
                                  train_loss$result(),
                                  ", Train Acc",
@@ -1214,6 +1264,7 @@ train_model_cpc <-
             }
             
             # Print epoch result metric values to console
+            cat(format(Sys.time(), "%F %R"), ": Validation Step Done\n")
             tensorflow::tf$print(" Validation Loss",
                                  val_loss$result(),
                                  ", Validation Acc",
@@ -1262,11 +1313,11 @@ train_model_cpc <-
       ## Save checkpoints
       # best model (smallest loss)
       if (eploss[[i]] == min(unlist(eploss))) {
-        savechecks("best", runname, model, optimizer, history)
+        savechecks("best", runname, model, optimizer, history, path_checkpoint)
       }
-      # backup model every 10 epochs
+      # backup model every 2 (initally 10) epochs
       if (i %% 2 == 0) {
-        savechecks("backup", runname, model, optimizer, history)
+        savechecks("backup", runname, model, optimizer, history, path_checkpoint)
       }
     }
     
@@ -1274,7 +1325,7 @@ train_model_cpc <-
     ############################################# Final saves ##############################################
     ########################################################################################################
     
-    savechecks(cp = "FINAL", runname, model, optimizer, history)
+    savechecks(cp = "FINAL", runname, model, optimizer, history, path_checkpoint)
     if (!is.null(path_tensorboard)) {
       writegraph <-
         tensorflow::tf$keras$callbacks$TensorBoard(file.path(logdir, runname))
