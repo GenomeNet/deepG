@@ -606,9 +606,9 @@ generator_fasta_label_header_csv <- function(path_corpus,
     
     .GlobalEnv$.Random.seed <- rngstate
     on.exit(rngstate <<- .GlobalEnv$.Random.seed)
-    iter <- 1
     # loop until enough samples collected
     while(num_samples < batch_size) {
+      iter <- 1
       # loop through sub-sequences/files until sequence of suitable length is found
       while((start_index > length(start_indices)) | length(start_indices) == 0) {
         
@@ -1344,6 +1344,7 @@ generator_fasta_label_folder <- function(path_corpus,
     
     # loop until enough samples collected
     while(num_samples < batch_size) {
+      iter <- 1
       
       # loop through sub-sequences/files until sequence of suitable length is found
       while((start_index > length(start_indices)) | length(start_indices) == 0) {
@@ -1360,8 +1361,12 @@ generator_fasta_label_folder <- function(path_corpus,
           file_index <<- 1
         }
         
-        # skip empty files
         while(TRUE) {
+          # log file
+          if (!is.null(path_file_log)) {
+            write.table(x = cbind(fasta.files[file_index], as.character(Sys.time())), file = path_file_log, append = TRUE, col.names = FALSE, row.names = FALSE)
+          }
+          
           fasta.file <- read_fasta_fastq(format = format, skip_amb_nuc =  skip_amb_nuc, file_index = file_index, pattern = pattern,
                                          shuffle_input = shuffle_input, proportion_entries = proportion_entries,
                                          reverse_complement = reverse_complement, fasta.files = fasta.files)
@@ -1438,9 +1443,9 @@ generator_fasta_label_folder <- function(path_corpus,
         length_vector <- nchar(seq_vector)
         
         # log file
-        if (!is.null(path_file_log)) {
-          write.table(x = fasta.files[file_index], file = path_file_log, append = TRUE, col.names = FALSE, row.names = FALSE)
-        }
+        # if (!is.null(path_file_log)) {
+        #   write.table(x = fasta.files[file_index], file = path_file_log, append = TRUE, col.names = FALSE, row.names = FALSE)
+        # }
         
         # pad short sequences with zeros or discard
         short_seq_index <<- which(length_vector < maxlen)
@@ -2486,35 +2491,35 @@ generator_rds <- function(rds_folder, batch_size, path_file_log = NULL,
 #' @param number_target_nt Number of target nucleotides for language model.
 #' @export
 generator_random <- function(
-  train_type = "label_folder",
-  output_format = NULL,
-  seed = 123,
-  format = "fasta",
-  reverse_complement = TRUE,
-  path = NULL,
-  batch_size = c(100),
-  maxlen = 4,
-  ambiguous_nuc = "equal",
-  padding = FALSE,
-  vocabulary = c("a", "c", "g", "t"),
-  number_target_nt = 1,
-  n_gram = NULL,
-  n_gram_stride = NULL,
-  sample_by_file_size = TRUE,
-  max_samples = 1,
-  skip_amb_nuc = NULL,
-  vocabulary_label = NULL,
-  target_from_csv = NULL,
-  target_split = NULL,
-  max_iter = 1000,
-  verbose = TRUE,
-  set_learning = NULL,
-  shuffle_input = TRUE,
-  reverse_complement_encoding = FALSE,
-  proportion_entries = NULL,
-  masked_lm = NULL,
-  concat_seq = NULL,
-  return_int = FALSE) {
+    train_type = "label_folder",
+    output_format = NULL,
+    seed = 123,
+    format = "fasta",
+    reverse_complement = TRUE,
+    path = NULL,
+    batch_size = c(100),
+    maxlen = 4,
+    ambiguous_nuc = "equal",
+    padding = FALSE,
+    vocabulary = c("a", "c", "g", "t"),
+    number_target_nt = 1,
+    n_gram = NULL,
+    n_gram_stride = NULL,
+    sample_by_file_size = TRUE,
+    max_samples = 1,
+    skip_amb_nuc = NULL,
+    vocabulary_label = NULL,
+    target_from_csv = NULL,
+    target_split = NULL,
+    max_iter = 1000,
+    verbose = TRUE,
+    set_learning = NULL,
+    shuffle_input = TRUE,
+    reverse_complement_encoding = FALSE,
+    proportion_entries = NULL,
+    masked_lm = NULL,
+    concat_seq = NULL,
+    return_int = FALSE) {
   
   path_len <- ifelse(train_type != "label_folder", 1, length(path))
   vocabulary <- stringr::str_to_lower(vocabulary)
