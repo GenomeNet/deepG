@@ -2969,6 +2969,10 @@ get_generator <- function(path = NULL,
     if (!is.null(add_noise)) stop("add_noise not implemented for random sampling")
   }
   
+  if (train_type %in% c("label_rds", "lm_rds") & format != "rds") {
+    warning(paste("train_type is", train_type, "but format is not 'rds'"))
+  }
+  
   # adjust batch size
   if ((length(batch_size) == 1) && (batch_size %% length(path) != 0) & train_type == "label_folder") {
     batch_size <- ceiling(batch_size/length(path)) * length(path)
