@@ -143,7 +143,7 @@ ReadOpt <- function(pretrained_model) {
       sub("/[^/]+$", "", pretrained_model),
       "/",
       tail(stringr::str_remove(
-        strsplit(pretrained_model, "/")[[1]], "mod.h5"
+        strsplit(pretrained_model, "/")[[1]], "weights.h5"
       ), 1),
       "opt.npy",
       sep = ""

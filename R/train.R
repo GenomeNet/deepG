@@ -868,7 +868,7 @@ train_model_cpc <-
     
     ####~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Path definition ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~####
     # Check if 'a' matches the desired format, already has a datetime
-    if (grepl("_(\\d{6}_\\d{6})$", run_name)) {
+    if (grepl("^SG_\\d{3}/\\d{6}_\\d{6}$", run_name)) {
       runname <- run_name
     } else {
       runname <-
@@ -1016,12 +1016,16 @@ train_model_cpc <-
 
       ####~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Unsupervised Build from scratch ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~####
       cat(format(Sys.time(), "%F %R"), ": Creating the model\n")
-      ## Build encoder
+      ## Build encoder 
+    if (arch_type == "CPC") {
       enc <-
         encoder(maxlen = maxlen,
                 patchlen = patchlen,
                 nopatches = nopatches)
-      
+    } else {
+      enc <-
+        encoder(maxlen = maxlen)
+    }
       ## Build model
       model <-
         keras::keras_model(
