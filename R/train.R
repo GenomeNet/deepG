@@ -1058,7 +1058,7 @@ train_model_cpc <-
       #model <- keras::load_model_hdf5(pretrained_model, compile = F)
         # Load the weights into the new model
         model %>% keras::load_model_weights_hdf5(pretrained_model)
-        optimizer <- ReadOpt(pretrained_model)
+        optimizer <- ReadOpt(pretrained_model, model)
         optimizer$learning_rate$assign(learningrate)
     }
     
@@ -1214,6 +1214,7 @@ train_model_cpc <-
                              optimizer,
                              history,
                              path_checkpoint)
+                  
                 }
               }
             }

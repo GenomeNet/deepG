@@ -63,6 +63,7 @@ savechecks <- function(cp, runname, model, optimizer, history, path_checkpoint) 
   )
   ## save history object
   saveRDS(history, paste0(modpath, "history_temp.rds"))
+  #saveRDS(epoch, paste0(modpath, "epoch", epoch, ".rds"))
   file.rename(paste0(modpath, "history_temp.rds"),
               paste0(modpath, "history.rds"))
   ## print when finished
@@ -119,7 +120,7 @@ modelstep <-
 #'
 #'@param pretrained_model The path to a saved keras model.
 #' @keywords internal
-ReadOpt <- function(pretrained_model) {
+ReadOpt <- function(pretrained_model, model) {
   np = import("numpy", convert = F)
   ## Read configuration
   optconf <-
@@ -130,11 +131,9 @@ ReadOpt <- function(pretrained_model) {
   optimizer <- tensorflow::tf$optimizers$Adam$from_config(optconf)
   # Initialize optimizer
   with(
-    backend()$name_scope(optimizer$`_name`),
+    tensorflow::tf$python$framework$ops$name_scope_v2(optimizer$`_name`),
     with(tensorflow::tf$python$framework$ops$init_scope(), {
-      optimizer$iterations
-      optimizer$`_create_hypers`()
-      optimizer$`_create_slots`(pretrained_model$trainable_weights)
+      optimizer$`_create_all_weights`(model$trainable_weights)
     })
   )
   # Read optimizer weights
