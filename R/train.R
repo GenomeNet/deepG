@@ -949,7 +949,7 @@ train_model_cpc <-
     }
     
     ####~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Creation of generators ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~####
-    cat(format(Sys.time(), "%F %R"), ": Preparing the data\n")
+    cat(format(Sys.time(), "%F %T"), ": Preparing the data\n")
     ####~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Training Generator ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~####
     fastrain <- get_generator(maxlen = maxlen, batch_size = batch_size, step = step, proportion_per_seq = proportion_per_seq, max_samples = max_samples,
                               path = path, shuffle_file_order = shuffle_file_order, path_file_log = path_file_log, seed = seed,
@@ -979,7 +979,7 @@ train_model_cpc <-
         # )
     }
     ####~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Creation of metrics ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~####
-    cat(format(Sys.time(), "%F %R"), ": Preparing the metrics\n")
+    cat(format(Sys.time(), "%F %T"), ": Preparing the metrics\n")
     train_loss <- tensorflow::tf$keras$metrics$Mean(name = 'train_loss')
     val_loss <- tensorflow::tf$keras$metrics$Mean(name = 'val_loss')
     train_acc <- tensorflow::tf$keras$metrics$Mean(name = 'train_acc')
@@ -1015,7 +1015,7 @@ train_model_cpc <-
     ########################################################################################################
 
       ####~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Unsupervised Build from scratch ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~####
-      cat(format(Sys.time(), "%F %R"), ": Creating the model\n")
+      cat(format(Sys.time(), "%F %T"), ": Creating the model\n")
       ## Build encoder 
     if (arch_type == "CPC") {
       enc <-
@@ -1053,7 +1053,7 @@ train_model_cpc <-
       ####~~~~~~~~~~~~~~~~~~~~~~~~~~ Unsupervised Read if pretrained model given ~~~~~~~~~~~~~~~~~~~~~~~~~####
       
       if (!is.null(pretrained_model)) {
-      cat(format(Sys.time(), "%F %R"), ": Loading the trained model.\n")
+      cat(format(Sys.time(), "%F %T"), ": Loading the trained model.\n")
       ## Read model
       #model <- keras::load_model_hdf5(pretrained_model, compile = F)
         # Load the weights into the new model
@@ -1213,7 +1213,8 @@ train_model_cpc <-
                              model,
                              optimizer,
                              history,
-                             path_checkpoint)
+                             path_checkpoint, 
+                             i)
                   
                 }
               }
@@ -1244,11 +1245,11 @@ train_model_cpc <-
               })
             }
             # Print epoch result metric values to console
-            cat(format(Sys.time(), "%F %R"), ": Training Step Done\n")
             tensorflow::tf$print(" Train Loss",
                                  train_loss$result(),
                                  ", Train Acc",
                                  train_acc$result())
+            cat(format(Sys.time(), "%F %T"), ": Training Step Done\n")
             
             # Save epoch result metric values to history object
             .GlobalEnv$history$params$epochs <- epoch
@@ -1269,11 +1270,11 @@ train_model_cpc <-
             }
             
             # Print epoch result metric values to console
-            cat(format(Sys.time(), "%F %R"), ": Validation Step Done\n")
             tensorflow::tf$print(" Validation Loss",
                                  val_loss$result(),
                                  ", Validation Acc",
                                  val_acc$result())
+            cat(format(Sys.time(), "%F %T"), ": Validation Step Done\n")
             
             # save results globally for best model saving condition
             if (b == max(seq(batches))) {
@@ -1306,11 +1307,11 @@ train_model_cpc <-
     .GlobalEnv$eploss <- list()
     .GlobalEnv$epacc <- list()
     
-    cat(format(Sys.time(), "%F %R"), ": Starting Training\n")
+    cat(format(Sys.time(), "%F %T"), ": Starting Training\n")
     
     ## Training loop
     for (i in seq(initial_epoch, (epochs + initial_epoch - 1))) {
-      cat(format(Sys.time(), "%F %R"), ": EPOCH", i, " \n")
+      cat(format(Sys.time(), "%F %T"), ": EPOCH", i, " \n")
       
       ## Epoch loop
       train_val_loop(epoch = i, train_val_ratio = train_val_ratio)
@@ -1318,11 +1319,11 @@ train_model_cpc <-
       ## Save checkpoints
       # best model (smallest loss)
       if (eploss[[i]] == min(unlist(eploss))) {
-        savechecks("best", runname, model, optimizer, history, path_checkpoint)
+        savechecks("best", runname, model, optimizer, history, path_checkpoint, i)
       }
       # backup model every 2 (initally 10) epochs
       if (i %% 2 == 0) {
-        savechecks("backup", runname, model, optimizer, history, path_checkpoint)
+        savechecks("backup", runname, model, optimizer, history, path_checkpoint, i)
       }
     }
     
@@ -1330,7 +1331,7 @@ train_model_cpc <-
     ############################################# Final saves ##############################################
     ########################################################################################################
     
-    savechecks(cp = "FINAL", runname, model, optimizer, history, path_checkpoint)
+    savechecks(cp = "FINAL", runname, model, optimizer, history, path_checkpoint, i)
     if (!is.null(path_tensorboard)) {
       writegraph <-
         tensorflow::tf$keras$callbacks$TensorBoard(file.path(logdir, runname))

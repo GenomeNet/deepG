@@ -41,7 +41,7 @@ maxlencalc <- function(plen, nopatches, stride) {
 #'@param optimizer A keras optimizer.
 #'@param history A keras history object.
 #' @keywords internal
-savechecks <- function(cp, runname, model, optimizer, history, path_checkpoint) {
+savechecks <- function(cp, runname, model, optimizer, history, path_checkpoint, epoch) {
   np = import("numpy", convert = F)
   ## define path for saved objects
   modpath <-
@@ -66,6 +66,8 @@ savechecks <- function(cp, runname, model, optimizer, history, path_checkpoint) 
   #saveRDS(epoch, paste0(modpath, "epoch", epoch, ".rds"))
   file.rename(paste0(modpath, "history_temp.rds"),
               paste0(modpath, "history.rds"))
+  saveRDS(epoch, paste0(modpath, 
+                        "epoch.rds"))
   ## print when finished
   cat(paste0("---------- New ", cp, " model saved\n"))
 }
