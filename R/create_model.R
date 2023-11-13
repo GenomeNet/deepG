@@ -3069,7 +3069,7 @@ create_model_twin_network <- function(
   if (compile) {
     model %>% keras::compile(loss = loss_cl(margin=margin),
                              optimizer = set_optimizer(solver, learning_rate),
-                             metrics="accuracy")
+                             metrics="acc")
   }
   
   if (verbose) print(model)
