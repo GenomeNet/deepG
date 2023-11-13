@@ -2400,7 +2400,8 @@ load_cp <- function(cp_path, cp_filter = "last_ep", ep_index = NULL, compile = F
   custom_objects <- list(
     "layer_pos_embedding" = layer_pos_embedding_wrapper(load_r6 = TRUE),
     "layer_pos_sinusoid" = layer_pos_sinusoid_wrapper(load_r6 = TRUE),
-    "layer_transformer_block" = layer_transformer_block_wrapper(load_r6 = TRUE)
+    "layer_transformer_block" = layer_transformer_block_wrapper(load_r6 = TRUE),
+    "layer_euc_dist" = layer_euc_dist_wrapper(load_r6 = TRUE)
   )
   
   if (!is.null(cp_filter)) {
@@ -2960,6 +2961,34 @@ get_layer_names <- function(model) {
   layer_names
 } 
 
+layer_euc_dist_wrapper <- function(load_r6 = FALSE) {
+  
+  layer_euc_dist <- keras::new_layer_class(
+    "layer_euc_dist",
+    
+    initialize = function(...) {
+      super$initialize(...)
+    },
+    
+    call = function(inputs) {
+      euclidean_distance(vects=inputs)
+    },
+    
+    get_config = function() {
+      config <- super$get_config()
+      config
+    }
+  )
+  
+  if (load_r6) {
+    return(layer_euc_dist)
+  } else {
+    return(layer_euc_dist())
+  }
+  
+}
+
+
 #' @title Create twin network with contrastive loss
 #'
 #' @description Twin network can be trained to maximize the distance
@@ -3061,7 +3090,8 @@ create_model_twin_network <- function(
   tower_1 <- input_1 %>% model_base
   tower_2 <- input_2 %>% model_base
   
-  outputs <- keras::layer_lambda(list(tower_1, tower_2), euclidean_distance)
+  euc_dist <- layer_euc_dist_wrapper(load_r6 = FALSE)
+  outputs <- euc_dist(list(tower_1, tower_2))
   outputs <- outputs %>% keras::layer_batch_normalization(momentum = batch_norm_momentum)
   outputs <- outputs %>% keras::layer_dense(units = 1, activation = "sigmoid")
   model <- keras::keras_model(inputs = list(input_1, input_2), outputs = outputs)
