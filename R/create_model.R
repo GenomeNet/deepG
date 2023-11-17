@@ -2735,7 +2735,7 @@ layer_transformer_block_wrapper <- function(num_heads = 2, head_size = 4, dropou
 #' @param dropout_dense Dropout for dense layers.
 #' @param flatten_method How to process output of last attention block. Can be `"gap_channels_last"`, `"gap_channels_first"`, `"none"`,
 #' or `"flatten"`. If `"gap_channels_last"` or `"gap_channels_first"`, will apply global average pooling. If `"flatten"`, will flatten 
-#' output after last attention block. If `"none"` no flatting applied.
+#' output after last attention block. If `"none"` no flattening applied.
 #' @examples 
 #' 
 #' model <- create_model_transformer(maxlen = 50,

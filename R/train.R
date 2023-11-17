@@ -361,7 +361,7 @@ train_model <- function(model = NULL,
   argumentList <- as.list(match.call(expand.dots=FALSE))
   #argumentList <- c(as.list(environment()), list(...)) log default args too
   argumentList <- argumentList[names(argumentList) != ""]
-  
+
   # extract maxlen from model
   if (is.null(maxlen)) {
     maxlen <- get_maxlen(model, set_learning, target_middle, read_data)
