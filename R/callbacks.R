@@ -35,19 +35,19 @@ model_card_cb <- function(model_card_path = NULL, run_name, argumentList) {
                                                     }
                                                     self$param_list$train_model_args[["model"]] <- NULL 
                                                     self$param_list$model_summary <- summary(self$model)
-                                                    self$param_list$training_start_time <- self$start_time
+                                                    self$param_list$training_start_time <- format(self$start_time, "%a %b %d %X %Y")
                                                     
                                                     gpu_info <- tensorflow::tf$config$list_physical_devices('GPU')
                                                     self$param_list$gpu_info[["number GPUs"]] <- length(gpu_info)
                                                     if (length(gpu_info) > 0) {
                                                       for (i in 1:length(gpu_info)) {
-                                                        self$param_list$gpu_info[[paste0("GPU", i)]] <- 
+                                                        self$param_list$gpu_info[[paste0("GPU", i)]] <-
                                                           tensorflow::tf$config$experimental$get_device_details(
                                                             gpu_info[[i]]
                                                           )
                                                       }
                                                     }
-                                                    
+                                                   
                                                     saveRDS(self$param_list, paste0(self$mc_dir, "/epoch_0_param_list.rds"))
                                                     
                                                   },
