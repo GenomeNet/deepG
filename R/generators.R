@@ -2268,6 +2268,7 @@ generator_rds <- function(rds_folder, batch_size, path_file_log = NULL,
   
   if (include_sw) {
     sw_complete <- rds_file[[3]]
+    sw_dim <- ifelse(is.null(sw_complete), 1, 2)
   }
   
   sample_index <- 1:x_dim_start[1]
@@ -2299,7 +2300,11 @@ generator_rds <- function(rds_folder, batch_size, path_file_log = NULL,
     }
     
     if (include_sw) {
-      sw <- array(0, c(batch_size, x_dim[2]))
+      if (sw_dim == 2) {
+        sw <- array(0, c(batch_size, x_dim[2]))
+      } else {
+        sw <- rep(0, batch_size)
+      }
     }
     
     while (x_index <= batch_size) {
@@ -2405,7 +2410,11 @@ generator_rds <- function(rds_folder, batch_size, path_file_log = NULL,
       }
       
       if (include_sw) {
-        sw[x_index:(x_index + length(index) - 1), ] <- sw_complete[index, ]
+        if (sw_dim == 2) {
+          sw[x_index:(x_index + length(index) - 1), ] <- sw_complete[index, ]
+        } else {
+          sw[x_index:(x_index + length(index) - 1)] <- sw_complete[index]
+        }
       }
       
       x_index <- x_index + length(index)
@@ -2474,7 +2483,12 @@ generator_rds <- function(rds_folder, batch_size, path_file_log = NULL,
       y <- tensorflow::tf$split(y, num_or_size_splits = size_splits_out, axis = as.integer(length(y_dim)-1))
     }
     
-    return(list(x, y))
+    if (include_sw) {
+      return(list(x, y, sw))
+    } else {
+      return(list(x, y))
+    }
+    
   }
 }
 
@@ -2490,35 +2504,35 @@ generator_rds <- function(rds_folder, batch_size, path_file_log = NULL,
 #' @param number_target_nt Number of target nucleotides for language model.
 #' @export
 generator_random <- function(
-  train_type = "label_folder",
-  output_format = NULL,
-  seed = 123,
-  format = "fasta",
-  reverse_complement = TRUE,
-  path = NULL,
-  batch_size = c(100),
-  maxlen = 4,
-  ambiguous_nuc = "equal",
-  padding = FALSE,
-  vocabulary = c("a", "c", "g", "t"),
-  number_target_nt = 1,
-  n_gram = NULL,
-  n_gram_stride = NULL,
-  sample_by_file_size = TRUE,
-  max_samples = 1,
-  skip_amb_nuc = NULL,
-  vocabulary_label = NULL,
-  target_from_csv = NULL,
-  target_split = NULL,
-  max_iter = 1000,
-  verbose = TRUE,
-  set_learning = NULL,
-  shuffle_input = TRUE,
-  reverse_complement_encoding = FALSE,
-  proportion_entries = NULL,
-  masked_lm = NULL,
-  concat_seq = NULL,
-  return_int = FALSE) {
+    train_type = "label_folder",
+    output_format = NULL,
+    seed = 123,
+    format = "fasta",
+    reverse_complement = TRUE,
+    path = NULL,
+    batch_size = c(100),
+    maxlen = 4,
+    ambiguous_nuc = "equal",
+    padding = FALSE,
+    vocabulary = c("a", "c", "g", "t"),
+    number_target_nt = 1,
+    n_gram = NULL,
+    n_gram_stride = NULL,
+    sample_by_file_size = TRUE,
+    max_samples = 1,
+    skip_amb_nuc = NULL,
+    vocabulary_label = NULL,
+    target_from_csv = NULL,
+    target_split = NULL,
+    max_iter = 1000,
+    verbose = TRUE,
+    set_learning = NULL,
+    shuffle_input = TRUE,
+    reverse_complement_encoding = FALSE,
+    proportion_entries = NULL,
+    masked_lm = NULL,
+    concat_seq = NULL,
+    return_int = FALSE) {
   
   path_len <- ifelse(train_type != "label_folder", 1, length(path))
   vocabulary <- stringr::str_to_lower(vocabulary)
