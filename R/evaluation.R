@@ -26,6 +26,7 @@
 #' to evaluate a data set exactly ones and know the number of samples already. Should be a vector if `mode = "label_folder"` (with same length as `vocabulary_label`)
 #' and else an integer.
 #' @param activations List containing output formats for output layers (`softmax, sigmoid` or `linear`). If `ǸULL`, will be estimated from model.   
+#' @param include_seq Whether to store input. Only applies if `path_pred_list` is not `NULL`.
 #' @param ... Further generator options. See \code{\link{get_generator}}.
 #' @examples
 #' # create dummy data
@@ -76,6 +77,7 @@ evaluate_model <- function(path_input,
                            exact_num_samples = NULL,
                            activations = NULL,
                            shuffle_file_order = FALSE,
+                           include_seq = FALSE,
                            ...) {
   
   set.seed(seed)
@@ -89,7 +91,9 @@ evaluate_model <- function(path_input,
   }
   eval_exact_num_samples <- !is.null(exact_num_samples) | evaluate_all_files
   if (is.null(activations)) activations <- get_output_activations(model)
-  
+  if (is.null(path_pred_list) & include_seq) {
+    stop("Can only store input, if path_pred_list is specified.")
+  }
   if (is.null(vocabulary_label)) vocabulary_label <- list(vocabulary)
   if (!is.list(vocabulary_label)) vocabulary_label <- list(vocabulary_label)
   if (mode == "label_folder") {
@@ -292,6 +296,9 @@ evaluate_model <- function(path_input,
   count <- 1
   y_conf_list <- vector("list", overall_num_batches)
   y_list <- vector("list", overall_num_batches)
+  if (include_seq) {
+    x_list <- vector("list", overall_num_batches)
+  }
   
   for (k in 1:num_classes) {
     
@@ -356,6 +363,9 @@ evaluate_model <- function(path_input,
         }
       }
       
+      if (include_seq) {
+        x_list[[count]] <- x
+      }
       y_conf_list[[count]] <- y_conf
       if (batch_size == 1 | (!is.null(index) && length(index == 1))) {
         col_num <- ncol(y_conf)
@@ -393,8 +403,18 @@ evaluate_model <- function(path_input,
   y_list <- reshape_y_list(y_list, num_out_layers = num_out_layers, tf_format = FALSE)
   
   if (!is.null(path_pred_list)) {
-    saveRDS(list(pred = y_conf_list, true = y_list), path_pred_list)
-  }
+    if (include_seq) {
+      if (is.list(x_list[[1]])) {
+        num_layers <- length(x_list[[1]])
+      } else {
+        num_layers <- 1 
+      }
+      x_list <- reshape_y_list(x_list, num_out_layers = num_layers, tf_format = FALSE)
+      saveRDS(list(pred = y_conf_list, true = y_list, x = x_list), path_pred_list)
+    } else {
+      saveRDS(list(pred = y_conf_list, true = y_list), path_pred_list)
+    }
+  } 
   
   eval_list <- list()
   for (i in 1:num_out_layers) {
