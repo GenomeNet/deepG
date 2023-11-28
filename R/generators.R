@@ -961,7 +961,7 @@ generator_fasta_label_header_csv <- function(path_corpus,
 #' \item `random_rate`: Rate of input to set to random token.
 #' \item `identity_rate`: Rate of input where sample weights are applied but input and output are identical. 
 #' \item `include_sw`: Whether to include sample weigths.  
-#' \item `block_len` (optional): Masked/random/itentity regions appear in blocks of size `block_len`.     
+#' \item `block_len` (optional): Masked/random/identity regions appear in blocks of size `block_len`.     
 #' }
 #' @export
 generator_fasta_label_folder <- function(path_corpus,
@@ -2269,6 +2269,7 @@ generator_rds <- function(rds_folder, batch_size, path_file_log = NULL,
   if (include_sw) {
     sw_complete <- rds_file[[3]]
     sw_temporal <- ifelse(dim(sw_complete)[2] == 1, FALSE, TRUE)
+    sw_dim <- dim(sw_complete)
   }
   
   sample_index <- 1:x_dim_start[1]
@@ -2300,11 +2301,7 @@ generator_rds <- function(rds_folder, batch_size, path_file_log = NULL,
     }
     
     if (include_sw) {
-      if (sw_temporal) {
-        sw <- array(0, c(batch_size, x_dim[2]))
-      } else {
-        sw <- array(0, c(batch_size, 1))
-      }
+        sw <- array(0, c(batch_size, sw_dim[2]))
     }
     
     while (x_index <= batch_size) {
