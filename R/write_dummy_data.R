@@ -34,7 +34,7 @@ create_dummy_data <- function(file_path,
   
   if (!is.null(prob)) {
     stopifnot(length(prob) == length(vocabulary))
-    stopifnot(sum(prob) == 1)
+    stopifnot(abs(1 - sum(prob)) < 1e-10)
   }
   
   if (write_to_file_path) {
