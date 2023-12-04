@@ -2419,7 +2419,7 @@ load_cp <- function(cp_path, cp_filter = "last_ep", ep_index = NULL, compile = F
   } else {
     stopifnot(file.exists(cp_path))
     cp <- cp_path
-    model <- keras::load_model_hdf5(cp, compile = FALSE, custom_objects = custom_objects)
+    model <- keras::load_model_hdf5(cp, compile = compile, custom_objects = custom_objects)
   } 
   
   if (is_directory & !is.null(cp_filter)) {
