@@ -32,6 +32,8 @@ navbar:
         href: https://colab.research.google.com/drive/1BCggL-tfQF136YeJ8cKKi-zoBEDMgkNh?usp=sharing  
       - text: "Full metagenome level: Colorectal cancer prediction" 
         href: https://colab.research.google.com/drive/10xpRzGd3JeBAbqQYSCxzQUMctt01sx9D?usp=sharing   
+      - text: "BERT with deepG"
+        href: https://colab.research.google.com/drive/1kyYK7IU7GSfdpDzO_a8U3_qD4i3zTu6w?usp=sharing  
     tutorials:
       text: Tutorials
       menu:
