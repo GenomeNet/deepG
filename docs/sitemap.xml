@@ -58,6 +58,9 @@
     <loc>https://genomenet.github.io/deepG/reference/cm_perc.html</loc>
   </url>
   <url>
+    <loc>https://genomenet.github.io/deepG/reference/compile_model.html</loc>
+  </url>
+  <url>
     <loc>https://genomenet.github.io/deepG/reference/compute_gradients.html</loc>
   </url>
   <url>
@@ -89,6 +92,9 @@
   </url>
   <url>
     <loc>https://genomenet.github.io/deepG/reference/create_model_transformer.html</loc>
+  </url>
+  <url>
+    <loc>https://genomenet.github.io/deepG/reference/create_model_twin_network.html</loc>
   </url>
   <url>
     <loc>https://genomenet.github.io/deepG/reference/create_model_wavenet.html</loc>
@@ -218,6 +224,12 @@
   </url>
   <url>
     <loc>https://genomenet.github.io/deepG/reference/interpolate_seq.html</loc>
+  </url>
+  <url>
+    <loc>https://genomenet.github.io/deepG/reference/layer_pos_embedding_wrapper.html</loc>
+  </url>
+  <url>
+    <loc>https://genomenet.github.io/deepG/reference/layer_pos_sinusoid_wrapper.html</loc>
   </url>
   <url>
     <loc>https://genomenet.github.io/deepG/reference/load_cp.html</loc>

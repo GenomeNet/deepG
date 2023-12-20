@@ -78,6 +78,9 @@
     <li>
       <a href="https://colab.research.google.com/drive/10xpRzGd3JeBAbqQYSCxzQUMctt01sx9D?usp=sharing" class="external-link">Full metagenome level: Colorectal cancer prediction</a>
     </li>
+    <li>
+      <a href="https://colab.research.google.com/drive/1kyYK7IU7GSfdpDzO_a8U3_qD4i3zTu6w?usp=sharing" class="external-link">BERT with deepG</a>
+    </li>
   </ul>
 </li>
 <li class="dropdown">
@@ -152,50 +155,64 @@ mark.out {
 <div class="section level2">
 <h2 id="introduction">Introduction<a class="anchor" aria-label="anchor" href="#introduction"></a>
 </h2>
-<p>The most common use case for the deepG data generator is to extract samples from a collection of fasta (or fastq) files. The generator will always return a list of length 2. The first element is the input <span class="math inline">\(X\)</span> and the second the target <span class="math inline">\(Y\)</span>. We can differentiate between 2 approaches</p>
+<p>The most common use case for the deepG data generator is to extract
+samples from a collection of fasta (or fastq) files. The generator will
+always return a list of length 2. The first element is the input <span class="math inline">\(X\)</span> and the second the target <span class="math inline">\(Y\)</span>. We can differentiate between 2
+approaches</p>
 <ul>
 <li>
-<strong>Language model</strong>: Part of a sequence is the input and other part the target.
+<strong>Language model</strong>: Part of a sequence is the input and
+other part the target.
 <ul>
-<li>Example: Predict the next nucleotide given the previous 100 nucleotides.</li>
+<li>Example: Predict the next nucleotide given the previous 100
+nucleotides.</li>
 </ul>
 </li>
 <li>
 <strong>Label classification</strong>: Assign a label to a sequence.
 <ul>
-<li>Example: Assign a label “virus” or “bacteria” to a sequence of length 100.</li>
+<li>Example: Assign a label “virus” or “bacteria” to a sequence of
+length 100.</li>
 </ul>
 </li>
 </ul>
-<p>Suppose we are given 2 fasta files called “a.fasta” and “b.fasta” that look as follows:</p>
+<p>Suppose we are given 2 fasta files called “a.fasta” and “b.fasta”
+that look as follows:</p>
 <div style="float: left;margin-right:10px">
 <table class="table"><tr>
 <td>
-<strong>a.fasta</strong> <br><tt> &gt;header_a1 <br> AACCAAGG <br> &gt;header_a2 <br> TTTGGG <br> &gt;header_a3 <br> ACGTACGT <br></tt>
+<strong>a.fasta</strong> <br><tt> &gt;header_a1 <br> AACCAAGG <br>
+&gt;header_a2 <br> TTTGGG <br> &gt;header_a3 <br> ACGTACGT <br></tt>
 </td>
 </tr></table>
 </div>
 <div style="float: left">
 <table class="table"><tr>
 <td>
-<strong>b.fasta</strong> <br><tt> &gt;header_b1 <br> GTGTGT <br> &gt;header_b2 <br> AAGG <br></tt>
+<strong>b.fasta</strong> <br><tt> &gt;header_b1 <br> GTGTGT <br>
+&gt;header_b2 <br> AAGG <br></tt>
 </td>
 </tr></table>
 </div>
 <p><br><br><br><br><br><br><br><br><br></p>
-<p>If we want to extract sequences of length 4 from these files, there would be 17 possible samples (5 from <tt>AACCAAGG</tt>, 3 from <tt>TTTGGG</tt>, …). A naive approach would be to extract the samples in a sequential manner:</p>
+<p>If we want to extract sequences of length 4 from these files, there
+would be 17 possible samples (5 from <tt>AACCAAGG</tt>, 3 from
+<tt>TTTGGG</tt>, …). A naive approach would be to extract the samples in
+a sequential manner:</p>
 <p><em>1. sample</em>:</p>
 <div style="float: left;margin-right:10px">
 <table class="table"><tr>
 <td>
-<strong>a.fasta</strong> <br><tt> &gt;header_a1 <br><mark class="in">AACC</mark>AAGG <br> &gt;header_a2 <br> TTTGGG <br> &gt;header_a3 <br> ACGTACGT <br></tt>
+<strong>a.fasta</strong> <br><tt> &gt;header_a1 <br><mark class="in">AACC</mark>AAGG <br> &gt;header_a2 <br> TTTGGG <br>
+&gt;header_a3 <br> ACGTACGT <br></tt>
 </td>
 </tr></table>
 </div>
 <div style="float: left">
 <table class="table"><tr>
 <td>
-<strong>b.fasta</strong> <br><tt> &gt;header_b1 <br> GTGTGT <br> &gt;header_b2 <br> AAGG <br></tt>
+<strong>b.fasta</strong> <br><tt> &gt;header_b1 <br> GTGTGT <br>
+&gt;header_b2 <br> AAGG <br></tt>
 </td>
 </tr></table>
 </div>
@@ -204,14 +221,17 @@ mark.out {
 <div style="float: left;margin-right:10px">
 <table class="table"><tr>
 <td>
-<strong>a.fasta</strong> <br><tt> &gt;header_a1 <br> A<mark class="in">ACCA</mark>AGG <br> &gt;header_a2 <br> TTTGGG <br> &gt;header_a3 <br> ACGTACGT <br></tt>
+<strong>a.fasta</strong> <br><tt> &gt;header_a1 <br>
+A<mark class="in">ACCA</mark>AGG <br> &gt;header_a2 <br> TTTGGG <br>
+&gt;header_a3 <br> ACGTACGT <br></tt>
 </td>
 </tr></table>
 </div>
 <div style="float: left">
 <table class="table"><tr>
 <td>
-<strong>b.fasta</strong> <br><tt> &gt;header_b1 <br> GTGTGT <br> &gt;header_b2 <br> AAGG <br></tt>
+<strong>b.fasta</strong> <br><tt> &gt;header_b1 <br> GTGTGT <br>
+&gt;header_b2 <br> AAGG <br></tt>
 </td>
 </tr></table>
 </div>
@@ -222,14 +242,16 @@ mark.out {
 <div style="float: left;margin-right:10px">
 <table class="table"><tr>
 <td>
-<strong>a.fasta</strong> <br><tt> &gt;header_a1 <br> AACCAAGG <br> &gt;header_a2 <br> TTTGGG <br> &gt;header_a3 <br> ACGTACGT <br></tt>
+<strong>a.fasta</strong> <br><tt> &gt;header_a1 <br> AACCAAGG <br>
+&gt;header_a2 <br> TTTGGG <br> &gt;header_a3 <br> ACGTACGT <br></tt>
 </td>
 </tr></table>
 </div>
 <div style="float: left">
 <table class="table"><tr>
 <td>
-<strong>b.fasta</strong> <br><tt> &gt;header_b1 <br> GTGTGT <br> &gt;header_b2 <br><mark class="in">AAGG</mark><br></tt>
+<strong>b.fasta</strong> <br><tt> &gt;header_b1 <br> GTGTGT <br>
+&gt;header_b2 <br><mark class="in">AAGG</mark><br></tt>
 </td>
 </tr></table>
 </div>
@@ -238,25 +260,36 @@ mark.out {
 <div style="float: left;margin-right:10px">
 <table class="table"><tr>
 <td>
-<strong>a.fasta</strong> <br><tt> &gt;header_a1 <br><mark class="in">AACC</mark>AAGG <br> &gt;header_a2 <br> TTTGGG <br> &gt;header_a3 <br> ACGTACGT <br></tt>
+<strong>a.fasta</strong> <br><tt> &gt;header_a1 <br><mark class="in">AACC</mark>AAGG <br> &gt;header_a2 <br> TTTGGG <br>
+&gt;header_a3 <br> ACGTACGT <br></tt>
 </td>
 </tr></table>
 </div>
 <div style="float: left">
 <table class="table"><tr>
 <td>
-<strong>b.fasta</strong> <br><tt> &gt;header_b1 <br> GTGTGT <br> &gt;header_b2 <br> AAGG <br></tt>
+<strong>b.fasta</strong> <br><tt> &gt;header_b1 <br> GTGTGT <br>
+&gt;header_b2 <br> AAGG <br></tt>
 </td>
 </tr></table>
 </div>
 <p><br><br><br><br><br><br><br><br><br></p>
 <p>… <br><br></p>
-<p>For longer sequences this is not a desirable strategy since the data is very redundant (often just one nucleotide difference) and the model would often see long stretches of data from the same source. Choosing the samples completely at random can also be problematic since we would constantly have to open new files. The deepG generators offers several option to navigate the data sampling strategy to achieve a good balance between the two approaches.</p>
+<p>For longer sequences this is not a desirable strategy since the data
+is very redundant (often just one nucleotide difference) and the model
+would often see long stretches of data from the same source. Choosing
+the samples completely at random can also be problematic since we would
+constantly have to open new files. The deepG generators offers several
+option to navigate the data sampling strategy to achieve a good balance
+between the two approaches.</p>
 </div>
 <div class="section level2">
 <h2 id="data-generator-options">Data generator options<a class="anchor" aria-label="anchor" href="#data-generator-options"></a>
 </h2>
-<p>In the following code examples, we will mostly use the sequence <tt> <strong>abcdefghiiii</strong> </tt> to demonstrate some of the deepG data generator options. (In real world application you would usually have sequences from the <tt>ACGT</tt> vocabulary.)</p>
+<p>In the following code examples, we will mostly use the sequence <tt>
+<strong>abcdefghiiii</strong> </tt> to demonstrate some of the deepG
+data generator options. (In real world application you would usually
+have sequences from the <tt>ACGT</tt> vocabulary.)</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">sequence</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste0</a></span><span class="op">(</span><span class="st">"a"</span>, <span class="st">"b"</span>, <span class="st">"c"</span>, <span class="st">"d"</span>, <span class="st">"e"</span>, <span class="st">"f"</span>, <span class="st">"g"</span>, <span class="st">"h"</span>, <span class="st">"i"</span>, <span class="st">"i"</span>, <span class="st">"i"</span>, <span class="st">"i"</span><span class="op">)</span></span>
 <span><span class="va">vocabulary</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"a"</span>, <span class="st">"b"</span>, <span class="st">"c"</span>, <span class="st">"d"</span>, <span class="st">"e"</span>, <span class="st">"f"</span>, <span class="st">"g"</span>, <span class="st">"h"</span>, <span class="st">"i"</span><span class="op">)</span>  </span></code></pre></div>
@@ -270,7 +303,12 @@ mark.out {
 <span><span class="va">file_path</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/file.path.html" class="external-link">file.path</a></span><span class="op">(</span><span class="va">dir_path</span>, <span class="st">"a.fasta"</span><span class="op">)</span></span>
 <span><span class="co"># sequence as fasta file</span></span>
 <span><span class="fu">microseq</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/microseq/man/readFasta.html" class="external-link">writeFasta</a></span><span class="op">(</span>fdta <span class="op">=</span> <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://tibble.tidyverse.org/reference/as_tibble.html" class="external-link">as_tibble</a></span><span class="op">(</span><span class="va">df</span><span class="op">)</span>, out.file <span class="op">=</span> <span class="va">file_path</span><span class="op">)</span></span></code></pre></div>
-<p>Since neural networks can only work with numeric data, we have to encode sequences of characters with numeric data. Usually this is achieved by one-hot-encoding; there are some other approaches implemented: see <code>use_coverage</code>, <code>use_quality_score</code> and <code>ambiguous_nuc</code> sections.</p>
+<p>Since neural networks can only work with numeric data, we have to
+encode sequences of characters with numeric data. Usually this is
+achieved by one-hot-encoding; there are some other approaches
+implemented: see <code>use_coverage</code>,
+<code>use_quality_score</code> and <code>ambiguous_nuc</code>
+sections.</p>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># one-hot encoding example</span></span>
 <span><span class="va">s</span> <span class="op">&lt;-</span>  <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"a"</span>, <span class="st">"c"</span>, <span class="st">"a"</span>, <span class="st">"f"</span>, <span class="st">"i"</span>, <span class="st">"b"</span><span class="op">)</span></span>
@@ -296,24 +334,41 @@ mark.out {
 <div class="section level3">
 <h3 id="vocabulary">vocabulary<a class="anchor" aria-label="anchor" href="#vocabulary"></a>
 </h3>
-<p>The set of allowed characters in a sequence. What happens to characters outside the vocabulary can be controlled with the <code>ambiguous_nuc</code> argument.</p>
+<p>The set of allowed characters in a sequence. What happens to
+characters outside the vocabulary can be controlled with the
+<code>ambiguous_nuc</code> argument.</p>
 </div>
 <div class="section level3">
 <h3 id="train_type">train_type<a class="anchor" aria-label="anchor" href="#train_type"></a>
 </h3>
-<p>The generator will always return a list of length 2. The first element is the input <span class="math inline">\(X\)</span> and the second the target <span class="math inline">\(Y\)</span>. The <code>train_type</code> argument determines how <span class="math inline">\(X\)</span> and <span class="math inline">\(Y\)</span> get extracted. Possible arguments for <u> <em>language models</em> </u> are:</p>
+<p>The generator will always return a list of length 2. The first
+element is the input <span class="math inline">\(X\)</span> and the
+second the target <span class="math inline">\(Y\)</span>. The
+<code>train_type</code> argument determines how <span class="math inline">\(X\)</span> and <span class="math inline">\(Y\)</span> get extracted. Possible arguments for
+<u> <em>language models</em> </u> are:</p>
 <ul>
 <li>
-<strong>“lm”</strong> or <strong>“lm_rds”</strong>: Given some sequence <span class="math inline">\(s\)</span>, we take some subset of that sequence as input and the rest as target. How to split <span class="math inline">\(s\)</span> can be specified in <code>output_format</code> argument.</li>
+<strong>“lm”</strong> or <strong>“lm_rds”</strong>: Given some
+sequence <span class="math inline">\(s\)</span>, we take some subset of
+that sequence as input and the rest as target. How to split <span class="math inline">\(s\)</span> can be specified in
+<code>output_format</code> argument.</li>
 </ul>
-<p>Besides the language model approach, we can use <u> <em>label classification</em> </u>. This means we map some label to a sequence. For example, the target for some nucleotide sequence could be one of the labels “bacteria” or “virus”. We have to specify how to extract a label corresponding to a sequence. Possible arguments are:</p>
+<p>Besides the language model approach, we can use <u> <em>label
+classification</em> </u>. This means we map some label to a sequence.
+For example, the target for some nucleotide sequence could be one of the
+labels “bacteria” or “virus”. We have to specify how to extract a label
+corresponding to a sequence. Possible arguments are:</p>
 <ul>
+<li><p><strong>“label_header”</strong>: get label from fasta
+headers.</p></li>
+<li><p><strong>“label_folder”</strong>: get label from folder, i.e. all
+files in one folder must belong to the same class.</p></li>
 <li>
-<strong>“label_header”</strong>: get label from fasta headers.</li>
-<li>
-<strong>“label_folder”</strong>: get label from folder, i.e. all files in one folder must belong to the same class.</li>
-<li>
-<p><strong>“label_csv”</strong>: get label from csv file. Csv file should have one column named “file”. The targets then correspond to entries in that row (except “file” column). Example: if we are currently working with a file called “a.fasta”, there should be a row in our csv file with some target information for that file <br></p>
+<p><strong>“label_csv”</strong>: get label from csv file. Csv file
+should have one column named “file”. The targets then correspond to
+entries in that row (except “file” column). Example: if we are currently
+working with a file called “a.fasta”, there should be a row in our csv
+file with some target information for that file <br></p>
 <table class="table">
 <thead><tr class="header">
 <th>file</th>
@@ -327,10 +382,13 @@ mark.out {
 </tr></tbody>
 </table>
 </li>
-<li><p><strong>“label_rds”</strong>: rds file contains preprocessed list of input and target tensors.</p></li>
+<li><p><strong>“label_rds”</strong>: rds file contains preprocessed list
+of input and target tensors.</p></li>
 </ul>
-<p>Another option is <strong>“dummy_gen”</strong>: generator creates random data once and repeatedly returns them.</p>
-<p>Extract target from fasta header (fasta header is “label_1” in example file):</p>
+<p>Another option is <strong>“dummy_gen”</strong>: generator creates
+random data once and repeatedly returns them.</p>
+<p>Extract target from fasta header (fasta header is “label_1” in
+example file):</p>
 <div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># get target from header</span></span>
 <span><span class="va">vocabulary_label</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste0</a></span><span class="op">(</span><span class="st">"label_"</span>, <span class="fl">1</span><span class="op">:</span><span class="fl">5</span><span class="op">)</span></span>
@@ -460,11 +518,20 @@ mark.out {
 <div class="section level3">
 <h3 id="output_format">output_format<a class="anchor" aria-label="anchor" href="#output_format"></a>
 </h3>
-<p>The <code>output_format</code> determines the shape of the output for a language model, i.e. part of a sequence is the input <span class="math inline">\(X\)</span> and another the target <span class="math inline">\(Y\)</span>. Assume a sequence <tt>abcdefg</tt> and <code>maxlen = 6</code>. Output correspond as follows</p>
+<p>The <code>output_format</code> determines the shape of the output for
+a language model, i.e. part of a sequence is the input <span class="math inline">\(X\)</span> and another the target <span class="math inline">\(Y\)</span>. Assume a sequence <tt>abcdefg</tt> and
+<code>maxlen = 6</code>. Output correspond as follows</p>
 <p><strong>“target_right”</strong>: <span class="math inline">\(X=\)</span> <tt>abcdef</tt>, <span class="math inline">\(Y=\)</span> <tt>g</tt></p>
-<p><strong>“target_middle_lstm”</strong>: <span class="math inline">\(X =\)</span> (<span class="math inline">\(X_1 =\)</span> <tt>abc</tt>, <span class="math inline">\(X_2 =\)</span> <tt>gfe</tt>), <span class="math inline">\(Y=\)</span> <tt>d</tt> (note reversed order of <span class="math inline">\(X_2\)</span>)</p>
-<p><strong>“target_middle_cnn”</strong>: <span class="math inline">\(X =\)</span> <tt>abcefg</tt>, <span class="math inline">\(Y =\)</span> <tt>d</tt></p>
-<p><strong>“wavenet”</strong>: <span class="math inline">\(X =\)</span> <tt>abcdef</tt>, <span class="math inline">\(Y =\)</span> <tt>bcdefg</tt></p>
+<p><strong>“target_middle_lstm”</strong>: <span class="math inline">\(X
+=\)</span> (<span class="math inline">\(X_1 =\)</span> <tt>abc</tt>,
+<span class="math inline">\(X_2 =\)</span> <tt>gfe</tt>), <span class="math inline">\(Y=\)</span> <tt>d</tt> (note reversed order of
+<span class="math inline">\(X_2\)</span>)</p>
+<p><strong>“target_middle_cnn”</strong>: <span class="math inline">\(X
+=\)</span> <tt>abcefg</tt>, <span class="math inline">\(Y =\)</span>
+<tt>d</tt></p>
+<p><strong>“wavenet”</strong>: <span class="math inline">\(X =\)</span>
+<tt>abcdef</tt>, <span class="math inline">\(Y =\)</span>
+<tt>bcdefg</tt></p>
 <div class="sourceCode" id="cb22"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># target_right</span></span>
 <span><span class="va">gen</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/get_generator.html">get_generator</a></span><span class="op">(</span>path <span class="op">=</span> <span class="va">file_path</span>,</span>
@@ -605,17 +672,28 @@ mark.out {
 <div class="section level3">
 <h3 id="step">step<a class="anchor" aria-label="anchor" href="#step"></a>
 </h3>
-<p>We may determine how frequently we want to take a sample. If <code>step = 1</code> we take a sample at every possible step. Let’s assume we want to predict the next character, i.e. part of the sequence is the <mark class="in">input</mark> and next character the <mark class="out">target</mark>. If <code>maxlen = 3, step = 1</code>:</p>
+<p>We may determine how frequently we want to take a sample. If
+<code>step = 1</code> we take a sample at every possible step. Let’s
+assume we want to predict the next character, i.e. part of the sequence
+is the <mark class="in">input</mark> and next character the
+<mark class="out">target</mark>. If
+<code>maxlen = 3, step = 1</code>:</p>
 <ol style="list-style-type: decimal">
-<li><p>sample: <tt><mark class="in">abc</mark><mark class="out">d</mark>efghiiii</tt></p></li>
-<li><p>sample: <tt>a<mark class="in">bcd</mark><mark class="out">e</mark>fghiiii</tt></p></li>
-<li><p>sample: <tt>ab<mark class="in">cde</mark><mark class="out">f</mark>ghiiii</tt></p></li>
+<li><p>sample:
+<tt><mark class="in">abc</mark><mark class="out">d</mark>efghiiii</tt></p></li>
+<li><p>sample:
+<tt>a<mark class="in">bcd</mark><mark class="out">e</mark>fghiiii</tt></p></li>
+<li><p>sample:
+<tt>ab<mark class="in">cde</mark><mark class="out">f</mark>ghiiii</tt></p></li>
 </ol>
 <p>if <code>step = 3</code></p>
 <ol style="list-style-type: decimal">
-<li><p>sample: <tt><mark class="in">abc</mark><mark class="out">d</mark>efghiiii</tt></p></li>
-<li><p>sample: <tt>abc<mark class="in">def</mark><mark class="out">g</mark>hiiii</tt></p></li>
-<li><p>sample: <tt>abcdef<mark class="in">ghi</mark><mark class="out">i</mark>ii</tt></p></li>
+<li><p>sample:
+<tt><mark class="in">abc</mark><mark class="out">d</mark>efghiiii</tt></p></li>
+<li><p>sample:
+<tt>abc<mark class="in">def</mark><mark class="out">g</mark>hiiii</tt></p></li>
+<li><p>sample:
+<tt>abcdef<mark class="in">ghi</mark><mark class="out">i</mark>ii</tt></p></li>
 </ol>
 <div class="sourceCode" id="cb44"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">gen</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/get_generator.html">get_generator</a></span><span class="op">(</span>path <span class="op">=</span> <span class="va">file_path</span>,</span>
@@ -660,7 +738,10 @@ mark.out {
 <div class="section level3">
 <h3 id="padding">padding<a class="anchor" aria-label="anchor" href="#padding"></a>
 </h3>
-<p>If the sequence is too short to create a single sample, we can pad the sequence with zero-vectors. If <code>padding = FALSE</code> the generator will go to next file/ fasta entry until it finds a sequence long enough for a sample.</p>
+<p>If the sequence is too short to create a single sample, we can pad
+the sequence with zero-vectors. If <code>padding = FALSE</code> the
+generator will go to next file/ fasta entry until it finds a sequence
+long enough for a sample.</p>
 <div class="sourceCode" id="cb52"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">gen</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/get_generator.html">get_generator</a></span><span class="op">(</span>path <span class="op">=</span> <span class="va">file_path</span>,</span>
 <span>                     train_type <span class="op">=</span> <span class="st">"lm"</span>,</span>
@@ -701,7 +782,9 @@ mark.out {
 <div class="section level3">
 <h3 id="ambiguous_nuc">ambiguous_nuc<a class="anchor" aria-label="anchor" href="#ambiguous_nuc"></a>
 </h3>
-<p>A sequence might contain a character that does not lie inside our vocabulary. For example, let’s assume we discard <tt>e</tt> from our vocabulary. We have 4 options to handle this situation</p>
+<p>A sequence might contain a character that does not lie inside our
+vocabulary. For example, let’s assume we discard <tt>e</tt> from our
+vocabulary. We have 4 options to handle this situation</p>
 <ol style="list-style-type: decimal">
 <li>encode as zero vector</li>
 </ol>
@@ -810,7 +893,8 @@ mark.out {
 <div class="section level3">
 <h3 id="proportion_per_seq">proportion_per_seq<a class="anchor" aria-label="anchor" href="#proportion_per_seq"></a>
 </h3>
-<p>The <code>proportion_per_seq</code> argument gives the option to use a random subset instead of the full sequence.</p>
+<p>The <code>proportion_per_seq</code> argument gives the option to use
+a random subset instead of the full sequence.</p>
 <div class="sourceCode" id="cb64"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span><span class="st">"sequence is "</span>, <span class="fu"><a href="https://rdrr.io/r/base/nchar.html" class="external-link">nchar</a></span><span class="op">(</span><span class="va">sequence</span><span class="op">)</span>, <span class="st">"characters long \n"</span><span class="op">)</span></span></code></pre></div>
 <pre><code><span><span class="co">## sequence is  12 characters long</span></span></code></pre>
@@ -832,20 +916,22 @@ mark.out {
 <span><span class="fu"><a href="https://rdrr.io/r/base/colnames.html" class="external-link">colnames</a></span><span class="op">(</span><span class="va">y</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="va">vocabulary</span></span>
 <span><span class="va">x</span> <span class="co"># defgh</span></span></code></pre></div>
 <pre><code><span><span class="co">##      a b c d e f g h i</span></span>
-<span><span class="co">## [1,] 0 0 0 1 0 0 0 0 0</span></span>
-<span><span class="co">## [2,] 0 0 0 0 1 0 0 0 0</span></span>
-<span><span class="co">## [3,] 0 0 0 0 0 1 0 0 0</span></span>
-<span><span class="co">## [4,] 0 0 0 0 0 0 1 0 0</span></span>
-<span><span class="co">## [5,] 0 0 0 0 0 0 0 1 0</span></span></code></pre>
+<span><span class="co">## [1,] 1 0 0 0 0 0 0 0 0</span></span>
+<span><span class="co">## [2,] 0 1 0 0 0 0 0 0 0</span></span>
+<span><span class="co">## [3,] 0 0 1 0 0 0 0 0 0</span></span>
+<span><span class="co">## [4,] 0 0 0 1 0 0 0 0 0</span></span>
+<span><span class="co">## [5,] 0 0 0 0 1 0 0 0 0</span></span></code></pre>
 <div class="sourceCode" id="cb68"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">y</span> <span class="co"># i</span></span></code></pre></div>
 <pre><code><span><span class="co">##      a b c d e f g h i</span></span>
-<span><span class="co">## [1,] 0 0 0 0 0 0 0 0 1</span></span></code></pre>
+<span><span class="co">## [1,] 0 0 0 0 0 1 0 0 0</span></span></code></pre>
 </div>
 <div class="section level3">
 <h3 id="max_samples">max_samples<a class="anchor" aria-label="anchor" href="#max_samples"></a>
 </h3>
-<p>Only use fixed number of samples per file. Randomly choose which samples to use. (If <code>random_sampling = FALSE</code>, samples are consecutive.)</p>
+<p>Only use fixed number of samples per file. Randomly choose which
+samples to use. (If <code>random_sampling = FALSE</code>, samples are
+consecutive.)</p>
 <div class="sourceCode" id="cb70"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">gen</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/get_generator.html">get_generator</a></span><span class="op">(</span>path <span class="op">=</span> <span class="va">file_path</span>,</span>
 <span>                     train_type <span class="op">=</span> <span class="st">"lm"</span>,</span>
@@ -864,24 +950,27 @@ mark.out {
 <span><span class="fu"><a href="https://rdrr.io/r/base/colnames.html" class="external-link">colnames</a></span><span class="op">(</span><span class="va">x2</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="va">vocabulary</span></span>
 <span><span class="va">x1</span> <span class="co"># bcdef</span></span></code></pre></div>
 <pre><code><span><span class="co">##      a b c d e f g h i</span></span>
-<span><span class="co">## [1,] 0 1 0 0 0 0 0 0 0</span></span>
-<span><span class="co">## [2,] 0 0 1 0 0 0 0 0 0</span></span>
-<span><span class="co">## [3,] 0 0 0 1 0 0 0 0 0</span></span>
-<span><span class="co">## [4,] 0 0 0 0 1 0 0 0 0</span></span>
-<span><span class="co">## [5,] 0 0 0 0 0 1 0 0 0</span></span></code></pre>
+<span><span class="co">## [1,] 0 0 0 0 1 0 0 0 0</span></span>
+<span><span class="co">## [2,] 0 0 0 0 0 1 0 0 0</span></span>
+<span><span class="co">## [3,] 0 0 0 0 0 0 1 0 0</span></span>
+<span><span class="co">## [4,] 0 0 0 0 0 0 0 1 0</span></span>
+<span><span class="co">## [5,] 0 0 0 0 0 0 0 0 1</span></span></code></pre>
 <div class="sourceCode" id="cb72"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">x2</span> <span class="co"># cdefg</span></span></code></pre></div>
 <pre><code><span><span class="co">##      a b c d e f g h i</span></span>
-<span><span class="co">## [1,] 0 0 1 0 0 0 0 0 0</span></span>
-<span><span class="co">## [2,] 0 0 0 1 0 0 0 0 0</span></span>
-<span><span class="co">## [3,] 0 0 0 0 1 0 0 0 0</span></span>
-<span><span class="co">## [4,] 0 0 0 0 0 1 0 0 0</span></span>
-<span><span class="co">## [5,] 0 0 0 0 0 0 1 0 0</span></span></code></pre>
+<span><span class="co">## [1,] 0 0 0 0 0 1 0 0 0</span></span>
+<span><span class="co">## [2,] 0 0 0 0 0 0 1 0 0</span></span>
+<span><span class="co">## [3,] 0 0 0 0 0 0 0 1 0</span></span>
+<span><span class="co">## [4,] 0 0 0 0 0 0 0 0 1</span></span>
+<span><span class="co">## [5,] 0 0 0 0 0 0 0 0 1</span></span></code></pre>
 </div>
 <div class="section level3">
 <h3 id="random_sampling">random_sampling<a class="anchor" aria-label="anchor" href="#random_sampling"></a>
 </h3>
-<p>If you use <code>max_samples</code>, generator will randomly choose subset from all possible samples, but those samples are consecutive. With <code>random_sampling = TRUE</code>, samples are completely random.</p>
+<p>If you use <code>max_samples</code>, generator will randomly choose
+subset from all possible samples, but those samples are consecutive.
+With <code>random_sampling = TRUE</code>, samples are completely
+random.</p>
 <div class="sourceCode" id="cb74"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">gen</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/get_generator.html">get_generator</a></span><span class="op">(</span>path <span class="op">=</span> <span class="va">file_path</span>,</span>
 <span>                     train_type <span class="op">=</span> <span class="st">"lm"</span>,</span>
@@ -900,24 +989,24 @@ mark.out {
 <span><span class="fu"><a href="https://rdrr.io/r/base/colnames.html" class="external-link">colnames</a></span><span class="op">(</span><span class="va">x2</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="va">vocabulary</span></span>
 <span><span class="va">x1</span> <span class="co"># efghi</span></span></code></pre></div>
 <pre><code><span><span class="co">##      a b c d e f g h i</span></span>
+<span><span class="co">## [1,] 0 0 0 0 0 0 1 0 0</span></span>
+<span><span class="co">## [2,] 0 0 0 0 0 0 0 1 0</span></span>
+<span><span class="co">## [3,] 0 0 0 0 0 0 0 0 1</span></span>
+<span><span class="co">## [4,] 0 0 0 0 0 0 0 0 1</span></span>
+<span><span class="co">## [5,] 0 0 0 0 0 0 0 0 1</span></span></code></pre>
+<div class="sourceCode" id="cb76"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">x2</span> <span class="co"># defgh</span></span></code></pre></div>
+<pre><code><span><span class="co">##      a b c d e f g h i</span></span>
 <span><span class="co">## [1,] 0 0 0 0 1 0 0 0 0</span></span>
 <span><span class="co">## [2,] 0 0 0 0 0 1 0 0 0</span></span>
 <span><span class="co">## [3,] 0 0 0 0 0 0 1 0 0</span></span>
 <span><span class="co">## [4,] 0 0 0 0 0 0 0 1 0</span></span>
 <span><span class="co">## [5,] 0 0 0 0 0 0 0 0 1</span></span></code></pre>
-<div class="sourceCode" id="cb76"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">x2</span> <span class="co"># defgh</span></span></code></pre></div>
-<pre><code><span><span class="co">##      a b c d e f g h i</span></span>
-<span><span class="co">## [1,] 0 0 0 1 0 0 0 0 0</span></span>
-<span><span class="co">## [2,] 0 0 0 0 1 0 0 0 0</span></span>
-<span><span class="co">## [3,] 0 0 0 0 0 1 0 0 0</span></span>
-<span><span class="co">## [4,] 0 0 0 0 0 0 1 0 0</span></span>
-<span><span class="co">## [5,] 0 0 0 0 0 0 0 1 0</span></span></code></pre>
 </div>
 <div class="section level3">
 <h3 id="target_len">target_len<a class="anchor" aria-label="anchor" href="#target_len"></a>
 </h3>
-<p>Target length for language model. Default is 1; if &gt; 1 the target part of the generator output is a list of length <code>target_len</code>.</p>
+<p>Target length for language model.</p>
 <div class="sourceCode" id="cb78"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">gen</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/get_generator.html">get_generator</a></span><span class="op">(</span>path <span class="op">=</span> <span class="va">file_path</span>,</span>
 <span>                     train_type <span class="op">=</span> <span class="st">"lm"</span>,</span>
@@ -929,13 +1018,13 @@ mark.out {
 <span></span>
 <span><span class="va">z</span> <span class="op">&lt;-</span> <span class="fu">gen</span><span class="op">(</span><span class="op">)</span></span>
 <span><span class="va">x</span> <span class="op">&lt;-</span> <span class="va">z</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span><span class="op">[</span><span class="fl">1</span>, , <span class="op">]</span></span>
-<span><span class="va">y1</span> <span class="op">&lt;-</span> <span class="va">z</span><span class="op">[[</span><span class="fl">2</span><span class="op">]</span><span class="op">]</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span></span>
-<span><span class="va">y2</span> <span class="op">&lt;-</span> <span class="va">z</span><span class="op">[[</span><span class="fl">2</span><span class="op">]</span><span class="op">]</span><span class="op">[[</span><span class="fl">2</span><span class="op">]</span><span class="op">]</span></span>
-<span><span class="va">y3</span> <span class="op">&lt;-</span> <span class="va">z</span><span class="op">[[</span><span class="fl">2</span><span class="op">]</span><span class="op">]</span><span class="op">[[</span><span class="fl">3</span><span class="op">]</span><span class="op">]</span></span>
+<span><span class="va">y1</span> <span class="op">&lt;-</span> <span class="va">z</span><span class="op">[[</span><span class="fl">2</span><span class="op">]</span><span class="op">]</span><span class="op">[</span> , <span class="fl">1</span>, <span class="op">]</span></span>
+<span><span class="va">y2</span> <span class="op">&lt;-</span> <span class="va">z</span><span class="op">[[</span><span class="fl">2</span><span class="op">]</span><span class="op">]</span><span class="op">[</span> , <span class="fl">2</span>, <span class="op">]</span></span>
+<span><span class="va">y3</span> <span class="op">&lt;-</span> <span class="va">z</span><span class="op">[[</span><span class="fl">2</span><span class="op">]</span><span class="op">]</span><span class="op">[</span> , <span class="fl">3</span>, <span class="op">]</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/colnames.html" class="external-link">colnames</a></span><span class="op">(</span><span class="va">x</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="va">vocabulary</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/base/colnames.html" class="external-link">colnames</a></span><span class="op">(</span><span class="va">y1</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="va">vocabulary</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/base/colnames.html" class="external-link">colnames</a></span><span class="op">(</span><span class="va">y2</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="va">vocabulary</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/base/colnames.html" class="external-link">colnames</a></span><span class="op">(</span><span class="va">y3</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="va">vocabulary</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">y1</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="va">vocabulary</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">y2</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="va">vocabulary</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">y3</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="va">vocabulary</span></span>
 <span><span class="va">x</span> <span class="co"># abcde</span></span></code></pre></div>
 <pre><code><span><span class="co">##      a b c d e f g h i</span></span>
 <span><span class="co">## [1,] 1 0 0 0 0 0 0 0 0</span></span>
@@ -945,59 +1034,58 @@ mark.out {
 <span><span class="co">## [5,] 0 0 0 0 1 0 0 0 0</span></span></code></pre>
 <div class="sourceCode" id="cb80"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">y1</span> <span class="co"># f</span></span></code></pre></div>
-<pre><code><span><span class="co">##      a b c d e f g h i</span></span>
-<span><span class="co">## [1,] 0 0 0 0 0 1 0 0 0</span></span></code></pre>
+<pre><code><span><span class="co">## a b c d e f g h i </span></span>
+<span><span class="co">## 0 0 0 0 0 1 0 0 0</span></span></code></pre>
 <div class="sourceCode" id="cb82"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">y2</span> <span class="co"># g</span></span></code></pre></div>
-<pre><code><span><span class="co">##      a b c d e f g h i</span></span>
-<span><span class="co">## [1,] 0 0 0 0 0 0 1 0 0</span></span></code></pre>
+<pre><code><span><span class="co">## a b c d e f g h i </span></span>
+<span><span class="co">## 0 0 0 0 0 0 1 0 0</span></span></code></pre>
 <div class="sourceCode" id="cb84"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">y3</span> <span class="co"># h</span></span></code></pre></div>
-<pre><code><span><span class="co">##      a b c d e f g h i</span></span>
-<span><span class="co">## [1,] 0 0 0 0 0 0 0 1 0</span></span></code></pre>
+<pre><code><span><span class="co">## a b c d e f g h i </span></span>
+<span><span class="co">## 0 0 0 0 0 0 0 1 0</span></span></code></pre>
 </div>
 <div class="section level3">
 <h3 id="n_gram-n_gram_stride">n_gram / n_gram_stride<a class="anchor" aria-label="anchor" href="#n_gram-n_gram_stride"></a>
 </h3>
-<p>Encode target in language model not character wise but combine n characters to one target. <code>n_gram_stride</code> determines the frequency of the n-gram encoding.</p>
+<p>Encode target in language model not character wise but combine n
+characters to one target. <code>n_gram_stride</code> determines the
+frequency of the n-gram encoding.</p>
 <div class="sourceCode" id="cb86"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">gen</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/get_generator.html">get_generator</a></span><span class="op">(</span>path <span class="op">=</span> <span class="va">file_path</span>,</span>
 <span>                     train_type <span class="op">=</span> <span class="st">"lm"</span>,</span>
 <span>                     batch_size <span class="op">=</span> <span class="fl">1</span>,</span>
-<span>                     target_len <span class="op">=</span> <span class="fl">8</span>, </span>
+<span>                     target_len <span class="op">=</span> <span class="fl">6</span>, </span>
 <span>                     n_gram <span class="op">=</span> <span class="fl">3</span>,</span>
-<span>                     n_gram_stride <span class="op">=</span> <span class="fl">2</span>,</span>
-<span>                     maxlen <span class="op">=</span> <span class="fl">4</span>,</span>
+<span>                     n_gram_stride <span class="op">=</span> <span class="fl">3</span>,</span>
+<span>                     maxlen <span class="op">=</span> <span class="fl">3</span>,</span>
 <span>                     vocabulary <span class="op">=</span> <span class="va">vocabulary</span>,</span>
 <span>                     output_format <span class="op">=</span> <span class="st">"target_right"</span><span class="op">)</span></span>
 <span></span>
 <span><span class="va">z</span> <span class="op">&lt;-</span> <span class="fu">gen</span><span class="op">(</span><span class="op">)</span></span>
-<span><span class="va">x</span> <span class="op">&lt;-</span> <span class="va">z</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span><span class="op">[</span><span class="fl">1</span>, , <span class="op">]</span></span>
-<span><span class="va">y1</span> <span class="op">&lt;-</span> <span class="va">z</span><span class="op">[[</span><span class="fl">2</span><span class="op">]</span><span class="op">]</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span></span>
-<span><span class="va">y2</span> <span class="op">&lt;-</span> <span class="va">z</span><span class="op">[[</span><span class="fl">2</span><span class="op">]</span><span class="op">]</span><span class="op">[[</span><span class="fl">2</span><span class="op">]</span><span class="op">]</span></span>
-<span><span class="va">y3</span> <span class="op">&lt;-</span> <span class="va">z</span><span class="op">[[</span><span class="fl">2</span><span class="op">]</span><span class="op">]</span><span class="op">[[</span><span class="fl">3</span><span class="op">]</span><span class="op">]</span></span>
+<span><span class="va">x</span> <span class="op">&lt;-</span> <span class="va">z</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span></span>
+<span><span class="va">y1</span> <span class="op">&lt;-</span> <span class="va">z</span><span class="op">[[</span><span class="fl">2</span><span class="op">]</span><span class="op">]</span><span class="op">[</span> , <span class="fl">1</span>, <span class="op">]</span></span>
+<span><span class="va">y2</span> <span class="op">&lt;-</span> <span class="va">z</span><span class="op">[[</span><span class="fl">2</span><span class="op">]</span><span class="op">]</span><span class="op">[</span> , <span class="fl">2</span>, <span class="op">]</span></span>
 <span></span>
-<span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/base/colnames.html" class="external-link">colnames</a></span><span class="op">(</span><span class="va">x</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="va">vocabulary</span></span>
-<span><span class="va">x</span> <span class="co"># abcd</span></span></code></pre></div>
-<pre><code><span><span class="co">##      a b c d e f g h i</span></span>
-<span><span class="co">## [1,] 1 0 0 0 0 0 0 0 0</span></span>
-<span><span class="co">## [2,] 0 1 0 0 0 0 0 0 0</span></span>
-<span><span class="co">## [3,] 0 0 1 0 0 0 0 0 0</span></span>
-<span><span class="co">## [4,] 0 0 0 1 0 0 0 0 0</span></span></code></pre>
+<span><span class="fu"><a href="https://rdrr.io/r/base/dim.html" class="external-link">dim</a></span><span class="op">(</span><span class="va">x</span><span class="op">)</span><span class="op">[</span><span class="fl">3</span><span class="op">]</span> <span class="op">==</span> <span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="va">vocabulary</span><span class="op">)</span><span class="op">^</span><span class="fl">3</span></span></code></pre></div>
+<pre><code><span><span class="co">## [1] TRUE</span></span></code></pre>
 <div class="sourceCode" id="cb88"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">ncol</a></span><span class="op">(</span><span class="va">y1</span><span class="op">)</span> <span class="co"># = 3^length(vocabulary)</span></span></code></pre></div>
-<pre><code><span><span class="co">## [1] 729</span></span></code></pre>
-<div class="sourceCode" id="cb90"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="co"># y1 # efg as 3-gram</span></span>
-<span><span class="co"># y2 # ghi as 3-gram</span></span>
-<span><span class="co"># y3 # iii as 3-gram</span></span></code></pre></div>
+<code class="sourceCode R"><span><span class="co"># x = abc as 3-gram</span></span>
+<span><span class="co"># y1 = def as 3-gram</span></span>
+<span><span class="co"># y2 = ghi as 3-gram</span></span></code></pre></div>
 </div>
 <div class="section level3">
 <h3 id="add_noise">add_noise<a class="anchor" aria-label="anchor" href="#add_noise"></a>
 </h3>
-<p>Add noise to input. Must be a list that specifies noise distribution or NULL (no noise). List contains arguments <code>noise_type</code>: either <code>"normal"</code> or <code>"uniform"</code>. Optional arguments <code>sd</code> or <code>mean</code> if <code>noise_type</code> is <code>"normal"</code> (default is <code>sd=1</code> and <code>mean=0</code>) or <code>min</code>, <code>max</code> if <code>noise_type</code> is <code>"uniform"</code> (default is <code>min=0</code>, <code>max=1</code>).</p>
-<div class="sourceCode" id="cb91"><pre class="downlit sourceCode r">
+<p>Add noise to input. Must be a list that specifies noise distribution
+or NULL (no noise). List contains arguments <code>noise_type</code>:
+either <code>"normal"</code> or <code>"uniform"</code>. Optional
+arguments <code>sd</code> or <code>mean</code> if
+<code>noise_type</code> is <code>"normal"</code> (default is
+<code>sd=1</code> and <code>mean=0</code>) or <code>min</code>,
+<code>max</code> if <code>noise_type</code> is <code>"uniform"</code>
+(default is <code>min=0</code>, <code>max=1</code>).</p>
+<div class="sourceCode" id="cb89"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">gen</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/get_generator.html">get_generator</a></span><span class="op">(</span>path <span class="op">=</span> <span class="va">file_path</span>,</span>
 <span>                     train_type <span class="op">=</span> <span class="st">"lm"</span>,</span>
 <span>                     batch_size <span class="op">=</span> <span class="fl">1</span>,</span>
@@ -1013,47 +1101,60 @@ mark.out {
 <span><span class="fu"><a href="https://rdrr.io/r/base/colnames.html" class="external-link">colnames</a></span><span class="op">(</span><span class="va">x</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="va">vocabulary</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/colnames.html" class="external-link">colnames</a></span><span class="op">(</span><span class="va">y</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="va">vocabulary</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/Round.html" class="external-link">round</a></span><span class="op">(</span><span class="va">x</span>, <span class="fl">3</span><span class="op">)</span> <span class="co"># abcde + noise</span></span></code></pre></div>
-<pre><code><span><span class="co">##           a      b      c      d      e      f      g      h      i</span></span>
-<span><span class="co">## [1,]  0.997 -0.009 -0.008  0.003  0.004  0.011 -0.005  0.010  0.006</span></span>
-<span><span class="co">## [2,]  0.013  0.997 -0.011 -0.009  0.001 -0.007 -0.004 -0.004 -0.005</span></span>
-<span><span class="co">## [3,]  0.013  0.000  0.997  0.004  0.008 -0.013 -0.006  0.012 -0.008</span></span>
-<span><span class="co">## [4,]  0.004  0.024 -0.003  0.988 -0.001  0.000  0.007 -0.003 -0.012</span></span>
-<span><span class="co">## [5,] -0.015  0.008 -0.004 -0.002  1.005 -0.002  0.012  0.018 -0.011</span></span></code></pre>
-<div class="sourceCode" id="cb93"><pre class="downlit sourceCode r">
+<pre><code><span><span class="co">##           a      b      c     d      e      f      g      h      i</span></span>
+<span><span class="co">## [1,]  0.994  0.005 -0.006 0.008  0.006  0.014 -0.004  0.007 -0.001</span></span>
+<span><span class="co">## [2,]  0.002  1.007 -0.022 0.006 -0.001 -0.001 -0.001  0.006  0.009</span></span>
+<span><span class="co">## [3,] -0.008  0.006  1.011 0.009 -0.002  0.004  0.011 -0.007  0.004</span></span>
+<span><span class="co">## [4,]  0.016 -0.003  0.000 1.008 -0.015 -0.001  0.008 -0.007 -0.006</span></span>
+<span><span class="co">## [5,]  0.003  0.015  0.000 0.001  0.995 -0.014 -0.002  0.004  0.003</span></span></code></pre>
+<div class="sourceCode" id="cb91"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">y</span> <span class="co"># f</span></span></code></pre></div>
-<pre><code><span><span class="co">##      a b c d e f g h i</span></span>
-<span><span class="co">## [1,] 0 0 0 0 0 1 0 0 0</span></span></code></pre>
+<pre><code><span><span class="co">##                 a           b           c           d           e         f</span></span>
+<span><span class="co">## [1,] -0.008204684 0.003898432 0.009438362 -0.01989352 0.004179416 0.9958501</span></span>
+<span><span class="co">##                 g           h           i</span></span>
+<span><span class="co">## [1,] -0.002533617 0.007685329 -0.01129363</span></span></code></pre>
 </div>
 <div class="section level3">
 <h3 id="proportion_entries">proportion_entries<a class="anchor" aria-label="anchor" href="#proportion_entries"></a>
 </h3>
-<p>If a fasta file has multiple entries, you can randomly choose a subset. For example, if the file has 6 entries and <code>proportion_entries = 0.5</code> the generator will randomly choose only 3 of the entries.</p>
+<p>If a fasta file has multiple entries, you can randomly choose a
+subset. For example, if the file has 6 entries and
+<code>proportion_entries = 0.5</code> the generator will randomly choose
+only 3 of the entries.</p>
 </div>
 <div class="section level3">
 <h3 id="shuffle_file_order">shuffle_file_order<a class="anchor" aria-label="anchor" href="#shuffle_file_order"></a>
 </h3>
-<p>Shuffle file order before iterating through files. Order gets reshuffled after every iteration.</p>
+<p>Shuffle file order before iterating through files. Order gets
+reshuffled after every iteration.</p>
 </div>
 <div class="section level3">
 <h3 id="shuffle_input">shuffle_input<a class="anchor" aria-label="anchor" href="#shuffle_input"></a>
 </h3>
-<p>Whether to shuffle fasta entries if fasta file has multiple entries.</p>
+<p>Whether to shuffle fasta entries if fasta file has multiple
+entries.</p>
 </div>
 <div class="section level3">
 <h3 id="reverse_complement">reverse_complement<a class="anchor" aria-label="anchor" href="#reverse_complement"></a>
 </h3>
-<p>If <code>TRUE</code>, randomly decide for every batch to use original sequence or its reverse complement. Only implemented for <tt>ACGT</tt> vocabulary.</p>
+<p>If <code>TRUE</code>, randomly decide for every batch to use original
+sequence or its reverse complement. Only implemented for <tt>ACGT</tt>
+vocabulary.</p>
 </div>
 <div class="section level3">
 <h3 id="sample_by_file_size">sample_by_file_size<a class="anchor" aria-label="anchor" href="#sample_by_file_size"></a>
 </h3>
-<p>Randomly choose new file by sampling according to file size (bigger files more likely).</p>
+<p>Randomly choose new file by sampling according to file size (bigger
+files more likely).</p>
 </div>
 <div class="section level3">
 <h3 id="concat_seq">concat_seq<a class="anchor" aria-label="anchor" href="#concat_seq"></a>
 </h3>
-<p>Character string or <code>NULL</code>. If not <code>NULL</code> all entries from file get concatenated to one sequence with <code>concat_seq</code> string between them. Use <code>concat_seq = ""</code> if you don’t want to add a new token.</p>
-<div class="sourceCode" id="cb95"><pre class="downlit sourceCode r">
+<p>Character string or <code>NULL</code>. If not <code>NULL</code> all
+entries from file get concatenated to one sequence with
+<code>concat_seq</code> string between them. Use
+<code>concat_seq = ""</code> if you don’t want to add a new token.</p>
+<div class="sourceCode" id="cb93"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">df</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span>Sequence <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"AC"</span>, <span class="st">"AG"</span>, <span class="st">"AT"</span><span class="op">)</span>, Header <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste0</a></span><span class="op">(</span><span class="st">"header"</span>, <span class="fl">1</span><span class="op">:</span><span class="fl">3</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="va">fasta_path</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/tempfile.html" class="external-link">tempfile</a></span><span class="op">(</span>fileext <span class="op">=</span> <span class="st">".fasta"</span><span class="op">)</span></span>
 <span><span class="va">fasta_file</span> <span class="op">&lt;-</span> <span class="fu">microseq</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/microseq/man/readFasta.html" class="external-link">writeFasta</a></span><span class="op">(</span><span class="va">df</span>, <span class="va">fasta_path</span><span class="op">)</span></span>
@@ -1082,7 +1183,7 @@ mark.out {
 <span><span class="co">##  [7,] 0 0 0 0 1</span></span>
 <span><span class="co">##  [8,] 0 0 0 0 1</span></span>
 <span><span class="co">##  [9,] 1 0 0 0 0</span></span></code></pre>
-<div class="sourceCode" id="cb97"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb95"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">y</span> <span class="co"># T</span></span></code></pre></div>
 <pre><code><span><span class="co">##      A C G T Z</span></span>
 <span><span class="co">## [1,] 0 0 0 1 0</span></span></code></pre>
@@ -1090,28 +1191,43 @@ mark.out {
 <div class="section level3">
 <h3 id="set_learning">set_learning<a class="anchor" aria-label="anchor" href="#set_learning"></a>
 </h3>
-<p>When you want to assign one label to set of samples. Only implemented for <code>train_type = "label_folder"</code>. Input is a list with the following parameters</p>
+<p>When you want to assign one label to set of samples. Only implemented
+for <code>train_type = "label_folder"</code>. Input is a list with the
+following parameters</p>
 <ul>
 <li>
-<code>samples_per_target</code> how many samples to use for one target</li>
+<code>samples_per_target</code> how many samples to use for one
+target</li>
 <li>
 <code>maxlen</code> length of one sample</li>
 <li>
-<code>reshape_mode</code>: <code>"time_dist", "multi_input"</code> or <code>"concat"</code>.
+<code>reshape_mode</code>: <code>"time_dist", "multi_input"</code>
+or <code>"concat"</code>.
 <ul>
-<li>If <code>reshape_mode = "multi_input"</code>, generator will produce <code>samples_per_target</code> separate inputs, each of length <code>maxlen</code>.</li>
-<li>If <code>reshape_mode = "time_dist"</code>, generator will produce a 4D input array. The dimensions correspond to <code>(batch_size, samples_per_target, maxlen, length(vocabulary))</code>.<br>
+<li>If <code>reshape_mode = "multi_input"</code>, generator will produce
+<code>samples_per_target</code> separate inputs, each of length
+<code>maxlen</code>.</li>
+<li>If <code>reshape_mode = "time_dist"</code>, generator will produce a
+4D input array. The dimensions correspond to
+<code>(batch_size, samples_per_target, maxlen, length(vocabulary))</code>.<br>
 </li>
-<li>If <code>reshape_mode</code> is <code>"concat"</code>, generator will concatenate <code>samples_per_target</code> sequences of length <code>maxlen</code> to one long sequence.</li>
+<li>If <code>reshape_mode</code> is <code>"concat"</code>, generator
+will concatenate <code>samples_per_target</code> sequences of length
+<code>maxlen</code> to one long sequence.</li>
 </ul>
 </li>
-<li>If <code>reshape_mode = "concat"</code>, there is an additional <code>buffer_len</code> argument: add new token between concatenated samples
+<li>If <code>reshape_mode = "concat"</code>, there is an additional
+<code>buffer_len</code> argument: add new token between concatenated
+samples
 <ul>
-<li>If <code>buffer_len</code> is an integer, the sub-sequences are inter spaced with <code>buffer_len</code> rows. The input length is (<code>maxlen</code> * <code>samples_per_target</code>) + <code>buffer_len</code> * (<code>samples_per_target</code> - 1)</li>
+<li>If <code>buffer_len</code> is an integer, the sub-sequences are
+inter spaced with <code>buffer_len</code> rows. The input length is
+(<code>maxlen</code> * <code>samples_per_target</code>) +
+<code>buffer_len</code> * (<code>samples_per_target</code> - 1)</li>
 </ul>
 </li>
 </ul>
-<div class="sourceCode" id="cb99"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb97"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># create data for second label</span></span>
 <span><span class="va">df</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span>Sequence <span class="op">=</span> <span class="st">"AABAACAADAAE"</span>, Header <span class="op">=</span> <span class="st">"header_1"</span><span class="op">)</span></span>
 <span><span class="va">file_path_2</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/tempfile.html" class="external-link">tempfile</a></span><span class="op">(</span>fileext <span class="op">=</span> <span class="st">".fasta"</span><span class="op">)</span></span>
@@ -1135,7 +1251,7 @@ mark.out {
 <span><span class="va">y</span> <span class="op">&lt;-</span> <span class="va">z</span><span class="op">[[</span><span class="fl">2</span><span class="op">]</span><span class="op">]</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="va">x</span><span class="op">)</span> <span class="co"># 3 samples per target</span></span></code></pre></div>
 <pre><code><span><span class="co">## [1] 3</span></span></code></pre>
-<div class="sourceCode" id="cb101"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb99"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">x_1_1</span> <span class="op">&lt;-</span> <span class="va">x</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span><span class="op">[</span><span class="fl">1</span>, , <span class="op">]</span></span>
 <span><span class="va">x_1_1</span> <span class="co"># abcd</span></span></code></pre></div>
 <pre><code><span><span class="co">##      [,1] [,2] [,3] [,4] [,5] [,6] [,7] [,8] [,9]</span></span>
@@ -1143,7 +1259,7 @@ mark.out {
 <span><span class="co">## [2,]    0    1    0    0    0    0    0    0    0</span></span>
 <span><span class="co">## [3,]    0    0    1    0    0    0    0    0    0</span></span>
 <span><span class="co">## [4,]    0    0    0    1    0    0    0    0    0</span></span></code></pre>
-<div class="sourceCode" id="cb103"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb101"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">x_1_2</span> <span class="op">&lt;-</span> <span class="va">x</span><span class="op">[[</span><span class="fl">2</span><span class="op">]</span><span class="op">]</span><span class="op">[</span><span class="fl">1</span>, , <span class="op">]</span></span>
 <span><span class="va">x_1_2</span> <span class="co"># bcde</span></span></code></pre></div>
 <pre><code><span><span class="co">##      [,1] [,2] [,3] [,4] [,5] [,6] [,7] [,8] [,9]</span></span>
@@ -1151,7 +1267,7 @@ mark.out {
 <span><span class="co">## [2,]    0    0    1    0    0    0    0    0    0</span></span>
 <span><span class="co">## [3,]    0    0    0    1    0    0    0    0    0</span></span>
 <span><span class="co">## [4,]    0    0    0    0    1    0    0    0    0</span></span></code></pre>
-<div class="sourceCode" id="cb105"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb103"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">x_1_3</span> <span class="op">&lt;-</span> <span class="va">x</span><span class="op">[[</span><span class="fl">3</span><span class="op">]</span><span class="op">]</span><span class="op">[</span><span class="fl">1</span>, , <span class="op">]</span></span>
 <span><span class="va">x_1_3</span> <span class="co"># cdef</span></span></code></pre></div>
 <pre><code><span><span class="co">##      [,1] [,2] [,3] [,4] [,5] [,6] [,7] [,8] [,9]</span></span>
@@ -1159,7 +1275,7 @@ mark.out {
 <span><span class="co">## [2,]    0    0    0    1    0    0    0    0    0</span></span>
 <span><span class="co">## [3,]    0    0    0    0    1    0    0    0    0</span></span>
 <span><span class="co">## [4,]    0    0    0    0    0    1    0    0    0</span></span></code></pre>
-<div class="sourceCode" id="cb107"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb105"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">x_2_1</span> <span class="op">&lt;-</span> <span class="va">x</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span><span class="op">[</span><span class="fl">2</span>, , <span class="op">]</span></span>
 <span><span class="va">x_2_1</span> <span class="co"># aaba</span></span></code></pre></div>
 <pre><code><span><span class="co">##      [,1] [,2] [,3] [,4] [,5] [,6] [,7] [,8] [,9]</span></span>
@@ -1167,7 +1283,7 @@ mark.out {
 <span><span class="co">## [2,]    1    0    0    0    0    0    0    0    0</span></span>
 <span><span class="co">## [3,]    0    1    0    0    0    0    0    0    0</span></span>
 <span><span class="co">## [4,]    1    0    0    0    0    0    0    0    0</span></span></code></pre>
-<div class="sourceCode" id="cb109"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb107"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">x_2_2</span> <span class="op">&lt;-</span> <span class="va">x</span><span class="op">[[</span><span class="fl">2</span><span class="op">]</span><span class="op">]</span><span class="op">[</span><span class="fl">2</span>, , <span class="op">]</span></span>
 <span><span class="va">x_2_2</span> <span class="co"># abaa</span></span></code></pre></div>
 <pre><code><span><span class="co">##      [,1] [,2] [,3] [,4] [,5] [,6] [,7] [,8] [,9]</span></span>
@@ -1175,7 +1291,7 @@ mark.out {
 <span><span class="co">## [2,]    0    1    0    0    0    0    0    0    0</span></span>
 <span><span class="co">## [3,]    1    0    0    0    0    0    0    0    0</span></span>
 <span><span class="co">## [4,]    1    0    0    0    0    0    0    0    0</span></span></code></pre>
-<div class="sourceCode" id="cb111"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb109"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">x_2_3</span> <span class="op">&lt;-</span> <span class="va">x</span><span class="op">[[</span><span class="fl">3</span><span class="op">]</span><span class="op">]</span><span class="op">[</span><span class="fl">2</span>, , <span class="op">]</span></span>
 <span><span class="va">x_2_3</span> <span class="co"># baac</span></span></code></pre></div>
 <pre><code><span><span class="co">##      [,1] [,2] [,3] [,4] [,5] [,6] [,7] [,8] [,9]</span></span>
@@ -1183,13 +1299,13 @@ mark.out {
 <span><span class="co">## [2,]    1    0    0    0    0    0    0    0    0</span></span>
 <span><span class="co">## [3,]    1    0    0    0    0    0    0    0    0</span></span>
 <span><span class="co">## [4,]    0    0    1    0    0    0    0    0    0</span></span></code></pre>
-<div class="sourceCode" id="cb113"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb111"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/colnames.html" class="external-link">colnames</a></span><span class="op">(</span><span class="va">y</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"label_1"</span>, <span class="st">"label_2"</span><span class="op">)</span></span>
 <span><span class="va">y</span> </span></code></pre></div>
 <pre><code><span><span class="co">##      label_1 label_2</span></span>
 <span><span class="co">## [1,]       1       0</span></span>
 <span><span class="co">## [2,]       0       1</span></span></code></pre>
-<div class="sourceCode" id="cb115"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb113"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># concat </span></span>
 <span><span class="va">set_learning</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>reshape_mode <span class="op">=</span> <span class="st">"concat"</span>,</span>
 <span>                     maxlen <span class="op">=</span> <span class="fl">4</span>,</span>
@@ -1208,7 +1324,7 @@ mark.out {
 <span><span class="va">y</span> <span class="op">&lt;-</span> <span class="va">z</span><span class="op">[[</span><span class="fl">2</span><span class="op">]</span><span class="op">]</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/dim.html" class="external-link">dim</a></span><span class="op">(</span><span class="va">x</span><span class="op">)</span> </span></code></pre></div>
 <pre><code><span><span class="co">## [1]  2 12  9</span></span></code></pre>
-<div class="sourceCode" id="cb117"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb115"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">x_1</span> <span class="op">&lt;-</span> <span class="va">x</span><span class="op">[</span><span class="fl">1</span>, , <span class="op">]</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/colnames.html" class="external-link">colnames</a></span><span class="op">(</span><span class="va">x_1</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="va">vocabulary</span></span>
 <span><span class="va">x_1</span> <span class="co"># abcd | cdef | efgh</span></span></code></pre></div>
@@ -1225,7 +1341,7 @@ mark.out {
 <span><span class="co">## [10,] 0 0 0 0 0 1 0 0 0</span></span>
 <span><span class="co">## [11,] 0 0 0 0 0 0 1 0 0</span></span>
 <span><span class="co">## [12,] 0 0 0 0 0 0 0 1 0</span></span></code></pre>
-<div class="sourceCode" id="cb119"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb117"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">x_2</span> <span class="op">&lt;-</span> <span class="va">x</span><span class="op">[</span><span class="fl">2</span>, , <span class="op">]</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/colnames.html" class="external-link">colnames</a></span><span class="op">(</span><span class="va">x_2</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="va">vocabulary</span></span>
 <span><span class="va">x_2</span> <span class="co"># aaba | baac | acaa</span></span></code></pre></div>
@@ -1242,7 +1358,7 @@ mark.out {
 <span><span class="co">## [10,] 0 0 1 0 0 0 0 0 0</span></span>
 <span><span class="co">## [11,] 1 0 0 0 0 0 0 0 0</span></span>
 <span><span class="co">## [12,] 1 0 0 0 0 0 0 0 0</span></span></code></pre>
-<div class="sourceCode" id="cb121"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb119"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/colnames.html" class="external-link">colnames</a></span><span class="op">(</span><span class="va">y</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"label_1"</span>, <span class="st">"label_2"</span><span class="op">)</span></span>
 <span><span class="va">y</span> </span></code></pre></div>
 <pre><code><span><span class="co">##      label_1 label_2</span></span>
@@ -1252,8 +1368,9 @@ mark.out {
 <div class="section level3">
 <h3 id="use_quality_score">use_quality_score<a class="anchor" aria-label="anchor" href="#use_quality_score"></a>
 </h3>
-<p>If <code>TRUE</code>, instead of one-hot encoding, use quality score of fastq file.</p>
-<div class="sourceCode" id="cb123"><pre class="downlit sourceCode r">
+<p>If <code>TRUE</code>, instead of one-hot encoding, use quality score
+of fastq file.</p>
+<div class="sourceCode" id="cb121"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">df</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span>Sequence <span class="op">=</span> <span class="st">"ACAGAT"</span>, Header <span class="op">=</span> <span class="st">"header_1"</span>, Quality <span class="op">=</span> <span class="st">"!#*=?I"</span><span class="op">)</span></span>
 <span><span class="va">fastq_path</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/tempfile.html" class="external-link">tempfile</a></span><span class="op">(</span>fileext <span class="op">=</span> <span class="st">".fastq"</span><span class="op">)</span></span>
 <span><span class="va">fastq_file</span> <span class="op">&lt;-</span> <span class="fu">microseq</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/microseq/man/readFastq.html" class="external-link">writeFastq</a></span><span class="op">(</span><span class="va">df</span>, <span class="va">fastq_path</span><span class="op">)</span></span>
@@ -1279,7 +1396,7 @@ mark.out {
 <span><span class="co">## [3,] 0.8741074588 0.0419641804 0.0419641804 0.0419641804</span></span>
 <span><span class="co">## [4,] 0.0005282977 0.0005282977 0.9984151068 0.0005282977</span></span>
 <span><span class="co">## [5,] 0.9990000000 0.0003333333 0.0003333333 0.0003333333</span></span></code></pre>
-<div class="sourceCode" id="cb125"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb123"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">y</span> <span class="co"># T</span></span></code></pre></div>
 <pre><code><span><span class="co">##                 A            C            G      T</span></span>
 <span><span class="co">## [1,] 3.333333e-05 3.333333e-05 3.333333e-05 0.9999</span></span></code></pre>
@@ -1287,8 +1404,11 @@ mark.out {
 <div class="section level3">
 <h3 id="use_coverage">use_coverage<a class="anchor" aria-label="anchor" href="#use_coverage"></a>
 </h3>
-<p>Integer or <code>NULL</code>. If not <code>NULL</code>, use coverage as encoding rather than one-hot encoding. Coverage information must be contained in fasta header: there must be a string “cov_n” in the header, where n is some integer.</p>
-<div class="sourceCode" id="cb127"><pre class="downlit sourceCode r">
+<p>Integer or <code>NULL</code>. If not <code>NULL</code>, use coverage
+as encoding rather than one-hot encoding. Coverage information must be
+contained in fasta header: there must be a string “cov_n” in the header,
+where n is some integer.</p>
+<div class="sourceCode" id="cb125"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">df</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span>Sequence <span class="op">=</span> <span class="st">"ACAGAT"</span>, Header <span class="op">=</span> <span class="st">"header_1_cov_8"</span><span class="op">)</span></span>
 <span><span class="va">fasta_path</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/tempfile.html" class="external-link">tempfile</a></span><span class="op">(</span>fileext <span class="op">=</span> <span class="st">".fasta"</span><span class="op">)</span></span>
 <span><span class="va">fasta_file</span> <span class="op">&lt;-</span> <span class="fu">microseq</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/microseq/man/readFasta.html" class="external-link">writeFasta</a></span><span class="op">(</span><span class="va">df</span>, <span class="va">fasta_path</span><span class="op">)</span></span>
@@ -1313,7 +1433,7 @@ mark.out {
 <span><span class="co">## [3,] 0.32 0.00 0.00 0</span></span>
 <span><span class="co">## [4,] 0.00 0.00 0.32 0</span></span>
 <span><span class="co">## [5,] 0.32 0.00 0.00 0</span></span></code></pre>
-<div class="sourceCode" id="cb129"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb127"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">y</span> <span class="co"># T</span></span></code></pre></div>
 <pre><code><span><span class="co">##      A C G    T</span></span>
 <span><span class="co">## [1,] 0 0 0 0.32</span></span></code></pre>
@@ -1321,9 +1441,12 @@ mark.out {
 <div class="section level3">
 <h3 id="added_label_path">added_label_path<a class="anchor" aria-label="anchor" href="#added_label_path"></a>
 </h3>
-<p>It is possible to feed a network additional information associated to a sequence. This information needs to be in a csv file. If all sequences in one file share the same label, the csv file should have one column named “file”.</p>
+<p>It is possible to feed a network additional information associated to
+a sequence. This information needs to be in a csv file. If all sequences
+in one file share the same label, the csv file should have one column
+named “file”.</p>
 <p>We may add some additional input to our dummy data</p>
-<div class="sourceCode" id="cb131"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb129"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">file</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/basename.html" class="external-link">basename</a></span><span class="op">(</span><span class="va">file_path</span><span class="op">)</span>, <span class="st">"some_file_name.fasta"</span><span class="op">)</span></span>
 <span><span class="va">df</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span>file <span class="op">=</span> <span class="va">file</span>,</span>
 <span>                 label_1 <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fl">1</span><span class="op">)</span>, label_2 <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>, <span class="fl">0</span><span class="op">)</span>, label_3 <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>, <span class="fl">0</span><span class="op">)</span><span class="op">)</span></span>
@@ -1331,10 +1454,11 @@ mark.out {
 <pre><code><span><span class="co">##                   file label_1 label_2 label_3</span></span>
 <span><span class="co">## 1              a.fasta       0       1       1</span></span>
 <span><span class="co">## 2 some_file_name.fasta       1       0       0</span></span></code></pre>
-<div class="sourceCode" id="cb133"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb131"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/write.table.html" class="external-link">write.csv</a></span><span class="op">(</span>x <span class="op">=</span> <span class="va">df</span>, file <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/file.path.html" class="external-link">file.path</a></span><span class="op">(</span><span class="va">dir_path</span>, <span class="st">"add_input.csv"</span><span class="op">)</span>, row.names <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span></code></pre></div>
-<p>If we add the path to the csv file, the generator will map additional input to sequences:</p>
-<div class="sourceCode" id="cb134"><pre class="downlit sourceCode r">
+<p>If we add the path to the csv file, the generator will map additional
+input to sequences:</p>
+<div class="sourceCode" id="cb132"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">gen</span> <span class="op">&lt;-</span>  <span class="fu"><a href="../reference/get_generator.html">get_generator</a></span><span class="op">(</span>path <span class="op">=</span> <span class="va">dir_path</span>,</span>
 <span>                      train_type <span class="op">=</span> <span class="st">"lm"</span>, </span>
 <span>                      batch_size <span class="op">=</span> <span class="fl">1</span>,</span>
@@ -1349,7 +1473,7 @@ mark.out {
 <span><span class="va">added_label_input</span></span></code></pre></div>
 <pre><code><span><span class="co">##      [,1] [,2] [,3]</span></span>
 <span><span class="co">## [1,]    0    1    1</span></span></code></pre>
-<div class="sourceCode" id="cb136"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb134"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">x</span> <span class="op">&lt;-</span> <span class="va">z</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span><span class="op">[[</span><span class="fl">2</span><span class="op">]</span><span class="op">]</span></span>
 <span><span class="va">x</span><span class="op">[</span><span class="fl">1</span>, , <span class="op">]</span></span></code></pre></div>
 <pre><code><span><span class="co">##      [,1] [,2] [,3] [,4] [,5] [,6] [,7] [,8] [,9]</span></span>
@@ -1358,13 +1482,14 @@ mark.out {
 <span><span class="co">## [3,]    0    0    1    0    0    0    0    0    0</span></span>
 <span><span class="co">## [4,]    0    0    0    1    0    0    0    0    0</span></span>
 <span><span class="co">## [5,]    0    0    0    0    1    0    0    0    0</span></span></code></pre>
-<div class="sourceCode" id="cb138"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb136"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">y</span> <span class="op">&lt;-</span> <span class="va">z</span><span class="op">[[</span><span class="fl">2</span><span class="op">]</span><span class="op">]</span> </span>
 <span><span class="va">y</span></span></code></pre></div>
 <pre><code><span><span class="co">##      [,1] [,2] [,3] [,4] [,5] [,6] [,7] [,8] [,9]</span></span>
 <span><span class="co">## [1,]    0    0    0    0    0    1    0    0    0</span></span></code></pre>
-<p>If we want to train a network with additional labels, we have to add an additional input layer.</p>
-<div class="sourceCode" id="cb140"><pre class="downlit sourceCode r">
+<p>If we want to train a network with additional labels, we have to add
+an additional input layer.</p>
+<div class="sourceCode" id="cb138"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">model</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/create_model_lstm_cnn.html">create_model_lstm_cnn</a></span><span class="op">(</span></span>
 <span>  maxlen <span class="op">=</span> <span class="fl">5</span>,</span>
 <span>  layer_lstm <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">8</span>, <span class="fl">8</span><span class="op">)</span>,</span>
@@ -1387,7 +1512,7 @@ mark.out {
 <span><span class="co">## Trainable params: 1,008</span></span>
 <span><span class="co">## Non-trainable params: 0</span></span>
 <span><span class="co">## ________________________________________________________________________________</span></span></code></pre>
-<div class="sourceCode" id="cb142"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb140"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># train_model(train_type = "lm", </span></span>
 <span><span class="co">#             model = model,</span></span>
 <span><span class="co">#             path = file.path(dir_path, "train_files_1"),</span></span>
@@ -1396,6 +1521,231 @@ mark.out {
 <span><span class="co">#             steps_per_epoch = 5,</span></span>
 <span><span class="co">#             batch_size = 8,</span></span>
 <span><span class="co">#             epochs = 2)</span></span></code></pre></div>
+</div>
+<div class="section level3">
+<h3 id="return_int">return_int<a class="anchor" aria-label="anchor" href="#return_int"></a>
+</h3>
+<p>Whether to return integer encoding rather than one-hot encoding.</p>
+<div class="sourceCode" id="cb141"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">df</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span>Sequence <span class="op">=</span> <span class="st">"ATCGC"</span>, Header <span class="op">=</span> <span class="st">"seq_1"</span><span class="op">)</span></span>
+<span><span class="va">fasta_path</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/tempfile.html" class="external-link">tempfile</a></span><span class="op">(</span>fileext <span class="op">=</span> <span class="st">".fasta"</span><span class="op">)</span></span>
+<span><span class="va">fasta_file</span> <span class="op">&lt;-</span> <span class="fu">microseq</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/microseq/man/readFasta.html" class="external-link">writeFasta</a></span><span class="op">(</span><span class="va">df</span>, <span class="va">fasta_path</span><span class="op">)</span></span>
+<span><span class="va">gen</span> <span class="op">&lt;-</span>  <span class="fu"><a href="../reference/get_generator.html">get_generator</a></span><span class="op">(</span>path <span class="op">=</span> <span class="va">fasta_path</span>,</span>
+<span>                      train_type <span class="op">=</span> <span class="st">"lm"</span>,</span>
+<span>                      batch_size <span class="op">=</span> <span class="fl">1</span>,</span>
+<span>                      return_int <span class="op">=</span> <span class="cn">TRUE</span>,</span>
+<span>                      padding <span class="op">=</span> <span class="cn">TRUE</span>,</span>
+<span>                      maxlen <span class="op">=</span> <span class="fl">8</span>,</span>
+<span>                      vocabulary <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"A"</span>, <span class="st">"C"</span>, <span class="st">"G"</span>, <span class="st">"T"</span><span class="op">)</span>,</span>
+<span>                      output_format <span class="op">=</span> <span class="st">"target_right"</span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">z</span> <span class="op">&lt;-</span> <span class="fu">gen</span><span class="op">(</span><span class="op">)</span></span>
+<span><span class="va">x</span> <span class="op">&lt;-</span> <span class="va">z</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span></span>
+<span><span class="va">y</span> <span class="op">&lt;-</span> <span class="va">z</span><span class="op">[[</span><span class="fl">2</span><span class="op">]</span><span class="op">]</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/colnames.html" class="external-link">colnames</a></span><span class="op">(</span><span class="va">x</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"pad"</span>, <span class="st">"pad"</span>, <span class="st">"pad"</span>, <span class="st">"pad"</span>, <span class="st">"A"</span>, <span class="st">"T"</span>, <span class="st">"C"</span>, <span class="st">"G"</span><span class="op">)</span></span>
+<span><span class="va">x</span></span></code></pre></div>
+<pre><code><span><span class="co">##      pad pad pad pad A T C G</span></span>
+<span><span class="co">## [1,]   0   0   0   0 1 4 2 3</span></span></code></pre>
+<div class="sourceCode" id="cb143"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/colnames.html" class="external-link">colnames</a></span><span class="op">(</span><span class="va">y</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="st">"C"</span></span>
+<span><span class="va">y</span></span></code></pre></div>
+<pre><code><span><span class="co">##      C</span></span>
+<span><span class="co">## [1,] 2</span></span></code></pre>
+<p>Can also be combined with n-gram encoding:</p>
+<div class="sourceCode" id="cb145"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">df</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span>Sequence <span class="op">=</span> <span class="st">"AAACCCTTT"</span>, Header <span class="op">=</span> <span class="st">"seq_1"</span><span class="op">)</span></span>
+<span><span class="va">fasta_path</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/tempfile.html" class="external-link">tempfile</a></span><span class="op">(</span>fileext <span class="op">=</span> <span class="st">".fasta"</span><span class="op">)</span></span>
+<span><span class="va">fasta_file</span> <span class="op">&lt;-</span> <span class="fu">microseq</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/microseq/man/readFasta.html" class="external-link">writeFasta</a></span><span class="op">(</span><span class="va">df</span>, <span class="va">fasta_path</span><span class="op">)</span></span>
+<span><span class="va">gen</span> <span class="op">&lt;-</span>  <span class="fu"><a href="../reference/get_generator.html">get_generator</a></span><span class="op">(</span>path <span class="op">=</span> <span class="va">fasta_path</span>,</span>
+<span>                      train_type <span class="op">=</span> <span class="st">"lm"</span>,</span>
+<span>                      batch_size <span class="op">=</span> <span class="fl">1</span>,</span>
+<span>                      n_gram <span class="op">=</span> <span class="fl">3</span>,</span>
+<span>                      n_gram_stride <span class="op">=</span> <span class="fl">3</span>,</span>
+<span>                      return_int <span class="op">=</span> <span class="cn">TRUE</span>,</span>
+<span>                      maxlen <span class="op">=</span> <span class="fl">6</span>,</span>
+<span>                      target_len <span class="op">=</span> <span class="fl">3</span>,</span>
+<span>                      vocabulary <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"A"</span>, <span class="st">"C"</span>, <span class="st">"G"</span>, <span class="st">"T"</span><span class="op">)</span>,</span>
+<span>                      output_format <span class="op">=</span> <span class="st">"target_right"</span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">z</span> <span class="op">&lt;-</span> <span class="fu">gen</span><span class="op">(</span><span class="op">)</span></span>
+<span><span class="va">x</span> <span class="op">&lt;-</span> <span class="va">z</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span></span>
+<span><span class="va">y</span> <span class="op">&lt;-</span> <span class="va">z</span><span class="op">[[</span><span class="fl">2</span><span class="op">]</span><span class="op">]</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/colnames.html" class="external-link">colnames</a></span><span class="op">(</span><span class="va">x</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"AAA"</span>, <span class="st">"CCC"</span><span class="op">)</span></span>
+<span><span class="va">x</span></span></code></pre></div>
+<pre><code><span><span class="co">##      AAA CCC</span></span>
+<span><span class="co">## [1,]   1  22</span></span></code></pre>
+<div class="sourceCode" id="cb147"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/colnames.html" class="external-link">colnames</a></span><span class="op">(</span><span class="va">y</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="st">"TTT"</span></span>
+<span><span class="va">y</span></span></code></pre></div>
+<pre><code><span><span class="co">##      TTT</span></span>
+<span><span class="co">## [1,]  64</span></span></code></pre>
+</div>
+<div class="section level3">
+<h3 id="masked_lm">masked_lm<a class="anchor" aria-label="anchor" href="#masked_lm"></a>
+</h3>
+<p>Masks some parts of input sequence. Can be used for training
+BERT-like models.</p>
+<div class="sourceCode" id="cb149"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">nt_seq</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"A"</span>, <span class="st">"C"</span>, <span class="st">"G"</span>, <span class="st">"T"</span><span class="op">)</span>, each <span class="op">=</span> <span class="fl">25</span><span class="op">)</span> <span class="op"><a href="../reference/pipe.html">%&gt;%</a></span> <span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste</a></span><span class="op">(</span>collapse <span class="op">=</span> <span class="st">""</span><span class="op">)</span></span>
+<span><span class="va">df</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span>Sequence <span class="op">=</span> <span class="va">nt_seq</span>, Header <span class="op">=</span> <span class="st">"seq_1"</span><span class="op">)</span></span>
+<span><span class="va">fasta_path</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/tempfile.html" class="external-link">tempfile</a></span><span class="op">(</span>fileext <span class="op">=</span> <span class="st">".fasta"</span><span class="op">)</span></span>
+<span><span class="va">fasta_file</span> <span class="op">&lt;-</span> <span class="fu">microseq</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/microseq/man/readFasta.html" class="external-link">writeFasta</a></span><span class="op">(</span><span class="va">df</span>, <span class="va">fasta_path</span><span class="op">)</span></span>
+<span><span class="va">masked_lm</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>mask_rate <span class="op">=</span> <span class="fl">0.10</span>, <span class="co"># replace 10% of input with special mask token</span></span>
+<span>                  random_rate <span class="op">=</span> <span class="fl">0.025</span>, <span class="co"># set 2.5% of input to random value</span></span>
+<span>                  identity_rate <span class="op">=</span> <span class="fl">0.05</span>, <span class="co"># leave 5% unchanged</span></span>
+<span>                  include_sw <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span> <span class="co"># 0,1 matrix showing where masking was applied</span></span>
+<span><span class="va">gen</span> <span class="op">&lt;-</span>  <span class="fu"><a href="../reference/get_generator.html">get_generator</a></span><span class="op">(</span>path <span class="op">=</span> <span class="va">fasta_path</span>,</span>
+<span>                      train_type <span class="op">=</span> <span class="st">"masked_lm"</span>,</span>
+<span>                      masked_lm <span class="op">=</span> <span class="va">masked_lm</span>,</span>
+<span>                      batch_size <span class="op">=</span> <span class="fl">1</span>,</span>
+<span>                      n_gram <span class="op">=</span> <span class="fl">1</span>,</span>
+<span>                      n_gram_stride <span class="op">=</span> <span class="fl">1</span>,</span>
+<span>                      return_int <span class="op">=</span> <span class="cn">TRUE</span>,</span>
+<span>                      maxlen <span class="op">=</span> <span class="fl">100</span>,</span>
+<span>                      vocabulary <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"A"</span>, <span class="st">"C"</span>, <span class="st">"G"</span>, <span class="st">"T"</span><span class="op">)</span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">z</span> <span class="op">&lt;-</span> <span class="fu">gen</span><span class="op">(</span><span class="op">)</span></span>
+<span><span class="va">x</span> <span class="op">&lt;-</span> <span class="va">z</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span></span>
+<span><span class="va">y</span> <span class="op">&lt;-</span> <span class="va">z</span><span class="op">[[</span><span class="fl">2</span><span class="op">]</span><span class="op">]</span></span>
+<span><span class="va">sw</span> <span class="op">&lt;-</span> <span class="va">z</span><span class="op">[[</span><span class="fl">3</span><span class="op">]</span><span class="op">]</span></span>
+<span><span class="va">df</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span>x <span class="op">=</span> <span class="va">x</span><span class="op">[</span><span class="fl">1</span>, <span class="op">]</span>, y <span class="op">=</span> <span class="va">y</span><span class="op">[</span><span class="fl">1</span>, <span class="op">]</span>, sw <span class="op">=</span> <span class="va">sw</span><span class="op">[</span><span class="fl">1</span>, <span class="op">]</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">df</span><span class="op">)</span></span></code></pre></div>
+<pre><code><span><span class="co">##   x y sw</span></span>
+<span><span class="co">## 1 5 1  1</span></span>
+<span><span class="co">## 2 1 1  0</span></span>
+<span><span class="co">## 3 1 1  0</span></span>
+<span><span class="co">## 4 1 1  0</span></span>
+<span><span class="co">## 5 1 1  0</span></span>
+<span><span class="co">## 6 1 1  0</span></span></code></pre>
+<p>Whenever sw (sample weight) column is 0, x and y columns are
+identical. Let’s look at rows where sw is 1:</p>
+<div class="sourceCode" id="cb151"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">df</span> <span class="op"><a href="../reference/pipe.html">%&gt;%</a></span> <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">sw</span> <span class="op">==</span> <span class="fl">1</span><span class="op">)</span></span></code></pre></div>
+<pre><code><span><span class="co">##    x y sw</span></span>
+<span><span class="co">## 1  5 1  1</span></span>
+<span><span class="co">## 2  1 1  1</span></span>
+<span><span class="co">## 3  1 1  1</span></span>
+<span><span class="co">## 4  5 1  1</span></span>
+<span><span class="co">## 5  5 2  1</span></span>
+<span><span class="co">## 6  5 2  1</span></span>
+<span><span class="co">## 7  5 2  1</span></span>
+<span><span class="co">## 8  3 3  1</span></span>
+<span><span class="co">## 9  2 3  1</span></span>
+<span><span class="co">## 10 3 3  1</span></span>
+<span><span class="co">## 11 5 3  1</span></span>
+<span><span class="co">## 12 5 3  1</span></span>
+<span><span class="co">## 13 4 4  1</span></span>
+<span><span class="co">## 14 5 4  1</span></span>
+<span><span class="co">## 15 4 4  1</span></span>
+<span><span class="co">## 16 5 4  1</span></span>
+<span><span class="co">## 17 5 4  1</span></span>
+<span><span class="co">## 18 4 4  1</span></span></code></pre>
+<p>Here 5 is the mask token, this is always the size of the vocabulary +
+1.</p>
+<div class="sourceCode" id="cb153"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">df</span> <span class="op"><a href="../reference/pipe.html">%&gt;%</a></span> <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">sw</span> <span class="op">==</span> <span class="fl">1</span> <span class="op">&amp;</span> <span class="va">x</span> <span class="op">==</span> <span class="fl">5</span><span class="op">)</span> <span class="co"># 10% masked part</span></span></code></pre></div>
+<pre><code><span><span class="co">##    x y sw</span></span>
+<span><span class="co">## 1  5 1  1</span></span>
+<span><span class="co">## 2  5 1  1</span></span>
+<span><span class="co">## 3  5 2  1</span></span>
+<span><span class="co">## 4  5 2  1</span></span>
+<span><span class="co">## 5  5 2  1</span></span>
+<span><span class="co">## 6  5 3  1</span></span>
+<span><span class="co">## 7  5 3  1</span></span>
+<span><span class="co">## 8  5 4  1</span></span>
+<span><span class="co">## 9  5 4  1</span></span>
+<span><span class="co">## 10 5 4  1</span></span></code></pre>
+<div class="sourceCode" id="cb155"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">df</span> <span class="op"><a href="../reference/pipe.html">%&gt;%</a></span> <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">sw</span> <span class="op">==</span> <span class="fl">1</span> <span class="op">&amp;</span> <span class="va">x</span> <span class="op">!=</span> <span class="fl">5</span><span class="op">)</span> <span class="co"># 5% identity part and 2.5% random part (can randomly be the true value)</span></span></code></pre></div>
+<pre><code><span><span class="co">##   x y sw</span></span>
+<span><span class="co">## 1 1 1  1</span></span>
+<span><span class="co">## 2 1 1  1</span></span>
+<span><span class="co">## 3 3 3  1</span></span>
+<span><span class="co">## 4 2 3  1</span></span>
+<span><span class="co">## 5 3 3  1</span></span>
+<span><span class="co">## 6 4 4  1</span></span>
+<span><span class="co">## 7 4 4  1</span></span>
+<span><span class="co">## 8 4 4  1</span></span></code></pre>
+<p>Can be combined with n-gram encoding and masking of fixed block
+size:</p>
+<div class="sourceCode" id="cb157"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">nt_seq</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"A"</span>, <span class="st">"C"</span>, <span class="st">"G"</span>, <span class="st">"T"</span><span class="op">)</span>, each <span class="op">=</span> <span class="fl">25</span><span class="op">)</span> <span class="op"><a href="../reference/pipe.html">%&gt;%</a></span> <span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste</a></span><span class="op">(</span>collapse <span class="op">=</span> <span class="st">""</span><span class="op">)</span></span>
+<span><span class="va">df</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span>Sequence <span class="op">=</span> <span class="va">nt_seq</span>, Header <span class="op">=</span> <span class="st">"seq_1"</span><span class="op">)</span></span>
+<span><span class="va">fasta_path</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/tempfile.html" class="external-link">tempfile</a></span><span class="op">(</span>fileext <span class="op">=</span> <span class="st">".fasta"</span><span class="op">)</span></span>
+<span><span class="va">fasta_file</span> <span class="op">&lt;-</span> <span class="fu">microseq</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/microseq/man/readFasta.html" class="external-link">writeFasta</a></span><span class="op">(</span><span class="va">df</span>, <span class="va">fasta_path</span><span class="op">)</span></span>
+<span><span class="va">masked_lm</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>mask_rate <span class="op">=</span> <span class="fl">0.10</span>, <span class="co"># replace 10% of input with special mask token</span></span>
+<span>                  random_rate <span class="op">=</span> <span class="fl">0.05</span>, <span class="co"># set 5% of input to random value</span></span>
+<span>                  identity_rate <span class="op">=</span> <span class="fl">0.05</span>, <span class="co"># leave 5% unchanged</span></span>
+<span>                  include_sw <span class="op">=</span> <span class="cn">TRUE</span>, <span class="co"># 0,1 matrix showing where masking was applied</span></span>
+<span>                  block_len <span class="op">=</span> <span class="fl">3</span><span class="op">)</span> <span class="co"># always mask at least 3 tokens in a row </span></span>
+<span><span class="va">gen</span> <span class="op">&lt;-</span>  <span class="fu"><a href="../reference/get_generator.html">get_generator</a></span><span class="op">(</span>path <span class="op">=</span> <span class="va">fasta_path</span>,</span>
+<span>                      train_type <span class="op">=</span> <span class="st">"masked_lm"</span>,</span>
+<span>                      masked_lm <span class="op">=</span> <span class="va">masked_lm</span>,</span>
+<span>                      batch_size <span class="op">=</span> <span class="fl">1</span>,</span>
+<span>                      n_gram <span class="op">=</span> <span class="fl">3</span>,</span>
+<span>                      seed <span class="op">=</span> <span class="fl">12</span>,</span>
+<span>                      n_gram_stride <span class="op">=</span> <span class="fl">1</span>,</span>
+<span>                      return_int <span class="op">=</span> <span class="cn">TRUE</span>,</span>
+<span>                      maxlen <span class="op">=</span> <span class="fl">100</span>,</span>
+<span>                      vocabulary <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"A"</span>, <span class="st">"C"</span>, <span class="st">"G"</span>, <span class="st">"T"</span><span class="op">)</span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">z</span> <span class="op">&lt;-</span> <span class="fu">gen</span><span class="op">(</span><span class="op">)</span></span>
+<span><span class="va">x</span> <span class="op">&lt;-</span> <span class="va">z</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span></span>
+<span><span class="va">y</span> <span class="op">&lt;-</span> <span class="va">z</span><span class="op">[[</span><span class="fl">2</span><span class="op">]</span><span class="op">]</span></span>
+<span><span class="va">sw</span> <span class="op">&lt;-</span> <span class="va">z</span><span class="op">[[</span><span class="fl">3</span><span class="op">]</span><span class="op">]</span></span>
+<span><span class="va">df</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span>x <span class="op">=</span> <span class="va">x</span><span class="op">[</span><span class="fl">1</span>, <span class="op">]</span>, y <span class="op">=</span> <span class="va">y</span><span class="op">[</span><span class="fl">1</span>, <span class="op">]</span>, sw <span class="op">=</span> <span class="va">sw</span><span class="op">[</span><span class="fl">1</span>, <span class="op">]</span>, position <span class="op">=</span> <span class="fl">1</span><span class="op">:</span><span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">ncol</a></span><span class="op">(</span><span class="va">x</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">df</span><span class="op">)</span></span></code></pre></div>
+<pre><code><span><span class="co">##    x y sw position</span></span>
+<span><span class="co">## 1  1 1  0        1</span></span>
+<span><span class="co">## 2  1 1  0        2</span></span>
+<span><span class="co">## 3  1 1  0        3</span></span>
+<span><span class="co">## 4 39 1  1        4</span></span>
+<span><span class="co">## 5 48 1  1        5</span></span>
+<span><span class="co">## 6 13 1  1        6</span></span></code></pre>
+<div class="sourceCode" id="cb159"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">tail</a></span><span class="op">(</span><span class="va">df</span><span class="op">)</span></span></code></pre></div>
+<pre><code><span><span class="co">##     x  y sw position</span></span>
+<span><span class="co">## 93 65 64  1       93</span></span>
+<span><span class="co">## 94 64 64  0       94</span></span>
+<span><span class="co">## 95 64 64  0       95</span></span>
+<span><span class="co">## 96 64 64  0       96</span></span>
+<span><span class="co">## 97 64 64  0       97</span></span>
+<span><span class="co">## 98 64 64  0       98</span></span></code></pre>
+<p>We can check that sample weights appear only in blocks.</p>
+<div class="sourceCode" id="cb161"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/which.html" class="external-link">which</a></span><span class="op">(</span><span class="va">sw</span> <span class="op">==</span> <span class="fl">1</span><span class="op">)</span></span></code></pre></div>
+<pre><code><span><span class="co">##  [1]  4  5  6 13 14 15 22 23 24 40 41 42 52 53 54 79 80 81 82 83 84 91 92 93</span></span></code></pre>
+<p>Here 65 is the mask token (4^3 + 1 = size of the vocabulary + 1).</p>
+<div class="sourceCode" id="cb163"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">df</span> <span class="op"><a href="../reference/pipe.html">%&gt;%</a></span> <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">sw</span> <span class="op">==</span> <span class="fl">1</span> <span class="op">&amp;</span> <span class="va">x</span> <span class="op">==</span> <span class="fl">65</span><span class="op">)</span> <span class="co"># 10% masked part</span></span></code></pre></div>
+<pre><code><span><span class="co">##     x  y sw position</span></span>
+<span><span class="co">## 1  65 22  1       40</span></span>
+<span><span class="co">## 2  65 22  1       41</span></span>
+<span><span class="co">## 3  65 22  1       42</span></span>
+<span><span class="co">## 4  65 64  1       79</span></span>
+<span><span class="co">## 5  65 64  1       80</span></span>
+<span><span class="co">## 6  65 64  1       81</span></span>
+<span><span class="co">## 7  65 64  1       82</span></span>
+<span><span class="co">## 8  65 64  1       83</span></span>
+<span><span class="co">## 9  65 64  1       84</span></span>
+<span><span class="co">## 10 65 64  1       91</span></span>
+<span><span class="co">## 11 65 64  1       92</span></span>
+<span><span class="co">## 12 65 64  1       93</span></span></code></pre>
+<div class="sourceCode" id="cb165"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">df</span> <span class="op"><a href="../reference/pipe.html">%&gt;%</a></span> <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">sw</span> <span class="op">==</span> <span class="fl">1</span> <span class="op">&amp;</span> <span class="va">x</span> <span class="op">!=</span> <span class="fl">65</span><span class="op">)</span> <span class="co"># 5% identity part and 5% random part (can randomly be the true value)</span></span></code></pre></div>
+<pre><code><span><span class="co">##     x  y sw position</span></span>
+<span><span class="co">## 1  39  1  1        4</span></span>
+<span><span class="co">## 2  48  1  1        5</span></span>
+<span><span class="co">## 3  13  1  1        6</span></span>
+<span><span class="co">## 4   1  1  1       13</span></span>
+<span><span class="co">## 5   1  1  1       14</span></span>
+<span><span class="co">## 6   1  1  1       15</span></span>
+<span><span class="co">## 7   1  1  1       22</span></span>
+<span><span class="co">## 8   1  1  1       23</span></span>
+<span><span class="co">## 9   2  2  1       24</span></span>
+<span><span class="co">## 10 56 43  1       52</span></span>
+<span><span class="co">## 11  4 43  1       53</span></span>
+<span><span class="co">## 12 24 43  1       54</span></span></code></pre>
 </div>
 </div>
   </div>
@@ -1417,7 +1767,7 @@ mark.out {
 
 <div class="pkgdown">
   <p></p>
-<p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.5.</p>
+<p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.7.</p>
 </div>
 
       </footer>
