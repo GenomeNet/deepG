@@ -1,8 +1,11 @@
 ---
 title: "Training Types"
 output:
+  pdf_document:
+    toc: yes
+    toc_depth: '3'
   html_document:
-    toc: true
+    toc: yes
     toc_depth: 3
 ---
 
@@ -141,6 +144,119 @@ hist <- train_model(train_type = "lm", # running a language model
                     batch_size = 16,
                     epochs = 4)
 plot(hist)
+```
+
+
+### Masked language model
+
+Here we mask some parts of the input sequence and the model tries to predict the masked regions. Can be used for training BERT-like models.
+See also this [notebook](https://colab.research.google.com/drive/1kyYK7IU7GSfdpDzO_a8U3_qD4i3zTu6w?usp=sharing).
+We can first check how the generator works. 
+
+```{r warning = FALSE, message = FALSE}
+# create dummy training data
+nt_seq <- rep(c("A", "C", "G", "T"), each = 25) %>% paste(collapse = "") %>% strrep(10)
+df <- data.frame(Sequence = nt_seq, Header = "seq_1")
+fasta_path <- tempfile(fileext = ".fasta")
+fasta_file <- microseq::writeFasta(df, fasta_path)
+masked_lm <- list(mask_rate = 0.10, # replace 10% of input with special mask token
+                  random_rate = 0.03, # set 3% of input to random value
+                  identity_rate = 0.02, # leave 2% unchanged (and set sample weight to 1)
+                  include_sw = TRUE) # 0,1 matrix showing where masking was applied
+
+gen <-  get_generator(path = fasta_path,
+                      train_type = "masked_lm",
+                      masked_lm = masked_lm,
+                      batch_size = 1,
+                      n_gram = 1,
+                      n_gram_stride = 1,
+                      return_int = TRUE,
+                      maxlen = 100,
+                      vocabulary = c("A", "C", "G", "T"))
+
+z <- gen()
+x <- z[[1]]
+y <- z[[2]]
+sw <- z[[3]]
+df <- data.frame(x = x[1, ], y = y[1, ], sw = sw[1, ])
+print(head(df), 10)
+print(df[ df$sw == 1, ])
+```
+
+Create the model architecture.
+
+```{r}
+model <- create_model_transformer(
+  maxlen = 100,
+  vocabulary_size = 6,
+  embed_dim = 16,
+  ff_dim = 32,
+  pos_encoding = "embedding",
+  head_size = 20,
+  num_heads = 4,
+  layer_dense = 6,
+  flatten_method = "none",
+  last_layer_activation = "softmax",
+  loss_fn = "sparse_categorical_crossentropy",
+  solver = "adam",
+  learning_rate = 0.005
+)
+```
+
+
+
+Train the model.
+
+```{r}
+batch_size <- 128
+masked_lm <- list(mask_rate = 0.10, random_rate = 0.03, identity_rate = 0.02, include_sw = TRUE)
+
+hist <- train_model(model = model,
+            # training args
+            run_name = "bert_1",
+            epochs = 8,
+            steps_per_epoch = 75,
+            # generator args
+            maxlen = 100,
+            train_type = "masked_lm",
+            path = fasta_path,
+            path_val = NULL,
+            batch_size = batch_size,
+            step = 25,
+            masked_lm = masked_lm,
+            proportion_per_seq = 0.97,
+            return_int = TRUE)
+
+plot(hist)
+```
+
+Evaluate the trained model. 
+
+```{r}
+gen <-  get_generator(path = fasta_path,
+                      train_type = "masked_lm",
+                      masked_lm = masked_lm,
+                      batch_size = 1,
+                      n_gram = 1,
+                      n_gram_stride = 1,
+                      return_int = TRUE,
+                      maxlen = 100,
+                      vocabulary = c("A", "C", "G", "T"))
+
+z <- gen()
+x <- z[[1]]
+y <- z[[2]]
+sw <- z[[3]]
+pred <- model$predict(x) 
+pred <- apply(pred[1,,], 1, which.max) - 1 
+df <- data.frame(x = x[1, ], sw = sw[1, ], y = y[1, ], pred = pred)
+head(df)
+df[df$sw == 1, ]
+```
+
+```{r}
+df2 <- df[df$sw == 1, ]
+table(df2$pred, df2$y)
 ```
 
 
@@ -376,3 +492,4 @@ hist <- train_model(train_type = "label_rds",
 
 plot(hist)
 ```
+

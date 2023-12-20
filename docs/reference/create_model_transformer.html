@@ -53,6 +53,9 @@
     <li>
       <a href="https://colab.research.google.com/drive/10xpRzGd3JeBAbqQYSCxzQUMctt01sx9D?usp=sharing" class="external-link">Full metagenome level: Colorectal cancer prediction</a>
     </li>
+    <li>
+      <a href="https://colab.research.google.com/drive/1kyYK7IU7GSfdpDzO_a8U3_qD4i3zTu6w?usp=sharing" class="external-link">BERT with deepG</a>
+    </li>
   </ul></li>
 <li class="dropdown">
   <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
@@ -104,11 +107,12 @@
     <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">create_model_transformer</span><span class="op">(</span></span>
 <span>  <span class="va">maxlen</span>,</span>
 <span>  vocabulary_size <span class="op">=</span> <span class="fl">4</span>,</span>
+<span>  embed_dim <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  pos_encoding <span class="op">=</span> <span class="st">"sinusoid"</span>,</span>
 <span>  head_size <span class="op">=</span> <span class="fl">4L</span>,</span>
 <span>  num_heads <span class="op">=</span> <span class="fl">5L</span>,</span>
+<span>  ff_dim <span class="op">=</span> <span class="fl">8</span>,</span>
 <span>  dropout <span class="op">=</span> <span class="fl">0</span>,</span>
-<span>  res_connection <span class="op">=</span> <span class="cn">TRUE</span>,</span>
 <span>  n <span class="op">=</span> <span class="fl">10000</span>,</span>
 <span>  layer_dense <span class="op">=</span> <span class="fl">2</span>,</span>
 <span>  dropout_dense <span class="op">=</span> <span class="cn">NULL</span>,</span>
@@ -137,6 +141,11 @@
 <dd><p>Number of unique character in vocabulary.</p></dd>
 
 
+<dt>embed_dim</dt>
+<dd><p>Dimension for token embedding. No embedding if <code>NULL</code>. Should be used when input is not one-hot encoded
+(integer sequence).</p></dd>
+
+
 <dt>pos_encoding</dt>
 <dd><p>Either <code>"sinusoid"</code> or <code>"embedding"</code>. How to add positional information.
 If <code>"sinusoid"</code>, will add sine waves of different frequencies to input.
@@ -144,19 +153,19 @@ If <code>"embedding"</code>, model learns positional embedding.</p></dd>
 
 
 <dt>head_size</dt>
-<dd><p>Vector of dimensions of attention keys for each block.</p></dd>
+<dd><p>Dimensions of attention key.</p></dd>
 
 
 <dt>num_heads</dt>
 <dd><p>Number of attention heads.</p></dd>
 
 
+<dt>ff_dim</dt>
+<dd><p>Units of first dense layer after attention blocks.</p></dd>
+
+
 <dt>dropout</dt>
 <dd><p>Vector of dropout rates after attention block(s).</p></dd>
-
-
-<dt>res_connection</dt>
-<dd><p>Whether to add residual connection between attention blocks.</p></dd>
 
 
 <dt>n</dt>
@@ -172,9 +181,9 @@ If <code>"embedding"</code>, model learns positional embedding.</p></dd>
 
 
 <dt>flatten_method</dt>
-<dd><p>How to process output of last attention block. Can be <code>"gap_channels_last"</code>, <code>"gap_channels_first"</code>
+<dd><p>How to process output of last attention block. Can be <code>"gap_channels_last"</code>, <code>"gap_channels_first"</code>, <code>"none"</code>,
 or <code>"flatten"</code>. If <code>"gap_channels_last"</code> or <code>"gap_channels_first"</code>, will apply global average pooling. If <code>"flatten"</code>, will flatten
-output after last attention block.</p></dd>
+output after last attention block. If <code>"none"</code> no flatting applied.</p></dd>
 
 
 <dt>last_layer_activation</dt>
@@ -230,38 +239,24 @@ The closer the argument is to 1 the more the labels get smoothed.</p></dd>
     <h2>Examples</h2>
     <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="va">model</span> <span class="op">&lt;-</span> <span class="fu">create_model_transformer</span><span class="op">(</span>maxlen <span class="op">=</span> <span class="fl">50</span>,</span></span>
-<span class="r-in"><span>            head_size<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">4</span>,<span class="fl">7</span><span class="op">)</span>, num_heads<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">5</span>,<span class="fl">8</span><span class="op">)</span>, dropout<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0.3</span>,<span class="fl">0.5</span><span class="op">)</span><span class="op">)</span></span></span>
+<span class="r-in"><span>                                  head_size<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">10</span>,<span class="fl">12</span><span class="op">)</span>, num_heads<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">7</span>,<span class="fl">8</span><span class="op">)</span>, ff_dim<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">5</span>,<span class="fl">9</span><span class="op">)</span>, </span></span>
+<span class="r-in"><span>                                  dropout<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0.3</span>, <span class="fl">0.5</span><span class="op">)</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Model: "model_6"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> ________________________________________________________________________________</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  Layer (type)             Output Shape      Param #  Connected to               </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Layer (type)                       Output Shape                    Param #     </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> ================================================================================</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  input_7 (InputLayer)     [(None, 50, 4)]   0        []                         </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  lambda_1 (Lambda)        (None, 50, 4)     0        ['input_7[0][0]']          </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  layer_normalization (Lay  (None, 50, 4)    8        ['lambda_1[0][0]']         </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  erNormalization)                                                               </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  multi_head_attention (Mu  (None, 50, 4)    384      ['layer_normalization[0][0]</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  ltiHeadAttention)                                   ',                         </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>                                                       'layer_normalization[0][0]</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>                                                      ']                         </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  dropout (Dropout)        (None, 50, 4)     0        ['multi_head_attention[0][0</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>                                                      ]']                        </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  tf.math.add (TFOpLambda)  (None, 50, 4)    0        ['dropout[0][0]',          </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>                                                       'lambda_1[0][0]']         </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  layer_normalization_1 (L  (None, 50, 4)    8        ['tf.math.add[0][0]']      </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  ayerNormalization)                                                             </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  multi_head_attention_1 (  (None, 50, 4)    1068     ['layer_normalization_1[0][</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  MultiHeadAttention)                                 0]',                       </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>                                                       'layer_normalization_1[0][</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>                                                      0]']                       </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  dropout_1 (Dropout)      (None, 50, 4)     0        ['multi_head_attention_1[0]</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>                                                      [0]']                      </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  tf.math.add_1 (TFOpLambd  (None, 50, 4)    0        ['dropout_1[0][0]',        </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  a)                                                   'tf.math.add[0][0]']      </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  flatten (Flatten)        (None, 200)       0        ['tf.math.add_1[0][0]']    </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  dense_10 (Dense)         (None, 2)         402      ['flatten[0][0]']          </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  input_7 (InputLayer)               [(None, 50, 4)]                 0           </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  layer_pos_embedding (layer_pos_emb  (None, 50, 4)                  200         </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  edding)                                                                        </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  layer_transformer_block (layer_tra  (None, 50, 4)                  1399        </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  nsformer_block)                                                                </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  layer_transformer_block_1 (layer_t  (None, 50, 4)                  1929        </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  ransformer_block)                                                              </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  flatten (Flatten)                  (None, 200)                     0           </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  dense_14 (Dense)                   (None, 2)                       402         </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> ================================================================================</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Total params: 1,870</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Trainable params: 1,870</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Total params: 3,930</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Trainable params: 3,930</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Non-trainable params: 0</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> ________________________________________________________________________________</span>
 <span class="r-in"><span></span></span>
@@ -279,7 +274,7 @@ The closer the argument is to 1 the more the labels get smoothed.</p></dd>
 </div>
 
 <div class="pkgdown">
-  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.5.</p>
+  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.7.</p>
 </div>
 
       </footer></div>

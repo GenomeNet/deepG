@@ -734,7 +734,7 @@ x2 # defgh
 
 ### target_len 
 
-Target length for language model. Default is 1; if > 1 the target part of the generator output is a list of length `target_len`.
+Target length for language model.
 
 ```{r warning = FALSE, message = FALSE}
 gen <- get_generator(path = file_path,
@@ -747,13 +747,13 @@ gen <- get_generator(path = file_path,
 
 z <- gen()
 x <- z[[1]][1, , ]
-y1 <- z[[2]][[1]]
-y2 <- z[[2]][[2]]
-y3 <- z[[2]][[3]]
+y1 <- z[[2]][ , 1, ]
+y2 <- z[[2]][ , 2, ]
+y3 <- z[[2]][ , 3, ]
 colnames(x) <- vocabulary
-colnames(y1) <- vocabulary
-colnames(y2) <- vocabulary
-colnames(y3) <- vocabulary
+names(y1) <- vocabulary
+names(y2) <- vocabulary
+names(y3) <- vocabulary
 x # abcde
 y1 # f
 y2 # g
@@ -769,26 +769,22 @@ the n-gram encoding.
 gen <- get_generator(path = file_path,
                      train_type = "lm",
                      batch_size = 1,
-                     target_len = 8, 
+                     target_len = 6, 
                      n_gram = 3,
-                     n_gram_stride = 2,
-                     maxlen = 4,
+                     n_gram_stride = 3,
+                     maxlen = 3,
                      vocabulary = vocabulary,
                      output_format = "target_right")
 
 z <- gen()
-x <- z[[1]][1, , ]
-y1 <- z[[2]][[1]]
-y2 <- z[[2]][[2]]
-y3 <- z[[2]][[3]]
+x <- z[[1]]
+y1 <- z[[2]][ , 1, ]
+y2 <- z[[2]][ , 2, ]
 
-
-colnames(x) <- vocabulary
-x # abcd
-ncol(y1) # = 3^length(vocabulary)
-# y1 # efg as 3-gram
-# y2 # ghi as 3-gram
-# y3 # iii as 3-gram
+dim(x)[3] == length(vocabulary)^3
+# x = abc as 3-gram
+# y1 = def as 3-gram
+# y2 = ghi as 3-gram
 ```
 
 ### add_noise
@@ -1065,4 +1061,147 @@ model <- create_model_lstm_cnn(
 #             steps_per_epoch = 5,
 #             batch_size = 8,
 #             epochs = 2)
+```
+
+
+### return_int
+
+Whether to return integer encoding rather than one-hot encoding.
+
+```{r warning = FALSE, message = FALSE}
+df <- data.frame(Sequence = "ATCGC", Header = "seq_1")
+fasta_path <- tempfile(fileext = ".fasta")
+fasta_file <- microseq::writeFasta(df, fasta_path)
+gen <-  get_generator(path = fasta_path,
+                      train_type = "lm",
+                      batch_size = 1,
+                      return_int = TRUE,
+                      padding = TRUE,
+                      maxlen = 8,
+                      vocabulary = c("A", "C", "G", "T"),
+                      output_format = "target_right")
+
+z <- gen()
+x <- z[[1]]
+y <- z[[2]]
+colnames(x) <- c("pad", "pad", "pad", "pad", "A", "T", "C", "G")
+x
+colnames(y) <- "C"
+y
+```
+
+Can also be combined with n-gram encoding:
+
+```{r warning = FALSE, message = FALSE}
+df <- data.frame(Sequence = "AAACCCTTT", Header = "seq_1")
+fasta_path <- tempfile(fileext = ".fasta")
+fasta_file <- microseq::writeFasta(df, fasta_path)
+gen <-  get_generator(path = fasta_path,
+                      train_type = "lm",
+                      batch_size = 1,
+                      n_gram = 3,
+                      n_gram_stride = 3,
+                      return_int = TRUE,
+                      maxlen = 6,
+                      target_len = 3,
+                      vocabulary = c("A", "C", "G", "T"),
+                      output_format = "target_right")
+
+z <- gen()
+x <- z[[1]]
+y <- z[[2]]
+colnames(x) <- c("AAA", "CCC")
+x
+colnames(y) <- "TTT"
+y
+```
+
+
+### masked_lm
+
+Masks some parts of input sequence. Can be used for training BERT-like models.
+
+```{r warning = FALSE, message = FALSE}
+nt_seq <- rep(c("A", "C", "G", "T"), each = 25) %>% paste(collapse = "")
+df <- data.frame(Sequence = nt_seq, Header = "seq_1")
+fasta_path <- tempfile(fileext = ".fasta")
+fasta_file <- microseq::writeFasta(df, fasta_path)
+masked_lm <- list(mask_rate = 0.10, # replace 10% of input with special mask token
+                  random_rate = 0.025, # set 2.5% of input to random value
+                  identity_rate = 0.05, # leave 5% unchanged
+                  include_sw = TRUE) # 0,1 matrix showing where masking was applied
+gen <-  get_generator(path = fasta_path,
+                      train_type = "masked_lm",
+                      masked_lm = masked_lm,
+                      batch_size = 1,
+                      n_gram = 1,
+                      n_gram_stride = 1,
+                      return_int = TRUE,
+                      maxlen = 100,
+                      vocabulary = c("A", "C", "G", "T"))
+
+z <- gen()
+x <- z[[1]]
+y <- z[[2]]
+sw <- z[[3]]
+df <- data.frame(x = x[1, ], y = y[1, ], sw = sw[1, ])
+head(df)
+```
+
+Whenever sw (sample weight) column is 0, x and y columns are identical. Let's look at rows where sw is 1:
+
+```{r warning = FALSE, message = FALSE}
+df %>% dplyr::filter(sw == 1)
+```
+
+Here 5 is the mask token, this is always the size of the vocabulary + 1.
+
+```{r warning = FALSE, message = FALSE}
+df %>% dplyr::filter(sw == 1 & x == 5) # 10% masked part
+df %>% dplyr::filter(sw == 1 & x != 5) # 5% identity part and 2.5% random part (can randomly be the true value)
+```
+
+Can be combined with n-gram encoding and masking of fixed block size:
+
+```{r warning = FALSE, message = FALSE}
+nt_seq <- rep(c("A", "C", "G", "T"), each = 25) %>% paste(collapse = "")
+df <- data.frame(Sequence = nt_seq, Header = "seq_1")
+fasta_path <- tempfile(fileext = ".fasta")
+fasta_file <- microseq::writeFasta(df, fasta_path)
+masked_lm <- list(mask_rate = 0.10, # replace 10% of input with special mask token
+                  random_rate = 0.05, # set 5% of input to random value
+                  identity_rate = 0.05, # leave 5% unchanged
+                  include_sw = TRUE, # 0,1 matrix showing where masking was applied
+                  block_len = 3) # always mask at least 3 tokens in a row 
+gen <-  get_generator(path = fasta_path,
+                      train_type = "masked_lm",
+                      masked_lm = masked_lm,
+                      batch_size = 1,
+                      n_gram = 3,
+                      seed = 12,
+                      n_gram_stride = 1,
+                      return_int = TRUE,
+                      maxlen = 100,
+                      vocabulary = c("A", "C", "G", "T"))
+
+z <- gen()
+x <- z[[1]]
+y <- z[[2]]
+sw <- z[[3]]
+df <- data.frame(x = x[1, ], y = y[1, ], sw = sw[1, ], position = 1:ncol(x))
+head(df)
+tail(df)
+```
+
+We can check that sample weights appear only in blocks.
+
+```{r warning = FALSE, message = FALSE}
+which(sw == 1)
+```
+
+Here 65 is the mask token (4^3 + 1 = size of the vocabulary + 1).
+
+```{r warning = FALSE, message = FALSE}
+df %>% dplyr::filter(sw == 1 & x == 65) # 10% masked part
+df %>% dplyr::filter(sw == 1 & x != 65) # 5% identity part and 5% random part (can randomly be the true value)
 ```
