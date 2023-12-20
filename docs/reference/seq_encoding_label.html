@@ -53,6 +53,9 @@
     <li>
       <a href="https://colab.research.google.com/drive/10xpRzGd3JeBAbqQYSCxzQUMctt01sx9D?usp=sharing" class="external-link">Full metagenome level: Colorectal cancer prediction</a>
     </li>
+    <li>
+      <a href="https://colab.research.google.com/drive/1kyYK7IU7GSfdpDzO_a8U3_qD4i3zTu6w?usp=sharing" class="external-link">BERT with deepG</a>
+    </li>
   </ul></li>
 <li class="dropdown">
   <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
@@ -114,9 +117,11 @@
 <span>  cov_vector <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  n_gram <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  n_gram_stride <span class="op">=</span> <span class="fl">1</span>,</span>
+<span>  masked_lm <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  char_sequence <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  tokenizer <span class="op">=</span> <span class="cn">NULL</span>,</span>
-<span>  adjust_start_ind <span class="op">=</span> <span class="cn">FALSE</span></span>
+<span>  adjust_start_ind <span class="op">=</span> <span class="cn">FALSE</span>,</span>
+<span>  return_int <span class="op">=</span> <span class="cn">FALSE</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
 
@@ -185,6 +190,10 @@ Coverage information must be contained in fasta header: there must be a string <
 <dt>adjust_start_ind</dt>
 <dd><p>Whether to shift values in <code>start_ind</code> to start at 1: for example (5,11,25) becomes (1,7,21).</p></dd>
 
+
+<dt>return_int</dt>
+<dd><p>Whether to return integer encoding or one-hot encoding.</p></dd>
+
 </dl></div>
 
     <div id="ref-examples">
@@ -248,7 +257,7 @@ Coverage information must be contained in fasta header: there must be a string <
 </div>
 
 <div class="pkgdown">
-  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.5.</p>
+  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.7.</p>
 </div>
 
       </footer></div>
