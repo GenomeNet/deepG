@@ -60,6 +60,8 @@ reference:
   - get_output_activations
   - reshape_input
   - load_cp
+  - compile_model
+  - starts_with("layer_")
 - title: Callbacks
   contents:
   - conf_matrix_cb

@@ -368,7 +368,7 @@ get_maxlen <- function(model, set_learning, target_middle, read_data, return_int
     if (num_in_layers == 1) {
       maxlen <- model$input$shape[[2]]
     } else {
-      if (!target_middle & !read_data & !split_seq) {
+      if (!target_middle & !read_data) {
         maxlen <- model$input[[num_in_layers]]$shape[[2]]
       } else {
         maxlen <- model$inputs[[num_in_layers - 1]]$shape[[2]] + model$inputs[[num_in_layers]]$shape[[2]]

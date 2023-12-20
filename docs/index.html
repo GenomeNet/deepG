@@ -80,6 +80,9 @@
     <li>
       <a href="https://colab.research.google.com/drive/10xpRzGd3JeBAbqQYSCxzQUMctt01sx9D?usp=sharing" class="external-link">Full metagenome level: Colorectal cancer prediction</a>
     </li>
+    <li>
+      <a href="https://colab.research.google.com/drive/1kyYK7IU7GSfdpDzO_a8U3_qD4i3zTu6w?usp=sharing" class="external-link">BERT with deepG</a>
+    </li>
   </ul>
 </li>
 <li class="dropdown">
@@ -127,7 +130,7 @@
       </header><div class="row">
   <div class="contents col-md-9">
 <div class="section level1">
-<div class="page-header"><h1 id="deepg">DeepG <img src="reference/figures/logo2.png" width="50" height="50" align="left" vspace="-1800px"><a class="anchor" aria-label="anchor" href="#deepg"></a>
+<div class="page-header"><h1 id="deepg-">DeepG <img src="reference/figures/logo2.png" width="50" height="50" align="left" vspace="-1800px"><a class="anchor" aria-label="anchor" href="#deepg-"></a>
 </h1></div>
 <p><strong>R toolbox for deep neural networks optimized for genomic datasets</strong> <!---
 % <p><img alt="DeepG logo" height="70px" src="man/figures/logo_small.png" align="left" hspace="-1000px" vspace="-180px"></p>
@@ -140,30 +143,44 @@
 <p>The package offers several functions to create, train and evaluate neural networks as well as data processing.</p>
 <ul>
 <li>
-<strong>Data processing</strong><ul>
+<strong>Data processing</strong>
+<ul>
 <li>Different options to encode fasta/fastq file (one-hot encoding, coverage or quality score encoding).</li>
 <li>Different options to handle ambiguous nucleotides.</li>
 <li>Create data generator to handle large collections of files.</li>
 </ul>
 </li>
 <li>
-<strong>Deep learning architectures</strong><ul>
+<strong>Deep learning architectures</strong>
+<ul>
 <li>Create network architectures with single function call.</li>
 <li>Custom loss and metric functions available.</li>
 </ul>
 </li>
 <li>
-<strong>Model training</strong><ul><li>Automatically create model/data pipeline.</li></ul>
+<strong>Model training</strong>
+<ul>
+<li>Automatically create model/data pipeline.</li>
+</ul>
 </li>
 <li>
-<strong>Visualizing training progress</strong><ul><li>Visualize training progress and metrics in tensorboard.<br>
-</li></ul>
+<strong>Visualizing training progress</strong>
+<ul>
+<li>Visualize training progress and metrics in tensorboard.<br>
+</li>
+</ul>
 </li>
 <li>
-<strong>Model evaluation</strong><ul><li>Evaluate trained models.</li></ul>
+<strong>Model evaluation</strong>
+<ul>
+<li>Evaluate trained models.</li>
+</ul>
 </li>
 <li>
-<strong>Model interpretability</strong><ul><li>Use Integrated Gradient to visualize relationship of model’s predictions with regard to its input.</li></ul>
+<strong>Model interpretability</strong>
+<ul>
+<li>Use Integrated Gradient to visualize relationship of model’s predictions with regard to its input.</li>
+</ul>
 </li>
 </ul>
 </div>
@@ -176,13 +193,22 @@
 <span><span class="fu">tensorflow</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/tensorflow/man/install_tensorflow.html" class="external-link">install_tensorflow</a></span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
 <p>and afterwards install the latest version of deepG from github</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu">devtools</span><span class="fu">::</span><span class="fu"><a href="https://remotes.r-lib.org/reference/install_github.html" class="external-link">install_github</a></span><span class="op">(</span><span class="st">"GenomeNet/deepG"</span><span class="op">)</span></span></code></pre></div>
+<code class="sourceCode R"><span><span class="co"># install.packages("devtools")</span></span>
+<span><span class="fu">devtools</span><span class="fu">::</span><span class="fu"><a href="https://remotes.r-lib.org/reference/install_github.html" class="external-link">install_github</a></span><span class="op">(</span><span class="st">"GenomeNet/deepG"</span><span class="op">)</span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="usage">Usage<a class="anchor" aria-label="anchor" href="#usage"></a>
 </h2>
 <p>See the Package website at <a href="https://deepg.de" class="external-link uri">https://deepg.de</a> for documentation and example code.</p>
-<!-- ## Examples  --><!-- ## Datasets --><!-- The library comes with mutiple different datasets for testing: --><!-- - The set `data(parenthesis)` contains 100k characters of the parenthesis synthetic language generated from a very simple counting language with a parenthesis and letter alphabet Σ = {( ) 0 1 2 3 4 }. The language is constrained to match parentheses, and nesting is limited to at most 4 levels deep. Each opening parenthesis increases and each closing parenthesis decreases the nesting level, respectively. Numbers are generated randomly, but are constrained to indicate the nesting level at their position. --><!-- - The set `data(crispr_full)` containing all CRISPR loci found in NCBI representative genomes with neighbor nucleotides up and downstream. --><!-- - The set `data(crispr_sample)` containing a subset of `data(crispr_full)`. --><!-- - The set `data(ecoli)` contains the *E. coli* genome, see [the genome sequence of Escherichia coli K-12](https://science.sciencemag.org/content/277/5331/1453.long). --><!-- - The set `data(ecoli_small)` contains a subset of `data(ecoli)`. --><!---
+<!-- ## Examples  -->
+<!-- ## Datasets -->
+<!-- The library comes with mutiple different datasets for testing: -->
+<!-- - The set `data(parenthesis)` contains 100k characters of the parenthesis synthetic language generated from a very simple counting language with a parenthesis and letter alphabet Σ = {( ) 0 1 2 3 4 }. The language is constrained to match parentheses, and nesting is limited to at most 4 levels deep. Each opening parenthesis increases and each closing parenthesis decreases the nesting level, respectively. Numbers are generated randomly, but are constrained to indicate the nesting level at their position. -->
+<!-- - The set `data(crispr_full)` containing all CRISPR loci found in NCBI representative genomes with neighbor nucleotides up and downstream. -->
+<!-- - The set `data(crispr_sample)` containing a subset of `data(crispr_full)`. -->
+<!-- - The set `data(ecoli)` contains the *E. coli* genome, see [the genome sequence of Escherichia coli K-12](https://science.sciencemag.org/content/277/5331/1453.long). -->
+<!-- - The set `data(ecoli_small)` contains a subset of `data(ecoli)`. -->
+<!---
 ## Installation and Usage
 
 Please see our [Wiki](https://github.com/hiddengenome/deepG/wiki) for further installation instructions. It covers also usage instructions for multi-GPU machines.
@@ -250,7 +276,7 @@ See the help files `?deepG` to get started and for questions use the [FAQ](https
 
 <div class="pkgdown">
   <p></p>
-<p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.5.</p>
+<p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.7.</p>
 </div>
 
       </footer>
