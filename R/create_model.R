@@ -2541,6 +2541,8 @@ get_cp  <- function(cp_path, cp_filter = "last_ep", ep_index = NULL) {
 
 #' Layer for positional embedding
 #' 
+#' Positional encoding layer with learned embedding.
+#' 
 #' @inheritParams create_model_transformer
 #' @param load_r6 Whether to load the R6 layer class.
 #' @export
@@ -2591,6 +2593,8 @@ layer_pos_embedding_wrapper <- function(maxlen = 100, vocabulary_size = 4, load_
 }
 
 #' Layer for positional encoding
+#' 
+#' Positional encoding layer with sine/cosine matrix of different frequencies.
 #' 
 #' @inheritParams create_model_transformer
 #' @param load_r6 Whether to load the R6 layer class.
@@ -2853,6 +2857,7 @@ create_model_transformer <- function(maxlen,
 }
 
 #' Compile model
+#' 
 #' @inheritParams create_model_lstm_cnn
 #' @export
 compile_model <- function(model, solver, learning_rate, loss_fn, label_smoothing = 0,
