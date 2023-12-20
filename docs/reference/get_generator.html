@@ -58,6 +58,9 @@ arguments."><meta property="og:image" content="https://genomenet.github.io/deepG
     <li>
       <a href="https://colab.research.google.com/drive/10xpRzGd3JeBAbqQYSCxzQUMctt01sx9D?usp=sharing" class="external-link">Full metagenome level: Colorectal cancer prediction</a>
     </li>
+    <li>
+      <a href="https://colab.research.google.com/drive/1kyYK7IU7GSfdpDzO_a8U3_qD4i3zTu6w?usp=sharing" class="external-link">BERT with deepG</a>
+    </li>
   </ul></li>
 <li class="dropdown">
   <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
@@ -148,13 +151,14 @@ arguments.</p>
 <span>  file_limit <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  reverse_complement_encoding <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  read_data <span class="op">=</span> <span class="cn">FALSE</span>,</span>
-<span>  split_seq <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  target_split <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  path_file_logVal <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  model <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  vocabulary_label <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  new_batch_size <span class="op">=</span> <span class="cn">NULL</span>,</span>
-<span>  val <span class="op">=</span> <span class="cn">FALSE</span></span>
+<span>  masked_lm <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  val <span class="op">=</span> <span class="cn">FALSE</span>,</span>
+<span>  return_int <span class="op">=</span> <span class="cn">FALSE</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
 
@@ -178,6 +182,7 @@ with multiple inputs.</p></li>
 <li><p>If <code>"lm_rds"</code>, generator will iterate over set of .rds files and will split tensor according to <code>target_len</code> argument
 (targets are last <code>target_len</code> nucleotides of each sequence).</p></li>
 <li><p>If <code>"dummy_gen"</code>, generator creates random data once and repeatedly feeds these to model.</p></li>
+<li><p>If <code>"masked_lm"</code>, generator maskes some parts of the input. See <code>masked_lm</code> argument for details.</p></li>
 </ul></dd>
 
 
@@ -352,12 +357,6 @@ argument. If <code>buffer_len</code> is an integer, the subsequences are intersp
 <dd><p>If <code>TRUE</code> the first element of output is a list of length 2, each containing one part of paired read. Maxlen should be 2*length of one read.</p></dd>
 
 
-<dt>split_seq</dt>
-<dd><p>Split input sequence into two sequences while removing nucleotide in middle. If input is <code>x_1,..., x_(n+1)</code>, input gets split into
-<code>input_1 = x_1,..., x_m</code> and <code>input_2 = x_(n+1),..., x_(m+2)</code> where <code>m = ceiling((n+1)/2)</code> and <code>n = maxlen</code>. Note that <code>x_(m+1)</code> is not used. Can be used for transfer learning,
-when switching from language model trained with target in middle to label classification.</p></dd>
-
-
 <dt>target_split</dt>
 <dd><p>If target gets read from csv file, list of names to divide target tensor into list of tensors.
 Example: if csv file has header names <code>"file", "label_1", "label_2", "label_3"</code> and <code>target_split = list(c("label_1", "label_2"), "label_3")</code>,
@@ -380,6 +379,16 @@ second entry contains the column named <code>"label_3"</code>.</p></dd>
 
 <dt>new_batch_size</dt>
 <dd><p>Batch size after reshaping data for set learning.</p></dd>
+
+
+<dt>masked_lm</dt>
+<dd><p>If not <code>NULL</code>, input and target are equal except some parts of the input are masked or random.
+Must be list with the following arguments:</p><ul><li><p><code>mask_rate</code>: Rate of input to mask (rate of input to replace with mask token).</p></li>
+<li><p><code>random_rate</code>: Rate of input to set to random token.</p></li>
+<li><p><code>identity_rate</code>: Rate of input where sample weights are applied but input and output are identical.</p></li>
+<li><p><code>include_sw</code>: Whether to include sample weigths.</p></li>
+<li><p><code>block_len</code> (optional): Masked/random/itentity regions appear in blocks of size <code>block_len</code>.</p></li>
+</ul></dd>
 
 
 <dt>val</dt>
@@ -424,7 +433,7 @@ second entry contains the column named <code>"label_3"</code>.</p></dd>
 </div>
 
 <div class="pkgdown">
-  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.5.</p>
+  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.7.</p>
 </div>
 
       </footer></div>

@@ -54,6 +54,9 @@ Outputs list of class relations. Can be used as input for class_weigth in train_
     <li>
       <a href="https://colab.research.google.com/drive/10xpRzGd3JeBAbqQYSCxzQUMctt01sx9D?usp=sharing" class="external-link">Full metagenome level: Colorectal cancer prediction</a>
     </li>
+    <li>
+      <a href="https://colab.research.google.com/drive/1kyYK7IU7GSfdpDzO_a8U3_qD4i3zTu6w?usp=sharing" class="external-link">BERT with deepG</a>
+    </li>
   </ul></li>
 <li class="dropdown">
   <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
@@ -146,6 +149,7 @@ with multiple inputs.</p></li>
 <li><p>If <code>"lm_rds"</code>, generator will iterate over set of .rds files and will split tensor according to <code>target_len</code> argument
 (targets are last <code>target_len</code> nucleotides of each sequence).</p></li>
 <li><p>If <code>"dummy_gen"</code>, generator creates random data once and repeatedly feeds these to model.</p></li>
+<li><p>If <code>"masked_lm"</code>, generator maskes some parts of the input. See <code>masked_lm</code> argument for details.</p></li>
 </ul></dd>
 
 
@@ -210,7 +214,7 @@ with multiple inputs.</p></li>
 </div>
 
 <div class="pkgdown">
-  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.5.</p>
+  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.7.</p>
 </div>
 
       </footer></div>

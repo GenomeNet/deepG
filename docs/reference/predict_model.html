@@ -64,6 +64,9 @@ or pad sequence for short sequences.
     <li>
       <a href="https://colab.research.google.com/drive/10xpRzGd3JeBAbqQYSCxzQUMctt01sx9D?usp=sharing" class="external-link">Full metagenome level: Colorectal cancer prediction</a>
     </li>
+    <li>
+      <a href="https://colab.research.google.com/drive/1kyYK7IU7GSfdpDzO_a8U3_qD4i3zTu6w?usp=sharing" class="external-link">BERT with deepG</a>
+    </li>
   </ul></li>
 <li class="dropdown">
   <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
@@ -253,15 +256,15 @@ Only applied if sequence is shorter than maxlen.</p></li>
 <span class="r-in"><span><span class="va">output_file</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/tempfile.html" class="external-link">tempfile</a></span><span class="op">(</span>fileext <span class="op">=</span> <span class="st">".h5"</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="fu">predict_model</span><span class="op">(</span>output_format <span class="op">=</span> <span class="st">"one_seq"</span>, model <span class="op">=</span> <span class="va">model</span>, step <span class="op">=</span> <span class="fl">10</span>,</span></span>
 <span class="r-in"><span>             sequence <span class="op">=</span> <span class="va">sequence</span>, filename <span class="op">=</span> <span class="va">output_file</span>, mode <span class="op">=</span> <span class="st">"label"</span><span class="op">)</span></span></span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> layer_name not specified. Using layer dense_26</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Computing output for model at layer dense_26 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Model: "model_22"</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> layer_name not specified. Using layer dense_33</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Computing output for model at layer dense_33 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Model: "model_25"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> ________________________________________________________________________________</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  Layer (type)                       Output Shape                    Param #     </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> ================================================================================</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  input_18 (InputLayer)              [(None, 20, 4)]                 0           </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  input_20 (InputLayer)              [(None, 20, 4)]                 0           </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  lstm_19 (LSTM)                     (None, 8)                       416         </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  dense_26 (Dense)                   (None, 2)                       18          </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  dense_33 (Dense)                   (None, 2)                       18          </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> ================================================================================</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Total params: 434</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Trainable params: 434</span>
@@ -296,7 +299,7 @@ Only applied if sequence is shorter than maxlen.</p></li>
 </div>
 
 <div class="pkgdown">
-  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.5.</p>
+  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.7.</p>
 </div>
 
       </footer></div>
