@@ -3042,6 +3042,7 @@ create_model_twin_network <- function(
     batch_norm_momentum = 0.99,
     model_seed = NULL) {
   
+  if (!is.null(model_seed)) tensorflow::tf$random$set_seed(model_seed)
   if (!is.null(dropout_dense)) stopifnot(length(dropout_dense) == length(layer_dense))
   
   model_base <- create_model_lstm_cnn_multi_input(
