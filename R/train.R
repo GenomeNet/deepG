@@ -9,7 +9,7 @@
 #' @inheritParams generator_fasta_lm
 #' @inheritParams generator_fasta_label_folder
 #' @inheritParams generator_fasta_label_header_csv
-#' @param train_type Either `"lm"`, `"lm_rds"` for language model; `"label_header"`, `"label_folder"`, `"label_csv"`, `"label_rds"` for classification or `"dummy_gen"`.
+#' @param train_type Either `"lm"`, `"lm_rds"`, `"masked_lm"` for language model; `"label_header"`, `"label_folder"`, `"label_csv"`, `"label_rds"` for classification or `"dummy_gen"`.
 #' \itemize{
 #' \item Language model is trained to predict character(s) in a sequence. \cr
 #' \item `"label_header"`/`"label_folder"`/`"label_csv"` are trained to predict a corresponding class given a sequence as input.
