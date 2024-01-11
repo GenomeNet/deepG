@@ -3050,7 +3050,7 @@ get_generator <- function(path = NULL,
   if (train_type %in% c("label_folder", "masked_lm") & random_sampling) {
     
     gen <- generator_random(
-      train_type = "label_folder",
+      train_type = train_type,
       seed = seed[1],
       format = format,
       reverse_complement = reverse_complement,
