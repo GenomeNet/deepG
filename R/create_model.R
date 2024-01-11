@@ -1024,6 +1024,9 @@ get_hyper_param <- function(model) {
 #' @param freeze_base_model Whether to freeze all weights before new dense layers.
 #' @param compile Boolean, whether to compile the new model.
 #' @param learning_rate Learning rate if `compile = TRUE`, default learning rate of the old model
+#' @param global_pooling "max_ch_first" for global max pooling with channel first ([keras docs](https://keras.io/api/layers/pooling_layers/global_average_pooling1d/)),
+#' "max_ch_last" for global max pooling with channel last, "average_ch_first" for global average pooling with channel first, 
+#' "average_ch_last" for global average pooling with channel last or `NULL` for no global pooling. 
 #' @examples
 #' model_1 <- create_model_lstm_cnn(layer_lstm = c(64, 64),
 #'                                  maxlen = 50,
@@ -1059,6 +1062,7 @@ remove_add_layers <- function(model = NULL,
                               learning_rate = 0.001,
                               solver = "adam",
                               flatten = FALSE,
+                              global_pooling = NULL,
                               model_seed = NULL) {
   
   if (!is.null(model_seed)) tensorflow::tf$random$set_seed(model_seed)
@@ -1068,6 +1072,9 @@ remove_add_layers <- function(model = NULL,
   }
   if (!is.null(shared_dense_layers) & length(dense_layers) == 1) {
     stop("If your model has just one output layer, use only dense_layers argument (and set shared_dense_layers = NULL).")
+  }
+  if (!is.null(global_pooling)) {
+    stopifnot(global_pooling %in% c("max_ch_first", "max_ch_last", "average_ch_first", "average_ch_last"))
   }
   
   if (!is.list(dense_layers)) {
@@ -1118,6 +1125,19 @@ remove_add_layers <- function(model = NULL,
     
     if (freeze_base_model) {
       keras::freeze_weights(model_new)
+    }
+    
+    if (!is.null(global_pooling)) {
+      if (global_pooling == "max_ch_first") {
+        out <- model_new$output %>% keras::layer_global_max_pooling_1d(data_format="channels_first")
+      } else if  (global_pooling == "max_ch_last") {
+        out <- model_new$output %>% keras::layer_global_max_pooling_1d(data_format="channels_last")
+      } else if  (global_pooling ==  "average_ch_first") {
+        out <- model_new$output %>% keras::layer_global_average_pooling_1d(data_format="channels_first")
+      } else { 
+        out <- model_new$output %>% keras::layer_global_average_pooling_1d(data_format="channels_last")
+      }    
+      model_new <- tensorflow::tf$keras$Model(model_new$input, out)
     }
     
     if (flatten) {
@@ -1201,10 +1221,7 @@ remove_add_layers <- function(model = NULL,
     
     if (is.null(solver)) {
       solver <- stringr::str_to_lower(model$optimizer$get_config()["name"])
-    } #else {
-    #   warning("You need to specify solver argument if compile is TRUE")
-    #   return(NULL)
-    # }
+    } 
     
     optimizer <- set_optimizer(solver, learning_rate) 
     
