@@ -3283,6 +3283,7 @@ dataset_from_gen <- function(output_path,
                        set_learning = set_learning,
                        path_file_logVal = NULL,
                        seed = seed,
+                       random_sampling = random_sampling,
                        masked_lm = masked_lm,
                        ...)
   

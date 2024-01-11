@@ -2406,12 +2406,15 @@ manage_metrics <- function(model, compile = FALSE) {
 #' @param compile Whether to load compiled model.
 #' @param re_compile Whether to compile model with parameters from `learning_rate`,
 #' `solver` and `loss`.  
-#' @param verbose Whether to print choosen checkpoint path.
+#' @param add_custom_object Named list of custom objects.
+#' @param verbose Whether to print chosen checkpoint path.
 #' @param loss Loss function. Only used if model gets compiled.
 #' @export
 load_cp <- function(cp_path, cp_filter = "last_ep", ep_index = NULL, compile = FALSE,
                     learning_rate = 0.01, solver = "adam", re_compile = FALSE,
-                    loss = "categorical_crossentropy", verbose = TRUE) {
+                    loss = "categorical_crossentropy",
+                    add_custom_object = NULL,
+                    verbose = TRUE) {
   
   # custom objects to load transformer architecture
   custom_objects <- list(
@@ -2420,6 +2423,12 @@ load_cp <- function(cp_path, cp_filter = "last_ep", ep_index = NULL, compile = F
     "layer_transformer_block" = layer_transformer_block_wrapper(load_r6 = TRUE),
     "layer_euc_dist" = layer_euc_dist_wrapper(load_r6 = TRUE)
   )
+  
+  if (!is.null(add_custom_object)) {
+    for (i in 1:length(add_custom_object)) {
+      custom_objects[[names(add_custom_object)[i]]] <- add_custom_object[[i]]
+    }
+  }
   
   if (!is.null(cp_filter)) {
     stopifnot(cp_filter %in% c("acc", "loss", "last_ep"))
