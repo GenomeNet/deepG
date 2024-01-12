@@ -433,14 +433,6 @@ cosine_similarity <- function(vects) {
   return(xy_dot/(x_norm*y_norm))
 }
 
-# cosine_similarity <- function(vects) {
-#   x <- vects[[1]]
-#   y <- vects[[2]]
-#   xy_dot <- tensorflow::tf$tensordot(x, y, axes = 1L)
-#   x_norm <- tensorflow::tf$math$sqrt(tensorflow::tf$tensordot(x, x))
-#   y_norm <- tensorflow::tf$math$sqrt(tensorflow::tf$tensordot(y, y))
-#   return(xy_dot/(x_norm*y_norm))
-# }
 
 loss_cl <- function(margin=1) {
   
