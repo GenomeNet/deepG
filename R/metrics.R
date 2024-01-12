@@ -169,13 +169,13 @@ balanced_acc_wrapper <- function(num_targets, cm_dir) {
                                                  
                                                  store_cm = function(self) {
                                                    #if (self$count > 0) {
-                                                     if (self$count %% 2 != 0) {
-                                                       file_name <- file.path(self$cm_dir, paste0("cm_val_", floor(self$count/2), ".rds"))
-                                                     } else {
-                                                       file_name <- file.path(self$cm_dir, paste0("cm_train_", floor(self$count/2), ".rds"))
-                                                     }
-                                                     saveRDS(keras::k_eval(self$cm), file_name)
-                                                     NULL
+                                                   if (self$count %% 2 != 0) {
+                                                     file_name <- file.path(self$cm_dir, paste0("cm_val_", floor(self$count/2), ".rds"))
+                                                   } else {
+                                                     file_name <- file.path(self$cm_dir, paste0("cm_train_", floor(self$count/2), ".rds"))
+                                                   }
+                                                   saveRDS(keras::k_eval(self$cm), file_name)
+                                                   NULL
                                                    #}
                                                  }
                                                  
@@ -423,6 +423,24 @@ euclidean_distance <- function(vects) {
   sum_square <- tensorflow::tf$math$reduce_sum(tensorflow::tf$math$square(x - y), axis=1L, keepdims=TRUE)
   return(tensorflow::tf$math$sqrt(tensorflow::tf$math$maximum(sum_square, tensorflow::tf$keras$backend$epsilon())))
 }
+
+cosine_similarity <- function(vects) {
+  x <- vects[[1]]
+  y <- vects[[2]]
+  xy_dot <- tensorflow::tf$math$reduce_sum(x*y, axis=1L, keepdims=TRUE)
+  x_norm <- tensorflow::tf$math$sqrt(tensorflow::tf$math$reduce_sum(tensorflow::tf$math$square(x), axis=1L, keepdims=TRUE))
+  y_norm <- tensorflow::tf$math$sqrt(tensorflow::tf$math$reduce_sum(tensorflow::tf$math$square(y), axis=1L, keepdims=TRUE))
+  return(xy_dot/(x_norm*y_norm))
+}
+
+# cosine_similarity <- function(vects) {
+#   x <- vects[[1]]
+#   y <- vects[[2]]
+#   xy_dot <- tensorflow::tf$tensordot(x, y, axes = 1L)
+#   x_norm <- tensorflow::tf$math$sqrt(tensorflow::tf$tensordot(x, x))
+#   y_norm <- tensorflow::tf$math$sqrt(tensorflow::tf$tensordot(y, y))
+#   return(xy_dot/(x_norm*y_norm))
+# }
 
 loss_cl <- function(margin=1) {
   

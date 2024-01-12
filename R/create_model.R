@@ -2421,7 +2421,8 @@ load_cp <- function(cp_path, cp_filter = "last_ep", ep_index = NULL, compile = F
     "layer_pos_embedding" = layer_pos_embedding_wrapper(load_r6 = TRUE),
     "layer_pos_sinusoid" = layer_pos_sinusoid_wrapper(load_r6 = TRUE),
     "layer_transformer_block" = layer_transformer_block_wrapper(load_r6 = TRUE),
-    "layer_euc_dist" = layer_euc_dist_wrapper(load_r6 = TRUE)
+    "layer_euc_dist" = layer_euc_dist_wrapper(load_r6 = TRUE),
+    "layer_cosine_sim" = layer_cosine_sim_wrapper(load_r6 = TRUE)
   )
   
   if (!is.null(add_custom_object)) {
@@ -3020,6 +3021,33 @@ layer_euc_dist_wrapper <- function(load_r6 = FALSE) {
 }
 
 
+layer_cosine_sim_wrapper <- function(load_r6 = FALSE) {
+  
+  layer_cosine_sim <- keras::new_layer_class(
+    "layer_cosine_sim",
+    
+    initialize = function(...) {
+      super$initialize(...)
+    },
+    
+    call = function(inputs) {
+      cosine_similarity(vects=inputs)
+    },
+    
+    get_config = function() {
+      config <- super$get_config()
+      config
+    }
+  )
+  
+  if (load_r6) {
+    return(layer_cosine_sim)
+  } else {
+    return(layer_cosine_sim())
+  }
+  
+}
+
 #' @title Create twin network with contrastive loss
 #'
 #' @description Twin network can be trained to maximize the distance
@@ -3029,6 +3057,7 @@ layer_euc_dist_wrapper <- function(load_r6 = FALSE) {
 #' @inheritParams create_model_lstm_cnn
 #' @param margin Integer, defines the baseline for distance for which pairs should be classified as dissimilar.
 #' @param layer_dense Vector containing number of neurons per dense layer, before euclidean distance layer.
+#' @param distance_method Either "euclidean" or "cosine".
 #' @examples
 #' model <- create_model_twin_network(
 #'   maxlen = 50,
@@ -3066,10 +3095,12 @@ create_model_twin_network <- function(
     margin = 1,
     verbose = TRUE,
     batch_norm_momentum = 0.99,
+    distance_method = "euclidean",
     model_seed = NULL) {
   
   if (!is.null(model_seed)) tensorflow::tf$random$set_seed(model_seed)
   if (!is.null(dropout_dense)) stopifnot(length(dropout_dense) == length(layer_dense))
+  stopifnot(distance_method %in% c("euclidean", "cosine"))
   
   model_base <- create_model_lstm_cnn_multi_input(
     maxlen = maxlen,
@@ -3122,8 +3153,16 @@ create_model_twin_network <- function(
   tower_1 <- input_1 %>% model_base
   tower_2 <- input_2 %>% model_base
   
-  euc_dist <- layer_euc_dist_wrapper(load_r6 = FALSE)
-  outputs <- euc_dist(list(tower_1, tower_2))
+  if (distance_method == "euclidean") {
+    euc_dist <- layer_euc_dist_wrapper(load_r6 = FALSE)
+    outputs <- euc_dist(list(tower_1, tower_2))
+  }
+  
+  if (distance_method == "cosine") {
+    cosine_dist <- layer_cosine_sim_wrapper(load_r6 = FALSE)
+    outputs <- cosine_dist(list(tower_1, tower_2))
+  }
+
   outputs <- outputs %>% keras::layer_batch_normalization(momentum = batch_norm_momentum)
   outputs <- outputs %>% keras::layer_dense(units = 1, activation = "sigmoid")
   model <- keras::keras_model(inputs = list(input_1, input_2), outputs = outputs)
