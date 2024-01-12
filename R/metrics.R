@@ -424,6 +424,12 @@ euclidean_distance <- function(vects) {
   return(tensorflow::tf$math$sqrt(tensorflow::tf$math$maximum(sum_square, tensorflow::tf$keras$backend$epsilon())))
 }
 
+cosine_similarity <- function(vects) {
+  x <- vects[[1]]
+  y <- vects[[2]]
+  return(sum(x*y) / (sqrt(sum(x^2) * sum(y^2))) )
+}
+
 loss_cl <- function(margin=1) {
   
   contrastive_loss <- function(y_true, y_pred) {
