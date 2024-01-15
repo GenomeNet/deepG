@@ -64,10 +64,10 @@ model_card_cb <- function(model_card_path = NULL, run_name, argumentList) {
                                                       self$param_list[["logs"]] <- m
                                                     } else {
                                                       m <- unlist(logs) 
-                                                      m <- c(m, epoch, time_passed) 
-                                                      m <- rbind(self$param_list[["logs"]], m)
+                                                      m <- c(m, epoch, time_passed)  %>% matrix(nrow = 1) %>% as.data.frame()
                                                       names(m) <- c(names(logs), "processing_step", "time")
-                                                      self$param_list[["logs"]] <- m
+                                                      m <- rbind(self$param_list[["logs"]], m)
+                                                      self$param_list[["logs"]] <- reticulate::r_to_py(m)
                                                     }
                                                     
                                                     saveRDS(self$param_list, paste0(self$mc_dir, "/epoch_", epoch + 1, "_param_list.rds"))
