@@ -2687,12 +2687,27 @@ generator_random <- function(
     }
     
     # remove files without target label
-    if (train_type == "label_csv") {
-      if (any(duplicated(output_label_csv$file))) {
-        stop("csv file with label contains duplicate file names in 'file' column")
-      }
-      fasta_files[[i]] <- fasta_files[[i]][basename(fasta_files[[i]]) %in% unique(output_label_csv$file)]
+    
+    # relative path or absolute path
+    if (dirname(output_label_csv$file[1]) == ".") {
+      index_basename <- basename(fasta.files[[i]]) %in% output_label_csv$file
+    } else {
+      use_basename <- FALSE
+      index_basename <- fasta.files %in% output_label_csv$file
     }
+    index_abs_path <- fasta.files %in% output_label_csv$file
+    index <- index_basename | index_abs_path
+    fasta.files[[i]] <- fasta.files[[i]][index]
+    if (length(fasta.files[[i]]) == 0) {
+      stop("No overlap between files and 'file' column in target_from_csv")
+    }
+    
+    # if (train_type == "label_csv") {
+    #   if (any(duplicated(output_label_csv$file))) {
+    #     stop("csv file with label contains duplicate file names in 'file' column")
+    #   }
+    #   fasta_files[[i]] <- fasta_files[[i]][basename(fasta_files[[i]]) %in% unique(output_label_csv$file)]
+    # }
     
     num_files[[i]] <- length(fasta_files[[i]])
     start_ind[[i]] <- (0:(batch_size[[i]] - 1) * seq_len_total) + 1
@@ -2702,10 +2717,6 @@ generator_random <- function(
       file_prob <- NULL
     }
   }
-  
-  # if (!sample_by_file_size & any(unlist(num_files) > 1)) {
-  #   message("It is adviced to use sample_by_file_size when using random sampling strategy.")
-  # }
   
   function() {
     
