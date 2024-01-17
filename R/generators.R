@@ -2944,7 +2944,7 @@ generator_random <- function(
 get_generator <- function(path = NULL,
                           train_type,
                           batch_size,
-                          maxlen = NULL,
+                          maxlen,
                           step = NULL,
                           shuffle_file_order = FALSE,
                           vocabulary = c("A", "C", "G", "T"),
