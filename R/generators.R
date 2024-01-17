@@ -2301,7 +2301,7 @@ generator_rds <- function(rds_folder, batch_size, path_file_log = NULL,
     }
     
     if (include_sw) {
-        sw <- array(0, c(batch_size, sw_dim[2]))
+      sw <- array(0, c(batch_size, sw_dim[2]))
     }
     
     while (x_index <= batch_size) {
@@ -2407,7 +2407,7 @@ generator_rds <- function(rds_folder, batch_size, path_file_log = NULL,
       }
       
       if (include_sw) {
-          sw[x_index:(x_index + length(index) - 1), ] <- sw_complete[index, ]
+        sw[x_index:(x_index + length(index) - 1), ] <- sw_complete[index, ]
       }
       
       x_index <- x_index + length(index)
