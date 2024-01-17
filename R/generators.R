@@ -2786,7 +2786,11 @@ generator_random <- function(
         remaining_samples <- remaining_samples - length(sample_start)
         
         if (label_from_csv) {
-          file_row_name <- fasta_files[[p]][file_index] %>% basename
+          if (use_basename) {
+            file_row_name <- fasta_files[[p]][file_index] %>% basename 
+          } else {
+            file_row_name <- fasta_files[[p]][file_index]
+          }
           label_row <- output_label_csv[.(file_row_name)][ , -"file"] %>% as.matrix()
           label_matrix <- t(replicate(length(sample_start), label_row, simplify = TRUE))
           target_list[[target_count]] <- label_matrix %>% as.matrix()
@@ -2861,7 +2865,7 @@ generator_random <- function(
     
     if (train_type == "label_csv") {
       x <- one_hot_sample
-      y <- do.call(rbind, target_list) %>% as.matrix()
+      y <- do.call(rbind, target_list) %>% matrix(nrow = batch_size)
       colnames(y) <- NULL
     }
     
