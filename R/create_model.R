@@ -3096,6 +3096,7 @@ create_model_twin_network <- function(
     verbose = TRUE,
     batch_norm_momentum = 0.99,
     distance_method = "euclidean",
+    last_layer_activation = "sigmoid",
     model_seed = NULL) {
   
   if (!is.null(model_seed)) tensorflow::tf$random$set_seed(model_seed)
@@ -3164,7 +3165,7 @@ create_model_twin_network <- function(
   }
 
   outputs <- outputs %>% keras::layer_batch_normalization(momentum = batch_norm_momentum)
-  outputs <- outputs %>% keras::layer_dense(units = 1, activation = "sigmoid")
+  outputs <- outputs %>% keras::layer_dense(units = 1, activation = last_layer_activation)
   model <- keras::keras_model(inputs = list(input_1, input_2), outputs = outputs)
   
   if (compile) {
