@@ -2870,6 +2870,10 @@ generator_random <- function(
     if (train_type == "label_csv") {
       x <- one_hot_sample
       y <- do.call(rbind, target_list) %>% matrix(nrow = batch_size)
+      if (!is.null(target_split)) {
+        colnames(y) <- vocabulary_label
+        y <- slice_tensor(tensor = y, target_split = target_split)
+      }
       colnames(y) <- NULL
     }
     
