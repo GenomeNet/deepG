@@ -2691,6 +2691,7 @@ generator_random <- function(
       
       if (dirname(output_label_csv$file[1]) == ".") {
         # relative path 
+        use_basename <- TRUE
         index_basename <- basename(fasta_files[[i]]) %in% output_label_csv$file
       } else {
         # absolute path
