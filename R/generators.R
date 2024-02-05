@@ -2222,7 +2222,7 @@ generator_rds <- function(rds_folder, batch_size, path_file_log = NULL,
   }
   
   if (!is_lm) y_complete <- rds_file[[2]]
-  # TODO: adjust for different input fomrat (input mix of 3D and 1D etc.)
+  # TODO: adjust for different input format (input mix of 3D and 1D etc.)
   multi_input <- ifelse(is.list(x_complete), TRUE, FALSE)
   multi_output <- ifelse(length(rds_file) > 1 && is.list(rds_file[[2]]), TRUE, FALSE)
   
@@ -2268,9 +2268,29 @@ generator_rds <- function(rds_folder, batch_size, path_file_log = NULL,
   
   if (include_sw) {
     sw_complete <- rds_file[[3]]
-    sw_temporal <- ifelse(dim(sw_complete)[2] == 1, FALSE, TRUE)
-    sw_dim <- dim(sw_complete)
+    multi_sw <- is.list(sw_complete)
+    if (multi_sw) {
+      # TODO:  have temporal/non-temporal in same batch 
+      sw_temporal <- ifelse(dim(sw_complete[[1]])[2] == 1, FALSE, TRUE)
+      sw_dim <- lapply(sw_complete,dim)
+      multi_sw <- TRUE
+      
+      sw_dim_list <- list()
+      size_splits_sw <- list()
+      for (i in 1:length(sw_complete)) {
+        sw_dim_list[[i]] <- dim(sw_complete[[i]])
+        size_splits_sw[[i]] <- sw_dim_list[[i]][length(sw_dim_list[[i]])] 
+      }
+      sw_complete <- tensorflow::tf$concat(sw_complete, 
+                                           axis = as.integer(length(sw_dim_list[[1]]) - 1)) %>% as.array()
+      
+    } else {
+      sw_temporal <- ifelse(dim(sw_complete)[2] == 1, FALSE, TRUE)
+      sw_dim <- dim(sw_complete) 
+      multi_sw <- FALSE
+    }
   }
+  sw_dim_start <- dim(sw_complete)
   
   sample_index <- 1:x_dim_start[1]
   
@@ -2288,6 +2308,7 @@ generator_rds <- function(rds_folder, batch_size, path_file_log = NULL,
   
   x_dim <- x_dim_start
   if (!is_lm) y_dim <- y_dim_start
+  if (include_sw) sw_dim <- sw_dim_start
   
   function() {
     
@@ -2346,7 +2367,12 @@ generator_rds <- function(rds_folder, batch_size, path_file_log = NULL,
           x_dim <<- dim(x_complete)
           
           if (include_sw) {
-            sw_complete <<- rds_file[[3]]
+            if (multi_sw) {
+              sw_complete <- tensorflow::tf$concat(rds_file[[3]], 
+                                                   axis = as.integer(length(sw_dim_list[[1]]) - 1)) %>% as.array()
+            } else {
+              sw_complete <<- rds_file[[3]]
+            }
           }
           
           if (!is_lm) {
@@ -2476,6 +2502,10 @@ generator_rds <- function(rds_folder, batch_size, path_file_log = NULL,
       y <- tensorflow::tf$split(y, num_or_size_splits = size_splits_out, axis = as.integer(length(y_dim)-1))
     }
     
+    if (include_sw & multi_sw) {
+      sw <- tensorflow::tf$split(sw, num_or_size_splits = size_splits_sw, axis = as.integer(length(sw_dim)-1))
+    }
+    
     if (include_sw) {
       return(list(x, y, sw))
     } else {
@@ -2484,6 +2514,7 @@ generator_rds <- function(rds_folder, batch_size, path_file_log = NULL,
     
   }
 }
+
 
 #' Randomly select samples from fasta files
 #' 
