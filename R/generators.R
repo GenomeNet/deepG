@@ -2289,8 +2289,8 @@ generator_rds <- function(rds_folder, batch_size, path_file_log = NULL,
       sw_dim <- dim(sw_complete) 
       multi_sw <- FALSE
     }
+    sw_dim_start <- dim(sw_complete)
   }
-  sw_dim_start <- dim(sw_complete)
   
   sample_index <- 1:x_dim_start[1]
   
