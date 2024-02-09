@@ -689,3 +689,13 @@ shuffle_sample <- function(x, dim_len, shuffle_index) {
   
   return(x)
 }
+
+count_gpu <- function() {
+  
+  pd <- tensorflow::tf$config$list_physical_devices()
+  count <- 0
+  for (i in 1:length(pd)) {
+    if (pd[[i]]$device_type == "GPU") count <- count + 1
+  }
+  return(count)
+}

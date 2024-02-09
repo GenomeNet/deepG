@@ -49,6 +49,8 @@
 #' @param verbose Boolean.
 #' @param batch_norm_momentum Momentum for the moving mean and the moving variance.
 #' @param model_seed Set seed for model parameters in tensorflow if not `NULL`.
+#' @param mixed_precision Whether to use mixed precision (https://www.tensorflow.org/guide/mixed_precision).
+#' @param mirrored_strategy Whether to use distributed mirrored strategy. If NULL, will use distributed mirrored strategy only if >1 GPU available.   
 #' @examples 
 #' create_model_lstm_cnn(
 #'   maxlen = 500,
@@ -97,7 +99,22 @@ create_model_lstm_cnn <- function(
     bal_acc = TRUE,
     verbose = TRUE,
     batch_norm_momentum = 0.99,
-    model_seed = NULL) {
+    model_seed = NULL,
+    mixed_precision = FALSE,
+    mirrored_strategy = NULL) {
+  
+  if (mixed_precision) tensorflow::tf$keras$mixed_precision$set_global_policy("mixed_float16")
+  
+  if (is.null(mirrored_strategy)) mirrored_strategy <- ifelse(count_gpu() > 1, TRUE, FALSE)
+  if (mirrored_strategy) {
+    mirrored_strategy <- tensorflow::tf$distribute$MirroredStrategy()
+    with(mirrored_strategy$scope(), { 
+      argg <- as.list(environment())
+      argg$mirrored_strategy <- FALSE
+      model <- do.call(create_model_lstm_cnn, argg)
+    })
+    return(model)
+  }
   
   layer_dense <- as.integer(layer_dense)
   if (!is.null(model_seed)) tensorflow::tf$random$set_seed(model_seed)
@@ -518,7 +535,21 @@ create_model_lstm_cnn <- function(
 create_model_wavenet <- function(filters = 16, kernel_size = 2, residual_blocks, maxlen,
                                  input_tensor = NULL, initial_kernel_size = 32, initial_filters = 32,
                                  output_channels = 4, output_activation = "softmax", solver = "adam",
-                                 learning_rate = 0.001, compile = TRUE, verbose = TRUE, model_seed = NULL) {
+                                 learning_rate = 0.001, compile = TRUE, verbose = TRUE, model_seed = NULL,
+                                 mixed_precision = FALSE, mirrored_strategy = NULL) {
+  
+  if (mixed_precision) tensorflow::tf$keras$mixed_precision$set_global_policy("mixed_float16")
+  
+  if (is.null(mirrored_strategy)) mirrored_strategy <- ifelse(count_gpu() > 1, TRUE, FALSE)
+  if (mirrored_strategy) {
+    mirrored_strategy <- tensorflow::tf$distribute$MirroredStrategy()
+    with(mirrored_strategy$scope(), { 
+      argg <- as.list(environment())
+      argg$mirrored_strategy <- FALSE
+      model <- do.call(create_model_wavenet, argg)
+    })
+    return(model)
+  }
   
   if (!is.null(model_seed)) tensorflow::tf$random$set_seed(model_seed)
   
@@ -588,7 +619,22 @@ create_model_lstm_cnn_target_middle <- function(
     f1_metric = FALSE,
     verbose = TRUE,
     batch_norm_momentum = 0.99,
-    model_seed = NULL) {
+    model_seed = NULL,
+    mixed_precision = FALSE,
+    mirrored_strategy = NULL) {
+  
+  if (mixed_precision) tensorflow::tf$keras$mixed_precision$set_global_policy("mixed_float16")
+  
+  if (is.null(mirrored_strategy)) mirrored_strategy <- ifelse(count_gpu() > 1, TRUE, FALSE)
+  if (mirrored_strategy) {
+    mirrored_strategy <- tensorflow::tf$distribute$MirroredStrategy()
+    with(mirrored_strategy$scope(), { 
+      argg <- as.list(environment())
+      argg$mirrored_strategy <- FALSE
+      model <- do.call(create_model_lstm_cnn_target_middle, argg)
+    })
+    return(model)
+  }
   
   layer_dense <- as.integer(layer_dense)
   if (!is.null(model_seed)) tensorflow::tf$random$set_seed(model_seed)
@@ -1064,7 +1110,22 @@ remove_add_layers <- function(model = NULL,
                               solver = "adam",
                               flatten = FALSE,
                               global_pooling = NULL,
-                              model_seed = NULL) {
+                              model_seed = NULL,
+                              mixed_precision = FALSE,
+                              mirrored_strategy = NULL) {
+  
+  if (mixed_precision) tensorflow::tf$keras$mixed_precision$set_global_policy("mixed_float16")
+  
+  if (is.null(mirrored_strategy)) mirrored_strategy <- ifelse(count_gpu() > 1, TRUE, FALSE)
+  if (mirrored_strategy) {
+    mirrored_strategy <- tensorflow::tf$distribute$MirroredStrategy()
+    with(mirrored_strategy$scope(), { 
+      argg <- as.list(environment())
+      argg$mirrored_strategy <- FALSE
+      model <- do.call(remove_add_layers, argg)
+    })
+    return(model)
+  }
   
   if (!is.null(model_seed)) tensorflow::tf$random$set_seed(model_seed)
   if (!is.null(layer_name)) check_layer_name(model, layer_name)
@@ -1396,7 +1457,22 @@ create_model_lstm_cnn_time_dist <- function(
     samples_per_target,
     batch_norm_momentum = 0.99,
     verbose = TRUE,
-    model_seed = NULL) {
+    model_seed = NULL,
+    mixed_precision = FALSE,
+    mirrored_strategy = NULL) {
+  
+  if (mixed_precision) tensorflow::tf$keras$mixed_precision$set_global_policy("mixed_float16")
+  
+  if (is.null(mirrored_strategy)) mirrored_strategy <- ifelse(count_gpu() > 1, TRUE, FALSE)
+  if (mirrored_strategy) {
+    mirrored_strategy <- tensorflow::tf$distribute$MirroredStrategy()
+    with(mirrored_strategy$scope(), { 
+      argg <- as.list(environment())
+      argg$mirrored_strategy <- FALSE
+      model <- do.call(create_model_time_dist, argg)
+    })
+    return(model)
+  }
   
   layer_dense <- as.integer(layer_dense)
   if (!is.null(model_seed)) tensorflow::tf$random$set_seed(model_seed)
@@ -1616,7 +1692,7 @@ create_model_lstm_cnn_time_dist <- function(
   model %>% keras::compile(loss = loss_fn,
                            optimizer = optimizer, metrics = model_metrics)
   
-  argg <- c(as.list(environment()))
+  argg <- as.list(environment())
   model <- add_hparam_list(model, argg)
   model$cm_dir <- cm_dir
   
@@ -1678,7 +1754,22 @@ create_model_lstm_cnn_multi_input <- function(
     samples_per_target,
     batch_norm_momentum = 0.99,
     verbose = TRUE,
-    model_seed = NULL) {
+    model_seed = NULL,
+    mixed_precision = FALSE,
+    mirrored_strategy = NULL) {
+  
+  if (mixed_precision) tensorflow::tf$keras$mixed_precision$set_global_policy("mixed_float16")
+  
+  if (is.null(mirrored_strategy)) mirrored_strategy <- ifelse(count_gpu() > 1, TRUE, FALSE)
+  if (mirrored_strategy) {
+    mirrored_strategy <- tensorflow::tf$distribute$MirroredStrategy()
+    with(mirrored_strategy$scope(), { 
+      argg <- as.list(environment())
+      argg$mirrored_strategy <- FALSE
+      model <- do.call(create_model_multi_input, argg)
+    })
+    return(model)
+  }
   
   layer_dense <- as.integer(layer_dense)
   if (!is.null(dropout_dense)) stopifnot(length(dropout_dense) == length(layer_dense))
@@ -2094,7 +2185,22 @@ create_model_genomenet <- function(
     recurrent_units = 100,
     vocabulary_size = 4,
     num_targets = 2,
-    model_seed = NULL) {
+    model_seed = NULL,
+    mixed_precision = FALSE,
+    mirrored_strategy = NULL) {
+  
+  if (mixed_precision) tensorflow::tf$keras$mixed_precision$set_global_policy("mixed_float16")
+  
+  if (is.null(mirrored_strategy)) mirrored_strategy <- ifelse(count_gpu() > 1, TRUE, FALSE)
+  if (mirrored_strategy) {
+    mirrored_strategy <- tensorflow::tf$distribute$MirroredStrategy()
+    with(mirrored_strategy$scope(), { 
+      argg <- as.list(environment())
+      argg$mirrored_strategy <- FALSE
+      model <- do.call(create_model_genomenet, argg)
+    })
+    return(model)
+  }
   
   if (!is.null(model_seed)) tensorflow::tf$random$set_seed(model_seed)
   stopifnot(maxlen > 0 & maxlen %% 1 == 0)
@@ -2246,7 +2352,7 @@ create_model_genomenet <- function(
   }
   
   output_tensor <- output_tensor %>%
-    keras::layer_dense(units = num_targets, activation = "softmax")
+    keras::layer_dense(units = num_targets, activation = "softmax", dtype = "float32")
   
   # define "model" as the mapping from input_tensor to output_tensor
   model <- keras::keras_model(inputs = input_tensor, outputs = output_tensor)
@@ -2807,7 +2913,22 @@ create_model_transformer <- function(maxlen,
                                      auc_metric = FALSE,
                                      label_smoothing = 0,
                                      verbose = TRUE,
-                                     model_seed = NULL) {
+                                     model_seed = NULL,
+                                     mixed_precision = FALSE,
+                                     mirrored_strategy = NULL) {
+  
+  if (mixed_precision) tensorflow::tf$keras$mixed_precision$set_global_policy("mixed_float16")
+  
+  if (is.null(mirrored_strategy)) mirrored_strategy <- ifelse(count_gpu() > 1, TRUE, FALSE)
+  if (mirrored_strategy) {
+    mirrored_strategy <- tensorflow::tf$distribute$MirroredStrategy()
+    with(mirrored_strategy$scope(), { 
+      argg <- as.list(environment())
+      argg$mirrored_strategy <- FALSE
+      model <- do.call(create_model_transformer, argg)
+    })
+    return(model)
+  }
   
   stopifnot(length(head_size) == length(num_heads))
   stopifnot(length(head_size) == length(dropout))
@@ -3108,7 +3229,22 @@ create_model_twin_network <- function(
     batch_norm_momentum = 0.99,
     distance_method = "euclidean",
     last_layer_activation = "sigmoid",
-    model_seed = NULL) {
+    model_seed = NULL,
+    mixed_precision = FALSE,
+    mirrored_strategy = NULL) {
+  
+  if (mixed_precision) tensorflow::tf$keras$mixed_precision$set_global_policy("mixed_float16")
+  
+  if (is.null(mirrored_strategy)) mirrored_strategy <- ifelse(count_gpu() > 1, TRUE, FALSE)
+  if (mirrored_strategy) {
+    mirrored_strategy <- tensorflow::tf$distribute$MirroredStrategy()
+    with(mirrored_strategy$scope(), { 
+      argg <- as.list(environment())
+      argg$mirrored_strategy <- FALSE
+      model <- do.call(create_model_twin_network, argg)
+    })
+    return(model)
+  }
   
   if (!is.null(model_seed)) tensorflow::tf$random$set_seed(model_seed)
   if (!is.null(dropout_dense)) stopifnot(length(dropout_dense) == length(layer_dense))
