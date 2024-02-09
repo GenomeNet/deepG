@@ -397,7 +397,7 @@ create_model_lstm_cnn <- function(
   if (num_output_layers == 1) {
     if (!is.null(dropout_dense)) output_tensor <- output_tensor %>% keras::layer_dropout(dropout_dense[length(dropout_dense)])
     output_tensor <- output_tensor %>%
-      keras::layer_dense(units = num_targets, activation = last_layer_activation)
+      keras::layer_dense(units = num_targets, activation = last_layer_activation, dtype = "float32")
   } else {
     output_list <- list()
     for (i in 1:num_output_layers) {
@@ -405,10 +405,10 @@ create_model_lstm_cnn <- function(
       if (!is.null(dropout_dense)) {
         output_list[[i]] <- output_tensor %>% keras::layer_dropout(dropout_dense[length(dropout_dense)])
         output_list[[i]] <- output_list[[i]] %>%
-          keras::layer_dense(units = num_targets, activation = last_layer_activation, name = layer_name)
+          keras::layer_dense(units = num_targets, activation = last_layer_activation, name = layer_name, dtype = "float32")
       } else {
         output_list[[i]] <- output_tensor %>%
-          keras::layer_dense(units = num_targets, activation = last_layer_activation, name = layer_name)
+          keras::layer_dense(units = num_targets, activation = last_layer_activation, name = layer_name, dtype = "float32")
       }
     }
   }
@@ -842,13 +842,13 @@ create_model_lstm_cnn_target_middle <- function(
   
   if (num_output_layers == 1) {
     output_tensor <- output_tensor %>%
-      keras::layer_dense(units = num_targets, activation = last_layer_activation)
+      keras::layer_dense(units = num_targets, activation = last_layer_activation, dtype = "float32")
   }  else {
     output_list <- list()
     for (i in 1:num_output_layers) {
       layer_name <- paste0("output_", i, "_", num_output_layers)
       output_list[[i]] <- output_tensor %>%
-        keras::layer_dense(units = num_targets, activation = last_layer_activation, name = layer_name)
+        keras::layer_dense(units = num_targets, activation = last_layer_activation, name = layer_name, dtype = "float32")
     }
   }
   
@@ -1173,8 +1173,10 @@ remove_add_layers <- function(model = NULL,
         for (i in 1:length(dense_layers[[output_num]])) {
           if (i == length(dense_layers[[output_num]])) {
             activation <- last_activation[[output_num]]
+            dtype <- "float32"
           } else {
             activation <- "relu"
+            dtype <- NULL
           }
           
           if (i == length(dense_layers[[output_num]])) {
@@ -1188,23 +1190,23 @@ remove_add_layers <- function(model = NULL,
             if (i == 1) {
               output_list[[output_num]] <- model_new$output %>%
                 keras::layer_dense(units = dense_layers[[output_num]][i], activation = activation,
-                                   name = layer_name)
+                                   name = layer_name, dtype = dtype)
             } else {
               output_list[[output_num]] <- output_list[[output_num]] %>%
                 keras::layer_dense(units = dense_layers[[output_num]][i], activation = activation,
-                                   name = layer_name)
+                                   name = layer_name, dtype = dtype)
             }
           } else {
             if (i == 1) {
               output_list[[output_num]] <- model_new$output %>%
                 keras::layer_dropout(rate = dropout[[output_num]][i]) %>%
                 keras::layer_dense(units = dense_layers[[output_num]][i], activation = activation,
-                                   name = layer_name)
+                                   name = layer_name, dtype = dtype)
             } else {
               output_list[[output_num]] <- output_list[[output_num]] %>%
                 keras::layer_dropout(rate = dropout[[output_num]][i]) %>%
                 keras::layer_dense(units = dense_layers[[output_num]][i], activation = activation,
-                                   name = layer_name)
+                                   name = layer_name, dtype = dtype)
             }
           }
         }
@@ -1560,13 +1562,13 @@ create_model_lstm_cnn_time_dist <- function(
   
   if (num_output_layers == 1) {
     output_tensor <- output_tensor %>%
-      keras::layer_dense(units = num_targets, activation = last_layer_activation)
+      keras::layer_dense(units = num_targets, activation = last_layer_activation, dtype = "float32")
   } else {
     output_list <- list()
     for (i in 1:num_output_layers) {
       layer_name <- paste0("output_", i, "_", num_output_layers)
       output_list[[i]] <- output_tensor %>%
-        keras::layer_dense(units = num_targets, activation = last_layer_activation, name = layer_name)
+        keras::layer_dense(units = num_targets, activation = last_layer_activation, name = layer_name, dtype = "float32")
     }
   }
   
@@ -1842,7 +1844,7 @@ create_model_lstm_cnn_multi_input <- function(
     }
   }
   
-  y <- y %>% keras::layer_dense(units = num_targets, activation = last_layer_activation)
+  y <- y %>% keras::layer_dense(units = num_targets, activation = last_layer_activation, dtype = "float32")
   model <- keras::keras_model(inputs = input_list, outputs = y)
   
   if (compile) {
@@ -2871,7 +2873,7 @@ create_model_transformer <- function(maxlen,
     }
   }  
   
-  output_tensor <- output_tensor %>% keras::layer_dense(units = layer_dense[length(layer_dense)], activation = last_layer_activation)
+  output_tensor <- output_tensor %>% keras::layer_dense(units = layer_dense[length(layer_dense)], activation = last_layer_activation, dtype = "float32")
   
   # create model
   model <- keras::keras_model(inputs = input_tensor, outputs = output_tensor)
@@ -3174,7 +3176,7 @@ create_model_twin_network <- function(
   }
   
   outputs <- outputs %>% keras::layer_batch_normalization(momentum = batch_norm_momentum)
-  outputs <- outputs %>% keras::layer_dense(units = 1, activation = last_layer_activation)
+  outputs <- outputs %>% keras::layer_dense(units = 1, activation = last_layer_activation, dtype = "float32")
   model <- keras::keras_model(inputs = list(input_1, input_2), outputs = outputs)
   
   if (compile) {

@@ -229,6 +229,8 @@ train_model <- function(model = NULL,
                         vocabulary_label = NULL,
                         delete_used_files = FALSE) {
   
+  if (mixed_precision) tensorflow::tf$keras$mixed_precision$set_global_policy("mixed_float16")
+  
   # initialize metrics, temporary fix
   model <- manage_metrics(model)
   
