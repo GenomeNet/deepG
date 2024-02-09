@@ -2273,8 +2273,7 @@ generator_rds <- function(rds_folder, batch_size, path_file_log = NULL,
       # TODO:  have temporal/non-temporal in same batch 
       sw_temporal <- ifelse(dim(sw_complete[[1]])[2] == 1, FALSE, TRUE)
       sw_dim <- lapply(sw_complete,dim)
-      multi_sw <- TRUE
-      
+
       sw_dim_list <- list()
       size_splits_sw <- list()
       for (i in 1:length(sw_complete)) {
@@ -2287,10 +2286,9 @@ generator_rds <- function(rds_folder, batch_size, path_file_log = NULL,
     } else {
       sw_temporal <- ifelse(dim(sw_complete)[2] == 1, FALSE, TRUE)
       sw_dim <- dim(sw_complete) 
-      multi_sw <- FALSE
     }
+    sw_dim_start <- dim(sw_complete)
   }
-  sw_dim_start <- dim(sw_complete)
   
   sample_index <- 1:x_dim_start[1]
   
@@ -2502,7 +2500,7 @@ generator_rds <- function(rds_folder, batch_size, path_file_log = NULL,
       y <- tensorflow::tf$split(y, num_or_size_splits = size_splits_out, axis = as.integer(length(y_dim)-1))
     }
     
-    if (include_sw & multi_sw) {
+    if (include_sw && multi_sw) {
       sw <- tensorflow::tf$split(sw, num_or_size_splits = size_splits_sw, axis = as.integer(length(sw_dim)-1))
     }
     
