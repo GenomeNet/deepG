@@ -1469,7 +1469,7 @@ create_model_lstm_cnn_time_dist <- function(
     with(mirrored_strategy$scope(), { 
       argg <- as.list(environment())
       argg$mirrored_strategy <- FALSE
-      model <- do.call(create_model_time_dist, argg)
+      model <- do.call(create_model_lstm_cnn_time_dist, argg)
     })
     return(model)
   }
@@ -1766,7 +1766,7 @@ create_model_lstm_cnn_multi_input <- function(
     with(mirrored_strategy$scope(), { 
       argg <- as.list(environment())
       argg$mirrored_strategy <- FALSE
-      model <- do.call(create_model_multi_input, argg)
+      model <- do.call(create_model_lstm_cnn_multi_input, argg)
     })
     return(model)
   }
