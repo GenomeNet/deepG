@@ -1396,6 +1396,41 @@ check_layer_name <- function(model, layer_name) {
   }
 }
 
+#' Add layer 
+#' 
+#' Add output of time distribution representations.
+#' 
+#' @inheritParams create_model_lstm_cnn_time_dist
+#' @param load_r6 Whether to load the R6 layer class.
+#' @export
+layer_add_time_dist_wrapper <- function(load_r6 = FALSE) {
+  
+  layer_add_time_dist <- keras::new_layer_class(
+    "layer_add_time_dist",
+    
+    initialize = function(...) {
+      super$initialize(...)
+    },
+    
+    call = function(inputs) {
+      out <- tensorflow::tf$math$reduce_sum(inputs, axis=1L)
+      out
+    },
+    
+    get_config = function() {
+      config <- super$get_config()
+      config
+    }
+  )
+  
+  if (load_r6) {
+    return(layer_add_time_dist)
+  } else {
+    return(layer_add_time_dist())
+  }
+  
+}
+
 
 #' @title Create LSTM/CNN network for combining multiple sequences 
 #' 
@@ -1625,10 +1660,11 @@ create_model_lstm_cnn_time_dist <- function(
     }
   }
   
-  #output_tensor <- output_tensor %>% keras::layer_add()
-  output_tensor <- keras::layer_lambda(output_tensor, f = function(x) {
-    tensorflow::tf$math$reduce_sum(x, axis=1L)
-  })
+  layer_add_td <- layer_add_time_dist_wrapper()
+  output_tensor <- output_tensor %>% layer_add_td
+  # output_tensor <- keras::layer_lambda(output_tensor, f = function(x) {
+  #   tensorflow::tf$math$reduce_sum(x, axis=1L)
+  # })
   
   if (length(layer_dense) > 1) {
     for (i in 1:(length(layer_dense) - 1)) {
@@ -2539,7 +2575,8 @@ load_cp <- function(cp_path, cp_filter = "last_ep", ep_index = NULL, compile = F
     "layer_pos_sinusoid" = layer_pos_sinusoid_wrapper(load_r6 = TRUE),
     "layer_transformer_block" = layer_transformer_block_wrapper(load_r6 = TRUE),
     "layer_euc_dist" = layer_euc_dist_wrapper(load_r6 = TRUE),
-    "layer_cosine_sim" = layer_cosine_sim_wrapper(load_r6 = TRUE)
+    "layer_cosine_sim" = layer_cosine_sim_wrapper(load_r6 = TRUE),
+    "layer_add_time_dist" = layer_add_time_dist_wrapper(load_r6 = TRUE)
   )
   
   if (!is.null(add_custom_object)) {
