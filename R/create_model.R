@@ -2727,24 +2727,23 @@ get_cp  <- function(cp_path, cp_filter = "last_ep", ep_index = NULL) {
 #' @inheritParams create_model_transformer
 #' @param load_r6 Whether to load the R6 layer class.
 #' @export
-layer_pos_embedding_wrapper <- function(maxlen = 100, vocabulary_size = 4, load_r6 = FALSE, embed_dim = NULL) {
+layer_pos_embedding_wrapper <- function(maxlen = 100, vocabulary_size = 4, load_r6 = FALSE, embed_dim = 64) {
   
   layer_pos_embedding <- keras::new_layer_class(
     "layer_pos_embedding",
     
     initialize = function(maxlen=100, vocabulary_size=4, embed_dim=64, ...) {
       super$initialize(...)
-      if (!is.null(embed_dim)) {
+      if (embed_dim != 0) {
         self$token_emb <- tensorflow::tf$keras$layers$Embedding(input_dim = as.integer(vocabulary_size),
                                                                 output_dim = as.integer(embed_dim))
         self$position_embeddings <- tensorflow::tf$keras$layers$Embedding(input_dim = as.integer(maxlen),
                                                                           output_dim = as.integer(embed_dim))
-        self$embed_dim <- as.integer(embed_dim)
       } else {
         self$position_embeddings <- tensorflow::tf$keras$layers$Embedding(input_dim = as.integer(maxlen),
                                                                           output_dim = as.integer(vocabulary_size))
-        self$embed_dim <- NULL
       }
+      self$embed_dim <- as.integer(embed_dim)
       self$maxlen <- as.integer(maxlen)
       self$vocabulary_size <- as.integer(vocabulary_size)
     },
@@ -2752,7 +2751,7 @@ layer_pos_embedding_wrapper <- function(maxlen = 100, vocabulary_size = 4, load_
     call = function(inputs) {
       positions <- tensorflow::tf$range(self$maxlen, dtype = "int32") 
       embedded_positions <- self$position_embeddings(positions)
-      if (!is.null(self$embed_dim)) inputs <- self$token_emb(inputs)
+      if (self$embed_dim != 0) inputs <- self$token_emb(inputs)
       inputs + embedded_positions
     },
     
@@ -2790,17 +2789,15 @@ layer_pos_sinusoid_wrapper <- function(maxlen = 100, vocabulary_size = 4, n = 10
       self$vocabulary_size <- vocabulary_size
       self$n <- as.integer(n)
       self$pe_matrix <- positional_encoding(seq_len = maxlen,
-                                            d_model = ifelse(is.null(embed_dim),
+                                            d_model = ifelse(embed_dim == 0,
                                                              as.integer(vocabulary_size),
                                                              as.integer(embed_dim)),  
                                             n = n)
       
-      if (!is.null(embed_dim)) {
+      if (embed_dim != 0) {
         self$token_emb <- tensorflow::tf$keras$layers$Embedding(input_dim = vocabulary_size, output_dim = as.integer(embed_dim))
-        self$embed_dim <- as.integer(embed_dim)
-      } else {
-        self$embed_dim <- NULL
-      } 
+      }
+      self$embed_dim <- as.integer(embed_dim)
       
       # self$position_embedding <- tensorflow::tf$keras$layers$Embedding(
       #   input_dim = as.integer(maxlen),
@@ -2815,7 +2812,7 @@ layer_pos_sinusoid_wrapper <- function(maxlen = 100, vocabulary_size = 4, n = 10
     },
     
     call = function(inputs) {
-      if (!is.null(self$embed_dim)) {
+      if (self$embed_dim != 0) {
         inputs <- self$token_emb(inputs)
       } 
       inputs + self$pe_matrix
@@ -2859,7 +2856,7 @@ layer_transformer_block_wrapper <- function(num_heads = 2, head_size = 4, dropou
                                                                  key_dim=as.integer(head_size))
       
       self$ffn <- keras::keras_model_sequential() %>% keras::layer_dense(units=as.integer(ff_dim), activation="relu") %>%
-        keras::layer_dense(units=ifelse(is.null(embed_dim), as.integer(vocabulary_size), as.integer(embed_dim)))
+        keras::layer_dense(units=ifelse(embed_dim == 0, as.integer(vocabulary_size), as.integer(embed_dim)))
       
       self$layernorm1 <- keras::layer_layer_normalization(epsilon=1e-6)
       self$layernorm2 <- keras::layer_layer_normalization(epsilon=1e-6)
@@ -2911,7 +2908,7 @@ layer_transformer_block_wrapper <- function(num_heads = 2, head_size = 4, dropou
 #' @param pos_encoding Either `"sinusoid"` or `"embedding"`. How to add positional information.
 #' If `"sinusoid"`, will add sine waves of different frequencies to input.
 #' If `"embedding"`, model learns positional embedding.
-#' @param embed_dim Dimension for token embedding. No embedding if `NULL`. Should be used when input is not one-hot encoded
+#' @param embed_dim Dimension for token embedding. No embedding if set to 0. Should be used when input is not one-hot encoded
 #' (integer sequence).
 #' @param head_size Dimensions of attention key.
 #' @param n Frequency of sine waves for positional encoding. Only applied if `pos_encoding = "sinusoid"`.
@@ -2930,7 +2927,7 @@ layer_transformer_block_wrapper <- function(num_heads = 2, head_size = 4, dropou
 #' @export
 create_model_transformer <- function(maxlen,
                                      vocabulary_size = 4,
-                                     embed_dim = NULL,
+                                     embed_dim = 64,
                                      pos_encoding = "embedding",
                                      head_size = 4L,
                                      num_heads = 5L,
@@ -2980,7 +2977,7 @@ create_model_transformer <- function(maxlen,
   vocabulary_size <-  as.integer(vocabulary_size)
   if (!is.null(model_seed)) tensorflow::tf$random$set_seed(model_seed)
   
-  if (is.null(embed_dim)) {
+  if (embed_dim == 0) {
     input_tensor <- keras::layer_input(shape = c(maxlen, vocabulary_size))
   } else {
     input_tensor <- keras::layer_input(shape = c(maxlen))
