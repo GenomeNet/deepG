@@ -355,6 +355,7 @@ add_hparam_list <- function(model, argg) {
   argg["feature_ext_model"] <- NULL
   argg["pe_matrix"] <- NULL
   argg["position_embedding_layer"] <- NULL 
+  argg["layer_add_td"] <- NULL 
   
   model$hparam <- argg
   model
