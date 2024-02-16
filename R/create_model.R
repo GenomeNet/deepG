@@ -103,7 +103,7 @@ create_model_lstm_cnn <- function(
     mixed_precision = FALSE,
     mirrored_strategy = NULL) {
   
-  if (mixed_precision) tensorflow::tf$keras$mixed_precision$set_global_policy("mixed_float16")
+  if (mixed_precision) tensorflow::tf$keras$mixed_precision$set_global_policy("mixed_bfloat16")
   
   if (is.null(mirrored_strategy)) mirrored_strategy <- ifelse(count_gpu() > 1, TRUE, FALSE)
   if (mirrored_strategy) {
@@ -538,7 +538,7 @@ create_model_wavenet <- function(filters = 16, kernel_size = 2, residual_blocks,
                                  learning_rate = 0.001, compile = TRUE, verbose = TRUE, model_seed = NULL,
                                  mixed_precision = FALSE, mirrored_strategy = NULL) {
   
-  if (mixed_precision) tensorflow::tf$keras$mixed_precision$set_global_policy("mixed_float16")
+  if (mixed_precision) tensorflow::tf$keras$mixed_precision$set_global_policy("mixed_bfloat16")
   
   if (is.null(mirrored_strategy)) mirrored_strategy <- ifelse(count_gpu() > 1, TRUE, FALSE)
   if (mirrored_strategy) {
@@ -623,7 +623,7 @@ create_model_lstm_cnn_target_middle <- function(
     mixed_precision = FALSE,
     mirrored_strategy = NULL) {
   
-  if (mixed_precision) tensorflow::tf$keras$mixed_precision$set_global_policy("mixed_float16")
+  if (mixed_precision) tensorflow::tf$keras$mixed_precision$set_global_policy("mixed_bfloat16")
   
   if (is.null(mirrored_strategy)) mirrored_strategy <- ifelse(count_gpu() > 1, TRUE, FALSE)
   if (mirrored_strategy) {
@@ -1114,7 +1114,7 @@ remove_add_layers <- function(model = NULL,
                               mixed_precision = FALSE,
                               mirrored_strategy = NULL) {
   
-  if (mixed_precision) tensorflow::tf$keras$mixed_precision$set_global_policy("mixed_float16")
+  if (mixed_precision) tensorflow::tf$keras$mixed_precision$set_global_policy("mixed_bfloat16")
   
   if (is.null(mirrored_strategy)) mirrored_strategy <- ifelse(count_gpu() > 1, TRUE, FALSE)
   if (mirrored_strategy) {
@@ -1496,7 +1496,7 @@ create_model_lstm_cnn_time_dist <- function(
     mixed_precision = FALSE,
     mirrored_strategy = NULL) {
   
-  if (mixed_precision) tensorflow::tf$keras$mixed_precision$set_global_policy("mixed_float16")
+  if (mixed_precision) tensorflow::tf$keras$mixed_precision$set_global_policy("mixed_bfloat16")
   
   if (is.null(mirrored_strategy)) mirrored_strategy <- ifelse(count_gpu() > 1, TRUE, FALSE)
   if (mirrored_strategy) {
@@ -1794,7 +1794,7 @@ create_model_lstm_cnn_multi_input <- function(
     mixed_precision = FALSE,
     mirrored_strategy = NULL) {
   
-  if (mixed_precision) tensorflow::tf$keras$mixed_precision$set_global_policy("mixed_float16")
+  if (mixed_precision) tensorflow::tf$keras$mixed_precision$set_global_policy("mixed_bfloat16")
   
   if (is.null(mirrored_strategy)) mirrored_strategy <- ifelse(count_gpu() > 1, TRUE, FALSE)
   if (mirrored_strategy) {
@@ -2225,7 +2225,7 @@ create_model_genomenet <- function(
     mixed_precision = FALSE,
     mirrored_strategy = NULL) {
   
-  if (mixed_precision) tensorflow::tf$keras$mixed_precision$set_global_policy("mixed_float16")
+  if (mixed_precision) tensorflow::tf$keras$mixed_precision$set_global_policy("mixed_bfloat16")
   
   if (is.null(mirrored_strategy)) mirrored_strategy <- ifelse(count_gpu() > 1, TRUE, FALSE)
   if (mirrored_strategy) {
@@ -2567,7 +2567,18 @@ load_cp <- function(cp_path, cp_filter = "last_ep", ep_index = NULL, compile = F
                     learning_rate = 0.01, solver = "adam", re_compile = FALSE,
                     loss = "categorical_crossentropy",
                     add_custom_object = NULL,
-                    verbose = TRUE) {
+                    verbose = TRUE, mirrored_strategy = NULL) {
+  
+  if (is.null(mirrored_strategy)) mirrored_strategy <- ifelse(count_gpu() > 1, TRUE, FALSE)
+  if (mirrored_strategy) {
+    mirrored_strategy <- tensorflow::tf$distribute$MirroredStrategy()
+    with(mirrored_strategy$scope(), { 
+      argg <- as.list(environment())
+      argg$mirrored_strategy <- FALSE
+      model <- do.call(load_cp, argg)
+    })
+    return(model)
+  }
   
   # custom objects to load transformer architecture
   custom_objects <- list(
@@ -2951,7 +2962,7 @@ create_model_transformer <- function(maxlen,
                                      mixed_precision = FALSE,
                                      mirrored_strategy = NULL) {
   
-  if (mixed_precision) tensorflow::tf$keras$mixed_precision$set_global_policy("mixed_float16")
+  if (mixed_precision) tensorflow::tf$keras$mixed_precision$set_global_policy("mixed_bfloat16")
   
   if (is.null(mirrored_strategy)) mirrored_strategy <- ifelse(count_gpu() > 1, TRUE, FALSE)
   if (mirrored_strategy) {
@@ -3267,7 +3278,7 @@ create_model_twin_network <- function(
     mixed_precision = FALSE,
     mirrored_strategy = NULL) {
   
-  if (mixed_precision) tensorflow::tf$keras$mixed_precision$set_global_policy("mixed_float16")
+  if (mixed_precision) tensorflow::tf$keras$mixed_precision$set_global_policy("mixed_bfloat16")
   
   if (is.null(mirrored_strategy)) mirrored_strategy <- ifelse(count_gpu() > 1, TRUE, FALSE)
   if (mirrored_strategy) {
