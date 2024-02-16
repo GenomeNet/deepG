@@ -2567,7 +2567,18 @@ load_cp <- function(cp_path, cp_filter = "last_ep", ep_index = NULL, compile = F
                     learning_rate = 0.01, solver = "adam", re_compile = FALSE,
                     loss = "categorical_crossentropy",
                     add_custom_object = NULL,
-                    verbose = TRUE) {
+                    verbose = TRUE, mirrored_strategy = NULL) {
+  
+  if (is.null(mirrored_strategy)) mirrored_strategy <- ifelse(count_gpu() > 1, TRUE, FALSE)
+  if (mirrored_strategy) {
+    mirrored_strategy <- tensorflow::tf$distribute$MirroredStrategy()
+    with(mirrored_strategy$scope(), { 
+      argg <- as.list(environment())
+      argg$mirrored_strategy <- FALSE
+      model <- do.call(load_cp, argg)
+    })
+    return(model)
+  }
   
   # custom objects to load transformer architecture
   custom_objects <- list(
@@ -3307,6 +3318,8 @@ create_model_twin_network <- function(
     samples_per_target = 2,
     batch_norm_momentum = batch_norm_momentum,
     verbose = FALSE,
+    mixed_precision = mixed_precision,
+    mirrored_strategy = FALSE,
     model_seed = model_seed)
   
   model_base <- model_base$layers[[3]]
