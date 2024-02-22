@@ -103,7 +103,7 @@ create_model_lstm_cnn <- function(
     mixed_precision = FALSE,
     mirrored_strategy = NULL) {
   
-  if (mixed_precision) tensorflow::tf$keras$mixed_precision$set_global_policy("mixed_bfloat16")
+  if (mixed_precision) tensorflow::tf$keras$mixed_precision$set_global_policy("mixed_float16")
   
   if (is.null(mirrored_strategy)) mirrored_strategy <- ifelse(count_gpu() > 1, TRUE, FALSE)
   if (mirrored_strategy) {
@@ -538,7 +538,7 @@ create_model_wavenet <- function(filters = 16, kernel_size = 2, residual_blocks,
                                  learning_rate = 0.001, compile = TRUE, verbose = TRUE, model_seed = NULL,
                                  mixed_precision = FALSE, mirrored_strategy = NULL) {
   
-  if (mixed_precision) tensorflow::tf$keras$mixed_precision$set_global_policy("mixed_bfloat16")
+  if (mixed_precision) tensorflow::tf$keras$mixed_precision$set_global_policy("mixed_float16")
   
   if (is.null(mirrored_strategy)) mirrored_strategy <- ifelse(count_gpu() > 1, TRUE, FALSE)
   if (mirrored_strategy) {
