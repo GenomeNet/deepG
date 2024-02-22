@@ -2417,21 +2417,27 @@ generator_rds <- function(rds_folder, batch_size, path_file_log = NULL,
         index <- sample(sample_index, min(batch_size - x_index + 1, length(sample_index)))
       }
       
-      # subsetting
+      #subsetting
+      subset_index <- x_index:(x_index + length(index) - 1)
+      
+      if (length(x_dim) == 4) {
+        x[subset_index, , , ] <- x_complete[index, , , ]
+      }
+      
       if (length(x_dim) == 3) {
-        x[x_index:(x_index + length(index) - 1), , ] <- x_complete[index, , ]  
+        x[subset_index, , ] <- x_complete[index, , ]
       }
-      
+
       if (length(x_dim) == 2) {
-        x[x_index:(x_index + length(index) - 1), ] <- x_complete[index, ]  
+        x[subset_index, ] <- x_complete[index, ]
       }
-      
+
       if (!is_lm) {
-        y[x_index:(x_index + length(index) - 1), ] <- y_complete[index, ]
+        y[subset_index, ] <- y_complete[index, ]
       }
       
       if (include_sw) {
-        sw[x_index:(x_index + length(index) - 1), ] <- sw_complete[index, ]
+        sw[subset_index, ] <- sw_complete[index, ]
       }
       
       x_index <- x_index + length(index)
