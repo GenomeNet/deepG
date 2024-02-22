@@ -1449,6 +1449,9 @@ layer_add_time_dist_wrapper <- function(load_r6 = FALSE) {
 #'     
 #' @inheritParams create_model_lstm_cnn
 #' @param samples_per_target Number of samples to combine for one target.
+#' @param aggregation_method "sum" or "lstm". How to process output of last time distributed layer.
+#' If "sum", add representations. If "lstm", use output as input for LSTM layer(s) (as specified in lstm_time_dist).
+#' @param lstm_time_dist Vector containing number of units per LSTM cell. Only used if `aggregation_method = "lstm`.   
 #' @examples 
 #' create_model_lstm_cnn_time_dist(
 #'   maxlen = 50,
@@ -1493,6 +1496,8 @@ create_model_lstm_cnn_time_dist <- function(
     batch_norm_momentum = 0.99,
     verbose = TRUE,
     model_seed = NULL,
+    aggregation_method = "sum", 
+    lstm_time_dist = c(128),
     mixed_precision = FALSE,
     mirrored_strategy = NULL) {
   
@@ -1660,11 +1665,17 @@ create_model_lstm_cnn_time_dist <- function(
     }
   }
   
-  layer_add_td <- layer_add_time_dist_wrapper()
-  output_tensor <- output_tensor %>% layer_add_td
-  # output_tensor <- keras::layer_lambda(output_tensor, f = function(x) {
-  #   tensorflow::tf$math$reduce_sum(x, axis=1L)
-  # })
+  if (aggregation_method == "sum") {
+    layer_add_td <- layer_add_time_dist_wrapper()
+    output_tensor <- output_tensor %>% layer_add_td
+  } else {
+    return_sequences <- TRUE
+    for (i in 1:length(lstm_time_dist)) {
+      if (i == length(lstm_time_dist)) return_sequences <- FALSE
+      output_tensor <- output_tensor %>% keras::layer_lstm(units=lstm_time_dist[i], return_sequences = return_sequences)
+    }
+  }
+  
   
   if (length(layer_dense) > 1) {
     for (i in 1:(length(layer_dense) - 1)) {
