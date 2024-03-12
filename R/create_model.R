@@ -2231,6 +2231,8 @@ create_model_genomenet <- function(
     recurrent_bidirectional = FALSE,
     recurrent_units = 100,
     vocabulary_size = 4,
+    last_layer_activation = "softmax",
+    loss_fn = "categorical_crossentropy",
     num_targets = 2,
     model_seed = NULL,
     mixed_precision = FALSE,
@@ -2399,7 +2401,7 @@ create_model_genomenet <- function(
   }
   
   output_tensor <- output_tensor %>%
-    keras::layer_dense(units = num_targets, activation = "softmax", dtype = "float32")
+    keras::layer_dense(units = num_targets, activation = last_layer_activation, dtype = "float32")
   
   # define "model" as the mapping from input_tensor to output_tensor
   model <- keras::keras_model(inputs = input_tensor, outputs = output_tensor)
@@ -2420,13 +2422,49 @@ create_model_genomenet <- function(
   # assign optimization method
   keras_optimizer <- set_optimizer(optimizer, learning_rate) 
   
-  model %>% keras::compile(loss = "categorical_crossentropy", optimizer = keras_optimizer, metrics = "acc")
+  #add metrics
+  if (loss_fn == "binary_crossentropy") {
+    model_metrics <- c(tf$keras$metrics$BinaryAccuracy(name = "acc"))
+  } else {
+    model_metrics <- c("acc")
+  } 
+  
+  cm_dir <-
+    file.path(tempdir(), paste(sample(letters, 7), collapse = ""))
+  while (dir.exists(cm_dir)) {
+    cm_dir <-
+      file.path(tempdir(), paste(sample(letters, 7), collapse = ""))
+  }
+  dir.create(cm_dir)
+  model$cm_dir <- cm_dir
+  
+  if (loss_fn == "categorical_crossentropy") {
+    if (bal_acc) {
+      macro_average_cb <- balanced_acc_wrapper(num_targets, cm_dir)
+      model_metrics <- c(macro_average_cb, "acc")
+    }
+    
+    if (f1_metric) {
+      f1 <- f1_wrapper(num_targets)
+      model_metrics <- c(model_metrics, f1)
+    }
+  }
+  
+  if (auc_metric) {
+    auc <-
+      auc_wrapper(model_output_size = layer_dense[length(layer_dense)],
+                  loss = loss_fn)
+    model_metrics <- c(model_metrics, auc)
+  }
+  
+  model %>% keras::compile(loss = loss_fn, optimizer = keras_optimizer, metrics = "acc")
   
   argg <- c(as.list(environment()))
   model <- add_hparam_list(model, argg)
   
   model
 }
+
 
 # #' Load pretrained Genomenet model
 # #'
