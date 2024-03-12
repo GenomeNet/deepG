@@ -2202,6 +2202,7 @@ get_optimizer <- function(model) {
 #'   input tensor shape, together with `maxlen`.
 #' @param last_layer_activation Either `"sigmoid"` or `"softmax"`.
 #' @param loss_fn Either `"categorical_crossentropy"` or `"binary_crossentropy"`. If `label_noise_matrix` given, will use custom `"noisy_loss"`.
+#' @param auc_metric Whether to add AUC metric.
 #' @param num_targets (integer `numeric(1)`)\cr
 #'   Number of output units to create.
 #' @return A keras model.
@@ -2235,6 +2236,7 @@ create_model_genomenet <- function(
     vocabulary_size = 4,
     last_layer_activation = "softmax",
     loss_fn = "categorical_crossentropy",
+    auc_metric = FALSE,
     num_targets = 2,
     model_seed = NULL,
     mixed_precision = FALSE,
@@ -2459,7 +2461,7 @@ create_model_genomenet <- function(
     model_metrics <- c(model_metrics, auc)
   }
   
-  model %>% keras::compile(loss = loss_fn, optimizer = keras_optimizer, metrics = "acc")
+  model %>% keras::compile(loss = loss_fn, optimizer = keras_optimizer, metrics = model_metrics)
   
   argg <- c(as.list(environment()))
   model <- add_hparam_list(model, argg)
