@@ -2200,6 +2200,8 @@ get_optimizer <- function(model) {
 #' @param vocabulary.size (integer `numeric(1)`)\cr
 #'   Vocabulary size of (one-hot encoded) input strings. This determines the
 #'   input tensor shape, together with `maxlen`.
+#' @param last_layer_activation Either `"sigmoid"` or `"softmax"`.
+#' @param loss_fn Either `"categorical_crossentropy"` or `"binary_crossentropy"`. If `label_noise_matrix` given, will use custom `"noisy_loss"`.
 #' @param num_targets (integer `numeric(1)`)\cr
 #'   Number of output units to create.
 #' @return A keras model.
