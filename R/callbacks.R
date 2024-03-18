@@ -791,7 +791,7 @@ get_callbacks <- function(default_arguments, model, path_tensorboard, run_name, 
                           path_model, path, train_val_ratio, batch_size, epochs, format,
                           max_queue_size, lr_plateau_factor, patience, cooldown, path_checkpoint,
                           steps_per_epoch, step, shuffle_file_order, initial_epoch, vocabulary,
-                          learning_rate, shuffle_input, vocabulary_label, solver,
+                          learning_rate, shuffle_input, vocabulary_label, solver, dataset_val,
                           file_limit, reverse_complement, wavenet_format, cnn_format,
                           create_model_function = NULL, vocabulary_size, gen_cb, argumentList,
                           maxlen, labelGen, labelByFolder, vocabulary_label_size, tb_images,
@@ -815,7 +815,7 @@ get_callbacks <- function(default_arguments, model, path_tensorboard, run_name, 
       #   filepath_checkpoints <- file.path(checkpoint_dir, "Ep.{epoch:03d}-loss{loss:.2f}-acc{acc:.3f}.hdf5")
       # } else {
       filepath_checkpoints <- file.path(checkpoint_dir, "Ep.{epoch:03d}.hdf5")
-      if (save_best_only) {
+      if (save_best_only & is.null(dataset_val)) {
         warning("save_best_only not implemented for multi target or training without validation data. Setting save_best_only to FALSE.")
         save_best_only <- FALSE
       }

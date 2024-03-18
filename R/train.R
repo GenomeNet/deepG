@@ -475,10 +475,15 @@ train_model <- function(model = NULL,
                              train_with_gen = train_with_gen, random_sampling = random_sampling, reduce_lr_on_plateau = reduce_lr_on_plateau,
                              save_weights_only = save_weights_only, path_checkpoint = path_checkpoint, save_best_only = save_best_only, gen.val = gen.val,
                              target_from_csv = target_from_csv, reset_states = reset_states, early_stopping_time = early_stopping_time,
-                             validation_only_after_training = validation_only_after_training, model_card = model_card)
+                             validation_only_after_training = validation_only_after_training, model_card = model_card, dataset_val = dataset_val)
   
   # training
   if (train_with_gen) {
+    
+    if (!is.null(dataset_val)) {
+      validation_data <- dataset_val
+      validation_steps <- NULL
+    }
     
     model <- keras::set_weights(model, model_weights)
     history <-
@@ -492,6 +497,7 @@ train_model <- function(model = NULL,
         initial_epoch = initial_epoch,
         callbacks = c(callbacks, callback_list),
         class_weight = class_weight,
+        batch_size = batch_size,
         verbose = print_scores)
     
     if (validation_only_after_training) {
