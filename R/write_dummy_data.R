@@ -48,7 +48,7 @@ create_dummy_data <- function(file_path,
   for (i in 1:num_files){
     df <- data.frame(Header = NULL, Sequence = NULL)
     for (j in 1:num_seq) {
-      nuc_seq <- sample(vocabulary, seq_length, replace = TRUE, prob = prob) %>% paste(collapse = "")
+      nuc_seq <- random_seq(vocabulary = vocabulary, seq_length = seq_length, prob = prob)
       new_row <- data.frame(Header = header, Sequence = nuc_seq)
       df <- rbind(df, new_row)
     }
@@ -63,4 +63,8 @@ create_dummy_data <- function(file_path,
     microseq::writeFasta(fdta = dplyr::as_tibble(df), 
                          out.file =  out.file)
   }
+}
+
+random_seq <- function(vocabulary, seq_length, prob = NULL) {
+  sample(vocabulary, seq_length, replace = TRUE, prob = prob) %>% paste(collapse = "")
 }
