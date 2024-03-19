@@ -50,6 +50,8 @@
 #' @param add_noise `NULL` or list of arguments. If not `NULL`, list must contain the following arguments: \code{noise_type} can be `"normal"` or `"uniform"`;
 #' optional arguments `sd` or `mean` if noise_type is `"normal"` (default is `sd=1` and `mean=0`) or `min, max` if `noise_type` is `"uniform"`
 #' (default is `min=0, max=1`).
+#' @param reshape_xy Can be a list of functions to apply to input and/or target. List elements (containing the reshape functions)
+#'  must be called x for input or y for target. 
 #' @import data.table
 #' @importFrom magrittr %>%
 #' @export
@@ -85,7 +87,8 @@ generator_fasta_lm <- function(path_corpus,
                                n_gram = NULL,
                                n_gram_stride = 1,
                                add_noise = NULL,
-                               return_int = FALSE) {
+                               return_int = FALSE,
+                               reshape_xy = NULL) {
   
   
   ##TODO: add check for n-gram and option for stride
@@ -102,6 +105,15 @@ generator_fasta_lm <- function(path_corpus,
   #   maxlen_n_gram <- maxlen
   #   target_len_n_gram <- target_len 
   # }
+  
+  if (!is.null(reshape_xy)) {
+    reshape_xy_bool <- TRUE
+    reshape_x_bool <- ifelse(is.null(reshape_xy$x), FALSE, TRUE)
+    reshape_y_bool <- ifelse(is.null(reshape_xy$y), FALSE, TRUE)
+  } else {
+    reshape_xy_bool <- FALSE
+  }
+  
   
   total_seq_len <- maxlen + target_len
   gen <- generator_fasta_label_folder(path_corpus = path_corpus,
@@ -165,6 +177,11 @@ generator_fasta_lm <- function(path_corpus,
     #   xy_list$y <- add_dim(xy_list$y)
     # }
     
+    if (reshape_xy_bool) {
+      if (reshape_x_bool) xy_list$x <- reshape_xy$x(xy_list$x)
+      if (reshape_y_bool) xy_list$y <- reshape_xy$y(xy_list$y)
+    }
+    
     if (is.null(added_label_path)) {
       return(xy_list)
     } else {
@@ -227,7 +244,16 @@ generator_fasta_label_header_csv <- function(path_corpus,
                                              n_gram = NULL,
                                              n_gram_stride = 1,
                                              add_noise = NULL,
-                                             return_int = FALSE) {
+                                             return_int = FALSE,
+                                             reshape_xy = NULL) {
+  
+  if (!is.null(reshape_xy)) {
+    reshape_xy_bool <- TRUE
+    reshape_x_bool <- ifelse(is.null(reshape_xy$x), FALSE, TRUE)
+    reshape_y_bool <- ifelse(is.null(reshape_xy$y), FALSE, TRUE)
+  } else {
+    reshape_xy_bool <- FALSE
+  }
   
   if (is.null(use_coverage)) {
     use_coverage <- FALSE
@@ -939,6 +965,11 @@ generator_fasta_label_header_csv <- function(path_corpus,
       x <- list(x_1, x_2)
     }
     
+    if (reshape_xy_bool) {
+      if (reshape_x_bool) x <- reshape_xy$x(x)
+      if (reshape_y_bool) y <- reshape_xy$y(y)
+    }
+    
     return(list(X = x, Y = y))
   }
 }
@@ -999,7 +1030,16 @@ generator_fasta_label_folder <- function(path_corpus,
                                          n_gram_stride = 1,
                                          masked_lm = NULL,
                                          add_noise = NULL,
-                                         return_int = FALSE) {
+                                         return_int = FALSE,
+                                         reshape_xy = NULL) {
+  
+  if (!is.null(reshape_xy)) {
+    reshape_xy_bool <- TRUE
+    reshape_x_bool <- ifelse(is.null(reshape_xy$x), FALSE, TRUE)
+    reshape_y_bool <- ifelse(is.null(reshape_xy$y), FALSE, TRUE)
+  } else {
+    reshape_xy_bool <- FALSE
+  }
   
   #n_gram <- NULL
   if (is.null(use_coverage)) {
@@ -1646,6 +1686,10 @@ generator_fasta_label_folder <- function(path_corpus,
     sequence_list_index <<- 1
     num_samples <<- 0
     if (reverse_complement_encoding) {
+      if (reshape_xy_bool) {
+        if (reshape_x_bool) x <- reshape_xy$x(x)
+        if (reshape_y_bool) y <- reshape_xy$y(y)
+      }
       return(list(X = x, Y = y))
     }
     
@@ -1663,6 +1707,11 @@ generator_fasta_label_folder <- function(path_corpus,
     if (!is.null(add_noise)) {
       noise_args <- c(add_noise, list(x = x))
       x <- do.call(add_noise_tensor, noise_args)
+    }
+    
+    if (reshape_xy_bool) {
+      if (reshape_x_bool) x <- reshape_xy$x(x)
+      if (reshape_y_bool) y <- reshape_xy$y(y)
     }
     
     if (!is.null(masked_lm) && include_sw) return(list(x, y, sample_weight))
@@ -1721,7 +1770,16 @@ generator_initialize <- function(directories,
                                  n_gram = NULL,
                                  n_gram_stride = 1,
                                  add_noise = NULL,
-                                 return_int = FALSE) {
+                                 return_int = FALSE,
+                                 reshape_xy = NULL) {
+  
+  if (!is.null(reshape_xy)) {
+    reshape_xy_bool <- TRUE
+    reshape_x_bool <- ifelse(is.null(reshape_xy$x), FALSE, TRUE)
+    reshape_y_bool <- ifelse(is.null(reshape_xy$y), FALSE, TRUE)
+  } else {
+    reshape_xy_bool <- FALSE
+  }
   
   # adjust batch_size
   if (is.null(set_learning) && (length(batch_size) == 1) && (batch_size %% length(directories) != 0)) {
@@ -1844,7 +1902,8 @@ generator_initialize <- function(directories,
                                          masked_lm = NULL,
                                          n_gram_stride = n_gram_stride,
                                          add_noise = add_noise,
-                                         return_int = return_int
+                                         return_int = return_int,
+                                         reshape_xy = reshape_xy
     )"
       )
       eval(parse(text = genAsText))
@@ -1889,7 +1948,8 @@ generator_initialize <- function(directories,
                                          n_gram = n_gram,
                                          n_gram_stride = n_gram_stride,
                                          add_noise = add_noise,
-                                         return_int = return_int
+                                         return_int = return_int,
+                                         reshape_xy = reshape_xy
     )"
       )
       eval(parse(text = genAsTextVal))
@@ -2180,7 +2240,16 @@ generator_rds <- function(rds_folder, batch_size, path_file_log = NULL,
                           sample_by_file_size = FALSE,
                           n_gram = NULL, n_gram_stride = 1,
                           reverse_complement_encoding = FALSE,
-                          add_noise = NULL) {
+                          add_noise = NULL,
+                          reshape_xy = NULL) {
+  
+  if (!is.null(reshape_xy)) {
+    reshape_xy_bool <- TRUE
+    reshape_x_bool <- ifelse(is.null(reshape_xy$x), FALSE, TRUE)
+    reshape_y_bool <- ifelse(is.null(reshape_xy$y), FALSE, TRUE)
+  } else {
+    reshape_xy_bool <- FALSE
+  }
   
   if (!is.null(seed)) set.seed(seed)
   is_lm <- !is.null(target_len)
@@ -2510,6 +2579,11 @@ generator_rds <- function(rds_folder, batch_size, path_file_log = NULL,
       sw <- tensorflow::tf$split(sw, num_or_size_splits = size_splits_sw, axis = as.integer(length(sw_dim)-1))
     }
     
+    if (reshape_xy_bool) {
+      if (reshape_x_bool) x <- reshape_xy$x(x)
+      if (reshape_y_bool) y <- reshape_xy$y(y)
+    }
+    
     if (include_sw) {
       return(list(x, y, sw))
     } else {
@@ -2560,7 +2634,16 @@ generator_random <- function(
     proportion_entries = NULL,
     masked_lm = NULL,
     concat_seq = NULL,
-    return_int = FALSE) {
+    return_int = FALSE,
+    reshape_xy = NULL) {
+  
+  if (!is.null(reshape_xy)) {
+    reshape_xy_bool <- TRUE
+    reshape_x_bool <- ifelse(is.null(reshape_xy$x), FALSE, TRUE)
+    reshape_y_bool <- ifelse(is.null(reshape_xy$y), FALSE, TRUE)
+  } else {
+    reshape_xy_bool <- FALSE
+  }
   
   path_len <- ifelse(train_type != "label_folder", 1, length(path))
   vocabulary <- stringr::str_to_lower(vocabulary)
@@ -2889,7 +2972,13 @@ generator_random <- function(
     
     batch_number <<- batch_number + 1
     
-    if (train_type == "lm") return(xy_list)
+    if (train_type == "lm") {
+      if (reshape_xy_bool) {
+        if (reshape_x_bool) xy_list$x <- reshape_xy$x(xy_list$x)
+        if (reshape_y_bool) xy_list$y <- reshape_xy$y(xy_list$y)
+      }
+      return(xy_list)
+    } 
     
     if (train_type == "label_folder") {
       x <- abind::abind(seq_list, along = 1)
@@ -2919,6 +3008,10 @@ generator_random <- function(
     }
     
     if (train_type == "masked_lm") {
+      if (reshape_xy_bool) {
+        if (reshape_x_bool) one_hot_sample$x <- reshape_xy$x(one_hot_sample$x)
+        if (reshape_y_bool) one_hot_sample$y <- reshape_xy$y(one_hot_sample$y)
+      }
       return(one_hot_sample)
     }
     
@@ -2936,6 +3029,10 @@ generator_random <- function(
                           reshape_mode = reshape_mode)
       return(l)
     } else {
+      if (reshape_xy_bool) {
+        if (reshape_x_bool) x <- reshape_xy$x(x)
+        if (reshape_y_bool) y <- reshape_xy$y(y)
+      }
       return(list(X = x, Y = y))
     }
   }
@@ -3025,8 +3122,9 @@ get_generator <- function(path = NULL,
                           masked_lm = NULL,
                           val = FALSE,
                           return_int = FALSE,
-                          delete_used_files = FALSE) {
-  
+                          delete_used_files = FALSE,
+                          reshape_xy = NULL) {
+
   if (random_sampling) {
     if (use_quality_score) stop("use_quality_score not implemented for random sampling")
     if (read_data) stop("read_data not implemented for random sampling")
@@ -3085,7 +3183,8 @@ get_generator <- function(path = NULL,
       shuffle_input = shuffle_input,
       proportion_entries = proportion_entries,
       return_int = return_int,
-      concat_seq = concat_seq)
+      concat_seq = concat_seq,
+      reshape_xy = reshape_xy)
   } 
   
   if (train_type == "lm" & !random_sampling) {
@@ -3101,7 +3200,8 @@ get_generator <- function(path = NULL,
                               added_label_path = added_label_path, add_input_as_seq = add_input_as_seq,
                               max_samples = max_samples, concat_seq = concat_seq, target_len = target_len,
                               file_filter = file_filter, use_coverage = use_coverage, return_int = return_int,
-                              sample_by_file_size = sample_by_file_size, add_noise = add_noise)
+                              sample_by_file_size = sample_by_file_size, add_noise = add_noise,
+                              reshape_xy = reshape_xy)
   }
   
   # label by folder
@@ -3131,7 +3231,8 @@ get_generator <- function(path = NULL,
       proportion_entries = proportion_entries,
       masked_lm = masked_lm,
       return_int = return_int,
-      concat_seq = concat_seq)
+      concat_seq = concat_seq,
+      reshape_xy = reshape_xy)
   } 
   
   if (train_type == "label_folder" & !random_sampling) {
@@ -3147,7 +3248,7 @@ get_generator <- function(path = NULL,
                          added_label_path = added_label_path, add_input_as_seq = add_input_as_seq, use_coverage = use_coverage,
                          set_learning = set_learning, proportion_entries = proportion_entries,
                          sample_by_file_size = sample_by_file_size, n_gram = n_gram, n_gram_stride = n_gram_stride,
-                         add_noise = add_noise)
+                         add_noise = add_noise, reshape_xy = reshape_xy)
     
     gen <- generator_fasta_label_folder_wrapper(val = val, path = path,  new_batch_size = new_batch_size,
                                                 batch_size = batch_size, voc_len = length(vocabulary),
@@ -3192,7 +3293,8 @@ get_generator <- function(path = NULL,
                                         n_gram = n_gram,
                                         n_gram_stride = n_gram_stride,
                                         masked_lm = masked_lm,
-                                        add_noise = add_noise) 
+                                        add_noise = add_noise,
+                                        reshape_xy = reshape_xy) 
   }
   
   
@@ -3209,7 +3311,8 @@ get_generator <- function(path = NULL,
                                             target_from_csv = target_from_csv, target_split = target_split, file_filter = file_filter,
                                             use_coverage = use_coverage, proportion_entries = proportion_entries,
                                             sample_by_file_size = sample_by_file_size, n_gram = n_gram, n_gram_stride = n_gram_stride,
-                                            add_noise = add_noise, reverse_complement_encoding = reverse_complement_encoding)
+                                            add_noise = add_noise, reverse_complement_encoding = reverse_complement_encoding,
+                                            reshape_xy = reshape_xy)
   }
   
   if ((train_type == "label_csv" | train_type == "label_header") & random_sampling) {
@@ -3240,7 +3343,8 @@ get_generator <- function(path = NULL,
       shuffle_input = shuffle_input,
       proportion_entries = proportion_entries,
       return_int = return_int,
-      concat_seq = concat_seq)
+      concat_seq = concat_seq,
+      reshape_xy = reshape_xy)
   }
   
   if (train_type %in% c("label_rds", "lm_rds")) {
@@ -3252,7 +3356,7 @@ get_generator <- function(path = NULL,
                          sample_by_file_size = sample_by_file_size, add_noise = add_noise,
                          reverse_complement_encoding = reverse_complement_encoding, seed = seed[1],
                          target_len = target_len, n_gram = n_gram, n_gram_stride = n_gram_stride,
-                         delete_used_files = delete_used_files)
+                         delete_used_files = delete_used_files, reshape_xy = reshape_xy)
     
   }
   

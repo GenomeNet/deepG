@@ -705,5 +705,7 @@ to_time_dist <- function(x, samples_per_target) {
   x_dim <- dim(x)
   x_dim_td <- c(x_dim[1], samples_per_target, x_dim[2]/samples_per_target, x_dim[3])
   x_td <- keras::k_reshape(x, shape = x_dim_td)
-  x_td
+  keras::k_eval(x_td)
 }
+
+
