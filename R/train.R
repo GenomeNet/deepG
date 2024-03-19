@@ -227,7 +227,8 @@ train_model <- function(model = NULL,
                         target_split = NULL,
                         shuffle_input = TRUE,
                         vocabulary_label = NULL,
-                        delete_used_files = FALSE) {
+                        delete_used_files = FALSE,
+                        reshape_xy = NULL) {
   
   # initialize metrics, temporary fix
   model <- manage_metrics(model)
@@ -402,7 +403,7 @@ train_model <- function(model = NULL,
     gen <- get_generator(path = path, batch_size = batch_size, model = model,
                          maxlen = maxlen, step = step, shuffle_file_order = shuffle_file_order,
                          vocabulary = vocabulary, seed = seed[1], proportion_entries = proportion_entries,
-                         shuffle_input = shuffle_input, format = format, 
+                         shuffle_input = shuffle_input, format = format, reshape_xy = reshape_xy,
                          path_file_log = path_file_log, reverse_complement = reverse_complement, n_gram_stride = n_gram_stride,
                          output_format = output_format, ambiguous_nuc = ambiguous_nuc,
                          proportion_per_seq = proportion_per_seq, skip_amb_nuc = skip_amb_nuc,
@@ -424,7 +425,7 @@ train_model <- function(model = NULL,
                                vocabulary = vocabulary, seed = seed[2], proportion_entries = proportion_entries,
                                shuffle_input = shuffle_input, format = format, delete_used_files = FALSE,
                                path_file_log = path_file_logVal, reverse_complement = reverse_complement, n_gram_stride = n_gram_stride,
-                               output_format = output_format, ambiguous_nuc = ambiguous_nuc,
+                               output_format = output_format, ambiguous_nuc = ambiguous_nuc, reshape_xy = reshape_xy,
                                proportion_per_seq = proportion_per_seq, skip_amb_nuc = skip_amb_nuc,
                                use_quality_score = use_quality_score, padding = padding, n_gram = n_gram,
                                added_label_path = added_label_path, add_input_as_seq = add_input_as_seq,
