@@ -2247,7 +2247,10 @@ generator_rds <- function(rds_folder, batch_size, path_file_log = NULL,
     reshape_xy_bool <- TRUE
     reshape_x_bool <- ifelse(is.null(reshape_xy$x), FALSE, TRUE)
     reshape_y_bool <- ifelse(is.null(reshape_xy$y), FALSE, TRUE)
+<<<<<<< HEAD
     reshape_sw_bool <- ifelse(is.null(reshape_xy$sw), FALSE, TRUE)
+=======
+>>>>>>> 4a13fc328fe0d83603ea7ef3181f63107c313939
   } else {
     reshape_xy_bool <- FALSE
   }
@@ -3126,7 +3129,11 @@ get_generator <- function(path = NULL,
                           return_int = FALSE,
                           delete_used_files = FALSE,
                           reshape_xy = NULL) {
+<<<<<<< HEAD
   
+=======
+
+>>>>>>> 4a13fc328fe0d83603ea7ef3181f63107c313939
   if (random_sampling) {
     if (use_quality_score) stop("use_quality_score not implemented for random sampling")
     if (read_data) stop("read_data not implemented for random sampling")
