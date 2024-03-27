@@ -3126,7 +3126,7 @@ get_generator <- function(path = NULL,
                           return_int = FALSE,
                           delete_used_files = FALSE,
                           reshape_xy = NULL) {
-  
+
   if (random_sampling) {
     if (use_quality_score) stop("use_quality_score not implemented for random sampling")
     if (read_data) stop("read_data not implemented for random sampling")
