@@ -453,6 +453,8 @@ train_model <- function(model = NULL,
       } else {
         validation_data <- gen.val
       } 
+    } else {
+      validation_data <- dataset_val
     }
   }
   
