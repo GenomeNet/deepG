@@ -517,7 +517,7 @@ create_model_lstm_cnn <- function(
   model$cm_dir <- cm_dir
   
   if (verbose) summary(model)
-  return_model <- model
+  return(model)
 }
 
 #' Create wavenet model
@@ -968,7 +968,7 @@ create_model_lstm_cnn_target_middle <- function(
   reticulate::py_set_attr(x = model, name = "hparam", value = model$hparam)
   
   if (verbose) summary(model)
-  return_model <- model
+  return(model)
 }
 
 #' Extract hyperparameters from model
@@ -1744,7 +1744,7 @@ create_model_lstm_cnn_time_dist <- function(
   model$cm_dir <- cm_dir
   
   if (verbose) summary(model)
-  return_model <- model
+  return(model)
 }
 
 
@@ -2032,7 +2032,7 @@ create_model_lstm_cnn_multi_input <- function(
   model <- add_hparam_list(model, argg)
   
   if (verbose) summary(model)
-  return_model <- model
+  return(model)
 }
 
 #' Replace input layer
@@ -2066,7 +2066,7 @@ reshape_input <- function(model, input_shape) {
     }
   }
   new_model <- tensorflow::tf$keras$Model(in_layer, out_layer)
-  return_model <- new_model
+  return(new_model)
 }
 
 
@@ -2506,7 +2506,7 @@ create_model_genomenet <- function(
 #     model %>% keras::compile(loss = "categorical_crossentropy", optimizer = keras_optimizer, metrics = "acc")
 #   }
 #   
-#   return_model <- model
+#   return(model)
 # }
 
 set_optimizer <- function(solver = "adam", learning_rate = 0.01) {
