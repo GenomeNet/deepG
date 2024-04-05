@@ -1449,9 +1449,11 @@ layer_add_time_dist_wrapper <- function(load_r6 = FALSE) {
 #'     
 #' @inheritParams create_model_lstm_cnn
 #' @param samples_per_target Number of samples to combine for one target.
-#' @param aggregation_method "sum" or "lstm". How to process output of last time distributed layer.
+#' @param aggregation_method "sum", "lstm" or "lstm_sum". How to process output of last time distributed layer.
 #' If "sum", add representations. If "lstm", use output as input for LSTM layer(s) (as specified in lstm_time_dist).
-#' @param lstm_time_dist Vector containing number of units per LSTM cell. Only used if `aggregation_method = "lstm`.   
+#' If "lstm_sum" use both.
+#' @param lstm_time_dist Vector containing number of units per LSTM cell. Only used if `aggregation_method = "lstm` or
+#'  `aggregation_method = "lstm_sum"`.   
 #' @examples 
 #' create_model_lstm_cnn_time_dist(
 #'   maxlen = 50,
@@ -1513,6 +1515,8 @@ create_model_lstm_cnn_time_dist <- function(
     })
     return(model)
   }
+  
+  stopifnot(aggregation_method %in% c("sum", "lstm", "lstm_sum"))
   
   layer_dense <- as.integer(layer_dense)
   if (!is.null(model_seed)) tensorflow::tf$random$set_seed(model_seed)
@@ -1594,7 +1598,6 @@ create_model_lstm_cnn_time_dist <- function(
           output_tensor <- output_tensor %>% keras::time_distributed(keras::layer_max_pooling_1d(pool_size = pool_size[i]))
         }
         #output_tensor <- output_tensor %>% keras::layer_batch_normalization(momentum = batch_norm_momentum)
-        
       }
     }
   } else {
@@ -1668,13 +1671,26 @@ create_model_lstm_cnn_time_dist <- function(
   if (aggregation_method == "sum") {
     layer_add_td <- layer_add_time_dist_wrapper()
     output_tensor <- output_tensor %>% layer_add_td
-  } else {
+  } 
+  if (aggregation_method == "lstm") {
     return_sequences <- TRUE
     for (i in 1:length(lstm_time_dist)) {
       if (i == length(lstm_time_dist)) return_sequences <- FALSE
       output_tensor <- output_tensor %>% keras::layer_lstm(units=lstm_time_dist[i], return_sequences = return_sequences)
     }
   }
+  if (aggregation_method == "lstm_sum") {
+    layer_add_td <- layer_add_time_dist_wrapper()
+    output_tensor_sum <- output_tensor %>% layer_add_td
+    
+    return_sequences <- TRUE
+    for (i in 1:length(lstm_time_dist)) {
+      if (i == length(lstm_time_dist)) return_sequences <- FALSE
+      output_tensor <- output_tensor %>% keras::layer_lstm(units=lstm_time_dist[i], return_sequences = return_sequences)
+    }
+    
+    output_tensor <- keras::layer_concatenate(c(output_tensor, output_tensor_sum)) 
+  } 
   
   
   if (length(layer_dense) > 1) {
@@ -2619,7 +2635,7 @@ manage_metrics <- function(model, compile = FALSE) {
 load_cp <- function(cp_path, cp_filter = "last_ep", ep_index = NULL, compile = FALSE,
                     learning_rate = 0.01, solver = "adam", re_compile = FALSE,
                     loss = "categorical_crossentropy",
-                    add_custom_object = NULL,
+                    add_custom_object = NULL, margin = 1,
                     verbose = TRUE, mirrored_strategy = NULL) {
   
   if (is.null(mirrored_strategy)) mirrored_strategy <- ifelse(count_gpu() > 1, TRUE, FALSE)
@@ -2640,7 +2656,8 @@ load_cp <- function(cp_path, cp_filter = "last_ep", ep_index = NULL, compile = F
     "layer_transformer_block" = layer_transformer_block_wrapper(load_r6 = TRUE),
     "layer_euc_dist" = layer_euc_dist_wrapper(load_r6 = TRUE),
     "layer_cosine_sim" = layer_cosine_sim_wrapper(load_r6 = TRUE),
-    "layer_add_time_dist" = layer_add_time_dist_wrapper(load_r6 = TRUE)
+    "layer_add_time_dist" = layer_add_time_dist_wrapper(load_r6 = TRUE),
+    "loss_cl_margin___margin_" = loss_cl(margin=margin)
   )
   
   if (!is.null(add_custom_object)) {
