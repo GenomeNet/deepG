@@ -3339,11 +3339,12 @@ create_model_twin_network <- function(
     residual_block_length = 1,
     size_reduction_1Dconv = FALSE,
     zero_mask = FALSE,
-    margin = 1,
     verbose = TRUE,
     batch_norm_momentum = 0.99,
     distance_method = "euclidean",
     last_layer_activation = "sigmoid",
+    loss_fn = loss_cl(margin=1),
+    metrics = "acc",
     model_seed = NULL,
     mixed_precision = FALSE,
     mirrored_strategy = NULL) {
@@ -3433,9 +3434,9 @@ create_model_twin_network <- function(
   model <- keras::keras_model(inputs = list(input_1, input_2), outputs = outputs)
   
   if (compile) {
-    model %>% keras::compile(loss = loss_cl(margin=margin),
+    model %>% keras::compile(loss = loss_fn,
                              optimizer = set_optimizer(solver, learning_rate),
-                             metrics="acc")
+                             metrics = metrics)
   }
   
   if (verbose) print(model)

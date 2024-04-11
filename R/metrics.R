@@ -433,7 +433,12 @@ cosine_similarity <- function(vects) {
   return(xy_dot/(x_norm*y_norm))
 }
 
-
+#' Contrastive loss 
+#' 
+#' Contrastive loss as used here: https://keras.io/examples/vision/siamese_contrastive/.
+#'
+#'@param margin Integer, baseline for distance for which pairs should be classified as dissimilar.
+#'@export
 loss_cl <- function(margin=1) {
   
   contrastive_loss <- function(y_true, y_pred) {
