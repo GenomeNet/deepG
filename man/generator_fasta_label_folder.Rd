@@ -40,7 +40,8 @@ generator_fasta_label_folder(
   n_gram_stride = 1,
   masked_lm = NULL,
   add_noise = NULL,
-  return_int = FALSE
+  return_int = FALSE,
+  reshape_xy = NULL
 )
 }
 \arguments{
@@ -124,7 +125,7 @@ will randomly select 5 entries.}
 \item{n_gram}{Integer, encode target not nucleotide wise but combine n nucleotides at once. For example for \verb{n=2, "AA" ->  (1, 0,..., 0),}
 \verb{"AC" ->  (0, 1, 0,..., 0), "TT" -> (0,..., 0, 1)}, where the one-hot vectors have length \code{length(vocabulary)^n}.}
 
-\item{n_gram_stride}{Step size for n-gram encoding. For AACCGGTT with \code{n-gram = 4} and \code{n_gram_stride = 2}, generator encodes
+\item{n_gram_stride}{Step size for n-gram encoding. For AACCGGTT with \code{n_gram = 4} and \code{n_gram_stride = 2}, generator encodes
 \verb{(AACC), (CCGG), (GGTT)}; for \code{n_gram_stride = 4} generator encodes \verb{(AACC), (GGTT)}.}
 
 \item{masked_lm}{If not \code{NULL}, input and target are equal except some parts of the input are masked or random.
@@ -134,12 +135,15 @@ Must be list with the following arguments:
 \item \code{random_rate}: Rate of input to set to random token.
 \item \code{identity_rate}: Rate of input where sample weights are applied but input and output are identical.
 \item \code{include_sw}: Whether to include sample weigths.
-\item \code{block_len} (optional): Masked/random/itentity regions appear in blocks of size \code{block_len}.
+\item \code{block_len} (optional): Masked/random/identity regions appear in blocks of size \code{block_len}.
 }}
 
 \item{add_noise}{\code{NULL} or list of arguments. If not \code{NULL}, list must contain the following arguments: \code{noise_type} can be \code{"normal"} or \code{"uniform"};
 optional arguments \code{sd} or \code{mean} if noise_type is \code{"normal"} (default is \code{sd=1} and \code{mean=0}) or \verb{min, max} if \code{noise_type} is \code{"uniform"}
 (default is \verb{min=0, max=1}).}
+
+\item{reshape_xy}{Can be a list of functions to apply to input and/or target. List elements (containing the reshape functions)
+must be called x for input or y for target.}
 }
 \description{
 Iterates over folder containing fasta/fastq files and produces encoding of predictor sequences

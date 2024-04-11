@@ -1400,7 +1400,6 @@ check_layer_name <- function(model, layer_name) {
 #' 
 #' Add output of time distribution representations.
 #' 
-#' @inheritParams create_model_lstm_cnn_time_dist
 #' @param load_r6 Whether to load the R6 layer class.
 #' @export
 layer_add_time_dist_wrapper <- function(load_r6 = FALSE) {

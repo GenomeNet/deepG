@@ -56,7 +56,7 @@ Imports:
     microseq
 Remotes: r-tensorflow/wavenet
 NeedsCompilation: yes
-RoxygenNote: 7.2.0
+RoxygenNote: 7.2.3
 Suggests: 
     testthat,
     circlize,

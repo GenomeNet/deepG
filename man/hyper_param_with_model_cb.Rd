@@ -42,7 +42,7 @@ hyper_param_with_model_cb(
 \item{run_name}{Name of the run. Name will be used to identify output from callbacks. If \code{NULL}, will use date as run name.
 If name already present, will add \code{"_2"} to name or \code{"_{x+1}"} if name ends with \verb{_x}, where \code{x} is some integer.}
 
-\item{train_type}{Either \code{"lm"}, \code{"lm_rds"} for language model; \code{"label_header"}, \code{"label_folder"}, \code{"label_csv"}, \code{"label_rds"} for classification or \code{"dummy_gen"}.
+\item{train_type}{Either \code{"lm"}, \code{"lm_rds"}, \code{"masked_lm"} for language model; \code{"label_header"}, \code{"label_folder"}, \code{"label_csv"}, \code{"label_rds"} for classification or \code{"dummy_gen"}.
 \itemize{
 \item Language model is trained to predict character(s) in a sequence. \cr
 \item \code{"label_header"}/\code{"label_folder"}/\code{"label_csv"} are trained to predict a corresponding class given a sequence as input.

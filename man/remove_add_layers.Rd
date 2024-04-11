@@ -8,16 +8,22 @@ remove_add_layers(
   model = NULL,
   layer_name = NULL,
   dense_layers = NULL,
+  shared_dense_layers = NULL,
   last_activation = list("softmax"),
   output_names = NULL,
   losses = NULL,
   verbose = TRUE,
   dropout = NULL,
+  dropout_shared = NULL,
   freeze_base_model = FALSE,
   compile = FALSE,
   learning_rate = 0.001,
   solver = "adam",
-  model_seed = NULL
+  flatten = FALSE,
+  global_pooling = NULL,
+  model_seed = NULL,
+  mixed_precision = FALSE,
+  mirrored_strategy = NULL
 )
 }
 \arguments{
@@ -27,6 +33,10 @@ remove_add_layers(
 
 \item{dense_layers}{List of vectors specifying number of units for each dense layer. If this is a list of length > 1, model
 has multiple output layers.}
+
+\item{shared_dense_layers}{Vector with number of units for dense layer. These layers will be connected on top of layer in
+argument \code{layer_name}. Can be used to have shared dense layers, before model has multiple output layers. Don't use if model has just one output layer
+(use only \code{dense_layers}).}
 
 \item{last_activation}{List of activations for last entry for each list entry from \code{dense_layers}. Either \code{"softmax"}, \code{"sigmoid"} or \code{"linear"}.}
 
@@ -38,6 +48,8 @@ has multiple output layers.}
 
 \item{dropout}{List of vectors with dropout rates for each new dense layer.}
 
+\item{dropout_shared}{Vectors of dropout rates for dense layer from \code{shared_dense_layers}.}
+
 \item{freeze_base_model}{Whether to freeze all weights before new dense layers.}
 
 \item{compile}{Boolean, whether to compile the new model.}
@@ -46,7 +58,16 @@ has multiple output layers.}
 
 \item{solver}{Optimization method, options are \verb{"adam", "adagrad", "rmsprop"} or \code{"sgd"}.}
 
+\item{global_pooling}{"max_ch_first" for global max pooling with channel first (\href{https://keras.io/api/layers/pooling_layers/global_average_pooling1d/}{keras docs}),
+"max_ch_last" for global max pooling with channel last, "average_ch_first" for global average pooling with channel first,
+"average_ch_last" for global average pooling with channel last or \code{NULL} for no global pooling.
+"both_ch_first" or "both_ch_last" to combine average and max pooling.}
+
 \item{model_seed}{Set seed for model parameters in tensorflow if not \code{NULL}.}
+
+\item{mixed_precision}{Whether to use mixed precision (https://www.tensorflow.org/guide/mixed_precision).}
+
+\item{mirrored_strategy}{Whether to use distributed mirrored strategy. If NULL, will use distributed mirrored strategy only if >1 GPU available.}
 }
 \description{
 Function takes a model as input and removes all layers after a certain layer, specified in \code{layer_name} argument.
@@ -65,7 +86,7 @@ layer_name <- model_1$get_config()$layers[[num_layers-1]]$name
 model_2 <- remove_add_layers(model = model_1,
                              layer_name = layer_name,
                              dense_layers = list(c(32, 16, 1), c(8, 1), c(12, 5)),
-                             loss = list("binary_crossentropy", "mae", "categorical_crossentropy"),
+                             losses = list("binary_crossentropy", "mae", "categorical_crossentropy"),
                              last_activation = list("sigmoid", "linear", "softmax"),
                              freeze_base_model = TRUE,
                              output_names = list("out_1_binary_classsification", 

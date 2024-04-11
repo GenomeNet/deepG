@@ -18,31 +18,17 @@ create_model_wavenet(
   learning_rate = 0.001,
   compile = TRUE,
   verbose = TRUE,
-  model_seed = NULL
+  model_seed = NULL,
+  mixed_precision = FALSE,
+  mirrored_strategy = NULL
 )
 }
 \arguments{
-\item{filters}{Integer, the dimensionality of the output space (i.e. the
-number of output filters in the convolution).}
+\item{filters}{Number of filters. For multiple layers, assign a vector.}
 
-\item{kernel_size}{An integer or list of a single integer, specifying the
-length of the 1D convolution window.}
-
-\item{residual_blocks}{if a single integer: the number of residual blocks in the
-model - the dilation rate of each block `i` is calculated by `2^i`. If a vector,
-then it's used as the dilation rate of each residual block.}
+\item{kernel_size}{Size of 1d convolutional layers. For multiple layers, assign a vector. (e.g, \code{rep(3,2)} for two layers and kernel size 3)}
 
 \item{maxlen}{Length of predictor sequence.}
-
-\item{input_tensor}{Tensor to use as input for the model. Usually a 3d tensor.}
-
-\item{initial_kernel_size}{kernel size of the first causal convolution.}
-
-\item{initial_filters}{number of filters in the initial causal convolution.}
-
-\item{output_channels}{number of channels in the output.}
-
-\item{output_activation}{activation function for the last layer. Default: 'softmax'}
 
 \item{solver}{Optimization method, options are \verb{"adam", "adagrad", "rmsprop"} or \code{"sgd"}.}
 
@@ -53,6 +39,10 @@ then it's used as the dilation rate of each residual block.}
 \item{verbose}{Boolean.}
 
 \item{model_seed}{Set seed for model parameters in tensorflow if not \code{NULL}.}
+
+\item{mixed_precision}{Whether to use mixed precision (https://www.tensorflow.org/guide/mixed_precision).}
+
+\item{mirrored_strategy}{Whether to use distributed mirrored strategy. If NULL, will use distributed mirrored strategy only if >1 GPU available.}
 }
 \description{
 Creates network architecture as described \href{https://arxiv.org/abs/1609.03499}{here}. Implementation

@@ -28,10 +28,15 @@ create_model_twin_network(
   residual_block_length = 1,
   size_reduction_1Dconv = FALSE,
   zero_mask = FALSE,
-  margin = 1,
   verbose = TRUE,
   batch_norm_momentum = 0.99,
-  model_seed = NULL
+  distance_method = "euclidean",
+  last_layer_activation = "sigmoid",
+  loss_fn = loss_cl(margin = 1),
+  metrics = "acc",
+  model_seed = NULL,
+  mixed_precision = FALSE,
+  mirrored_strategy = NULL
 )
 }
 \arguments{
@@ -81,13 +86,23 @@ create_model_twin_network(
 
 \item{zero_mask}{Boolean, whether to apply zero masking before LSTM layer. Only used if model does not use any CNN layers.}
 
-\item{margin}{Integer, defines the baseline for distance for which pairs should be classified as dissimilar.}
-
 \item{verbose}{Boolean.}
 
 \item{batch_norm_momentum}{Momentum for the moving mean and the moving variance.}
 
+\item{distance_method}{Either "euclidean" or "cosine".}
+
+\item{last_layer_activation}{Either \code{"sigmoid"} or \code{"softmax"}.}
+
+\item{loss_fn}{Either \code{"categorical_crossentropy"} or \code{"binary_crossentropy"}. If \code{label_noise_matrix} given, will use custom \code{"noisy_loss"}.}
+
 \item{model_seed}{Set seed for model parameters in tensorflow if not \code{NULL}.}
+
+\item{mixed_precision}{Whether to use mixed precision (https://www.tensorflow.org/guide/mixed_precision).}
+
+\item{mirrored_strategy}{Whether to use distributed mirrored strategy. If NULL, will use distributed mirrored strategy only if >1 GPU available.}
+
+\item{margin}{Integer, defines the baseline for distance for which pairs should be classified as dissimilar.}
 }
 \description{
 Twin network can be trained to maximize the distance

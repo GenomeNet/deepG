@@ -10,6 +10,8 @@ generator_dummy(model, batch_size)
 \item{model}{A keras model.}
 
 \item{batch_size}{Number of samples in one batch.}
+
+\item{sparse_loss}{Whether to adjust target to sparse loss.}
 }
 \description{
 Creates a random input/target list once and repeatedly returns list.

@@ -19,6 +19,7 @@ predict_model_by_entry(
   mode = "lm",
   lm_format = "target_right",
   format = "fasta",
+  use_quality = FALSE,
   reverse_complement_encoding = FALSE,
   padding = "none",
   verbose = FALSE,

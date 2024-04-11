@@ -6,13 +6,17 @@
 \usage{
 load_cp(
   cp_path,
-  cp_filter = NULL,
+  cp_filter = "last_ep",
   ep_index = NULL,
   compile = FALSE,
   learning_rate = 0.01,
   solver = "adam",
+  re_compile = FALSE,
   loss = "categorical_crossentropy",
-  verbose = TRUE
+  add_custom_object = NULL,
+  margin = 1,
+  verbose = TRUE,
+  mirrored_strategy = NULL
 )
 }
 \arguments{
@@ -22,17 +26,24 @@ If a directory, choose checkpoint based on \code{cp_filter} or \code{ep_index}.}
 \item{cp_filter}{Condition to choose checkpoint if \code{cp_path} is a directory.
 Either "acc" for bast validation accuracy, "loss" for best validation loss or "last_ep" for last epoch.}
 
-\item{ep_index}{Load checkpoint from specific epoch number.}
+\item{ep_index}{Load checkpoint from specific epoch number. If not \code{ǸULL}, has priority over \code{cp_filter}.}
 
-\item{compile}{Whether to compile the model.}
+\item{compile}{Whether to load compiled model.}
 
 \item{learning_rate}{Learning rate for optimizer.}
 
 \item{solver}{Optimization method, options are \verb{"adam", "adagrad", "rmsprop"} or \code{"sgd"}.}
 
+\item{re_compile}{Whether to compile model with parameters from \code{learning_rate},
+\code{solver} and \code{loss}.}
+
 \item{loss}{Loss function. Only used if model gets compiled.}
 
-\item{verbose}{Whether to print choosen checkpoint path.}
+\item{add_custom_object}{Named list of custom objects.}
+
+\item{verbose}{Whether to print chosen checkpoint path.}
+
+\item{mirrored_strategy}{Whether to use distributed mirrored strategy. If NULL, will use distributed mirrored strategy only if >1 GPU available.}
 }
 \description{
 Load checkpoint from directory. Chooses best checkpoint based on some condition. Condition

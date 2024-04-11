@@ -30,13 +30,14 @@ create_model_lstm_cnn_multi_input(
   label_noise_matrix = NULL,
   last_layer_activation = "softmax",
   loss_fn = "categorical_crossentropy",
-  num_input_layers = 1,
   auc_metric = FALSE,
   f1_metric = FALSE,
   samples_per_target,
   batch_norm_momentum = 0.99,
   verbose = TRUE,
-  model_seed = NULL
+  model_seed = NULL,
+  mixed_precision = FALSE,
+  mirrored_strategy = NULL
 )
 }
 \arguments{
@@ -95,8 +96,6 @@ If first label contains 5 percent wrong labels and second label no noise, then
 
 \item{loss_fn}{Either \code{"categorical_crossentropy"} or \code{"binary_crossentropy"}. If \code{label_noise_matrix} given, will use custom \code{"noisy_loss"}.}
 
-\item{num_input_layers}{Number of input layers.}
-
 \item{auc_metric}{Whether to add AUC metric.}
 
 \item{f1_metric}{Whether to add F1 metric.}
@@ -108,6 +107,10 @@ If first label contains 5 percent wrong labels and second label no noise, then
 \item{verbose}{Boolean.}
 
 \item{model_seed}{Set seed for model parameters in tensorflow if not \code{NULL}.}
+
+\item{mixed_precision}{Whether to use mixed precision (https://www.tensorflow.org/guide/mixed_precision).}
+
+\item{mirrored_strategy}{Whether to use distributed mirrored strategy. If NULL, will use distributed mirrored strategy only if >1 GPU available.}
 }
 \description{
 Creates a network consisting of an arbitrary number of CNN, LSTM and dense layers with multiple

@@ -16,6 +16,7 @@ predict_model_by_entry_one_file(
   verbose = TRUE,
   model = NULL,
   mode = "lm",
+  use_quality = FALSE,
   lm_format = "target_right",
   padding = "none",
   format = "fasta",

@@ -12,12 +12,14 @@ generator_rds(
   proportion_per_seq = NULL,
   target_len = NULL,
   seed = NULL,
+  delete_used_files = FALSE,
   reverse_complement = FALSE,
   sample_by_file_size = FALSE,
   n_gram = NULL,
   n_gram_stride = 1,
   reverse_complement_encoding = FALSE,
-  add_noise = NULL
+  add_noise = NULL,
+  reshape_xy = NULL
 )
 }
 \arguments{
@@ -36,6 +38,8 @@ subset of \code{max_samples} samples.}
 
 \item{seed}{Sets seed for \code{set.seed} function for reproducible results.}
 
+\item{delete_used_files}{Whether to delete file once used. Only applies for rds files.}
+
 \item{reverse_complement}{Boolean, for every new file decide randomly to use original data or its reverse complement.}
 
 \item{sample_by_file_size}{Sample new file weighted by file size (bigger files more likely).}
@@ -43,7 +47,7 @@ subset of \code{max_samples} samples.}
 \item{n_gram}{Integer, encode target not nucleotide wise but combine n nucleotides at once. For example for \verb{n=2, "AA" ->  (1, 0,..., 0),}
 \verb{"AC" ->  (0, 1, 0,..., 0), "TT" -> (0,..., 0, 1)}, where the one-hot vectors have length \code{length(vocabulary)^n}.}
 
-\item{n_gram_stride}{Step size for n-gram encoding. For AACCGGTT with \code{n-gram = 4} and \code{n_gram_stride = 2}, generator encodes
+\item{n_gram_stride}{Step size for n-gram encoding. For AACCGGTT with \code{n_gram = 4} and \code{n_gram_stride = 2}, generator encodes
 \verb{(AACC), (CCGG), (GGTT)}; for \code{n_gram_stride = 4} generator encodes \verb{(AACC), (GGTT)}.}
 
 \item{reverse_complement_encoding}{Whether to use both original sequence and reverse complement as two input sequences.}
@@ -51,6 +55,9 @@ subset of \code{max_samples} samples.}
 \item{add_noise}{\code{NULL} or list of arguments. If not \code{NULL}, list must contain the following arguments: \code{noise_type} can be \code{"normal"} or \code{"uniform"};
 optional arguments \code{sd} or \code{mean} if noise_type is \code{"normal"} (default is \code{sd=1} and \code{mean=0}) or \verb{min, max} if \code{noise_type} is \code{"uniform"}
 (default is \verb{min=0, max=1}).}
+
+\item{reshape_xy}{Can be a list of functions to apply to input and/or target. List elements (containing the reshape functions)
+must be called x for input or y for target.}
 }
 \description{
 Creates training batches from rds files. Rds files must contain a

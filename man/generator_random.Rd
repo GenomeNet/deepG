@@ -33,11 +33,12 @@ generator_random(
   proportion_entries = NULL,
   masked_lm = NULL,
   concat_seq = NULL,
-  return_int = FALSE
+  return_int = FALSE,
+  reshape_xy = NULL
 )
 }
 \arguments{
-\item{train_type}{Either \code{"lm"}, \code{"lm_rds"} for language model; \code{"label_header"}, \code{"label_folder"}, \code{"label_csv"}, \code{"label_rds"} for classification or \code{"dummy_gen"}.
+\item{train_type}{Either \code{"lm"}, \code{"lm_rds"}, \code{"masked_lm"} for language model; \code{"label_header"}, \code{"label_folder"}, \code{"label_csv"}, \code{"label_rds"} for classification or \code{"dummy_gen"}.
 \itemize{
 \item Language model is trained to predict character(s) in a sequence. \cr
 \item \code{"label_header"}/\code{"label_folder"}/\code{"label_csv"} are trained to predict a corresponding class given a sequence as input.
@@ -99,7 +100,7 @@ can be a single directory or file or a list of directories and/or files.}
 \item{n_gram}{Integer, encode target not nucleotide wise but combine n nucleotides at once. For example for \verb{n=2, "AA" ->  (1, 0,..., 0),}
 \verb{"AC" ->  (0, 1, 0,..., 0), "TT" -> (0,..., 0, 1)}, where the one-hot vectors have length \code{length(vocabulary)^n}.}
 
-\item{n_gram_stride}{Step size for n-gram encoding. For AACCGGTT with \code{n-gram = 4} and \code{n_gram_stride = 2}, generator encodes
+\item{n_gram_stride}{Step size for n-gram encoding. For AACCGGTT with \code{n_gram = 4} and \code{n_gram_stride = 2}, generator encodes
 \verb{(AACC), (CCGG), (GGTT)}; for \code{n_gram_stride = 4} generator encodes \verb{(AACC), (GGTT)}.}
 
 \item{sample_by_file_size}{Sample new file weighted by file size (bigger files more likely).}
@@ -156,11 +157,14 @@ Must be list with the following arguments:
 \item \code{random_rate}: Rate of input to set to random token.
 \item \code{identity_rate}: Rate of input where sample weights are applied but input and output are identical.
 \item \code{include_sw}: Whether to include sample weigths.
-\item \code{block_len} (optional): Masked/random/itentity regions appear in blocks of size \code{block_len}.
+\item \code{block_len} (optional): Masked/random/identity regions appear in blocks of size \code{block_len}.
 }}
 
 \item{concat_seq}{Character string or \code{NULL}. If not \code{NULL} all entries from file get concatenated to one sequence with \code{concat_seq} string between them.
 Example: If 1.entry AACC, 2. entry TTTG and \code{concat_seq = "ZZZ"} this becomes AACCZZZTTTG.}
+
+\item{reshape_xy}{Can be a list of functions to apply to input and/or target. List elements (containing the reshape functions)
+must be called x for input or y for target.}
 }
 \description{
 Generator \code{\link{generator_fasta_lm}}, \code{\link{generator_fasta_label_header_csv}}

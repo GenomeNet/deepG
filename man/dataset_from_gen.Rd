@@ -14,12 +14,13 @@ dataset_from_gen(
   maxlen = 250,
   step = NULL,
   vocabulary = c("a", "c", "g", "t"),
-  as_numpy_array = FALSE,
   shuffle = FALSE,
   set_learning = NULL,
   seed = NULL,
   random_sampling,
+  store_format = "rds",
   file_name_start = "batch_",
+  masked_lm = NULL,
   ...
 )
 }
@@ -29,7 +30,7 @@ dataset_from_gen(
 
 \item{iterations}{Number of batches (output files) to create.}
 
-\item{train_type}{Either \code{"lm"}, \code{"lm_rds"} for language model; \code{"label_header"}, \code{"label_folder"}, \code{"label_csv"}, \code{"label_rds"} for classification or \code{"dummy_gen"}.
+\item{train_type}{Either \code{"lm"}, \code{"lm_rds"}, \code{"masked_lm"} for language model; \code{"label_header"}, \code{"label_folder"}, \code{"label_csv"}, \code{"label_rds"} for classification or \code{"dummy_gen"}.
 \itemize{
 \item Language model is trained to predict character(s) in a sequence. \cr
 \item \code{"label_header"}/\code{"label_folder"}/\code{"label_csv"} are trained to predict a corresponding class given a sequence as input.
@@ -71,8 +72,6 @@ Assume a sequence \code{"AACCGTA"}. Output correspond as follows
 
 \item{vocabulary}{Vector of allowed characters. Characters outside vocabulary get encoded as specified in \code{ambiguous_nuc}.}
 
-\item{as_numpy_array}{Store output as list of numpy arrays if \code{TRUE} (otherwise as R array).}
-
 \item{shuffle}{Whether to shuffle samples within each batch.}
 
 \item{set_learning}{When you want to assign one label to set of samples. Only implemented for \code{train_type = "label_folder"}.
@@ -100,9 +99,23 @@ argument. If \code{buffer_len} is an integer, the subsequences are interspaced w
 \item{random_sampling}{Whether samples should be taken from random positions when using \code{max_samples} argument. If \code{FALSE} random
 samples are taken from a consecutive subsequence.}
 
+\item{store_format}{Either "rds" or "pickle".}
+
 \item{file_name_start}{Start of output file names.}
 
+\item{masked_lm}{If not \code{NULL}, input and target are equal except some parts of the input are masked or random.
+Must be list with the following arguments:
+\itemize{
+\item \code{mask_rate}: Rate of input to mask (rate of input to replace with mask token).
+\item \code{random_rate}: Rate of input to set to random token.
+\item \code{identity_rate}: Rate of input where sample weights are applied but input and output are identical.
+\item \code{include_sw}: Whether to include sample weigths.
+\item \code{block_len} (optional): Masked/random/identity regions appear in blocks of size \code{block_len}.
+}}
+
 \item{...}{further generator options. See \code{\link{get_generator}}.}
+
+\item{as_numpy_array}{Store output as list of numpy arrays if \code{TRUE} (otherwise as R array).}
 }
 \description{
 Repeatedly generate samples with data generator and store output. Creates a separate rds or pickle file in \code{output_path} for each

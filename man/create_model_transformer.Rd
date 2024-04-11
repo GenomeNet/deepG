@@ -7,8 +7,8 @@
 create_model_transformer(
   maxlen,
   vocabulary_size = 4,
-  embed_dim = NULL,
-  pos_encoding = "sinusoid",
+  embed_dim = 64,
+  pos_encoding = "embedding",
   head_size = 4L,
   num_heads = 5L,
   ff_dim = 8,
@@ -27,7 +27,9 @@ create_model_transformer(
   auc_metric = FALSE,
   label_smoothing = 0,
   verbose = TRUE,
-  model_seed = NULL
+  model_seed = NULL,
+  mixed_precision = FALSE,
+  mirrored_strategy = NULL
 )
 }
 \arguments{
@@ -35,7 +37,7 @@ create_model_transformer(
 
 \item{vocabulary_size}{Number of unique character in vocabulary.}
 
-\item{embed_dim}{Dimension for token embedding. No embedding if \code{NULL}. Should be used when input is not one-hot encoded
+\item{embed_dim}{Dimension for token embedding. No embedding if set to 0. Should be used when input is not one-hot encoded
 (integer sequence).}
 
 \item{pos_encoding}{Either \code{"sinusoid"} or \code{"embedding"}. How to add positional information.
@@ -58,7 +60,7 @@ If \code{"embedding"}, model learns positional embedding.}
 
 \item{flatten_method}{How to process output of last attention block. Can be \code{"gap_channels_last"}, \code{"gap_channels_first"}, \code{"none"},
 or \code{"flatten"}. If \code{"gap_channels_last"} or \code{"gap_channels_first"}, will apply global average pooling. If \code{"flatten"}, will flatten
-output after last attention block. If \code{"none"} no flatting applied.}
+output after last attention block. If \code{"none"} no flattening applied.}
 
 \item{last_layer_activation}{Either \code{"sigmoid"} or \code{"softmax"}.}
 
@@ -86,6 +88,10 @@ The closer the argument is to 1 the more the labels get smoothed.}
 \item{verbose}{Boolean.}
 
 \item{model_seed}{Set seed for model parameters in tensorflow if not \code{NULL}.}
+
+\item{mixed_precision}{Whether to use mixed precision (https://www.tensorflow.org/guide/mixed_precision).}
+
+\item{mirrored_strategy}{Whether to use distributed mirrored strategy. If NULL, will use distributed mirrored strategy only if >1 GPU available.}
 }
 \description{
 Creates transformer network for classification. Model can consist of several stacked attention blocks.

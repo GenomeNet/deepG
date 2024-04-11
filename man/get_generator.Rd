@@ -8,7 +8,7 @@ get_generator(
   path = NULL,
   train_type,
   batch_size,
-  maxlen = NULL,
+  maxlen,
   step = NULL,
   shuffle_file_order = FALSE,
   vocabulary = c("A", "C", "G", "T"),
@@ -48,7 +48,9 @@ get_generator(
   new_batch_size = NULL,
   masked_lm = NULL,
   val = FALSE,
-  return_int = FALSE
+  return_int = FALSE,
+  delete_used_files = FALSE,
+  reshape_xy = NULL
 )
 }
 \arguments{
@@ -56,7 +58,7 @@ get_generator(
 where each entry corresponds to a class (list elements can be directories and/or individual files). If \code{train_type} is not \code{label_folder},
 can be a single directory or file or a list of directories and/or files.}
 
-\item{train_type}{Either \code{"lm"}, \code{"lm_rds"} for language model; \code{"label_header"}, \code{"label_folder"}, \code{"label_csv"}, \code{"label_rds"} for classification or \code{"dummy_gen"}.
+\item{train_type}{Either \code{"lm"}, \code{"lm_rds"}, \code{"masked_lm"} for language model; \code{"label_header"}, \code{"label_folder"}, \code{"label_csv"}, \code{"label_rds"} for classification or \code{"dummy_gen"}.
 \itemize{
 \item Language model is trained to predict character(s) in a sequence. \cr
 \item \code{"label_header"}/\code{"label_folder"}/\code{"label_csv"} are trained to predict a corresponding class given a sequence as input.
@@ -100,9 +102,10 @@ will randomly select 5 entries.}
 
 \item{reverse_complement}{Boolean, for every new file decide randomly to use original data or its reverse complement.}
 
-\item{n_gram}{Encode n nucleotides at once. Can be used for language model for target encoding.}
+\item{n_gram}{Integer, encode target not nucleotide wise but combine n nucleotides at once. For example for \verb{n=2, "AA" ->  (1, 0,..., 0),}
+\verb{"AC" ->  (0, 1, 0,..., 0), "TT" -> (0,..., 0, 1)}, where the one-hot vectors have length \code{length(vocabulary)^n}.}
 
-\item{n_gram_stride}{Step size for n-gram encoding. For AACCGGTT with \code{n-gram = 4} and \code{n_gram_stride = 2}, generator encodes
+\item{n_gram_stride}{Step size for n-gram encoding. For AACCGGTT with \code{n_gram = 4} and \code{n_gram_stride = 2}, generator encodes
 \verb{(AACC), (CCGG), (GGTT)}; for \code{n_gram_stride = 4} generator encodes \verb{(AACC), (GGTT)}.}
 
 \item{output_format}{Determines shape of output tensor for language model.
@@ -210,10 +213,15 @@ Must be list with the following arguments:
 \item \code{random_rate}: Rate of input to set to random token.
 \item \code{identity_rate}: Rate of input where sample weights are applied but input and output are identical.
 \item \code{include_sw}: Whether to include sample weigths.
-\item \code{block_len} (optional): Masked/random/itentity regions appear in blocks of size \code{block_len}.
+\item \code{block_len} (optional): Masked/random/identity regions appear in blocks of size \code{block_len}.
 }}
 
 \item{val}{Logical, call initialized generator "genY" or "genValY" where Y is an integer between 1 and length of directories.}
+
+\item{delete_used_files}{Whether to delete file once used. Only applies for rds files.}
+
+\item{reshape_xy}{Can be a list of functions to apply to input and/or target. List elements (containing the reshape functions)
+must be called x for input or y for target.}
 }
 \description{
 For a detailed description see the data generator \href{https://deepg.de/articles/data_generator.html}{tutorial}.

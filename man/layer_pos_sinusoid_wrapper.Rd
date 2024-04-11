@@ -9,7 +9,7 @@ layer_pos_sinusoid_wrapper(
   vocabulary_size = 4,
   n = 10000,
   load_r6 = FALSE,
-  embed_dim = NULL
+  embed_dim = 64
 )
 }
 \arguments{
@@ -21,9 +21,9 @@ layer_pos_sinusoid_wrapper(
 
 \item{load_r6}{Whether to load the R6 layer class.}
 
-\item{embed_dim}{Dimension for token embedding. No embedding if \code{NULL}. Should be used when input is not one-hot encoded
+\item{embed_dim}{Dimension for token embedding. No embedding if set to 0. Should be used when input is not one-hot encoded
 (integer sequence).}
 }
 \description{
-Layer for positional encoding
+Positional encoding layer with sine/cosine matrix of different frequencies.
 }

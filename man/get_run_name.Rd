@@ -9,6 +9,7 @@ get_run_name(
   path_tensorboard,
   path_checkpoint,
   path_log,
+  path_model_card,
   auto_extend = FALSE
 )
 }

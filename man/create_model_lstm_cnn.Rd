@@ -41,7 +41,9 @@ create_model_lstm_cnn(
   bal_acc = TRUE,
   verbose = TRUE,
   batch_norm_momentum = 0.99,
-  model_seed = NULL
+  model_seed = NULL,
+  mixed_precision = FALSE,
+  mirrored_strategy = NULL
 )
 }
 \arguments{
@@ -123,6 +125,10 @@ If first label contains 5 percent wrong labels and second label no noise, then
 \item{batch_norm_momentum}{Momentum for the moving mean and the moving variance.}
 
 \item{model_seed}{Set seed for model parameters in tensorflow if not \code{NULL}.}
+
+\item{mixed_precision}{Whether to use mixed precision (https://www.tensorflow.org/guide/mixed_precision).}
+
+\item{mirrored_strategy}{Whether to use distributed mirrored strategy. If NULL, will use distributed mirrored strategy only if >1 GPU available.}
 }
 \description{
 Creates a network consisting of an arbitrary number of CNN, LSTM and dense layers.

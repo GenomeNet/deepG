@@ -31,8 +31,13 @@ create_model_genomenet(
   recurrent_bidirectional = FALSE,
   recurrent_units = 100,
   vocabulary_size = 4,
+  last_layer_activation = "softmax",
+  loss_fn = "categorical_crossentropy",
+  auc_metric = FALSE,
   num_targets = 2,
-  model_seed = NULL
+  model_seed = NULL,
+  mixed_precision = FALSE,
+  mirrored_strategy = NULL
 )
 }
 \arguments{
@@ -133,6 +138,12 @@ Only used when \code{model_type} is \code{"recurrent"}.}
 \item{recurrent_units}{(integer \code{numeric(1)})\cr
 Number of units in each recurrent layer.
 Only used when \code{model_type} is \code{"recurrent"}.}
+
+\item{last_layer_activation}{Either \code{"sigmoid"} or \code{"softmax"}.}
+
+\item{loss_fn}{Either \code{"categorical_crossentropy"} or \code{"binary_crossentropy"}. If \code{label_noise_matrix} given, will use custom \code{"noisy_loss"}.}
+
+\item{auc_metric}{Whether to add AUC metric.}
 
 \item{num_targets}{(integer \code{numeric(1)})\cr
 Number of output units to create.}

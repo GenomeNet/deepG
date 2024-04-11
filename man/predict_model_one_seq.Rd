@@ -17,6 +17,8 @@ predict_model_one_seq(
   verbose = TRUE,
   return_states = FALSE,
   target_len = 1,
+  use_quality = FALSE,
+  quality_string = NULL,
   output_type = "h5",
   model = NULL,
   mode = "lm",

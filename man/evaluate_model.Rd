@@ -31,6 +31,8 @@ evaluate_model(
   path_pred_list = NULL,
   exact_num_samples = NULL,
   activations = NULL,
+  shuffle_file_order = FALSE,
+  include_seq = FALSE,
   ...
 )
 }
@@ -106,6 +108,10 @@ to evaluate a data set exactly ones and know the number of samples already. Shou
 and else an integer.}
 
 \item{activations}{List containing output formats for output layers (\verb{softmax, sigmoid} or \code{linear}). If \code{ǸULL}, will be estimated from model.}
+
+\item{shuffle_file_order}{Logical, whether to go through files randomly or sequentially.}
+
+\item{include_seq}{Whether to store input. Only applies if \code{path_pred_list} is not \code{NULL}.}
 
 \item{...}{Further generator options. See \code{\link{get_generator}}.}
 }

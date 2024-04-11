@@ -20,6 +20,7 @@ predict_model_one_pred_per_entry(
   path_model = NULL,
   reverse_complement_encoding = FALSE,
   include_seq = FALSE,
+  use_quality = FALSE,
   ...
 )
 }

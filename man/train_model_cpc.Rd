@@ -21,6 +21,7 @@ train_model_cpc(
   initial_epoch = 1,
   seed = 1234,
   path_file_log = T,
+  train_val_split_csv = NULL,
   file_limit = NULL,
   proportion_per_seq = NULL,
   max_samples = NULL,

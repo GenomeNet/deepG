@@ -35,7 +35,11 @@ create_model_lstm_cnn_time_dist(
   samples_per_target,
   batch_norm_momentum = 0.99,
   verbose = TRUE,
-  model_seed = NULL
+  model_seed = NULL,
+  aggregation_method = "sum",
+  lstm_time_dist = c(128),
+  mixed_precision = FALSE,
+  mirrored_strategy = NULL
 )
 }
 \arguments{
@@ -105,6 +109,17 @@ If first label contains 5 percent wrong labels and second label no noise, then
 \item{verbose}{Boolean.}
 
 \item{model_seed}{Set seed for model parameters in tensorflow if not \code{NULL}.}
+
+\item{aggregation_method}{"sum", "lstm" or "lstm_sum". How to process output of last time distributed layer.
+If "sum", add representations. If "lstm", use output as input for LSTM layer(s) (as specified in lstm_time_dist).
+If "lstm_sum" use both.}
+
+\item{lstm_time_dist}{Vector containing number of units per LSTM cell. Only used if \verb{aggregation_method = "lstm} or
+\code{aggregation_method = "lstm_sum"}.}
+
+\item{mixed_precision}{Whether to use mixed precision (https://www.tensorflow.org/guide/mixed_precision).}
+
+\item{mirrored_strategy}{Whether to use distributed mirrored strategy. If NULL, will use distributed mirrored strategy only if >1 GPU available.}
 }
 \description{
 Creates a network consisting of an arbitrary number of CNN, LSTM and dense layers.
