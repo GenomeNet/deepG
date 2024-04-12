@@ -1454,7 +1454,7 @@ positional_encoding <- function(seq_len, d_model, n=10000) {
 }
 
 
-plot_cm <- function(cm, perc = FALSE, cm_labels, round_dig = 2, text_size = 1) {
+plot_cm <- function(cm, perc = FALSE, cm_labels, round_dig = 2, text_size = 1, highlight_diag = TRUE) {
   
   if (perc) cm <- cm_perc(cm, round_dig)
   cm <- create_conf_mat_obj(cm, cm_labels)
@@ -1465,6 +1465,14 @@ plot_cm <- function(cm, perc = FALSE, cm_labels, round_dig = 2, text_size = 1) {
                      ggplot2::element_text(angle=90, hjust=1, size = text_size)) +
     ggplot2::theme(axis.text.y =
                      ggplot2::element_text(size = text_size))
+  
+  if (highlight_diag) {
+    diagonal_data <- data.frame(x = levels(y_true), y = levels(y_pred))
+    cm_plot <- cm_plot + geom_tile(data = diagonal_data, aes(x = x, y = y),
+                                   fill = "red", colour = "white", size = 1,
+                                   alpha = 0.000001) 
+  }
+  
   
   # TODO: add conf mat with ComplexHeatmap for bigger sizes
   cm_plot
