@@ -1073,7 +1073,7 @@ get_hyper_param <- function(model) {
 #' @param global_pooling "max_ch_first" for global max pooling with channel first ([keras docs](https://keras.io/api/layers/pooling_layers/global_average_pooling1d/)),
 #' "max_ch_last" for global max pooling with channel last, "average_ch_first" for global average pooling with channel first, 
 #' "average_ch_last" for global average pooling with channel last or `NULL` for no global pooling. 
-#' "both_ch_first" or "both_ch_last" to combine average and max pooling.
+#' "both_ch_first" or "both_ch_last" to combine average and max pooling. "all" for all 4 options at once.
 #' @examples
 #' model_1 <- create_model_lstm_cnn(layer_lstm = c(64, 64),
 #'                                  maxlen = 50,
@@ -1136,7 +1136,7 @@ remove_add_layers <- function(model = NULL,
     stop("If your model has just one output layer, use only dense_layers argument (and set shared_dense_layers = NULL).")
   }
   if (!is.null(global_pooling)) {
-    stopifnot(global_pooling %in% c("max_ch_first", "max_ch_last", "average_ch_first", "average_ch_last", "both_ch_first", "both_ch_last"))
+    stopifnot(global_pooling %in% c("max_ch_first", "max_ch_last", "average_ch_first", "average_ch_last", "both_ch_first", "both_ch_last", "all"))
   }
   
   if (!is.list(dense_layers)) {
@@ -1196,16 +1196,22 @@ remove_add_layers <- function(model = NULL,
         out <- model_new$output %>% keras::layer_global_max_pooling_1d(data_format="channels_last")
       } else if (global_pooling ==  "average_ch_first") {
         out <- model_new$output %>% keras::layer_global_average_pooling_1d(data_format="channels_first")
-      } else if (global_pooling ==  "average_ch_last"){ 
+      } else if (global_pooling ==  "average_ch_last") { 
         out <- model_new$output %>% keras::layer_global_average_pooling_1d(data_format="channels_last")
-      } else if (global_pooling ==  "both_ch_last"){ 
+      } else if (global_pooling ==  "both_ch_last") { 
         out1 <- model_new$output %>% keras::layer_global_average_pooling_1d(data_format="channels_last")
         out2 <- model_new$output %>% keras::layer_global_max_pooling_1d(data_format="channels_last")
+        out <- keras::layer_concatenate(list(out1, out2))
+      } else if (global_pooling ==  "both_ch_first") {
+        out1 <- model_new$output %>% keras::layer_global_average_pooling_1d(data_format="channels_first")
+        out2 <- model_new$output %>% keras::layer_global_max_pooling_1d(data_format="channels_first")
         out <- keras::layer_concatenate(list(out1, out2))
       } else {
         out1 <- model_new$output %>% keras::layer_global_average_pooling_1d(data_format="channels_first")
         out2 <- model_new$output %>% keras::layer_global_max_pooling_1d(data_format="channels_first")
-        out <- keras::layer_concatenate(list(out1, out2))
+        out3 <- model_new$output %>% keras::layer_global_average_pooling_1d(data_format="channels_last")
+        out4 <- model_new$output %>% keras::layer_global_max_pooling_1d(data_format="channels_last")
+        out <- keras::layer_concatenate(list(out1, out2, out3, out4))
       }       
       model_new <- tensorflow::tf$keras$Model(model_new$input, out)
     }
