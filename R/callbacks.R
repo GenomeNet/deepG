@@ -47,7 +47,7 @@ model_card_cb <- function(model_card_path = NULL, run_name, argumentList) {
                                                           )
                                                       }
                                                     }
-                                                   
+                                                    
                                                     saveRDS(self$param_list, paste0(self$mc_dir, "/epoch_0_param_list.rds"))
                                                     
                                                   },
@@ -149,7 +149,7 @@ reduce_lr_cb <- function(patience,
                          lr_plateau_factor,
                          monitor = "val_acc") {
   keras::callback_reduce_lr_on_plateau(
-    monitor = "val_acc",
+    monitor = monitor,
     factor = lr_plateau_factor,
     patience = patience,
     cooldown = cooldown)
@@ -161,13 +161,59 @@ reduce_lr_cb <- function(patience,
 #' @keywords internal
 checkpoint_cb <- function(filepath_checkpoints,
                           save_weights_only,
-                          save_best_only) {
+                          save_best_only,
+                          save_freq, 
+                          monitor = "val_loss") {
   
-  keras::callback_model_checkpoint(filepath = filepath_checkpoints,
-                                   save_weights_only = save_weights_only,
-                                   save_best_only = save_best_only,
-                                   verbose = 1,
-                                   monitor = "val_acc")
+  if (is.logical(save_best_only)) {
+    warning("save_best_only should not be boolean variabel, but list or NULL. Using val_loss as monitor.")
+    if (save_best_only) save_best_only <- list(monitor = "val_loss")
+  }
+  
+  if (is.null(save_best_only) | !is.null(save_best_only$monitor)) {
+    
+    keras::callback_model_checkpoint(filepath = filepath_checkpoints,
+                                     save_weights_only = save_weights_only,
+                                     save_best_only = !is.null(save_best_only),
+                                     verbose = 1,
+                                     save_freq = "epoch",
+                                     monitor = monitor)
+    
+  } else {
+    
+    cp_cb <- reticulate::PyClass("cp_cb",
+                                 inherit = tensorflow::tf$keras$callbacks$Callback,
+                                 list(
+                                   
+                                   `__init__` = function(self, filepath_checkpoints, save_freq, save_weights_only) {
+                                     self$filepath_checkpoints <- filepath_checkpoints
+                                     self$save_freq <- save_freq
+                                     self$save_weights_only <- save_weights_only
+                                     NULL
+                                   },
+                                   
+                                   on_epoch_end = function(self, epoch, logs) {
+                                     if ((epoch + 1) %% self$save_freq == 0) {
+                                       
+                                       formatted_path <- gsub("\\{epoch:03d\\}", sprintf("%03d", epoch + 1), self$filepath_checkpoints)
+                                       formatted_path <- gsub("\\{val_loss:.2f\\}", sprintf("%.2f", logs$val_loss), formatted_path)
+                                       formatted_path <- gsub("\\{val_acc:.3f\\}", sprintf("%.3f", logs$val_acc), formatted_path)
+                                       print(formatted_path)
+                                       if (self$save_weights_only) {
+                                         keras::save_model_hdf5(self$model, formatted_path)
+                                       } else {
+                                         keras::save_model_weights_hdf5(self$model, formatted_path)
+                                       }
+                                     }
+                                   }
+                                   
+                                 ))
+
+    return(cp_cb(filepath_checkpoints = filepath_checkpoints,
+                 save_freq = save_best_only$save_freq,
+                 save_weights_only = save_weights_only))
+    
+  }
   
 }
 
@@ -815,9 +861,9 @@ get_callbacks <- function(default_arguments, model, path_tensorboard, run_name, 
       #   filepath_checkpoints <- file.path(checkpoint_dir, "Ep.{epoch:03d}-loss{loss:.2f}-acc{acc:.3f}.hdf5")
       # } else {
       filepath_checkpoints <- file.path(checkpoint_dir, "Ep.{epoch:03d}.hdf5")
-      if (save_best_only & is.null(dataset_val)) {
-        warning("save_best_only not implemented for multi target or training without validation data. Setting save_best_only to FALSE.")
-        save_best_only <- FALSE
+      if (!is.null(save_best_only$monitor) & is.null(dataset_val)) {
+        warning("save_best_only not implemented for multi target or training without validation data. Setting save_best_only to NULL.")
+        save_best_only <- NULL
       }
       #}
       

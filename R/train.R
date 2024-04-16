@@ -57,7 +57,9 @@
 #' @param initial_epoch Epoch at which to start training. Note that network
 #' will run for (\code{epochs} - \code{initial_epochs}) rounds and not \code{epochs} rounds.
 #' @param path_tensorboard Path to tensorboard directory or `NULL`. If `NULL`, training not tracked on tensorboard.
-#' @param save_best_only Only save model that improved on best validation loss score.
+#' @param save_best_only Only save model that improved on some score. Not applied if argument is `NULL`. Otherwise must be 
+#' list with argument `monitor` or `save_freq` (can only use one options). `moniter` specifies what metric to use. 
+#' `save_freq`, integer specifying how often to store a checkpoint (in epochs).
 #' @param save_weights_only Whether to save weights only.
 #' @param seed Sets seed for reproducible results.
 #' @param shuffle_input Whether to shuffle entries in file.
@@ -173,7 +175,7 @@ train_model <- function(model = NULL,
                         path_checkpoint = NULL,
                         path_tensorboard = NULL,
                         path_log = NULL,
-                        save_best_only = TRUE,
+                        save_best_only = NULL, 
                         save_weights_only = FALSE,
                         tb_images = FALSE,
                         path_file_log = NULL,
