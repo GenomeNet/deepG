@@ -1454,31 +1454,6 @@ positional_encoding <- function(seq_len, d_model, n=10000) {
 }
 
 
-plot_cm <- function(cm, perc = FALSE, cm_labels, round_dig = 2, text_size = 1, highlight_diag = TRUE) {
-  
-  if (perc) cm <- cm_perc(cm, round_dig)
-  cm <- create_conf_mat_obj(cm, cm_labels)
-  
-  cm_plot <- ggplot2::autoplot(cm, type = "heatmap") +
-    ggplot2::scale_fill_gradient(low="#D6EAF8", high = "#2E86C1")  +
-    ggplot2::theme(axis.text.x =
-                     ggplot2::element_text(angle=90, hjust=1, size = text_size)) +
-    ggplot2::theme(axis.text.y =
-                     ggplot2::element_text(size = text_size))
-  
-  if (highlight_diag) {
-    diagonal_data <- data.frame(x = levels(y_true), y = levels(y_pred))
-    cm_plot <- cm_plot + geom_tile(data = diagonal_data, aes(x = x, y = y),
-                                   fill = "red", colour = "white", size = 1,
-                                   alpha = 0.000001) 
-  }
-  
-  
-  # TODO: add conf mat with ComplexHeatmap for bigger sizes
-  cm_plot
-  
-}
-
 subset_tensor_list <- function(tensor_list, dim_list, subset_index, dim_n_list) {
   
   for (i in 1:length(tensor_list)) {
