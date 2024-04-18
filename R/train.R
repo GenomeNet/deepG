@@ -58,7 +58,7 @@
 #' will run for (\code{epochs} - \code{initial_epochs}) rounds and not \code{epochs} rounds.
 #' @param path_tensorboard Path to tensorboard directory or `NULL`. If `NULL`, training not tracked on tensorboard.
 #' @param save_best_only Only save model that improved on some score. Not applied if argument is `NULL`. Otherwise must be 
-#' list with argument `monitor` or `save_freq` (can only use one options). `moniter` specifies what metric to use. 
+#' list with argument `monitor` or `save_freq` (can only use one option). `moniter` specifies what metric to use. 
 #' `save_freq`, integer specifying how often to store a checkpoint (in epochs).
 #' @param save_weights_only Whether to save weights only.
 #' @param seed Sets seed for reproducible results.
