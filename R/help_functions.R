@@ -800,3 +800,165 @@ remove_checkpoints <- function(cp_dir, metric = "acc", best_n = 1, ask_before_re
   }
   
 }
+
+pooling_flatten <- function(global_pooling = NULL, output_tensor) {
+  
+  if (!is.null(global_pooling)) {
+    stopifnot(global_pooling %in% c("max_ch_first", "max_ch_last", "average_ch_first",
+                                    "average_ch_last", "both_ch_first", "both_ch_last", "all", "none", "flatten"))
+  } else {
+    out <- output_tensor %>% keras::layer_flatten()
+    return(out)
+  }
+  
+  #if (!is.null(global_pooling) & global_pooling != "flatten") {
+  if (stringr::str_detect(global_pooling, "_ch_")) {
+    
+    if (global_pooling == "max_ch_first") {
+      out <- output_tensor %>% keras::layer_global_max_pooling_1d(data_format="channels_first")
+    } 
+    if (global_pooling == "max_ch_last") {
+      out <- output_tensor %>% keras::layer_global_max_pooling_1d(data_format="channels_last")
+    } 
+    if (global_pooling ==  "average_ch_first") {
+      out <- output_tensor %>% keras::layer_global_average_pooling_1d(data_format="channels_first")
+    } 
+    if (global_pooling ==  "average_ch_last") { 
+      out <- output_tensor %>% keras::layer_global_average_pooling_1d(data_format="channels_last")
+    } 
+    if (global_pooling ==  "both_ch_last") { 
+      out1 <- output_tensor %>% keras::layer_global_average_pooling_1d(data_format="channels_last")
+      out2 <- output_tensor %>% keras::layer_global_max_pooling_1d(data_format="channels_last")
+      out <- keras::layer_concatenate(list(out1, out2))
+    } 
+    if (global_pooling ==  "both_ch_first") {
+      out1 <- output_tensor %>% keras::layer_global_average_pooling_1d(data_format="channels_first")
+      out2 <- output_tensor %>% keras::layer_global_max_pooling_1d(data_format="channels_first")
+      out <- keras::layer_concatenate(list(out1, out2))
+    } 
+    if (global_pooling == "all") {
+      out1 <- output_tensor %>% keras::layer_global_average_pooling_1d(data_format="channels_first")
+      out2 <- output_tensor %>% keras::layer_global_max_pooling_1d(data_format="channels_first")
+      out3 <- output_tensor %>% keras::layer_global_average_pooling_1d(data_format="channels_last")
+      out4 <- output_tensor %>% keras::layer_global_max_pooling_1d(data_format="channels_last")
+      out <- keras::layer_concatenate(list(out1, out2, out3, out4))
+    }       
+  }
+  
+  if (global_pooling == "flatten") {
+    out <- output_tensor %>% keras::layer_flatten()
+  }
+  
+  if (global_pooling == "none") {
+    return(output_tensor)
+  }
+  
+  return(out)
+}
+
+
+pooling_flatten_time_dist <- function(global_pooling = NULL, output_tensor) {
+  
+  if (!is.null(global_pooling)) {
+    stopifnot(global_pooling %in% c("max_ch_first", "max_ch_last", "average_ch_first",
+                                    "average_ch_last", "both_ch_first", "both_ch_last", "all", "none", "flatten"))
+  } else {
+    out <- output_tensor %>% keras::layer_flatten()
+    return(out)
+  }
+  
+  #if (!is.null(global_pooling) & global_pooling != "flatten") {
+  if (stringr::str_detect(global_pooling, "_ch_")) {
+    
+    if (global_pooling == "max_ch_first") {
+      out <- output_tensor %>% keras::time_distributed(keras::layer_global_max_pooling_1d(data_format="channels_first"))
+    } 
+    if (global_pooling == "max_ch_last") {
+      out <- output_tensor %>% keras::time_distributed(keras::layer_global_max_pooling_1d(data_format="channels_last"))
+    } 
+    if (global_pooling ==  "average_ch_first") {
+      out <- output_tensor %>% keras::time_distributed(keras::layer_global_average_pooling_1d(data_format="channels_first"))
+    } 
+    if (global_pooling ==  "average_ch_last") { 
+      out <- output_tensor %>% keras::time_distributed(keras::layer_global_average_pooling_1d(data_format="channels_last"))
+    } 
+    if (global_pooling ==  "both_ch_last") { 
+      out1 <- output_tensor %>% keras::time_distributed(keras::layer_global_average_pooling_1d(data_format="channels_last"))
+      out2 <- output_tensor %>% keras::time_distributed(keras::layer_global_max_pooling_1d(data_format="channels_last"))
+      out <- keras::layer_concatenate(list(out1, out2))
+    } 
+    if (global_pooling ==  "both_ch_first") {
+      out1 <- output_tensor %>% keras::time_distributed(keras::layer_global_average_pooling_1d(data_format="channels_first"))
+      out2 <- output_tensor %>% keras::time_distributed(keras::layer_global_max_pooling_1d(data_format="channels_first"))
+      out <- keras::layer_concatenate(list(out1, out2))
+    } 
+    if (global_pooling == "all") {
+      out1 <- output_tensor %>% keras::time_distributed(keras::layer_global_average_pooling_1d(data_format="channels_first"))
+      out2 <- output_tensor %>% keras::time_distributed(keras::layer_global_max_pooling_1d(data_format="channels_first"))
+      out3 <- output_tensor %>% keras::time_distributed(keras::layer_global_average_pooling_1d(data_format="channels_last"))
+      out4 <- output_tensor %>% keras::time_distributed(keras::layer_global_max_pooling_1d(data_format="channels_last"))
+      out <- keras::layer_concatenate(list(out1, out2, out3, out4))
+    }       
+  }
+  
+  if (global_pooling == "flatten") {
+    out <- output_tensor %>% keras::time_distributed(keras::layer_flatten())
+  }
+  
+  if (global_pooling == "none") {
+    return(output_tensor)
+  }
+  
+  return(out)
+}
+
+
+
+get_pooling_flatten_layer <- function(global_pooling = NULL) {
+  
+  if (!is.null(global_pooling)) {
+    stopifnot(global_pooling %in% c("max_ch_first", "max_ch_last", "average_ch_first",
+                                    "average_ch_last", "both_ch_first", "both_ch_last", "all", "none", "flatten"))
+  }
+  
+  if (stringr::str_detect(global_pooling, "_ch_")) {
+    
+    if (global_pooling == "max_ch_first") {
+      out <- keras::layer_global_max_pooling_1d(data_format="channels_first")
+    } 
+    if (global_pooling == "max_ch_last") {
+      out <- keras::layer_global_max_pooling_1d(data_format="channels_last")
+    } 
+    if (global_pooling ==  "average_ch_first") {
+      out <- keras::layer_global_average_pooling_1d(data_format="channels_first")
+    } 
+    if (global_pooling ==  "average_ch_last") { 
+      out <- keras::layer_global_average_pooling_1d(data_format="channels_last")
+    } 
+    if (global_pooling ==  "both_ch_last") { 
+      out1 <- keras::layer_global_average_pooling_1d(data_format="channels_last")
+      out2 <- keras::layer_global_max_pooling_1d(data_format="channels_last")
+      out <- keras::layer_concatenate(list(out1, out2))
+    } 
+    if (global_pooling == "both_ch_first") {
+      out1 <- keras::layer_global_average_pooling_1d(data_format="channels_first")
+      out2 <- keras::layer_global_max_pooling_1d(data_format="channels_first")
+      out <- keras::layer_concatenate(list(out1, out2))
+    } 
+    if (global_pooling == "all") {
+      out1 <- keras::layer_global_average_pooling_1d(data_format="channels_first")
+      out2 <- keras::layer_global_max_pooling_1d(data_format="channels_first")
+      out3 <- keras::layer_global_average_pooling_1d(data_format="channels_last")
+      out4 <- keras::layer_global_max_pooling_1d(data_format="channels_last")
+      out <- keras::layer_concatenate(list(out1, out2, out3, out4))
+    }     
+    return(out)
+  }
+  
+  if (is.null(global_pooling) | global_pooling == "flatten") {
+    out <- keras::layer_flatten()
+    return(out)
+  }
+  
+  return(keras::layer_flatten())
+}

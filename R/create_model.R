@@ -1454,11 +1454,13 @@ layer_add_time_dist_wrapper <- function(load_r6 = FALSE) {
 #'     
 #' @inheritParams create_model_lstm_cnn
 #' @param samples_per_target Number of samples to combine for one target.
-#' @param aggregation_method "sum", "lstm" or "lstm_sum". How to process output of last time distributed layer.
-#' If "sum", add representations. If "lstm", use output as input for LSTM layer(s) (as specified in lstm_time_dist).
-#' If "lstm_sum" use both.
-#' @param lstm_time_dist Vector containing number of units per LSTM cell. Only used if `aggregation_method = "lstm` or
-#'  `aggregation_method = "lstm_sum"`.   
+#' @param aggregation_sum Whether to add representations. 
+#' @param gap_time_dist Pooling or flatten method after last time distribution wrapper. Same options as for `flatten_method` argument
+#' in \link{create_model_transformer} function.
+#' @param lstm_time_dist Vector containing number of units per LSTM cell. Applied after time distribution part. 
+#' @param transformer_args List of arguments for transformer blocks; see \link{layer_transformer_block_wrapper}.
+#' Additionally, list can contain `pool_flatten` argument to apply global pooling or flattening after last transformer block (same options
+#' as `flatten_method` argument in \link{create_model_transformer} function).
 #' @examples 
 #' create_model_lstm_cnn_time_dist(
 #'   maxlen = 50,
@@ -1490,7 +1492,7 @@ create_model_lstm_cnn_time_dist <- function(
     pool_size = NULL,
     padding = "same",
     dilation_rate = NULL,
-    gap = FALSE,
+    gap_time_dist = NULL,
     use_bias = TRUE,
     zero_mask = FALSE,
     label_smoothing = 0,
@@ -1503,8 +1505,10 @@ create_model_lstm_cnn_time_dist <- function(
     batch_norm_momentum = 0.99,
     verbose = TRUE,
     model_seed = NULL,
-    aggregation_method = "sum", 
-    lstm_time_dist = c(128),
+    #aggregation_method = "sum", 
+    aggregation_sum = TRUE,
+    transformer_args = NULL,
+    lstm_time_dist = NULL,
     mixed_precision = FALSE,
     mirrored_strategy = NULL) {
   
@@ -1521,7 +1525,7 @@ create_model_lstm_cnn_time_dist <- function(
     return(model)
   }
   
-  stopifnot(aggregation_method %in% c("sum", "lstm", "lstm_sum"))
+  #stopifnot(aggregation_method %in% c("sum", "lstm", "lstm_sum"))
   
   layer_dense <- as.integer(layer_dense)
   if (!is.null(model_seed)) tensorflow::tf$random$set_seed(model_seed)
@@ -1662,41 +1666,88 @@ create_model_lstm_cnn_time_dist <- function(
     }
   }
   
-  if (gap) {
+  if (!is.null(gap_time_dist)) {
     if (layers.lstm != 0) {
       stop("Global average pooling not compatible with using LSTM layer")
     }
-    output_tensor <- output_tensor %>% keras::time_distributed(keras::layer_global_average_pooling_1d())
+    output_tensor <- pooling_flatten_time_dist(gap_time_dist, output_tensor)
   } else {
     if (layers.lstm == 0) {
       output_tensor <- output_tensor %>% keras::time_distributed(keras::layer_flatten())
     }
   }
   
-  if (aggregation_method == "sum") {
-    layer_add_td <- layer_add_time_dist_wrapper()
-    output_tensor <- output_tensor %>% layer_add_td
-  } 
-  if (aggregation_method == "lstm") {
-    return_sequences <- TRUE
-    for (i in 1:length(lstm_time_dist)) {
-      if (i == length(lstm_time_dist)) return_sequences <- FALSE
-      output_tensor <- output_tensor %>% keras::layer_lstm(units=lstm_time_dist[i], return_sequences = return_sequences)
-    }
-  }
-  if (aggregation_method == "lstm_sum") {
-    layer_add_td <- layer_add_time_dist_wrapper()
-    output_tensor_sum <- output_tensor %>% layer_add_td
-    
-    return_sequences <- TRUE
-    for (i in 1:length(lstm_time_dist)) {
-      if (i == length(lstm_time_dist)) return_sequences <- FALSE
-      output_tensor <- output_tensor %>% keras::layer_lstm(units=lstm_time_dist[i], return_sequences = return_sequences)
-    }
-    
-    output_tensor <- keras::layer_concatenate(c(output_tensor, output_tensor_sum)) 
-  } 
+  num_aggr_layers <- 0
+  aggr_layer_list <- list()
   
+  if (!is.null(transformer_args)) {
+    num_aggr_layers <- num_aggr_layers + 1
+    for (i in seq_along(transformer_args$num_heads)) {
+      attn_block <- layer_transformer_block_wrapper(
+        num_heads = as.integer(transformer_args$num_heads[i]),
+        head_size = as.integer(transformer_args$head_size[i]),
+        dropout_rate = transformer_args$dropout[i],
+        ff_dim = as.integer(transformer_args$ff_dim[i]),
+        embed_dim = as.integer(output_tensor$shape[[3]]),
+        vocabulary_size = as.integer(output_tensor$shape[[2]]),
+        load_r6 = FALSE)
+      if (i == 1) {
+        output_tensor_attn <- output_tensor %>% attn_block
+      } else {
+        output_tensor_attn <- output_tensor_attn %>% attn_block
+      }
+    }
+    output_tensor_attn <- pooling_flatten(transformer_args$pool_flatten, output_tensor_attn)
+    aggr_layer_list[[num_aggr_layers]] <- output_tensor_attn
+  }
+  
+  if (aggregation_sum) {
+    num_aggr_layers <- num_aggr_layers + 1
+    layer_add_td <- layer_add_time_dist_wrapper()
+    output_tensor_aggregation_sum <- output_tensor %>% layer_add_td
+    aggr_layer_list[[num_aggr_layers]] <- output_tensor_aggregation_sum
+  }
+  
+  if (!is.null(lstm_time_dist)) {
+    num_aggr_layers <- num_aggr_layers + 1
+    return_sequences <- TRUE
+    for (i in 1:length(lstm_time_dist)) {
+      if (i == length(lstm_time_dist)) {
+        return_sequences <- FALSE 
+      } 
+      if (i == 1) {
+        output_tensor_lstm <- output_tensor %>% keras::layer_lstm(units=lstm_time_dist[i], return_sequences = return_sequences)
+      } else {
+        output_tensor_lstm <- output_tensor_lstm %>% keras::layer_lstm(units=lstm_time_dist[i], return_sequences = return_sequences)
+      }
+    }
+    aggr_layer_list[[num_aggr_layers]] <- output_tensor_lstm
+  }
+  
+  # if (aggregation_method == "lstm_sum") {
+  #   layer_add_td <- layer_add_time_dist_wrapper()
+  #   output_tensor_sum <- output_tensor %>% layer_add_td
+  #   
+  #   return_sequences <- TRUE
+  #   for (i in 1:length(lstm_time_dist)) {
+  #     if (i == length(lstm_time_dist)) return_sequences <- FALSE
+  #     output_tensor <- output_tensor %>% keras::layer_lstm(units=lstm_time_dist[i], return_sequences = return_sequences)
+  #   }
+  #   
+  #   output_tensor <- keras::layer_concatenate(c(output_tensor, output_tensor_sum)) 
+  # } 
+  
+  if (num_aggr_layers == 0) {
+    stop("You need to choose an aggregation method, either with aggregation_sum, transformer_args or lstm_time_dist.")
+  }
+  
+  if (num_aggr_layers == 1) {
+    output_tensor <- aggr_layer_list[[1]]
+  }
+  
+  if (num_aggr_layers > 1) {
+    output_tensor <- keras::layer_concatenate(aggr_layer_list) 
+  }
   
   if (length(layer_dense) > 1) {
     for (i in 1:(length(layer_dense) - 1)) {
@@ -3001,9 +3052,11 @@ layer_transformer_block_wrapper <- function(num_heads = 2, head_size = 4, dropou
 #' @param ff_dim Units of first dense layer after attention blocks.
 #' @param dropout Vector of dropout rates after attention block(s). 
 #' @param dropout_dense Dropout for dense layers.
-#' @param flatten_method How to process output of last attention block. Can be `"gap_channels_last"`, `"gap_channels_first"`, `"none"`,
-#' or `"flatten"`. If `"gap_channels_last"` or `"gap_channels_first"`, will apply global average pooling. If `"flatten"`, will flatten 
-#' output after last attention block. If `"none"` no flattening applied.
+#' @param flatten_method How to process output of last attention block. Can be `"max_ch_first"`, `"max_ch_last"`, `"average_ch_first"`,
+#' `"average_ch_last"`, `"both_ch_first"`, `"both_ch_last"`, `"all"`, `"none"` or `"flatten"`.
+#' If `"average_ch_last"` /  `"max_ch_last"`  or `"average_ch_first"` / `"max_ch_first"`, will apply global average/max pooling.
+#' `_ch_first` / `_ch_last` to decide along which axis. `"both_ch_first"` / `"both_ch_last"` to use max and average together. `"all"` to use all 4 
+#' global pooling options together. If `"flatten"`, will flatten output after last attention block. If `"none"` no flattening applied.
 #' @examples 
 #' 
 #' model <- create_model_transformer(maxlen = 50,
@@ -3053,7 +3106,8 @@ create_model_transformer <- function(maxlen,
   stopifnot(length(head_size) == length(num_heads))
   stopifnot(length(head_size) == length(dropout))
   stopifnot(length(head_size) == length(ff_dim))
-  stopifnot(flatten_method %in% c("gap_channels_last", "gap_channels_first", "flatten", "none"))
+  stopifnot(flatten_method %in% c("max_ch_first", "max_ch_last", "average_ch_first",
+                                  "average_ch_last", "both_ch_first", "both_ch_last", "all", "none", "flatten"))
   stopifnot(pos_encoding %in% c("sinusoid", "embedding"))
   num_dense_layers <- length(layer_dense)
   head_size <- as.integer(head_size)
@@ -3093,15 +3147,19 @@ create_model_transformer <- function(maxlen,
     output_tensor <- output_tensor %>% attn_block
   }
   
-  # flatten
-  if (flatten_method == "gap_channels_last") {
-    output_tensor <- output_tensor %>% keras::layer_global_average_pooling_1d(data_format="channels_last") 
-  }
-  if (flatten_method == "gap_channels_first") {
-    output_tensor <- output_tensor %>% keras::layer_global_average_pooling_1d(data_format="channels_first") 
-  }
-  if (flatten_method == "flatten") {
-    output_tensor <- output_tensor %>% keras::layer_flatten()
+  # # flatten
+  # if (flatten_method == "gap_channels_last") {
+  #   output_tensor <- output_tensor %>% keras::layer_global_average_pooling_1d(data_format="channels_last") 
+  # }
+  # if (flatten_method == "gap_channels_first") {
+  #   output_tensor <- output_tensor %>% keras::layer_global_average_pooling_1d(data_format="channels_first") 
+  # }
+  # if (flatten_method == "flatten") {
+  #   output_tensor <- output_tensor %>% keras::layer_flatten()
+  # }
+  
+  if (flatten_method != "none") {
+    output_tensor <- pooling_flatten(global_pooling = flatten_method, output_tensor = output_tensor)
   }
   
   # dense layers
