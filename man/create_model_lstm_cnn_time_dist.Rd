@@ -23,7 +23,7 @@ create_model_lstm_cnn_time_dist(
   pool_size = NULL,
   padding = "same",
   dilation_rate = NULL,
-  gap = FALSE,
+  gap_time_dist = NULL,
   use_bias = TRUE,
   zero_mask = FALSE,
   label_smoothing = 0,
@@ -36,8 +36,9 @@ create_model_lstm_cnn_time_dist(
   batch_norm_momentum = 0.99,
   verbose = TRUE,
   model_seed = NULL,
-  aggregation_method = "sum",
-  lstm_time_dist = c(128),
+  aggregation_sum = TRUE,
+  transformer_args = NULL,
+  lstm_time_dist = NULL,
   mixed_precision = FALSE,
   mirrored_strategy = NULL
 )
@@ -79,7 +80,8 @@ create_model_lstm_cnn_time_dist(
 
 \item{dilation_rate}{Integer, the dilation rate to use for dilated convolution.}
 
-\item{gap}{Whether to apply global average pooling after last CNN layer.}
+\item{gap_time_dist}{Pooling or flatten method after last time distribution wrapper. Same options as for \code{flatten_method} argument
+in \link{create_model_transformer} function.}
 
 \item{use_bias}{Boolean. Usage of bias for CNN layers.}
 
@@ -110,12 +112,13 @@ If first label contains 5 percent wrong labels and second label no noise, then
 
 \item{model_seed}{Set seed for model parameters in tensorflow if not \code{NULL}.}
 
-\item{aggregation_method}{"sum", "lstm" or "lstm_sum". How to process output of last time distributed layer.
-If "sum", add representations. If "lstm", use output as input for LSTM layer(s) (as specified in lstm_time_dist).
-If "lstm_sum" use both.}
+\item{aggregation_sum}{Whether to add representations.}
 
-\item{lstm_time_dist}{Vector containing number of units per LSTM cell. Only used if \verb{aggregation_method = "lstm} or
-\code{aggregation_method = "lstm_sum"}.}
+\item{transformer_args}{List of arguments for transformer blocks; see \link{layer_transformer_block_wrapper}.
+Additionally, list can contain \code{pool_flatten} argument to apply global pooling or flattening after last transformer block (same options
+as \code{flatten_method} argument in \link{create_model_transformer} function).}
+
+\item{lstm_time_dist}{Vector containing number of units per LSTM cell. Applied after time distribution part.}
 
 \item{mixed_precision}{Whether to use mixed precision (https://www.tensorflow.org/guide/mixed_precision).}
 

@@ -61,7 +61,7 @@ argument \code{layer_name}. Can be used to have shared dense layers, before mode
 \item{global_pooling}{"max_ch_first" for global max pooling with channel first (\href{https://keras.io/api/layers/pooling_layers/global_average_pooling1d/}{keras docs}),
 "max_ch_last" for global max pooling with channel last, "average_ch_first" for global average pooling with channel first,
 "average_ch_last" for global average pooling with channel last or \code{NULL} for no global pooling.
-"both_ch_first" or "both_ch_last" to combine average and max pooling.}
+"both_ch_first" or "both_ch_last" to combine average and max pooling. "all" for all 4 options at once.}
 
 \item{model_seed}{Set seed for model parameters in tensorflow if not \code{NULL}.}
 

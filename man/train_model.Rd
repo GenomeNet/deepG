@@ -19,7 +19,7 @@ train_model(
   path_checkpoint = NULL,
   path_tensorboard = NULL,
   path_log = NULL,
-  save_best_only = TRUE,
+  save_best_only = NULL,
   save_weights_only = FALSE,
   tb_images = FALSE,
   path_file_log = NULL,
@@ -116,7 +116,9 @@ If \code{train_type = "label_csv"} you need to add path to csv file:
 
 \item{path_log}{Path to directory to write training scores. File name is \code{run_name} + \code{".csv"}. No output if \code{NULL}.}
 
-\item{save_best_only}{Only save model that improved on best validation loss score.}
+\item{save_best_only}{Only save model that improved on some score. Not applied if argument is \code{NULL}. Otherwise must be
+list with argument \code{monitor} or \code{save_freq} (can only use one option). \code{moniter} specifies what metric to use.
+\code{save_freq}, integer specifying how often to store a checkpoint (in epochs).}
 
 \item{save_weights_only}{Whether to save weights only.}
 

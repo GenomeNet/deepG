@@ -58,9 +58,11 @@ If \code{"embedding"}, model learns positional embedding.}
 
 \item{dropout_dense}{Dropout for dense layers.}
 
-\item{flatten_method}{How to process output of last attention block. Can be \code{"gap_channels_last"}, \code{"gap_channels_first"}, \code{"none"},
-or \code{"flatten"}. If \code{"gap_channels_last"} or \code{"gap_channels_first"}, will apply global average pooling. If \code{"flatten"}, will flatten
-output after last attention block. If \code{"none"} no flattening applied.}
+\item{flatten_method}{How to process output of last attention block. Can be \code{"max_ch_first"}, \code{"max_ch_last"}, \code{"average_ch_first"},
+\code{"average_ch_last"}, \code{"both_ch_first"}, \code{"both_ch_last"}, \code{"all"}, \code{"none"} or \code{"flatten"}.
+If \code{"average_ch_last"} /  \code{"max_ch_last"}  or \code{"average_ch_first"} / \code{"max_ch_first"}, will apply global average/max pooling.
+\verb{_ch_first} / \verb{_ch_last} to decide along which axis. \code{"both_ch_first"} / \code{"both_ch_last"} to use max and average together. \code{"all"} to use all 4
+global pooling options together. If \code{"flatten"}, will flatten output after last attention block. If \code{"none"} no flattening applied.}
 
 \item{last_layer_activation}{Either \code{"sigmoid"} or \code{"softmax"}.}
 

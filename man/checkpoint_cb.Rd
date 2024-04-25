@@ -4,12 +4,20 @@
 \alias{checkpoint_cb}
 \title{Checkpoint callback}
 \usage{
-checkpoint_cb(filepath_checkpoints, save_weights_only, save_best_only)
+checkpoint_cb(
+  filepath_checkpoints,
+  save_weights_only,
+  save_best_only,
+  save_freq,
+  monitor = "val_loss"
+)
 }
 \arguments{
 \item{save_weights_only}{Whether to save weights only.}
 
-\item{save_best_only}{Only save model that improved on best validation loss score.}
+\item{save_best_only}{Only save model that improved on some score. Not applied if argument is \code{NULL}. Otherwise must be
+list with argument \code{monitor} or \code{save_freq} (can only use one option). \code{moniter} specifies what metric to use.
+\code{save_freq}, integer specifying how often to store a checkpoint (in epochs).}
 }
 \description{
 Checkpoint callback
