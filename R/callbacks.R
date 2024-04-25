@@ -166,8 +166,13 @@ checkpoint_cb <- function(filepath_checkpoints,
                           monitor = "val_loss") {
   
   if (is.logical(save_best_only)) {
-    warning("save_best_only should not be boolean variabel, but list or NULL. Using val_loss as monitor.")
-    if (save_best_only) save_best_only <- list(monitor = "val_loss")
+    if (save_best_only) {
+      warning("save_best_only should not be boolean variabel, but list or NULL. Using val_loss as monitor.")
+      save_best_only <- list(monitor = "val_loss")
+    } else {
+      warning("save_best_only should not be boolean variabel, but list or NULL.")
+      save_best_only <- NULL
+    }
   }
   
   if (is.null(save_best_only) | !is.null(save_best_only$monitor)) {
@@ -861,7 +866,7 @@ get_callbacks <- function(default_arguments, model, path_tensorboard, run_name, 
       #   filepath_checkpoints <- file.path(checkpoint_dir, "Ep.{epoch:03d}-loss{loss:.2f}-acc{acc:.3f}.hdf5")
       # } else {
       filepath_checkpoints <- file.path(checkpoint_dir, "Ep.{epoch:03d}.hdf5")
-      if (!is.null(save_best_only$monitor) & is.null(dataset_val)) {
+      if ((is.list(save_best_only) && !is.null(save_best_only$monitor)) & is.null(dataset_val)) {
         warning("save_best_only not implemented for multi target or training without validation data. Setting save_best_only to NULL.")
         save_best_only <- NULL
       }
