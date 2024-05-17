@@ -1523,8 +1523,7 @@ create_model_lstm_cnn_time_dist <- function(
     batch_norm_momentum = 0.99,
     verbose = TRUE,
     model_seed = NULL,
-    aggregation_method = "sum", 
-    #aggregation_sum = TRUE,
+    aggregation_method = NULL, 
     transformer_args = NULL,
     lstm_time_dist = NULL,
     mixed_precision = FALSE,
@@ -1756,7 +1755,7 @@ create_model_lstm_cnn_time_dist <- function(
   # } 
   
   if (num_aggr_layers == 0) {
-    stop("You need to choose an aggregation method, either with aggregation_sum, transformer_args or lstm_time_dist.")
+    stop("You need to choose an aggregation method, either with aggregation_method, transformer_args or lstm_time_dist.")
   }
   
   if (num_aggr_layers == 1) {
