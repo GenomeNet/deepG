@@ -1561,3 +1561,48 @@ mask_seq <- function(int_seq,
   return(list(masked_seq = int_seq, sample_weight_seq = sample_weight_seq))
   
 }
+
+#' Char sequence corresponding to one-hot matrix.
+#'
+#' Return character sequence corresponding to one-hot elements in matrix or tensor.
+#'
+#' @inheritParams generator_fasta_lm
+#' @param m One-hot encoding matrix or 3d array where each element of first axis is one-hot matrix.
+#' @param amb_enc Either `"zero"` or `"equal"`. How oov tokens where treated for one-hot encoding. 
+#' @param amb_char Char to use for oov positions.
+#' @param paste_chars Whether to return vector or single sequence.
+#' @examples 
+#' m <- matrix(c(1,0,0,0,0,1,0,0), 2)
+#' one_hot_to_seq(m)
+#' 
+#' @export
+one_hot_to_seq <- function(m, vocabulary = c("A", "C", "G", "T"), amb_enc = "zero",
+                           amb_char = "N", paste_chars = TRUE) {
+  
+  if (length(dim(m)) == 3) {
+    seq_list <- list()
+    for (i in 1:dim(m)[1]) {
+      seq_list[[i]] <- one_hot_to_seq(m = m[i, , ], vocabulary = vocabulary, amb_enc = amb_enc,
+                                      amb_char = amb_char, paste_chars = paste_chars)
+    }
+    return(seq_list)
+  }
+  
+  if (amb_enc == "zero") {
+    amb_row <- which(rowSums(m) == 0)
+  }
+  
+  if (amb_enc == "equal") {
+    amb_row <- which(rowSums[ , 1] == 1/length(vocabulary))
+  }
+  
+  nt_seq <- vocabulary[apply(m, 1, which.max)]
+  nt_seq[amb_row] <- amb_char
+  
+  if (paste_chars) {
+    nt_seq <- paste(nt_seq, collapse = "")
+  } 
+  
+  return(nt_seq)
+  
+}
