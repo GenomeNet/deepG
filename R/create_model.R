@@ -1408,30 +1408,48 @@ check_layer_name <- function(model, layer_name) {
 #' 
 #' @param load_r6 Whether to load the R6 layer class.
 #' @export
-layer_add_time_dist_wrapper <- function(load_r6 = FALSE) {
+layer_aggregate_time_dist_wrapper <- function(load_r6 = FALSE, method = "sum") {
   
-  layer_add_time_dist <- keras::new_layer_class(
-    "layer_add_time_dist",
+  layer_aggregate_time_dist <- keras::new_layer_class(
+    "layer_aggregate_time_dist",
     
-    initialize = function(...) {
+    initialize = function(method, ...) {
       super$initialize(...)
+      self$method <- method
     },
     
-    call = function(inputs) {
-      out <- tensorflow::tf$math$reduce_sum(inputs, axis=1L)
+    call = function(inputs, mask = NULL) {
+      out <- list()
+      if ("sum" %in% self$method) {
+        out <- c(out, tensorflow::tf$math$reduce_sum(inputs, axis = 1L))
+      }
+      if ("mean" %in% self$method) {
+        out <- c(out, tensorflow::tf$math$reduce_mean(inputs, axis = 1L))
+      }
+      if ("max" %in% self$method) {
+        out <- c(out, tensorflow::tf$math$reduce_max(inputs, axis = 1L))
+      }
+      
+      if (length(out) > 1) {
+        out <- tensorflow::tf$concat(out, axis = -1L)
+      } else {
+        out <- out[[1]]
+      }
+      
       out
     },
     
     get_config = function() {
       config <- super$get_config()
+      config$method <- self$method
       config
     }
   )
   
   if (load_r6) {
-    return(layer_add_time_dist)
+    return(layer_aggregate_time_dist)
   } else {
-    return(layer_add_time_dist())
+    return(layer_aggregate_time_dist(method = method))
   }
   
 }
@@ -1454,7 +1472,7 @@ layer_add_time_dist_wrapper <- function(load_r6 = FALSE) {
 #'     
 #' @inheritParams create_model_lstm_cnn
 #' @param samples_per_target Number of samples to combine for one target.
-#' @param aggregation_sum Whether to add representations. 
+#' @param aggregation_method Can be one or more of the options `"sum", "mean", "max`. Not applied if `NULL`. 
 #' @param gap_time_dist Pooling or flatten method after last time distribution wrapper. Same options as for `flatten_method` argument
 #' in \link{create_model_transformer} function.
 #' @param lstm_time_dist Vector containing number of units per LSTM cell. Applied after time distribution part. 
@@ -1505,8 +1523,8 @@ create_model_lstm_cnn_time_dist <- function(
     batch_norm_momentum = 0.99,
     verbose = TRUE,
     model_seed = NULL,
-    #aggregation_method = "sum", 
-    aggregation_sum = TRUE,
+    aggregation_method = "sum", 
+    #aggregation_sum = TRUE,
     transformer_args = NULL,
     lstm_time_dist = NULL,
     mixed_precision = FALSE,
@@ -1701,10 +1719,10 @@ create_model_lstm_cnn_time_dist <- function(
     aggr_layer_list[[num_aggr_layers]] <- output_tensor_attn
   }
   
-  if (aggregation_sum) {
+  if (!is.null(aggregation_method)) {
     num_aggr_layers <- num_aggr_layers + 1
-    layer_add_td <- layer_add_time_dist_wrapper()
-    output_tensor_aggregation_sum <- output_tensor %>% layer_add_td
+    layer_aggregate_td <- layer_aggregate_time_dist_wrapper(method = aggregation_method)
+    output_tensor_aggregation_sum <- output_tensor %>% layer_aggregate_td
     aggr_layer_list[[num_aggr_layers]] <- output_tensor_aggregation_sum
   }
   
@@ -2712,7 +2730,7 @@ load_cp <- function(cp_path, cp_filter = "last_ep", ep_index = NULL, compile = F
     "layer_transformer_block" = layer_transformer_block_wrapper(load_r6 = TRUE),
     "layer_euc_dist" = layer_euc_dist_wrapper(load_r6 = TRUE),
     "layer_cosine_sim" = layer_cosine_sim_wrapper(load_r6 = TRUE),
-    "layer_add_time_dist" = layer_add_time_dist_wrapper(load_r6 = TRUE),
+    "layer_add_time_dist" = layer_aggregate_time_dist_wrapper(load_r6 = TRUE),
     "loss_cl_margin___margin_" = loss_cl(margin=margin)
   )
   
