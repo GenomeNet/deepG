@@ -2729,7 +2729,7 @@ load_cp <- function(cp_path, cp_filter = "last_ep", ep_index = NULL, compile = F
     "layer_transformer_block" = layer_transformer_block_wrapper(load_r6 = TRUE),
     "layer_euc_dist" = layer_euc_dist_wrapper(load_r6 = TRUE),
     "layer_cosine_sim" = layer_cosine_sim_wrapper(load_r6 = TRUE),
-    "layer_add_time_dist" = layer_aggregate_time_dist_wrapper(load_r6 = TRUE),
+    "layer_aggregate_time_dist" = layer_aggregate_time_dist_wrapper(load_r6 = TRUE),
     "loss_cl_margin___margin_" = loss_cl(margin=margin)
   )
   
