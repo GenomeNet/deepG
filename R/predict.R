@@ -461,8 +461,8 @@ predict_model_by_entry <- function(path_model = NULL, layer_name = NULL, path_in
                           verbose = ifelse(i > 1, FALSE, verbose), 
                           output_type = output_type, mode = mode,
                           lm_format = lm_format, model = model, include_seq = include_seq,
-                          padding = padding,
-                          ambiguous_nuc = "zero", reverse_complement_encoding = reverse_complement_encoding)
+                          padding = padding, ambiguous_nuc = "zero", 
+                          reverse_complement_encoding = reverse_complement_encoding, ... = ...)
   }
   
   if (verbose & num_skipped_seq > 0) {
@@ -570,7 +570,7 @@ predict_model_by_entry_one_file <- function(path_model, path_input, round_digits
                                          output_type = "h5", model = model, mode = mode, lm_format = lm_format,
                                          ambiguous_nuc = "zero", verbose = ifelse(i > 1, FALSE, verbose), 
                                          padding = padding, format = format, include_seq = include_seq,
-                                         reverse_complement_encoding = reverse_complement_encoding)
+                                         reverse_complement_encoding = reverse_complement_encoding, ... = ...)
     
     states.grp[[seq_name]] <- output_list$states
     sample_end_position.grp[[seq_name]] <- output_list$sample_end_position
