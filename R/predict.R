@@ -105,9 +105,9 @@ predict_model <- function(output_format = "one_seq", model = NULL, layer_name = 
       stop("one_pred_per_entry only implemented for label classification")
     }
     predict_model_one_pred_per_entry(path_model = path_model, layer_name = layer_name, path_input = path_input,
-                                     round_digits = round_digits, filename = filename, vocabulary = vocabulary,
+                                     round_digits = round_digits, filename = filename, 
                                      batch_size = batch_size, verbose = verbose, model = model, format = format,
-                                     ambiguous_nuc = ambiguous_nuc, use_quality = use_quality,
+                                     # ambiguous_nuc = ambiguous_nuc, use_quality = use_quality, vocabulary = vocabulary,
                                      reverse_complement_encoding = reverse_complement_encoding, ...)
   }
   
