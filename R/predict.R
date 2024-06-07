@@ -82,21 +82,22 @@ predict_model <- function(output_format = "one_seq", model = NULL, layer_name = 
   
   if (output_format == "by_entry") {
     predict_model_by_entry(path_model = path_model, layer_name = layer_name, path_input = path_input,
-                           round_digits = round_digits, filename = filename, step = step, vocabulary = vocabulary,
+                           round_digits = round_digits, filename = filename, step = step, 
+                           # vocabulary = vocabulary, quality_string = quality_string, ambiguous_nuc = ambiguous_nuc,
                            batch_size = batch_size, verbose = verbose, use_quality = use_quality,
                            output_type = output_type, model = model, mode = mode, lm_format = lm_format,
                            output_dir = output_dir, format = format, include_seq = include_seq,
-                           ambiguous_nuc = ambiguous_nuc, padding = padding, quality_string = quality_string,
-                           reverse_complement_encoding = reverse_complement_encoding, ...)
+                           padding = padding, reverse_complement_encoding = reverse_complement_encoding, ...)
   }
   
   if (output_format == "by_entry_one_file") {
     predict_model_by_entry_one_file(path_model = path_model, layer_name = layer_name, path_input = path_input,
-                                    round_digits = round_digits, filename = filename, step = step, vocabulary = vocabulary,
+                                    round_digits = round_digits, filename = filename, step = step, 
+                                    # vocabulary = vocabulary, quality_string = quality_string, ambiguous_nuc = ambiguous_nuc, 
                                     batch_size = batch_size, verbose = verbose, use_quality = use_quality,
                                     model = model, mode = mode, lm_format = lm_format, format = format,
-                                    ambiguous_nuc = ambiguous_nuc, padding = padding, quality_string = quality_string,
-                                    include_seq = include_seq, reverse_complement_encoding = reverse_complement_encoding, ...)
+                                    padding = padding, include_seq = include_seq, 
+                                    reverse_complement_encoding = reverse_complement_encoding, ...)
   }
   
   if (output_format == "one_pred_per_entry") {
