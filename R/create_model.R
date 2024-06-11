@@ -486,37 +486,39 @@ create_model_lstm_cnn <- function(
     }
   }
   
-  if (label_smoothing > 0 & !is.null(label_noise_matrix)) {
-    stop("Can not use label smoothing and label noise at the same time. Either set label_smoothing = 0 or label_noise_matrix = NULL")
-  }
-  
-  if (label_smoothing > 0) {
-    if (loss_fn == "categorical_crossentropy") {
-      smooth_loss <- tensorflow::tf$losses$CategoricalCrossentropy(label_smoothing = label_smoothing, name = "smooth_loss")
+  if (compile) {
+    if (label_smoothing > 0 & !is.null(label_noise_matrix)) {
+      stop("Can not use label smoothing and label noise at the same time. Either set label_smoothing = 0 or label_noise_matrix = NULL")
     }
-    if (loss_fn == "binary_crossentropy") {
-      smooth_loss <- tensorflow::tf$losses$BinaryCrossentropy(label_smoothing = label_smoothing, name = "smooth_loss")
+    
+    if (label_smoothing > 0) {
+      if (loss_fn == "categorical_crossentropy") {
+        smooth_loss <- tensorflow::tf$losses$CategoricalCrossentropy(label_smoothing = label_smoothing, name = "smooth_loss")
+      }
+      if (loss_fn == "binary_crossentropy") {
+        smooth_loss <- tensorflow::tf$losses$BinaryCrossentropy(label_smoothing = label_smoothing, name = "smooth_loss")
+      }
+      model %>% keras::compile(loss = smooth_loss,
+                               optimizer = optimizer, metrics = model_metrics)
+    } else if (!is.null(label_noise_matrix)) {
+      row_sums <- rowSums(label_noise_matrix)
+      if (!all(row_sums == 1)) {
+        warning("Sum of noise matrix rows don't add up to 1")
+      }
+      noisy_loss <- noisy_loss_wrapper(solve(label_noise_matrix))
+      model %>% keras::compile(loss =  noisy_loss,
+                               optimizer = optimizer, metrics = model_metrics)
+    } else {
+      model %>% keras::compile(loss = loss_fn,
+                               optimizer = optimizer, metrics = model_metrics)
     }
-    model %>% keras::compile(loss = smooth_loss,
-                             optimizer = optimizer, metrics = model_metrics)
-  } else if (!is.null(label_noise_matrix)) {
-    row_sums <- rowSums(label_noise_matrix)
-    if (!all(row_sums == 1)) {
-      warning("Sum of noise matrix rows don't add up to 1")
-    }
-    noisy_loss <- noisy_loss_wrapper(solve(label_noise_matrix))
-    model %>% keras::compile(loss =  noisy_loss,
-                             optimizer = optimizer, metrics = model_metrics)
-  } else {
-    model %>% keras::compile(loss = loss_fn,
-                             optimizer = optimizer, metrics = model_metrics)
   }
   
   argg <- c(as.list(environment()))
   model <- add_hparam_list(model, argg)
   model$cm_dir <- cm_dir
   
-  if (verbose) summary(model)
+  if (verbose) model$summary()
   return(model)
 }
 
@@ -568,7 +570,7 @@ create_model_wavenet <- function(filters = 16, kernel_size = 2, residual_blocks,
   model <- add_hparam_list(model, argg)
   
   reticulate::py_set_attr(x = model, name = "hparam", value = model$hparam)
-  if (verbose) summary(model)
+  if (verbose) model$summary()
   model
 }
 
@@ -920,54 +922,55 @@ create_model_lstm_cnn_target_middle <- function(
   dir.create(cm_dir)
   model$cm_dir <- cm_dir
   
-  #add metrics
-  if (loss_fn == "binary_crossentropy") {
-    model_metrics <- c(tf$keras$metrics$BinaryAccuracy(name = "acc"))
-  } else {
-    model_metrics <- c("acc")
-  } 
-  
-  if (loss_fn == "categorical_crossentropy") {
-    
-    macro_average_cb <- balanced_acc_wrapper(num_targets, cm_dir)
-    model_metrics <- c(macro_average_cb, "acc")
-    
-    if (f1_metric) {
-      f1 <- f1_wrapper(num_targets)
-      model_metrics <- c(model_metrics, f1)
-    }
-  }
-  
-  if (label_smoothing > 0 & !is.null(label_noise_matrix)) {
-    stop("Can not use label smoothing and label noise at the same time. Either set label_smoothing = 0 or label_noise_matrix = NULL")
-  }
-  if (label_smoothing > 0) {
-    if (loss_fn == "categorical_crossentropy") {
-      smooth_loss <- tensorflow::tf$losses$CategoricalCrossentropy(label_smoothing = label_smoothing, name = "smooth_loss")
-    }
+  if (compile) {
     if (loss_fn == "binary_crossentropy") {
-      smooth_loss <- tensorflow::tf$losses$BinaryCrossentropy(label_smoothing = label_smoothing, name = "smooth_loss")
+      model_metrics <- c(tf$keras$metrics$BinaryAccuracy(name = "acc"))
+    } else {
+      model_metrics <- c("acc")
+    } 
+    
+    if (loss_fn == "categorical_crossentropy") {
+      
+      macro_average_cb <- balanced_acc_wrapper(num_targets, cm_dir)
+      model_metrics <- c(macro_average_cb, "acc")
+      
+      if (f1_metric) {
+        f1 <- f1_wrapper(num_targets)
+        model_metrics <- c(model_metrics, f1)
+      }
     }
-    model %>% keras::compile(loss = smooth_loss,
-                             optimizer = optimizer, metrics = model_metrics)
-  } else if (!is.null(label_noise_matrix)) {
-    row_sums <- rowSums(label_noise_matrix)
-    if (!all(row_sums == 1)) {
-      warning("Sum of noise matrix rows don't add up to 1")
+    
+    if (label_smoothing > 0 & !is.null(label_noise_matrix)) {
+      stop("Can not use label smoothing and label noise at the same time. Either set label_smoothing = 0 or label_noise_matrix = NULL")
     }
-    noisy_loss <- noisy_loss_wrapper(solve(label_noise_matrix))
-    model %>% keras::compile(loss =  noisy_loss,
-                             optimizer = optimizer, metrics = model_metrics)
-  } else {
-    model %>% keras::compile(loss = "categorical_crossentropy",
-                             optimizer = optimizer, metrics = model_metrics)
+    if (label_smoothing > 0) {
+      if (loss_fn == "categorical_crossentropy") {
+        smooth_loss <- tensorflow::tf$losses$CategoricalCrossentropy(label_smoothing = label_smoothing, name = "smooth_loss")
+      }
+      if (loss_fn == "binary_crossentropy") {
+        smooth_loss <- tensorflow::tf$losses$BinaryCrossentropy(label_smoothing = label_smoothing, name = "smooth_loss")
+      }
+      model %>% keras::compile(loss = smooth_loss,
+                               optimizer = optimizer, metrics = model_metrics)
+    } else if (!is.null(label_noise_matrix)) {
+      row_sums <- rowSums(label_noise_matrix)
+      if (!all(row_sums == 1)) {
+        warning("Sum of noise matrix rows don't add up to 1")
+      }
+      noisy_loss <- noisy_loss_wrapper(solve(label_noise_matrix))
+      model %>% keras::compile(loss =  noisy_loss,
+                               optimizer = optimizer, metrics = model_metrics)
+    } else {
+      model %>% keras::compile(loss = "categorical_crossentropy",
+                               optimizer = optimizer, metrics = model_metrics)
+    }
   }
   
   argg <- c(as.list(environment()))
   model <- add_hparam_list(model, argg)
   reticulate::py_set_attr(x = model, name = "hparam", value = model$hparam)
   
-  if (verbose) summary(model)
+  if (verbose) model$summary()
   return(model)
 }
 
@@ -1177,7 +1180,7 @@ remove_add_layers <- function(model = NULL,
   
   if (verbose) {
     print("Original model: ")
-    print(model)
+    print(model$summary())
   }
   
   is_sequential <- any(stringr::str_detect(class(model), "sequential"))
@@ -1284,7 +1287,7 @@ remove_add_layers <- function(model = NULL,
   
   if (verbose) {
     print("New model: ")
-    print(model_new)
+    print(model_new$summary())
     for (i in 1:length(model_new$layers)) {
       cat(model_new$layers[[i]]$name , "trainable:" , model_new$layers[[i]]$trainable, "\n")
     }
@@ -1825,14 +1828,16 @@ create_model_lstm_cnn_time_dist <- function(
     model_metrics <- c(model_metrics, auc)
   }
   
-  model %>% keras::compile(loss = loss_fn,
-                           optimizer = optimizer, metrics = model_metrics)
-  
+  if (compile) {
+    model %>% keras::compile(loss = loss_fn,
+                             optimizer = optimizer, metrics = model_metrics)
+  }
+
   argg <- as.list(environment())
   model <- add_hparam_list(model, argg)
   model$cm_dir <- cm_dir
   
-  if (verbose) summary(model)
+  if (verbose) model$summary()
   return(model)
 }
 
@@ -2120,7 +2125,7 @@ create_model_lstm_cnn_multi_input <- function(
   argg <- c(as.list(environment()))
   model <- add_hparam_list(model, argg)
   
-  if (verbose) summary(model)
+  if (verbose) model$summary()
   return(model)
 }
 
@@ -2724,12 +2729,12 @@ load_cp <- function(cp_path, cp_filter = "last_ep", ep_index = NULL, compile = F
   
   # custom objects to load transformer architecture
   custom_objects <- list(
-    "layer_pos_embedding" = layer_pos_embedding_wrapper(load_r6 = TRUE),
-    "layer_pos_sinusoid" = layer_pos_sinusoid_wrapper(load_r6 = TRUE),
-    "layer_transformer_block" = layer_transformer_block_wrapper(load_r6 = TRUE),
-    "layer_euc_dist" = layer_euc_dist_wrapper(load_r6 = TRUE),
-    "layer_cosine_sim" = layer_cosine_sim_wrapper(load_r6 = TRUE),
-    "layer_aggregate_time_dist" = layer_aggregate_time_dist_wrapper(load_r6 = TRUE),
+    "layer_pos_embedding" = layer_pos_embedding_wrapper(),
+    "layer_pos_sinusoid" = layer_pos_sinusoid_wrapper(),
+    "layer_transformer_block" = layer_transformer_block_wrapper(),
+    "layer_euc_dist" = layer_euc_dist_wrapper(),
+    "layer_cosine_sim" = layer_cosine_sim_wrapper(),
+    "layer_aggregate_time_dist" = layer_aggregate_time_dist_wrapper(),
     "loss_cl_margin___margin_" = loss_cl(margin=margin)
   )
   
@@ -3519,7 +3524,7 @@ create_model_twin_network <- function(
                              metrics = metrics)
   }
   
-  if (verbose) print(model)
+  if (verbose) model$summary()
   model
 }
 
