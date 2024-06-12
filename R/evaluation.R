@@ -25,7 +25,7 @@
 #' @param exact_num_samples Exact number of samples to evaluate. If you want to evaluate a number of samples not divisible by batch_size. Useful if you want
 #' to evaluate a data set exactly ones and know the number of samples already. Should be a vector if `mode = "label_folder"` (with same length as `vocabulary_label`)
 #' and else an integer.
-#' @param activations List containing output formats for output layers (`softmax, sigmoid` or `linear`). If `ǸULL`, will be estimated from model.   
+#' @param activations List containing output formats for output layers (`softmax, sigmoid` or `linear`). If `NULL`, will be estimated from model.   
 #' @param include_seq Whether to store input. Only applies if `path_pred_list` is not `NULL`.
 #' @param ... Further generator options. See \code{\link{get_generator}}.
 #' @examples

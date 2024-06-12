@@ -8,7 +8,7 @@
 #' @param recurrent_dropout_lstm Fraction of the units to drop for recurrent state.
 #' @param layer_lstm Number of cells per network layer. Can be a scalar or vector.
 #' @param layer_dense Vector specifying number of neurons per dense layer after last LSTM or CNN layer (if no LSTM used).
-#' @param dropout_dense Dropout rates between dense layers. No dropout if `ǸULL`.
+#' @param dropout_dense Dropout rates between dense layers. No dropout if `NULL`.
 #' @param solver Optimization method, options are `"adam", "adagrad", "rmsprop"` or `"sgd"`.
 #' @param learning_rate Learning rate for optimizer.
 #' @param bidirectional Use bidirectional wrapper for lstm layers.
@@ -2702,7 +2702,7 @@ manage_metrics <- function(model, compile = FALSE) {
 #' If a directory, choose checkpoint based on `cp_filter` or `ep_index`.
 #' @param cp_filter Condition to choose checkpoint if `cp_path` is a directory.
 #' Either "acc" for bast validation accuracy, "loss" for best validation loss or "last_ep" for last epoch.
-#' @param ep_index Load checkpoint from specific epoch number. If not `ǸULL`, has priority over `cp_filter`.
+#' @param ep_index Load checkpoint from specific epoch number. If not `NULL`, has priority over `cp_filter`.
 #' @param compile Whether to load compiled model.
 #' @param re_compile Whether to compile model with parameters from `learning_rate`,
 #' `solver` and `loss`.  
