@@ -1,11 +1,9 @@
 
 on:
   push:
-    branches: [master, devel]
+    branches: master
   pull_request:
-    branches: [master, devel]
-  schedule:
-    - cron: '33 4 * * *'  # work 4:33 in the morning
+    branches: master
 name: check
 
 env:
