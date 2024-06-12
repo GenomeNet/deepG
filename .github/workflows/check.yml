@@ -92,7 +92,7 @@ jobs:
         name: Install TF
         shell: Rscript {0}
         run: |
-          reticulate::conda_create('r-reticulate', packages = c('python==3.7'))
+          reticulate::conda_create('r-reticulate', packages = c('python==3.10'))
           keras::install_keras(envname = 'r-reticulate')
       - name: Session Info
         shell: Rscript {0}
