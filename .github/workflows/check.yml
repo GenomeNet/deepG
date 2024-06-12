@@ -92,9 +92,6 @@ jobs:
           roxygen2::roxygenise()
           system("attic/clean_man.sh")
       - if: runner.os == 'windows'
-        name: Remove hypertarget from Latex for Windows
-        run: "sed -i 's/\\\\hypertarget{[^}]*}//g' man/*"
-      - if: runner.os == 'windows'
         name: Install tinytex packages
         shell: Rscript {0}
         run: |
