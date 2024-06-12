@@ -20,3 +20,8 @@ sgdr(lrmin = 5e-10, lrmax = 0.05, restart = 50, mult = 1, epoch = NULL)
 \description{
 Compute the learning Rate for a given epoch using Stochastic Gradient Descent with Warm Restarts. Implements approach from this \href{https://arxiv.org/abs/1608.03983}{paper}.
 }
+\examples{
+sgdr(lrmin = 5e-10, lrmax = 5e-2, restart = 50,
+mult = 1, epoch = 5)
+
+}

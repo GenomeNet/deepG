@@ -59,20 +59,20 @@ compute_gradients <- function(input_tensor, target_class_idx, model, input_idx =
   #   stop("Stepwise predictions only supported for single input layer yet")
   # }
 
-  py_run_string("import tensorflow as tf")
+  reticulate::py_run_string("import tensorflow as tf")
   py$input_tensor <- input_tensor
   py$input_idx <- as.integer(input_idx - 1)
   py$target_class_idx <- as.integer(target_class_idx - 1)
   py$model <- model
 
   if (!is.null(input_idx)) {
-    py_run_string(
+    reticulate::py_run_string(
       "with tf.GradientTape() as tape:
              tape.watch(input_tensor[input_idx])
              probs = model(input_tensor)[:, target_class_idx]
     ")
   } else {
-    py_run_string(
+    reticulate::py_run_string(
       "with tf.GradientTape() as tape:
              tape.watch(input_tensor)
              probs = model(input_tensor)[:, target_class_idx]
@@ -88,11 +88,11 @@ compute_gradients <- function(input_tensor, target_class_idx, model, input_idx =
 }
 
 integral_approximation <- function(gradients) {
-  py_run_string("import tensorflow as tf")
+  reticulate::py_run_string("import tensorflow as tf")
   py$gradients <- gradients
   # riemann_trapezoidal
-  py_run_string("grads = (gradients[:-1] + gradients[1:]) / tf.constant(2.0)")
-  py_run_string("integrated_gradients = tf.math.reduce_mean(grads, axis=0)")
+  reticulate::py_run_string("grads = (gradients[:-1] + gradients[1:]) / tf.constant(2.0)")
+  reticulate::py_run_string("integrated_gradients = tf.math.reduce_mean(grads, axis=0)")
   return(py$integrated_gradients)
 }
 
@@ -120,6 +120,7 @@ integral_approximation <- function(gradients) {
 #'   input_seq = input_seq,
 #'   target_class_idx = 3,
 #'   model = model)
+#'   
 #' @export
 integrated_gradients <- function(m_steps = 50,
                                  baseline_type = "zero",
@@ -129,8 +130,8 @@ integrated_gradients <- function(m_steps = 50,
                                  pred_stepwise = FALSE,
                                  num_baseline_repeats = 1) {
 
-  library(reticulate)
-  py_run_string("import tensorflow as tf")
+  #library(reticulate)
+  reticulate::py_run_string("import tensorflow as tf")
   input_idx <- NULL
   if (num_baseline_repeats > 1 & baseline_type == "zero") {
     warning('Ignoring num_baseline_repeats if baseline is of type "zero". Did you mean to use baseline_type = "shuffle"?')
@@ -289,6 +290,7 @@ gradients_stepwise <- function(model = model, baseline_seq, target_class_idx,
 #'   model = model)
 #' heatmaps_integrated_grad(integrated_grads = ig,
 #'                          input_seq = input_seq)
+#'                          
 #' @export
 heatmaps_integrated_grad <- function(integrated_grads,
                                      input_seq) {
@@ -315,8 +317,8 @@ heatmaps_integrated_grad <- function(integrated_grads,
     sum_nuc <- list()
     for (i in 1:length(integrated_grads)) {
       py$integrated_grads <- integrated_grads[[i]]
-      py_run_string("attribution_mask = tf.reduce_sum(tf.math.abs(integrated_grads), axis=-1)")
-      py_run_string("sum_nuc = tf.reduce_sum(integrated_grads, axis=-1)")
+      reticulate::py_run_string("attribution_mask = tf.reduce_sum(tf.math.abs(integrated_grads), axis=-1)")
+      reticulate::py_run_string("sum_nuc = tf.reduce_sum(integrated_grads, axis=-1)")
       attribution_mask[[i]] <- py$attribution_mask
       attribution_mask[[i]] <- as.matrix(attribution_mask[[i]], nrow = 1) %>% as.data.frame()
       colnames(attribution_mask[[i]]) <- "abs_sum"
@@ -344,8 +346,8 @@ heatmaps_integrated_grad <- function(integrated_grads,
   } else {
     num_input <- 1
     py$integrated_grads <- integrated_grads
-    py_run_string("attribution_mask = tf.reduce_sum(tf.math.abs(integrated_grads), axis=-1)")
-    py_run_string("sum_nuc = tf.reduce_sum(integrated_grads, axis=-1)")
+    reticulate::py_run_string("attribution_mask = tf.reduce_sum(tf.math.abs(integrated_grads), axis=-1)")
+    reticulate::py_run_string("sum_nuc = tf.reduce_sum(integrated_grads, axis=-1)")
     #py_run_string("mean_nuc = tf.reduce_mean(integrated_grads, axis=-1)")
 
     attribution_mask <- py$attribution_mask

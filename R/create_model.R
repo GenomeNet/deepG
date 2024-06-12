@@ -61,6 +61,7 @@
 #'   layer_lstm = c(32, 64),
 #'   layer_dense = c(128, 4),
 #'   learning_rate = 0.001)
+#'   
 #' @export
 create_model_lstm_cnn <- function(
     maxlen = 50,
@@ -592,6 +593,7 @@ create_model_wavenet <- function(filters = 16, kernel_size = 2, residual_blocks,
 #'   layer_lstm = c(32, 64),
 #'   layer_dense = c(128, 4),
 #'   learning_rate = 0.001)
+#'   
 #' @export
 create_model_lstm_cnn_target_middle <- function(
     maxlen = 50,
@@ -1011,7 +1013,7 @@ get_hyper_param <- function(model) {
     if (layer_class_name == "LSTM") {
       layers.lstm <- layers.lstm + 1
       lstm_layer_size <- layerList[[i]]$config$units
-      recurrent_dropout_lstm <- layerList[[i]]$config$recurrent_dropout
+      recurrent_dropout_lstm <- layerList[[i]]$config$recurrent_dropout_lstm
       dropout_lstm <- layerList[[i]]$config$dropout
     }
     # TODO: wrong output since bidirectional is layer wrapper (?)
@@ -1072,8 +1074,10 @@ get_hyper_param <- function(model) {
 #' @param dropout_shared Vectors of dropout rates for dense layer from `shared_dense_layers`.
 #' @param freeze_base_model Whether to freeze all weights before new dense layers.
 #' @param compile Boolean, whether to compile the new model.
-#' @param learning_rate Learning rate if `compile = TRUE`, default learning rate of the old model
-#' @param global_pooling "max_ch_first" for global max pooling with channel first ([keras docs](https://keras.io/api/layers/pooling_layers/global_average_pooling1d/)),
+#' @param flatten Whether to add flatten layer before new dense layers.
+#' @param learning_rate Learning rate if `compile = TRUE`, default learning rate of the old model.
+#' @param global_pooling "max_ch_first" for global max pooling with channel first
+#' ([keras docs](https://keras.io/api/layers/pooling_layers/global_average_pooling1d/)),
 #' "max_ch_last" for global max pooling with channel last, "average_ch_first" for global average pooling with channel first, 
 #' "average_ch_last" for global average pooling with channel last or `NULL` for no global pooling. 
 #' "both_ch_first" or "both_ch_last" to combine average and max pooling. "all" for all 4 options at once.
@@ -1089,13 +1093,15 @@ get_hyper_param <- function(model) {
 #' model_2 <- remove_add_layers(model = model_1,
 #'                              layer_name = layer_name,
 #'                              dense_layers = list(c(32, 16, 1), c(8, 1), c(12, 5)),
-#'                              losses = list("binary_crossentropy", "mae", "categorical_crossentropy"),
+#'                              losses = list("binary_crossentropy", "mae",
+#'                                            "categorical_crossentropy"),
 #'                              last_activation = list("sigmoid", "linear", "softmax"),
 #'                              freeze_base_model = TRUE,
 #'                              output_names = list("out_1_binary_classsification", 
 #'                                                  "out_2_regression", 
 #'                                                  "out_3_classification")
-#') 
+#' ) 
+#'
 #' @export
 remove_add_layers <- function(model = NULL,
                               layer_name = NULL,
@@ -1343,6 +1349,7 @@ remove_add_layers <- function(model = NULL,
 #'                       layer_names = c(layer_name_1, layer_name_2),
 #'                       layer_dense = c(6, 2), 
 #'                       freeze_base_model = c(FALSE, FALSE)) 
+#'                       
 #' @export
 merge_models <- function(models, layer_names, layer_dense, solver = "adam",
                          learning_rate = 0.0001,
@@ -1410,6 +1417,9 @@ check_layer_name <- function(model, layer_name) {
 #' Add output of time distribution representations.
 #' 
 #' @param load_r6 Whether to load the R6 layer class.
+#' @param method At least one of the options, `"sum", "max"` or `"mean"`.
+#' l <- layer_aggregate_time_dist_wrapper() 
+#' 
 #' @export
 layer_aggregate_time_dist_wrapper <- function(load_r6 = FALSE, method = "sum") {
   
@@ -1491,8 +1501,10 @@ layer_aggregate_time_dist_wrapper <- function(load_r6 = FALSE, method = "sum") {
 #'   filters = c(64, 128),
 #'   pool_size = c(2, 2),
 #'   layer_lstm = c(32),
+#'   aggregation_method = c("max"),
 #'   layer_dense = c(64, 2),
 #'   learning_rate = 0.001)
+#'   
 #' @export
 create_model_lstm_cnn_time_dist <- function(
     maxlen = 50,
@@ -1674,7 +1686,7 @@ create_model_lstm_cnn_time_dist <- function(
       output_tensor <- output_tensor %>%
         keras::time_distributed(keras::bidirectional(
           input_shape = switch(stateful + 1, c(maxlen, vocabulary_size), NULL),
-          keras::layer_lstm(units = layer_lstm[length(layer_lstm)], dropout = dropout_lstm, recurrent_dropout = recurrent_dropout,
+          keras::layer_lstm(units = layer_lstm[length(layer_lstm)], dropout = dropout_lstm, recurrent_dropout = recurrent_dropout_lstm,
                             stateful = stateful, recurrent_activation = "sigmoid")
         ))
     } else {
@@ -1832,7 +1844,7 @@ create_model_lstm_cnn_time_dist <- function(
     model %>% keras::compile(loss = loss_fn,
                              optimizer = optimizer, metrics = model_metrics)
   }
-
+  
   argg <- as.list(environment())
   model <- add_hparam_list(model, argg)
   model$cm_dir <- cm_dir
@@ -1863,6 +1875,7 @@ create_model_lstm_cnn_time_dist <- function(
 #'   layer_lstm = c(32),
 #'   layer_dense = c(64, 2),
 #'   learning_rate = 0.001)
+#'   
 #' @export
 create_model_lstm_cnn_multi_input <- function(
     maxlen = 50,
@@ -2032,7 +2045,7 @@ create_model_lstm_cnn_multi_input <- function(
       output_tensor <- output_tensor %>%
         keras::bidirectional(
           input_shape = c(maxlen, vocabulary_size),
-          keras::layer_lstm(units = layer_lstm[length(layer_lstm)], dropout = dropout, recurrent_dropout = recurrent_dropout_lstm,
+          keras::layer_lstm(units = layer_lstm[length(layer_lstm)], dropout = dropout_lstm, recurrent_dropout = recurrent_dropout_lstm,
                             recurrent_activation = "sigmoid")
         )
     } else {
@@ -2147,6 +2160,7 @@ create_model_lstm_cnn_multi_input <- function(
 #'   layer_dense = c(64, 2))
 #' model <- reshape_input(model_1, input_shape = c(120, 4))
 #' model
+#' 
 #' @export
 reshape_input <- function(model, input_shape) {
   
@@ -2189,13 +2203,13 @@ get_optimizer <- function(model) {
 #'
 #' @param maxlen (integer `numeric(1)`)\cr
 #'   Input sequence length.
-#' @param learning.rate (`numeric(1)`)\cr
+#' @param learning_rate (`numeric(1)`)\cr
 #'   Used by the `keras` optimizer that is specified by `optimizer`.
 #' @param number_of_cnn_layers (integer `numeric(1)`)\cr
 #'   Target number of CNN-layers to use in total. If `number_of_cnn_layers` is
 #'   greater than `conv_block_count`, then the effective number of CNN layers
 #'   is set to the closest integer that is divisible by `conv_block_count`.
-#' @param `conv_block_count` (integer `numeric(1)`)\cr
+#' @param conv_block_count (integer `numeric(1)`)\cr
 #'   Number of convolutional blocks, into which the CNN layers are divided.
 #'   If this is greater than `number_of_cnn_layers`, then it is set to
 #'   `number_of_cnn_layers` (the convolutional block size will then be 1).\cr
@@ -2206,12 +2220,12 @@ get_optimizer <- function(model) {
 #'   blocks). If neither of these is the case, `conv_block_count` has little
 #'   effect besides the fact that `number_of_cnn_layers` is set to the closest
 #'   integer divisible by `conv_block_count`.
-#' @param `kernel_size_0` (`numeric(1)`)\cr
+#' @param kernel_size_0 (`numeric(1)`)\cr
 #'   Target CNN kernel size of the first CNN-layer. Although CNN kernel size is
 #'   always an integer, this value can be non-integer, potentially affecting
 #'   the kernel-sizes of intermediate layers (which are geometrically
 #'   interpolated between `kernel_size_0` and `kernel_size_end`).
-#' @param `kernel_size_end` (`numeric(1)`)\cr
+#' @param kernel_size_end (`numeric(1)`)\cr
 #'   Target CNN kernel size of the last CNN-layer; ignored if only one
 #'   CNN-layer is used (i.e. if `number_of_cnn_layers` is 1). Although CNN
 #'   kernel size is always an integer, this value can be non-integer,
@@ -2291,7 +2305,7 @@ get_optimizer <- function(model) {
 #' @param recurrent_units (integer `numeric(1)`)\cr
 #'   Number of units in each recurrent layer.
 #'   Only used when `model_type` is `"recurrent"`.
-#' @param vocabulary.size (integer `numeric(1)`)\cr
+#' @param vocabulary_size (integer `numeric(1)`)\cr
 #'   Vocabulary size of (one-hot encoded) input strings. This determines the
 #'   input tensor shape, together with `maxlen`.
 #' @param last_layer_activation Either `"sigmoid"` or `"softmax"`.
@@ -2300,6 +2314,12 @@ get_optimizer <- function(model) {
 #' @param num_targets (integer `numeric(1)`)\cr
 #'   Number of output units to create.
 #' @return A keras model.
+#' @inheritParams create_model_lstm_cnn
+#' @examples
+#' model <- create_model_genomenet()
+#' model
+#' 
+#' 
 #' @export
 create_model_genomenet <- function(
     maxlen = 300,
@@ -2315,6 +2335,7 @@ create_model_genomenet <- function(
     dense_layer_num = 1,
     dense_layer_units = 100,
     dropout_lstm = 0,
+    dropout = 0,
     batch_norm_momentum = 0.8,
     leaky_relu_alpha = 0,
     dense_activation = "relu",
@@ -2333,6 +2354,8 @@ create_model_genomenet <- function(
     auc_metric = FALSE,
     num_targets = 2,
     model_seed = NULL,
+    bal_acc = FALSE,
+    f1_metric = FALSE,
     mixed_precision = FALSE,
     mirrored_strategy = NULL) {
   
@@ -2464,7 +2487,7 @@ create_model_genomenet <- function(
     use_blocks <- ceiling((1 - skip_block_fraction) * length(output_collection))
     use_blocks <- max(use_blocks, 1)
     
-    output_collection <- tail(output_collection, use_blocks)
+    output_collection <- utils::tail(output_collection, use_blocks)
     
     # concatenate outputs from blocks (that we are using)
     if (length(output_collection) > 1) {
@@ -2492,7 +2515,7 @@ create_model_genomenet <- function(
   }
   
   for (i in seq_len(dense_layer_num)) {
-    layer <- keras::layer_dropout(rate = dropout_lstm)
+    layer <- keras::layer_dropout(rate = dropout)
     output_tensor <- output_tensor %>% layer
     layer <- keras::layer_dense(units = dense_layer_units, activation = dense_activation)
     output_tensor <- output_tensor %>% layer
@@ -2639,6 +2662,7 @@ set_optimizer <- function(solver = "adam", learning_rate = 0.01) {
 #'   layer_dense = c(64, 2),
 #'   verbose = FALSE)
 #' get_output_activations(model)
+#' 
 #' @export
 get_output_activations <- function(model) {
   
@@ -2709,6 +2733,15 @@ manage_metrics <- function(model, compile = FALSE) {
 #' @param add_custom_object Named list of custom objects.
 #' @param verbose Whether to print chosen checkpoint path.
 #' @param loss Loss function. Only used if model gets compiled.
+#' @param margin Margin for contrastive loss, see \link{loss_cl}.
+#' model <- create_model_lstm_cnn(layer_lstm = 8)
+#' checkpoint_folder <- tempfile()
+#' dir.create(checkpoint_folder)
+#' keras::save_model_hdf5(model, file.path(checkpoint_folder, 'Ep.007-val_loss11.07-val_acc0.6.hdf5'))
+#' keras::save_model_hdf5(model, file.path(checkpoint_folder, 'Ep.019-val_loss8.74-val_acc0.7.hdf5'))
+#' keras::save_model_hdf5(model, file.path(checkpoint_folder, 'Ep.025-val_loss0.03-val_acc0.8.hdf5'))
+#' model <- load_cp(cp_path = checkpoint_folder, cp_filter = "last_ep")
+#' 
 #' @export
 load_cp <- function(cp_path, cp_filter = "last_ep", ep_index = NULL, compile = FALSE,
                     learning_rate = 0.01, solver = "adam", re_compile = FALSE,
@@ -2810,7 +2843,7 @@ load_cp <- function(cp_path, cp_filter = "last_ep", ep_index = NULL, compile = F
     optimizer <- set_optimizer(solver, learning_rate)
     model %>% keras::compile(loss = loss,
                              optimizer = optimizer,
-                             metrics = metrics)
+                             metrics = model$metrics)
   }
   
   return(model)
@@ -2885,6 +2918,9 @@ get_cp  <- function(cp_path, cp_filter = "last_ep", ep_index = NULL) {
 #' 
 #' @inheritParams create_model_transformer
 #' @param load_r6 Whether to load the R6 layer class.
+#' @examples
+#' l <- layer_pos_embedding_wrapper()
+#' 
 #' @export
 layer_pos_embedding_wrapper <- function(maxlen = 100, vocabulary_size = 4, load_r6 = FALSE, embed_dim = 64) {
   
@@ -2937,6 +2973,9 @@ layer_pos_embedding_wrapper <- function(maxlen = 100, vocabulary_size = 4, load_
 #' 
 #' @inheritParams create_model_transformer
 #' @param load_r6 Whether to load the R6 layer class.
+#' @examples
+#' l <- layer_pos_sinusoid_wrapper() 
+#' 
 #' @export
 layer_pos_sinusoid_wrapper <- function(maxlen = 100, vocabulary_size = 4, n = 10000, load_r6 = FALSE, embed_dim = 64) {
   
@@ -2957,16 +2996,6 @@ layer_pos_sinusoid_wrapper <- function(maxlen = 100, vocabulary_size = 4, n = 10
         self$token_emb <- tensorflow::tf$keras$layers$Embedding(input_dim = vocabulary_size, output_dim = as.integer(embed_dim))
       }
       self$embed_dim <- as.integer(embed_dim)
-      
-      # self$position_embedding <- tensorflow::tf$keras$layers$Embedding(
-      #   input_dim = as.integer(maxlen),
-      #   output_dim = ifelse(is.null(embed_dim),
-      #                       as.integer(vocabulary_size),
-      #                       as.integer(embed_dim)), 
-      #   weights = list(pe_matrix),
-      #   trainable = FALSE,
-      #   name="position_embedding"
-      # )(tensorflow::tf$range(start=0, limit=as.integer(maxlen), delta=1))
       
     },
     
@@ -2997,6 +3026,16 @@ layer_pos_sinusoid_wrapper <- function(maxlen = 100, vocabulary_size = 4, n = 10
   
 }
 
+#' Transformer block
+#' 
+#' Create transformer block. Consists of self attention, dense layers, layer normalization, recurrent connection and dropout.
+#' 
+#' @inheritParams create_model_transformer
+#' @param dropout_rate Rate to randomly drop out connections.
+#' @param load_r6 Whether to return the layer class.
+#' @examples
+#' l <- layer_transformer_block_wrapper()
+#' 
 #' @export
 layer_transformer_block_wrapper <- function(num_heads = 2, head_size = 4, dropout_rate = 0, ff_dim = 64,  
                                             vocabulary_size = 4, load_r6 = FALSE, embed_dim = 64) {
@@ -3080,9 +3119,10 @@ layer_transformer_block_wrapper <- function(num_heads = 2, head_size = 4, dropou
 #' `_ch_first` / `_ch_last` to decide along which axis. `"both_ch_first"` / `"both_ch_last"` to use max and average together. `"all"` to use all 4 
 #' global pooling options together. If `"flatten"`, will flatten output after last attention block. If `"none"` no flattening applied.
 #' @examples 
-#' 
 #' model <- create_model_transformer(maxlen = 50,
-#'                                   head_size=c(10,12), num_heads=c(7,8), ff_dim=c(5,9), 
+#'                                   head_size=c(10,12),
+#'                                   num_heads=c(7,8),
+#'                                   ff_dim=c(5,9), 
 #'                                   dropout=c(0.3, 0.5))
 #' 
 #' @export
@@ -3169,17 +3209,6 @@ create_model_transformer <- function(maxlen,
     output_tensor <- output_tensor %>% attn_block
   }
   
-  # # flatten
-  # if (flatten_method == "gap_channels_last") {
-  #   output_tensor <- output_tensor %>% keras::layer_global_average_pooling_1d(data_format="channels_last") 
-  # }
-  # if (flatten_method == "gap_channels_first") {
-  #   output_tensor <- output_tensor %>% keras::layer_global_average_pooling_1d(data_format="channels_first") 
-  # }
-  # if (flatten_method == "flatten") {
-  #   output_tensor <- output_tensor %>% keras::layer_flatten()
-  # }
-  
   if (flatten_method != "none") {
     output_tensor <- pooling_flatten(global_pooling = flatten_method, output_tensor = output_tensor)
   }
@@ -3218,6 +3247,14 @@ create_model_transformer <- function(maxlen,
 #' Compile model
 #' 
 #' @inheritParams create_model_lstm_cnn
+#' @param model A keras model.
+#' @examples
+#' model <- create_model_lstm_cnn(layer_lstm = 8, compile = FALSE)
+#' model <- compile_model(model = model,
+#'                        solver = 'adam',
+#'                        learning_rate = 0.01,
+#'                        loss_fn = 'categorical_crossentropy')
+#' 
 #' @export
 compile_model <- function(model, solver, learning_rate, loss_fn, label_smoothing = 0,
                           num_output_layers = 1, label_noise_matrix = NULL,
@@ -3386,10 +3423,10 @@ layer_cosine_sim_wrapper <- function(load_r6 = FALSE) {
 #' between embeddings of inputs.
 #' Implements approach as described [here](https://keras.io/examples/vision/siamese_contrastive/).
 #'
-#' @inheritParams create_model_lstm_cnn
-#' @param margin Integer, defines the baseline for distance for which pairs should be classified as dissimilar.
 #' @param layer_dense Vector containing number of neurons per dense layer, before euclidean distance layer.
 #' @param distance_method Either "euclidean" or "cosine".
+#' @param metrics Vector or list of metrics.
+#' @inheritParams create_model_lstm_cnn
 #' @examples
 #' model <- create_model_twin_network(
 #'   maxlen = 50,
@@ -3397,8 +3434,8 @@ layer_cosine_sim_wrapper <- function(load_r6 = FALSE) {
 #'   kernel_size = 12,
 #'   filters = 4,
 #'   pool_size = 3,
-#'   learning_rate = 0.001,
-#'   margin = 1) 
+#'   learning_rate = 0.001)
+#'   
 #' @export
 create_model_twin_network <- function(
     maxlen = 50,

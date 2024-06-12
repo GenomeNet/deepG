@@ -4,7 +4,11 @@
 \alias{early_stopping_cb}
 \title{Early stopping callback}
 \usage{
-early_stopping_cb(early_stopping_patience, early_stopping_time, by_time = TRUE)
+early_stopping_cb(
+  early_stopping_patience = 0,
+  early_stopping_time,
+  by_time = TRUE
+)
 }
 \arguments{
 \item{early_stopping_patience}{Stop training if val_loss does not improve for \code{early_stopping_patience}.}

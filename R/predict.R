@@ -12,6 +12,9 @@
 #' \item If `"one_pred_per_entry"`, will make one prediction for each entry by either picking random sample for long sequences
 #' or pad sequence for short sequences.
 #' }
+#' 
+#' @inheritParams get_generator 
+#' @inheritParams train_model
 #' @param output_format Either `"one_seq"`, `"by_entry"`, `"by_entry_one_file"`, `"one_pred_per_entry"`.
 #' @param output_type `"h5"` or `"csv"`. If `output_format`` is `"by_entries_one_file", "one_pred_per_entry"` can only be `"h5"`.
 #' @param return_states Return predictions as data frame. Only supported for output_format `"one_seq"`.
@@ -29,9 +32,13 @@
 #' @inheritParams predict_model_by_entry
 #' @inheritParams predict_model_by_entry_one_file
 #' @inheritParams predict_model_one_pred_per_entry
+#' @inheritParams get_generator
 #' @inheritParams train_model
 #' @param output_dir Directory for file output.
 #' @param ... Further arguments for sequence encoding with \code{\link{seq_encoding_label}}.
+#' @param use_quality Whether to use quality scores.
+#' @param quality_string String for encoding with quality scores (as used in fastq format).
+#' @param lm_format Either `"target_right"`, `"target_middle_lstm"`, `"target_middle_cnn"` or `"wavenet"`.
 #' @examples
 #' # make prediction for single sequence and write to h5 file
 #' model <- create_model_lstm_cnn(maxlen = 20, layer_lstm = 8, layer_dense = 2, verbose = FALSE)
@@ -325,8 +332,8 @@ predict_model_one_seq <- function(path_model = NULL, layer_name = NULL, sequence
                             adjust_start_ind = FALSE,
                             quality_vector = quality_vector,
                             ...
-                            )
-
+    )
+    
     if (mode == "lm" && lm_format == "target_middle_lstm") {
       x1 <- x[ , index_x_1, ]
       x2 <- x[ , index_x_2, ]
@@ -353,7 +360,7 @@ predict_model_one_seq <- function(path_model = NULL, layer_name = NULL, sequence
     
     if (reverse_complement_encoding) x <- list(x, reverse_complement_tensor(x))
     
-    y <- predict(model, x, verbose = 0)
+    y <- stats::predict(model, x, verbose = 0)
     if (!is.null(round_digits)) y <- round(y, round_digits)
     pred_list[[i]] <- y
     
@@ -368,7 +375,7 @@ predict_model_one_seq <- function(path_model = NULL, layer_name = NULL, sequence
     } else {
       col_names <- paste0("N", 1:ncol(states))
       colnames(states) <- col_names 
-      write.csv(x = states, file = filename, row.names = FALSE)
+      utils::write.csv(x = states, file = filename, row.names = FALSE)
     }
   }
   
@@ -572,7 +579,7 @@ predict_model_by_entry_one_file <- function(path_model, path_input, round_digits
                                          ambiguous_nuc = "zero", verbose = ifelse(i > 1, FALSE, verbose), 
                                          padding = padding, format = format, include_seq = include_seq,
                                          reverse_complement_encoding = reverse_complement_encoding, ...)
-
+    
     states.grp[[seq_name]] <- output_list$states
     sample_end_position.grp[[seq_name]] <- output_list$sample_end_position
     
@@ -964,9 +971,9 @@ summarize_states <- function(states_path = NULL, label_names = NULL, file_type =
         df <- as.data.frame(df$states)
       }
       if (file_type == "csv") {
-        df <- read.csv(state_file)
+        df <- utils::read.csv(state_file)
         if (ncol(df) != num_labels) {
-          df <- read.csv2(state_file)
+          df <- utils::read.csv2(state_file)
         }
       }
     }

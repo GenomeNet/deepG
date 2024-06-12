@@ -8,7 +8,7 @@
 Large character of 1.00 MB
 }
 \usage{
-parenthesis
+data(parenthesis)
 }
 \description{
 Training dataset of synthetic parenthesis language.

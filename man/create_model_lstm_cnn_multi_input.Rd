@@ -129,4 +129,5 @@ create_model_lstm_cnn_multi_input(
   layer_lstm = c(32),
   layer_dense = c(64, 2),
   learning_rate = 0.001)
+  
 }

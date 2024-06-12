@@ -12,3 +12,7 @@ early_stopping_time_cb(stop_time = NULL)
 \description{
 Stop training after specified time.
 }
+\examples{
+est <- early_stopping_time_cb(stop_time = 60)
+
+}

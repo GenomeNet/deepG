@@ -8,7 +8,7 @@
 Large character of 4.64 MB
 }
 \usage{
-ecoli
+data(ecoli)
 }
 \description{
 E. coli genome for evaluation.

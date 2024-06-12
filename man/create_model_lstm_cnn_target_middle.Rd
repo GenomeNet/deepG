@@ -119,4 +119,5 @@ create_model_lstm_cnn_target_middle(
   layer_lstm = c(32, 64),
   layer_dense = c(128, 4),
   learning_rate = 0.001)
+  
 }

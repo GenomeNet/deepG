@@ -37,4 +37,5 @@ auc_metric <- auc_wrapper(num_targets, loss = model$loss)
 model \%>\% keras::compile(loss = model$loss, 
                          optimizer = model$optimizer,
                          metrics = c(model$metrics, auc_metric))
+                         
 }

@@ -251,6 +251,8 @@ samples are taken from a consecutive subsequence.}
 optional arguments \code{sd} or \code{mean} if noise_type is \code{"normal"} (default is \code{sd=1} and \code{mean=0}) or \verb{min, max} if \code{noise_type} is \code{"uniform"}
 (default is \verb{min=0, max=1}).}
 
+\item{return_int}{Whether to return integer encoding or one-hot encoding.}
+
 \item{maxlen}{Length of predictor sequence.}
 
 \item{reverse_complement}{Boolean, for every new file decide randomly to use original data or its reverse complement.}
@@ -304,6 +306,8 @@ second entry contains the column named \code{"label_3"}.}
 
 \item{vocabulary_label}{Character vector of possible targets. Targets outside \code{vocabulary_label} will get discarded if
 \code{train_type = "label_header"}.}
+
+\item{delete_used_files}{Whether to delete file once used. Only applies for rds files.}
 
 \item{reshape_xy}{Can be a list of functions to apply to input and/or target. List elements (containing the reshape functions)
 must be called x for input or y for target.}

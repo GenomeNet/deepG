@@ -53,14 +53,20 @@ Imports:
     yardstick,
     jpeg,
     png,
-    microseq
+    microseq,
+    checkmate,
+    readr
 Remotes: r-tensorflow/wavenet
 NeedsCompilation: yes
-RoxygenNote: 7.2.3
+RoxygenNote: 7.3.1
 Suggests: 
     testthat,
     circlize,
     pROC,
     PRROC,
     ComplexHeatmap,
-    checkmate
+    wavenet,
+    knitr,
+    rmarkdown
+VignetteBuilder: 
+    knitr

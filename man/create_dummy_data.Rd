@@ -24,7 +24,7 @@ create_dummy_data(
 
 \item{header}{Fasta header name.}
 
-\item{seq_length}{Length of one sequence.}
+\item{seq_length}{Length of one sequence. If vector longer than 1, will randomly sample from that vector.}
 
 \item{num_seq}{Number of sequences per file.}
 
@@ -47,5 +47,6 @@ create_dummy_data(file_path = path_output,
                   seq_length = 11, 
                   num_seq = 5,                   
                   vocabulary = c("a", "c", "g", "t"))
-list.files(path_output)                   
+list.files(path_output)                
+   
 }

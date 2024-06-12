@@ -8,12 +8,12 @@
 Large character of 442.41 kB
 }
 \usage{
-crispr_sample
+data(crispr_sample)
 }
 \description{
 Example training dataset consisting of a sequence of nucleotides of CRISPR loci
-Filtered for unambiguous characters and contains only characters in the vocabulary {A,G,G,T
-}.
+Filtered for unambiguous characters and contains only characters in the vocabulary \{A,G,G,T
+\}.
 Can be loaded to workspace via \code{data(crispr_sample)}.
 }
 \references{

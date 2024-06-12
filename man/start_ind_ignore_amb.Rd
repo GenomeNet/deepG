@@ -16,8 +16,6 @@ start_ind_ignore_amb(
 \arguments{
 \item{seq_vector}{Vector of character sequences.}
 
-\item{length_vector}{Length of sequences in \code{seq_vector}.}
-
 \item{maxlen}{Length of one sample.}
 
 \item{step}{How often to take a sample.}

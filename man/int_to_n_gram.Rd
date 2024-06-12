@@ -20,4 +20,5 @@ Integers greater than \code{voc_size} get encoded as \code{voc_size^n + 1}.
 }
 \examples{
 int_to_n_gram(int_seq = c(1,1,2,4,4), n = 2, voc_size = 4)
+
 }

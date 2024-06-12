@@ -26,7 +26,7 @@ If a directory, choose checkpoint based on \code{cp_filter} or \code{ep_index}.}
 \item{cp_filter}{Condition to choose checkpoint if \code{cp_path} is a directory.
 Either "acc" for bast validation accuracy, "loss" for best validation loss or "last_ep" for last epoch.}
 
-\item{ep_index}{Load checkpoint from specific epoch number. If not \code{ǸULL}, has priority over \code{cp_filter}.}
+\item{ep_index}{Load checkpoint from specific epoch number. If not \code{NULL}, has priority over \code{cp_filter}.}
 
 \item{compile}{Whether to load compiled model.}
 
@@ -40,6 +40,15 @@ Either "acc" for bast validation accuracy, "loss" for best validation loss or "l
 \item{loss}{Loss function. Only used if model gets compiled.}
 
 \item{add_custom_object}{Named list of custom objects.}
+
+\item{margin}{Margin for contrastive loss, see \link{loss_cl}.
+model <- create_model_lstm_cnn(layer_lstm = 8)
+checkpoint_folder <- tempfile()
+dir.create(checkpoint_folder)
+keras::save_model_hdf5(model, file.path(checkpoint_folder, 'Ep.007-val_loss11.07-val_acc0.6.hdf5'))
+keras::save_model_hdf5(model, file.path(checkpoint_folder, 'Ep.019-val_loss8.74-val_acc0.7.hdf5'))
+keras::save_model_hdf5(model, file.path(checkpoint_folder, 'Ep.025-val_loss0.03-val_acc0.8.hdf5'))
+model <- load_cp(cp_path = checkpoint_folder, cp_filter = "last_ep")}
 
 \item{verbose}{Whether to print chosen checkpoint path.}
 

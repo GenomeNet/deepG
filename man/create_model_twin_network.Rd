@@ -50,7 +50,7 @@ create_model_twin_network(
 
 \item{layer_dense}{Vector containing number of neurons per dense layer, before euclidean distance layer.}
 
-\item{dropout_dense}{Dropout rates between dense layers. No dropout if \code{ǸULL}.}
+\item{dropout_dense}{Dropout rates between dense layers. No dropout if \code{NULL}.}
 
 \item{kernel_size}{Size of 1d convolutional layers. For multiple layers, assign a vector. (e.g, \code{rep(3,2)} for two layers and kernel size 3)}
 
@@ -96,13 +96,13 @@ create_model_twin_network(
 
 \item{loss_fn}{Either \code{"categorical_crossentropy"} or \code{"binary_crossentropy"}. If \code{label_noise_matrix} given, will use custom \code{"noisy_loss"}.}
 
+\item{metrics}{Vector or list of metrics.}
+
 \item{model_seed}{Set seed for model parameters in tensorflow if not \code{NULL}.}
 
 \item{mixed_precision}{Whether to use mixed precision (https://www.tensorflow.org/guide/mixed_precision).}
 
 \item{mirrored_strategy}{Whether to use distributed mirrored strategy. If NULL, will use distributed mirrored strategy only if >1 GPU available.}
-
-\item{margin}{Integer, defines the baseline for distance for which pairs should be classified as dissimilar.}
 }
 \description{
 Twin network can be trained to maximize the distance
@@ -116,6 +116,6 @@ model <- create_model_twin_network(
   kernel_size = 12,
   filters = 4,
   pool_size = 3,
-  learning_rate = 0.001,
-  margin = 1) 
+  learning_rate = 0.001)
+  
 }

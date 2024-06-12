@@ -13,9 +13,7 @@
 #' @import tensorflow
 #' @import dplyr
 #'
-#' @docType package
-#' @name deepG
-NULL
+"_PACKAGE"
 
 # globals
 .globals <- new.env(parent = emptyenv())
@@ -30,6 +28,5 @@ NULL
   file.remove(temp_file)
 
   #usethis::use_pipe(export = TRUE)
-  
-  packageStartupMessage("The deepG package has been successfully loaded.")
+  #packageStartupMessage("The deepG package has been successfully loaded.")
 }

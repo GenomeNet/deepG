@@ -1,2 +1,4 @@
-^.*\.Rproj$
+^altum.Rproj$
 ^\.Rproj\.user$
+^docs/\.nojekyll$
+^\.github$

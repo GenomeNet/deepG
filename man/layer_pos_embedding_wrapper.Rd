@@ -24,3 +24,7 @@ layer_pos_embedding_wrapper(
 \description{
 Positional encoding layer with learned embedding.
 }
+\examples{
+l <- layer_pos_embedding_wrapper()
+
+}

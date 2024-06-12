@@ -19,4 +19,5 @@ model <-  create_model_lstm_cnn(
   layer_dense = c(64, 2),
   verbose = FALSE)
 get_output_activations(model)
+
 }

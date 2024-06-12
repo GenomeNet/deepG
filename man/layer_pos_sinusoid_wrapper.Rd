@@ -27,3 +27,7 @@ layer_pos_sinusoid_wrapper(
 \description{
 Positional encoding layer with sine/cosine matrix of different frequencies.
 }
+\examples{
+l <- layer_pos_sinusoid_wrapper() 
+
+}

@@ -10,7 +10,6 @@ hyper_param_with_model_cb(
   path_tensorboard,
   run_name,
   train_type,
-  path_model,
   path,
   train_val_ratio,
   batch_size,

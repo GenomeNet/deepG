@@ -14,3 +14,7 @@ reset_states_cb(path_file_log, path_file_logVal)
 \description{
 Reset states at start/end of validation and whenever file changes. Can be used for stateful LSTM.
 }
+\examples{
+rs <- reset_states_cb(path_file_log = tempfile(), path_file_logVal = tempfile())
+
+}

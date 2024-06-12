@@ -45,10 +45,10 @@ get_generator(
   path_file_logVal = NULL,
   model = NULL,
   vocabulary_label = NULL,
-  new_batch_size = NULL,
   masked_lm = NULL,
   val = FALSE,
   return_int = FALSE,
+  verbose = TRUE,
   delete_used_files = FALSE,
   reshape_xy = NULL
 )
@@ -204,8 +204,6 @@ second entry contains the column named \code{"label_3"}.}
 \item{vocabulary_label}{Character vector of possible targets. Targets outside \code{vocabulary_label} will get discarded if
 \code{train_type = "label_header"}.}
 
-\item{new_batch_size}{Batch size after reshaping data for set learning.}
-
 \item{masked_lm}{If not \code{NULL}, input and target are equal except some parts of the input are masked or random.
 Must be list with the following arguments:
 \itemize{
@@ -217,6 +215,10 @@ Must be list with the following arguments:
 }}
 
 \item{val}{Logical, call initialized generator "genY" or "genValY" where Y is an integer between 1 and length of directories.}
+
+\item{return_int}{Whether to return integer encoding or one-hot encoding.}
+
+\item{verbose}{Whether to show messages.}
 
 \item{delete_used_files}{Whether to delete file once used. Only applies for rds files.}
 

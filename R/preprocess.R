@@ -279,6 +279,8 @@ seq_encoding_lm <- function(sequence = NULL, maxlen, vocabulary, start_ind, ambi
 #' Returns encoding for integer or character sequence.
 #'
 #' @inheritParams seq_encoding_lm
+#' @inheritParams generator_fasta_lm
+#' @inheritParams train_model
 #' @param return_int Whether to return integer encoding or one-hot encoding.
 #' @examples 
 #' # use integer sequence as input
@@ -521,7 +523,6 @@ get_start_ind <- function(seq_vector, length_vector, maxlen,
 #' Helper function for get_start_ind, extracts the start positions of all potential samples (considering step size and vocabulary)
 #'
 #' @param seq Sequences.
-#' @param length_vector Length of sequences in \code{seq_vector}.
 #' @param maxlen Length of one sample.
 #' @param step How often to take a sample.
 #' @param vocabulary Vector of allowed characters in samples.
@@ -581,7 +582,6 @@ start_ind_ignore_amb_single_seq <- function(seq, maxlen, step, vocabulary, train
 #' Helper function for get_start_ind, extracts the start positions of all potential samples (considering step size and vocabulary)
 #'
 #' @param seq_vector Vector of character sequences.
-#' @param length_vector Length of sequences in \code{seq_vector}.
 #' @param maxlen Length of one sample.
 #' @param step How often to take a sample.
 #' @param vocabulary Vector of allowed characters in samples.
@@ -763,7 +763,7 @@ count_nuc <- function(path,
         fasta.file <- microseq::readFastq(i)
       }
       df <- data.frame(Header = fasta.file$Header, freq = nchar(fasta.file$Sequence))
-      df <- aggregate(df$freq, by = list(Category = df$Header), FUN = sum)
+      df <- stats::aggregate(df$freq, by = list(Category = df$Header), FUN = sum)
       freq <- df$x
       names(freq) <- df$Category
       for (k in names(freq)) {
@@ -775,9 +775,9 @@ count_nuc <- function(path,
   # label csv
   if (train_type == "label_csv") {
     
-    label_csv <- read.csv2(csv_path, header = TRUE, stringsAsFactors = FALSE)
+    label_csv <- utils::read.csv2(csv_path, header = TRUE, stringsAsFactors = FALSE)
     if (dim(label_csv)[2] == 1) {
-      label_csv <- read.csv(csv_path, header = TRUE, stringsAsFactors = FALSE)
+      label_csv <- utils::read.csv(csv_path, header = TRUE, stringsAsFactors = FALSE)
     }
     if (!("file" %in% names(label_csv))) {
       stop('csv file needs one column named "file"')
@@ -887,9 +887,9 @@ read_fasta_fastq <- function(format, skip_amb_nuc, file_index, pattern, shuffle_
 
 input_from_csv <- function(added_label_path) {
   .datatable.aware = TRUE
-  label_csv <- read.csv2(added_label_path, header = TRUE, stringsAsFactors = FALSE)
+  label_csv <- utils::read.csv2(added_label_path, header = TRUE, stringsAsFactors = FALSE)
   if (dim(label_csv)[2] == 1) {
-    label_csv <- read.csv(added_label_path, header = TRUE, stringsAsFactors = FALSE)
+    label_csv <- utils::read.csv(added_label_path, header = TRUE, stringsAsFactors = FALSE)
   }
   label_csv <- data.table::as.data.table(label_csv)
   label_csv$file <- stringr::str_to_lower(as.character(label_csv$file))
@@ -921,7 +921,7 @@ input_from_csv <- function(added_label_path) {
   return(list(label_csv = label_csv, col_name = col_name))
 }
 
-#' @import data.table
+#' @rawNamespace import(data.table, except = c(first, last, between))
 csv_to_tensor <- function(label_csv, added_label_vector, added_label_by_header, batch_size,
                           start_index_list) {
   .datatable.aware = TRUE
@@ -945,7 +945,7 @@ csv_to_tensor <- function(label_csv, added_label_vector, added_label_by_header, 
       samples_per_file <- length(start_index_list[[i]])
       assign_rows <-  row_index:(row_index + samples_per_file - 1)
       
-      if (nrow(na.omit(label_from_csv)) > 0) {
+      if (nrow(stats::na.omit(label_from_csv)) > 0) {
         label_tensor[assign_rows, ] <- matrix(as.matrix(label_from_csv[1, ]),
                                               nrow = samples_per_file, ncol = ncol(label_tensor), byrow = TRUE)
       }
@@ -991,15 +991,15 @@ count_files <- function(path, format = "fasta", train_type,
   
   num_files <- rep(0, length(path))
   if (!is.null(target_from_csv) & train_type == "label_csv") {
-    target_files <- read.csv(target_from_csv)
-    if (ncol(target_files) == 1) target_files <- read.csv2(target_from_csv)
+    target_files <- utils::read.csv(target_from_csv)
+    if (ncol(target_files) == 1) target_files <- utils::read.csv2(target_from_csv)
     target_files <- target_files$file
     # are files given with absolute path
     full.names <- ifelse(dirname(target_files[1]) == ".", FALSE, TRUE) 
   }  
   if (!is.null(train_val_split_csv)) {
-    tvt_files <- read.csv(train_val_split_csv)
-    if (ncol(tvt_files) == 1) tvt_files <- read.csv2(train_val_split_csv)
+    tvt_files <- utils::read.csv(train_val_split_csv)
+    if (ncol(tvt_files) == 1) tvt_files <- utils::read.csv2(train_val_split_csv)
     train_index <- tvt_files$type == "train"
     tvt_files <- tvt_files$file
     target_files <- intersect(tvt_files[train_index], target_files)
@@ -1267,6 +1267,7 @@ create_conf_mat_obj <- function(m, confMatLabels) {
 #' @param voc_size Size of vocabulary.
 #' @examples
 #' int_to_n_gram(int_seq = c(1,1,2,4,4), n = 2, voc_size = 4)
+#' 
 #' @export
 int_to_n_gram <- function(int_seq, n, voc_size = 4) {
   
@@ -1301,6 +1302,7 @@ int_to_n_gram <- function(int_seq, n, voc_size = 4) {
 #' x <- c(0,0,1,3,3) 
 #' input_matrix <- keras::to_categorical(x, 4)
 #' n_gram_of_matrix(input_matrix, n = 2) 
+#' 
 #' @export
 n_gram_of_matrix <- function(input_matrix, n = 3) {
   voc_len <- ncol(input_matrix)^n
@@ -1351,6 +1353,24 @@ n_gram_vocabulary <- function(n_gram = 3, vocabulary = c("A", "C", "G", "T")) {
 #' @param target_folder Directory for output.
 #' @param shuffle_entries Whether to shuffle fasta entries before split.
 #' @param delete_input Whether to delete the original file.
+#' @examples
+#' path_input <- tempfile(fileext = '.fasta')
+#' create_dummy_data(file_path = path_input,
+#'                   num_files = 1,
+#'                   write_to_file_path = TRUE,
+#'                   seq_length = 7,
+#'                   num_seq = 25,
+#'                   vocabulary = c("a", "c", "g", "t"))
+#' target_folder <- tempfile()
+#' dir.create(target_folder)
+#' 
+#' # split 25 entries into 5 files
+#' split_fasta(path_input = path_input,
+#'             target_folder = target_folder,
+#'             split_n = 5)
+#' length(list.files(target_folder)) 
+#' 
+#' 
 #' @export
 split_fasta <- function(path_input,
                         target_folder,

@@ -41,6 +41,8 @@ See \code{\link{train_model}}. Note that \code{"discard"} option is not availabl
 
 \item{quality_vector}{Vector of quality probabilities.}
 
+\item{return_int}{Whether to return integer encoding or one-hot encoding.}
+
 \item{target_len}{Number of nucleotides to predict at once for language model.}
 
 \item{use_coverage}{Integer or \code{NULL}. If not \code{NULL}, use coverage as encoding rather than one-hot encoding and normalize.

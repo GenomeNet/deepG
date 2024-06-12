@@ -193,14 +193,15 @@ test_that("Checking the generator for the Fasta files", {
   ############# Test label generator (folder) #############
   directories <- c("label_folder/x", "label_folder/y", "label_folder/z")
   val <- FALSE
-  generator_initialize(directories = directories,
-                       format = "fasta",
-                       batch_size = 6,
-                       maxlen = 2,
-                       vocabulary = c("a", "c", "g", "t"),
-                       step = 2)
+  gen_list <- generator_initialize(directories = directories,
+                                   val = val,
+                                   format = "fasta",
+                                   batch_size = 6,
+                                   maxlen = 2,
+                                   vocabulary = c("a", "c", "g", "t"),
+                                   step = 2)
   
-  gen <- generator_fasta_label_folder_wrapper(val = val, path = directories)
+  gen <- generator_fasta_label_folder_wrapper(val = val, path = directories, gen_list = gen_list)
   arrays <- gen()
   expect_equivalent(arrays[[1]][1, 1,  ], c(1, 0, 0, 0))
   expect_equivalent(arrays[[1]][1, 2,  ], c(0, 1, 0, 0)) 
@@ -352,7 +353,9 @@ test_that("Checking the generator for the Fasta files", {
   # label folder
   
   directories = c("fasta_2", "fasta_3")
-  generator_initialize(directories = directories,
+  gen <- get_generator(val = FALSE,
+                       train_type = "label_folder",
+                       path = directories,
                        format = "fasta",
                        batch_size = 6,
                        maxlen = 3,
@@ -361,7 +364,6 @@ test_that("Checking the generator for the Fasta files", {
                        reverse_complement = FALSE, 
                        step = 2)
   
-  gen <- generator_fasta_label_folder_wrapper(val = FALSE, path = directories)
   arrays <- gen()
   
   expect_equivalent(arrays[[1]][1, 1,  ], c(1, 0, 0, 0))
@@ -455,7 +457,9 @@ test_that("Checking the generator for the Fasta files", {
   # label folder
   
   directories = c("fasta_2", "fasta_3")
-  generator_initialize(directories = directories,
+  gen <- get_generator(train_type = "label_folder",
+                       val = FALSE,
+                       path = directories,
                        format = "fasta",
                        batch_size = 4,
                        maxlen = 3,
@@ -464,7 +468,6 @@ test_that("Checking the generator for the Fasta files", {
                        ambiguous_nuc = "equal",
                        step = 2)
   
-  gen <- generator_fasta_label_folder_wrapper(val = FALSE, path = directories)
   arrays <- gen()
   
   expect_equivalent(arrays[[1]][1, 1,  ], c(1, 0, 0, 0))
@@ -589,7 +592,9 @@ test_that("Checking the generator for the Fasta files", {
   # label folder
   
   directories = c("fasta_2", "fasta_3")
-  generator_initialize(directories = directories,
+  gen <- get_generator(path = directories,
+                       val = FALSE,
+                       train_type = "label_folder",
                        format = "fasta",
                        batch_size = 4,
                        maxlen = 3,
@@ -598,7 +603,6 @@ test_that("Checking the generator for the Fasta files", {
                        ambiguous_nuc = "empirical",
                        step = 2)
   
-  gen <- generator_fasta_label_folder_wrapper(val = FALSE, path = directories)
   arrays <- gen()
   nuc_dist <- 1/18*c(8, 2, 3, 5)
   
@@ -716,7 +720,10 @@ test_that("Checking the generator for the Fasta files", {
   ############# padding/amb nucleotide, label_folder ############
   
   directories = c("fasta_2", "fasta_3")
-  generator_initialize(directories = directories,
+  gen <- get_generator(path = directories,
+                       val = FALSE,
+                       train_type = "label_folder",
+                       padding = TRUE,
                        format = "fasta",
                        batch_size = 6,
                        maxlen = 15,
@@ -726,7 +733,6 @@ test_that("Checking the generator for the Fasta files", {
                        step = 1)
   
   equal_vector <- rep(0.25, 4)
-  gen <- generator_fasta_label_folder_wrapper(val = FALSE, path = directories)
   arrays <- gen()
   
   expect_equivalent(arrays[[1]][1, 1,  ], c(0, 0, 0, 0))
@@ -1026,10 +1032,12 @@ test_that("Checking the generator for the Fasta files", {
   # label folder
   
   directories = c("fasta_2", "fasta_3")
-  generator_initialize(directories = directories,
-                       format = "fasta",
+  gen <- get_generator(path = directories,
+                       train_type = "label_folder",
                        batch_size = 20,
                        maxlen = 12,
+                       val = FALSE,
+                       padding = TRUE,
                        ambiguous_nuc = "empirical",
                        vocabulary = c("a", "c", "g", "t"),
                        reverse_complement = FALSE, 
@@ -1037,7 +1045,6 @@ test_that("Checking the generator for the Fasta files", {
   
   nuc_dist_1 <- 1/18*c(8, 2, 3, 5)
   nuc_dist_2 <- 1/17*c(3, 2, 6, 6)
-  gen <- generator_fasta_label_folder_wrapper(val = FALSE, path = directories)
   arrays <- gen()
   
   expect_equivalent(arrays[[1]][9, 1,  ], c(0, 0, 0, 0))
@@ -1356,17 +1363,17 @@ test_that("Checking the generator for the Fasta files", {
   
   # additional input label_folder 
   dir <- c("label_folder/x", "label_folder/y", "label_folder/z")
-  generator_initialize(directories = dir,
-                       format = "fasta",
-                       batch_size = 15,
-                       maxlen = 4,
-                       step = 2, 
-                       val = FALSE,
-                       padding = FALSE,
-                       added_label_path = "label.csv",
-                       add_input_as_seq = FALSE)
+  gen_list <- generator_initialize(directories = dir,
+                                   format = "fasta",
+                                   batch_size = 15,
+                                   maxlen = 4,
+                                   step = 2, 
+                                   val = FALSE,
+                                   padding = FALSE,
+                                   added_label_path = "label.csv",
+                                   add_input_as_seq = FALSE)
   
-  gen <- generator_fasta_label_folder_wrapper(val = FALSE, path = dir) 
+  gen <- generator_fasta_label_folder_wrapper(val = FALSE, path = dir, gen_list = gen_list) 
   arrays <- gen()
   expect_equivalent(arrays[[1]][[1]][1, ], c(1, 0, 0, 0))
   expect_equivalent(arrays[[1]][[1]][2, ], c(1, 0, 0, 0))
@@ -1395,7 +1402,7 @@ test_that("Checking the generator for the Fasta files", {
   expect_equivalent(arrays[[1]][[2]][15, 1, ], c(0, 0, 0, 1))
   expect_equivalent(arrays[[1]][[2]][15, 2, ], c(0, 0, 0, 1))
   
-  gen <- generator_fasta_label_folder_wrapper(val = FALSE, path = dir) 
+  gen <- generator_fasta_label_folder_wrapper(val = FALSE, path = dir, gen_list = gen_list) 
   arrays <- gen()
   expect_equivalent(arrays[[1]][[1]][1, ], c(1, 0, 0, 1))
   expect_equivalent(arrays[[1]][[1]][2, ], c(1, 0, 0, 1))
@@ -1417,11 +1424,11 @@ test_that("Checking the generator for the Fasta files", {
   
   ## read data with quality and 2 classes
   
-  generator_initialize(directories = c("read_data_2/label_a", "read_data_2/label_b"),
+  gen <- get_generator(path = c("read_data_2/label_a", "read_data_2/label_b"),
+                       train_type = "label_folder",
                        format = "fastq",
                        batch_size = 4,
                        maxlen = 12,
-                       max_iter = 10000,
                        vocabulary = c("a", "c", "g", "t"),
                        verbose = FALSE,
                        shuffle_file_order = FALSE,
@@ -1434,14 +1441,12 @@ test_that("Checking the generator for the Fasta files", {
                        val = FALSE,
                        ambiguous_nuc = "zero",
                        proportion_per_seq = NULL,
-                       target_middle = FALSE,
                        read_data = TRUE,
                        use_quality_score = TRUE,
                        padding = FALSE,
                        added_label_path = NULL,
                        skip_amb_nuc = NULL)
   
-  gen <- generator_fasta_label_folder_wrapper(val = FALSE, path = c("/read_data_2/label_a", "/read_data_2/label_b"))
   arrays <- gen()
   
   a <- create_quality_vector(prob = quality_to_probability("J") , pos = 1, voc_length = 4)
@@ -1603,7 +1608,8 @@ test_that("Checking the generator for the Fasta files", {
   ## 2 added input files, label_folder 
   
   dir <- c("label_folder/x", "label_folder/y", "label_folder/z")
-  generator_initialize(directories = dir,
+  gen <- get_generator(path = dir,
+                       train_type = "label_folder",
                        format = "fasta",
                        batch_size = 15,
                        maxlen = 4,
@@ -1642,7 +1648,7 @@ test_that("Checking the generator for the Fasta files", {
                   0, 1, 0, 0,
                   0, 0, 1, 0), byrow = TRUE, ncol = 4)
   
-  mz1 <- matrix(c(0, 0, 1, 0, 
+  mz1 <- matrix(c(0, 0, 1, 0,
                   0, 0, 1, 0,
                   0, 0, 1, 0,
                   0, 0, 1, 0), byrow = TRUE, ncol = 4)
@@ -1652,7 +1658,6 @@ test_that("Checking the generator for the Fasta files", {
                   0, 0, 1, 0,
                   0, 0, 0, 1), byrow = TRUE, ncol = 4)
   
-  gen <- generator_fasta_label_folder_wrapper(val = FALSE, path = dir) 
   arrays <- gen()
   
   expect_equivalent(arrays[[1]][[1]][1, ], x1)
@@ -1904,7 +1909,7 @@ test_that("Checking the generator for the Fasta files", {
   val <- FALSE
   batch_size <- 6
   samples_per_target <- 3
-  new_batch_size <- batch_size/samples_per_target
+  #new_batch_size <- batch_size/samples_per_target
   path <- directories
   voc_len <- 4
   maxlen <- 7
@@ -1913,7 +1918,10 @@ test_that("Checking the generator for the Fasta files", {
                        maxlen = maxlen,
                        samples_per_target = samples_per_target)
   
-  generator_initialize(directories = directories,
+  gen <- get_generator(path = directories,
+                       train_type = "label_folder",
+                       val = FALSE,
+                       padding = TRUE,
                        format = "fasta",
                        batch_size = batch_size,
                        maxlen = maxlen,
@@ -1921,10 +1929,6 @@ test_that("Checking the generator for the Fasta files", {
                        step = 4,
                        use_coverage = 1,
                        set_learning = set_learning)
-  
-  gen <- generator_fasta_label_folder_wrapper(val = val, new_batch_size = new_batch_size,
-                                              batch_size = batch_size, set_learning = set_learning,
-                                              path = path, voc_len = voc_len, maxlen = maxlen)
   
   arrays <- gen()
   expect_equivalent(arrays[[1]][1, 1, , ], matrix(
@@ -2065,7 +2069,7 @@ test_that("Checking the generator for the Fasta files", {
   val <- FALSE
   batch_size <- 6
   samples_per_target <- 3
-  new_batch_size <- batch_size/samples_per_target
+  #new_batch_size <- batch_size/samples_per_target
   path <- directories
   voc_len <- 4
   maxlen <- 7
@@ -2075,7 +2079,10 @@ test_that("Checking the generator for the Fasta files", {
                        maxlen = maxlen,
                        samples_per_target = samples_per_target)
   
-  generator_initialize(directories = directories,
+  gen <- get_generator(path = directories,
+                       train_type = "label_folder",
+                       val = FALSE,
+                       padding = TRUE,
                        format = "fasta",
                        batch_size = batch_size,
                        maxlen = maxlen,
@@ -2083,10 +2090,6 @@ test_that("Checking the generator for the Fasta files", {
                        step = 4,
                        use_coverage = use_coverage,
                        set_learning = set_learning)
-  
-  gen <- generator_fasta_label_folder_wrapper(val = val, new_batch_size = new_batch_size,
-                                              batch_size = batch_size, set_learning = set_learning,
-                                              path = path, voc_len = voc_len, maxlen = maxlen)
   
   arrays <- gen()
   expect_equivalent(arrays[[1]][1, 1, , ], matrix(
@@ -2310,7 +2313,7 @@ test_that("Checking the generator for the Fasta files", {
   val <- FALSE
   batch_size <- 8
   samples_per_target <- 3
-  new_batch_size <- batch_size/samples_per_target
+  #new_batch_size <- batch_size/samples_per_target
   path <- directories
   voc_len <- 4
   maxlen <- 6
@@ -2322,9 +2325,11 @@ test_that("Checking the generator for the Fasta files", {
                        samples_per_target = samples_per_target)
   buffer_size <- 0
   concat_maxlen <- (maxlen * samples_per_target) + (buffer_size * (samples_per_target - 1))
-  concat_maxlen
   
-  generator_initialize(directories = directories,
+  gen <- get_generator(path = directories,
+                       train_type = "label_folder",
+                       val = FALSE,
+                       padding = TRUE,
                        format = "fasta",
                        batch_size = batch_size,
                        maxlen = maxlen,
@@ -2332,14 +2337,6 @@ test_that("Checking the generator for the Fasta files", {
                        step = maxlen,
                        use_coverage = use_coverage,
                        set_learning = set_learning)
-  
-  gen <- generator_fasta_label_folder_wrapper(val = val, 
-                                              new_batch_size = new_batch_size,
-                                              batch_size = batch_size,
-                                              path = path,
-                                              set_learning = set_learning,
-                                              voc_len = voc_len,
-                                              maxlen = maxlen)
   
   m <- matrix(
     c(0,0,0,0,
@@ -2524,8 +2521,10 @@ test_that("Checking the generator for the Fasta files", {
   # label folder with integer encoding
   
   directories <- c("label_folder/x", "label_folder/y", "label_folder/z")
-  val <- FALSE
-  generator_initialize(directories = directories,
+  gen <- get_generator(path = directories,
+                       train_type = "label_folder",
+                       val = FALSE,
+                       padding = TRUE,
                        format = "fasta",
                        batch_size = 6,
                        maxlen = 2,
@@ -2533,7 +2532,6 @@ test_that("Checking the generator for the Fasta files", {
                        vocabulary = c("a", "c", "g", "t"),
                        step = 2)
   
-  gen <- generator_fasta_label_folder_wrapper(val = val, path = directories)
   arrays <- gen()
   expect_equivalent(arrays[[1]][1, 1], 1)
   expect_equivalent(arrays[[1]][1, 2], 2) 

@@ -19,3 +19,8 @@ If name already present, will add \code{"_2"} to name or \code{"_{x+1}"} if name
 \description{
 Create a confusion matrix to display under tensorboard images.
 }
+\examples{
+cm <- conf_matrix_cb(path_tensorboard = tempfile(), run_name = 'run_1',
+                     confMatLabels = c('label_1', 'label_2'), cm_dir = tempfile())
+
+}

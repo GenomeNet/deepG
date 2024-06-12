@@ -18,6 +18,8 @@ compile_model(
 )
 }
 \arguments{
+\item{model}{A keras model.}
+
 \item{solver}{Optimization method, options are \verb{"adam", "adagrad", "rmsprop"} or \code{"sgd"}.}
 
 \item{learning_rate}{Learning rate for optimizer.}
@@ -43,4 +45,12 @@ If first label contains 5 percent wrong labels and second label no noise, then
 }
 \description{
 Compile model
+}
+\examples{
+model <- create_model_lstm_cnn(layer_lstm = 8, compile = FALSE)
+model <- compile_model(model = model,
+                       solver = 'adam',
+                       learning_rate = 0.01,
+                       loss_fn = 'categorical_crossentropy')
+
 }

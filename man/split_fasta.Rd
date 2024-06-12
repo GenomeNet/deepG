@@ -28,3 +28,22 @@ Returns smaller files with same file name and "_x" (where x is an integer). For 
 assume we have input file called "abc.fasta" with 100 entries and \code{split_n = 50}. Function will
 create two files called "abc_1.fasta" and "abc_2.fasta" in \code{target_path}.
 }
+\examples{
+path_input <- tempfile(fileext = '.fasta')
+create_dummy_data(file_path = path_input,
+                  num_files = 1,
+                  write_to_file_path = TRUE,
+                  seq_length = 7,
+                  num_seq = 25,
+                  vocabulary = c("a", "c", "g", "t"))
+target_folder <- tempfile()
+dir.create(target_folder)
+
+# split 25 entries into 5 files
+split_fasta(path_input = path_input,
+            target_folder = target_folder,
+            split_n = 5)
+length(list.files(target_folder)) 
+
+
+}

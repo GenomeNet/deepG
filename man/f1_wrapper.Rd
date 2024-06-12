@@ -38,4 +38,5 @@ f1_metric <- f1_wrapper(num_targets, loss = model$loss)
 model \%>\% keras::compile(loss = model$loss, 
                          optimizer = model$optimizer,
                          metrics = c(model$metrics, f1_metric))
+                         
 }

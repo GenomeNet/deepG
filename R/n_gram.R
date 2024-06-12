@@ -37,7 +37,7 @@ n_gram_dist <- function(path_input,
     fasta_files <- path_input
   } else {
     fasta_files <- list.files(
-      path = xfun::normalize_path(path_input),
+      path = normalizePath(path_input),
       pattern = paste0("\\.", format, "$"),
       full.names = TRUE)
     num_files <- length(fasta_files)
@@ -205,7 +205,7 @@ predict_with_n_gram <- function(path_input, distribution_matrix, default_pred = 
     fasta_files <- path_input
   } else {
     fasta_files <- list.files(
-      path = xfun::normalize_path(path_input),
+      path = normalizePath(path_input),
       pattern = paste0("\\.", format, "$"),
       full.names = TRUE)
     num_files <- length(fasta_files)
@@ -255,7 +255,7 @@ predict_with_n_gram <- function(path_input, distribution_matrix, default_pred = 
                           target_pos = start_ind + n)
     
     # remove sequences with ambiguous nucleotides
-    gram_df <- gram_df[complete.cases(gram_df), ]
+    gram_df <- gram_df[stats::complete.cases(gram_df), ]
     
     pred_df <- dplyr::left_join(gram_df, model, by = "gram")
     names(pred_df)[2] <- "true"

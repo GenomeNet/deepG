@@ -54,11 +54,14 @@ argument \code{layer_name}. Can be used to have shared dense layers, before mode
 
 \item{compile}{Boolean, whether to compile the new model.}
 
-\item{learning_rate}{Learning rate if \code{compile = TRUE}, default learning rate of the old model}
+\item{learning_rate}{Learning rate if \code{compile = TRUE}, default learning rate of the old model.}
 
 \item{solver}{Optimization method, options are \verb{"adam", "adagrad", "rmsprop"} or \code{"sgd"}.}
 
-\item{global_pooling}{"max_ch_first" for global max pooling with channel first (\href{https://keras.io/api/layers/pooling_layers/global_average_pooling1d/}{keras docs}),
+\item{flatten}{Whether to add flatten layer before new dense layers.}
+
+\item{global_pooling}{"max_ch_first" for global max pooling with channel first
+(\href{https://keras.io/api/layers/pooling_layers/global_average_pooling1d/}{keras docs}),
 "max_ch_last" for global max pooling with channel last, "average_ch_first" for global average pooling with channel first,
 "average_ch_last" for global average pooling with channel last or \code{NULL} for no global pooling.
 "both_ch_first" or "both_ch_last" to combine average and max pooling. "all" for all 4 options at once.}
@@ -86,11 +89,13 @@ layer_name <- model_1$get_config()$layers[[num_layers-1]]$name
 model_2 <- remove_add_layers(model = model_1,
                              layer_name = layer_name,
                              dense_layers = list(c(32, 16, 1), c(8, 1), c(12, 5)),
-                             losses = list("binary_crossentropy", "mae", "categorical_crossentropy"),
+                             losses = list("binary_crossentropy", "mae",
+                                           "categorical_crossentropy"),
                              last_activation = list("sigmoid", "linear", "softmax"),
                              freeze_base_model = TRUE,
                              output_names = list("out_1_binary_classsification", 
                                                  "out_2_regression", 
                                                  "out_3_classification")
 ) 
+
 }

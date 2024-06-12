@@ -107,7 +107,7 @@ activation and multiple targets.}
 to evaluate a data set exactly ones and know the number of samples already. Should be a vector if \code{mode = "label_folder"} (with same length as \code{vocabulary_label})
 and else an integer.}
 
-\item{activations}{List containing output formats for output layers (\verb{softmax, sigmoid} or \code{linear}). If \code{ǸULL}, will be estimated from model.}
+\item{activations}{List containing output formats for output layers (\verb{softmax, sigmoid} or \code{linear}). If \code{NULL}, will be estimated from model.}
 
 \item{shuffle_file_order}{Logical, whether to go through files randomly or sequentially.}
 

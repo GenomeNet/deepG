@@ -22,8 +22,6 @@ start_ind_ignore_amb_single_seq(
 \item{vocabulary}{Vector of allowed characters in samples.}
 
 \item{train_mode}{"lm" or "label".}
-
-\item{length_vector}{Length of sequences in \code{seq_vector}.}
 }
 \description{
 Helper function for get_start_ind, extracts the start positions of all potential samples (considering step size and vocabulary)

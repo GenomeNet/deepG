@@ -26,4 +26,5 @@ model_1 <-  create_model_lstm_cnn(
   layer_dense = c(64, 2))
 model <- reshape_input(model_1, input_shape = c(120, 4))
 model
+
 }

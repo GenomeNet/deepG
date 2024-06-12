@@ -3,6 +3,13 @@
 #' Log information about model, hyperparameters, generator options, training data, scores etc 
 #'
 #' @param model_card_path Directory for model card logs.
+#' @param run_name Name of training run.
+#' @param argumentList List of training arguments.
+#' @examples
+#' model_card_cb <- function(model_card_path = NULL, run_name, argumentList)
+#' mc <- model_card_cb(model_card_path = tempdir(), run_name = 'run_1',
+#'                     argumentList = list(learning_rate = 0.01)) 
+#' 
 #' @export
 model_card_cb <- function(model_card_path = NULL, run_name, argumentList) {
   
@@ -87,6 +94,9 @@ model_card_cb <- function(model_card_path = NULL, run_name, argumentList) {
 #' Stop training after specified time.
 #'
 #' @param stop_time Time in seconds after which to stop training.
+#' @examples
+#' est <- early_stopping_time_cb(stop_time = 60)
+#' 
 #' @export
 early_stopping_time_cb <- function(stop_time = NULL) {
   
@@ -119,7 +129,7 @@ early_stopping_time_cb <- function(stop_time = NULL) {
 #' @param early_stopping_patience Stop training if val_loss does not improve for \code{early_stopping_patience}.
 #' @param by_time Whether to use time or patience as metric.
 #' @keywords internal
-early_stopping_cb <- function(early_stopping_patience, early_stopping_time, by_time = TRUE) {
+early_stopping_cb <- function(early_stopping_patience = 0, early_stopping_time, by_time = TRUE) {
   
   if (by_time) {
     early_stopping_time_cb(stop_time = early_stopping_time)
@@ -213,7 +223,7 @@ checkpoint_cb <- function(filepath_checkpoints,
                                    }
                                    
                                  ))
-
+    
     return(cp_cb(filepath_checkpoints = filepath_checkpoints,
                  save_freq = save_best_only$save_freq,
                  save_weights_only = save_weights_only))
@@ -280,7 +290,7 @@ hyper_param_model_outside_cb <- function(path_tensorboard, run_name, wavenet_for
 #'
 #' @inheritParams train_model
 #' @keywords internal
-hyper_param_with_model_cb <- function(default_arguments, model, path_tensorboard, run_name, train_type, path_model, path, train_val_ratio, batch_size,
+hyper_param_with_model_cb <- function(default_arguments, model, path_tensorboard, run_name, train_type, path, train_val_ratio, batch_size,
                                       epochs, max_queue_size, lr_plateau_factor,
                                       patience, cooldown, steps_per_epoch, step, shuffle_file_order, initial_epoch, vocabulary, learning_rate,
                                       shuffle_input, vocabulary_label, solver, file_limit, reverse_complement, wavenet_format, cnn_format) {
@@ -299,7 +309,7 @@ hyper_param_with_model_cb <- function(default_arguments, model, path_tensorboard
   learning_rate <- keras::k_eval(model$optimizer$lr)
   solver <- stringr::str_to_lower(model$optimizer$get_config()["name"])
   
-  train_hparam_names <- c("train_type", "path_model", "path", "train_val_ratio", "run_name", "batch_size", "epochs", "max_queue_size", "lr_plateau_factor",
+  train_hparam_names <- c("train_type", "path", "train_val_ratio", "run_name", "batch_size", "epochs", "max_queue_size", "lr_plateau_factor",
                           "patience", "cooldown", "steps_per_epoch", "step", "shuffle_file_order", "initial_epoch", "vocabulary", "learning_rate",
                           "shuffle_input", "vocabulary_label", "solver", "file_limit", "reverse_complement", "wavenet_format", "cnn_format")
   train_hparam <- vector("list")
@@ -343,18 +353,18 @@ tensorboard_cb <- function(path_tensorboard, run_name) {
 #' 
 #' @inheritParams train_model
 #' @param argumentList List of function arguments.
-#' @export
+#' @keywords internal
 function_args_cb <- function(argumentList, path_tensorboard, run_name) {
   
   argAsChar <- as.character(argumentList)
   argText <- vector("character")
   if (length(argumentList$path) > 1) {
     
-    argsInQuotes <- c("path_model", "path_checkpoint", "run_name", "solver", "format", "output_format",
+    argsInQuotes <- c("path_checkpoint", "run_name", "solver", "format", "output_format",
                       "path_tensorboard", "path_file_log", "train_type", "ambiguous_nuc", "added_label_path", "added_label_names",
                       "train_val_split_csv", "target_from_csv")
   } else {
-    argsInQuotes <- c("path_model", "path", "path_val", "path_checkpoint", "run_name", "solver", "output_format",
+    argsInQuotes <- c("path", "path_val", "path_checkpoint", "run_name", "solver", "output_format",
                       "path_tensorboard", "path_file_log", "train_type", "ambiguous_nuc", "format", "added_label_path", "added_label_names",
                       "train_val_split_csv", "target_from_csv")
   }
@@ -398,7 +408,7 @@ function_args_cb <- function(argumentList, path_tensorboard, run_name) {
 #'
 #' @inheritParams train_model
 #' @keywords internal
-tensorboard_complete_cb <- function(default_arguments, model, path_tensorboard, run_name, train_type, path_model, path, train_val_ratio, batch_size,
+tensorboard_complete_cb <- function(default_arguments, model, path_tensorboard, run_name, train_type, path, train_val_ratio, batch_size,
                                     epochs, max_queue_size, lr_plateau_factor, patience, cooldown, steps_per_epoch, step, shuffle_file_order, initial_epoch, vocabulary, learning_rate,
                                     shuffle_input, vocabulary_label, solver, file_limit, reverse_complement, wavenet_format, cnn_format, create_model_function, vocabulary_size, gen_cb,
                                     argumentList, maxlen, labelGen, labelByFolder, vocabulary_label_size, tb_images = FALSE, stateful, target_middle, num_train_files, path_file_log,
@@ -444,7 +454,7 @@ tensorboard_complete_cb <- function(default_arguments, model, path_tensorboard, 
                                                             if (is.null(self$proportion_entries)) self$proportion_entries <- 1
                                                             file.writer <- tensorflow::tf$summary$create_file_writer(file.path(self$path_tensorboard, self$run_name))
                                                             file.writer$set_as_default()
-                                                            files_used <- read.csv(self$path_file_log, stringsAsFactors = FALSE, header = FALSE)
+                                                            files_used <- utils::read.csv(self$path_file_log, stringsAsFactors = FALSE, header = FALSE)
                                                             if (self$train_type == "label_folder") {
                                                               if (self$first_epoch) {
                                                                 if (length(self$step) == 1) self$step <- rep(self$step, length(vocabulary_label))
@@ -526,6 +536,9 @@ tensorboard_complete_cb <- function(default_arguments, model, path_tensorboard, 
 #' 
 #' @param path_file_log Path to log of training files.
 #' @param path_file_logVal  Path to log of validation files.
+#' @examples
+#' rs <- reset_states_cb(path_file_log = tempfile(), path_file_logVal = tempfile())
+#' 
 #' @export
 reset_states_cb <- function(path_file_log, path_file_logVal) {
   
@@ -580,6 +593,12 @@ reset_states_cb <- function(path_file_log, path_file_logVal) {
 #' 
 #' @param gen.val Validation generator
 #' @param validation_steps Number of validation steps.
+#' @examples
+#' maxlen <- 20
+#' model <- create_model_lstm_cnn(layer_lstm = 8, maxlen = maxlen)
+#' gen <- get_generator(train_type = 'dummy_gen', model = model, batch_size = 4, maxlen = maxlen)
+#' vat <- validation_after_training_cb(gen.val = gen, validation_steps = 10)
+#' 
 #' @export
 validation_after_training_cb <- function(gen.val, validation_steps) {
   
@@ -620,6 +639,10 @@ validation_after_training_cb <- function(gen.val, validation_steps) {
 #' @inheritParams train_model
 #' @param confMatLabels Names of classes.
 #' @param cm_dir Directory that contains confusion matrix files.
+#' @examples
+#' cm <- conf_matrix_cb(path_tensorboard = tempfile(), run_name = 'run_1',
+#'                      confMatLabels = c('label_1', 'label_2'), cm_dir = tempfile())
+#' 
 #' @export
 conf_matrix_cb <- function(path_tensorboard, run_name, confMatLabels, cm_dir) {
   
@@ -649,7 +672,7 @@ conf_matrix_cb <- function(path_tensorboard, run_name, confMatLabels, cm_dir) {
                                                    },
                                                    
                                                    on_epoch_begin = function(self, epoch, logs) {
-                                                     suppressMessages(library(yardstick))
+                                                     #suppressMessages(library(yardstick))
                                                      if (epoch > 0) {
                                                        
                                                        cm_train <- readRDS(file.path(self$cm_dir, paste0("cm_train_", epoch-1, ".rds")))
@@ -839,14 +862,14 @@ conf_matrix_cb <- function(path_tensorboard, run_name, confMatLabels, cm_dir) {
 
 
 get_callbacks <- function(default_arguments, model, path_tensorboard, run_name, train_type,
-                          path_model, path, train_val_ratio, batch_size, epochs, format,
+                          path, train_val_ratio, batch_size, epochs, format,
                           max_queue_size, lr_plateau_factor, patience, cooldown, path_checkpoint,
                           steps_per_epoch, step, shuffle_file_order, initial_epoch, vocabulary,
                           learning_rate, shuffle_input, vocabulary_label, solver, dataset_val,
                           file_limit, reverse_complement, wavenet_format, cnn_format,
                           create_model_function = NULL, vocabulary_size, gen_cb, argumentList,
                           maxlen, labelGen, labelByFolder, vocabulary_label_size, tb_images,
-                          target_middle, path_file_log, proportion_per_seq,
+                          target_middle, path_file_log, proportion_per_seq, validation_steps,
                           train_val_split_csv, n_gram, path_file_logVal, model_card,
                           skip_amb_nuc, max_samples, proportion_entries, path_log, output,
                           train_with_gen, random_sampling, reduce_lr_on_plateau,
@@ -909,7 +932,7 @@ get_callbacks <- function(default_arguments, model, path_tensorboard, run_name, 
     if (train_with_gen) {
       num_targets <- ifelse(train_type == "lm", length(vocabulary), length(vocabulary_label))
     } else {
-      num_targets <- dim(dataset$Y)[2]
+      num_targets <- dim(dataset_val$Y)[2]
     }
     contains_macro_acc_metric <- FALSE
     for (i in 1:length(model$metrics)) {
@@ -947,7 +970,7 @@ get_callbacks <- function(default_arguments, model, path_tensorboard, run_name, 
     }
     
     complete_tb <- tensorboard_complete_cb(default_arguments = default_arguments, model = model, path_tensorboard = path_tensorboard, run_name = run_name, train_type = train_type,
-                                           path_model = path_model, path = path, train_val_ratio = train_val_ratio, batch_size = batch_size, epochs = epochs,
+                                           path = path, train_val_ratio = train_val_ratio, batch_size = batch_size, epochs = epochs,
                                            max_queue_size = max_queue_size, lr_plateau_factor = lr_plateau_factor, patience = patience, cooldown = cooldown,
                                            steps_per_epoch = steps_per_epoch, step = step, shuffle_file_order = shuffle_file_order, initial_epoch = initial_epoch, vocabulary = vocabulary,
                                            learning_rate = learning_rate, shuffle_input = shuffle_input, vocabulary_label = vocabulary_label, solver = solver,
@@ -966,7 +989,7 @@ get_callbacks <- function(default_arguments, model, path_tensorboard, run_name, 
       # can only save weights for wavenet
       save_weights_only <- TRUE
     }
-    callbacks <- c(callbacks, checkpoint_cb(filepath = filepath_checkpoints, save_weights_only = save_weights_only,
+    callbacks <- c(callbacks, checkpoint_cb(filepath_checkpoints = filepath_checkpoints, save_weights_only = save_weights_only,
                                             save_best_only = save_best_only))
     callback_names <- c(callback_names, "checkpoint")
   }
@@ -977,8 +1000,7 @@ get_callbacks <- function(default_arguments, model, path_tensorboard, run_name, 
   }
   
   if (!is.null(early_stopping_time)) {
-    callbacks <- c(callbacks, early_stopping_cb(early_stopping_patience = early_stopping_patience,
-                                                early_stopping_time = early_stopping_time))
+    callbacks <- c(callbacks, early_stopping_cb(early_stopping_time = early_stopping_time))
     callback_names <- c(callback_names, "early_stopping")
   }
   

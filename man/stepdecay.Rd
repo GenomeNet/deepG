@@ -18,3 +18,8 @@ stepdecay(lrmax = 0.005, newstep = 50, mult = 0.7, epoch = NULL)
 \description{
 Compute the learning Rate for a given epoch using Step Decay.
 }
+\examples{
+stepdecay(lrmax = 0.005, newstep = 50,
+mult = 0.7, epoch = 3)
+
+}

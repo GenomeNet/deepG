@@ -8,7 +8,7 @@
 character 326.73 kB
 }
 \usage{
-ecoli_small
+data(ecoli_small)
 }
 \description{
 Subset of the E. coli genome for evaluation.

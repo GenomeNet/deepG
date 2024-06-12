@@ -47,4 +47,5 @@ model <- merge_models(models = list(model_1, model_2),
                       layer_names = c(layer_name_1, layer_name_2),
                       layer_dense = c(6, 2), 
                       freeze_base_model = c(FALSE, FALSE)) 
+                      
 }

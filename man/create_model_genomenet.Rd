@@ -18,6 +18,7 @@ create_model_genomenet(
   dense_layer_num = 1,
   dense_layer_units = 100,
   dropout_lstm = 0,
+  dropout = 0,
   batch_norm_momentum = 0.8,
   leaky_relu_alpha = 0,
   dense_activation = "relu",
@@ -36,6 +37,8 @@ create_model_genomenet(
   auc_metric = FALSE,
   num_targets = 2,
   model_seed = NULL,
+  bal_acc = FALSE,
+  f1_metric = FALSE,
   mixed_precision = FALSE,
   mirrored_strategy = NULL
 )
@@ -44,10 +47,38 @@ create_model_genomenet(
 \item{maxlen}{(integer \code{numeric(1)})\cr
 Input sequence length.}
 
+\item{learning_rate}{(\code{numeric(1)})\cr
+Used by the \code{keras} optimizer that is specified by \code{optimizer}.}
+
 \item{number_of_cnn_layers}{(integer \code{numeric(1)})\cr
 Target number of CNN-layers to use in total. If \code{number_of_cnn_layers} is
 greater than \code{conv_block_count}, then the effective number of CNN layers
 is set to the closest integer that is divisible by \code{conv_block_count}.}
+
+\item{conv_block_count}{(integer \code{numeric(1)})\cr
+Number of convolutional blocks, into which the CNN layers are divided.
+If this is greater than \code{number_of_cnn_layers}, then it is set to
+\code{number_of_cnn_layers} (the convolutional block size will then be 1).\cr
+Convolutional blocks are used when \code{model_type} is \code{"gap"} (the output of
+the last \code{conv_block_count * (1 - skip_block_fraction)} blocks is
+fed to global average pooling and then concatenated), and also when
+\code{residual_block} is \code{TRUE} (the number of filters is held constant within
+blocks). If neither of these is the case, \code{conv_block_count} has little
+effect besides the fact that \code{number_of_cnn_layers} is set to the closest
+integer divisible by \code{conv_block_count}.}
+
+\item{kernel_size_0}{(\code{numeric(1)})\cr
+Target CNN kernel size of the first CNN-layer. Although CNN kernel size is
+always an integer, this value can be non-integer, potentially affecting
+the kernel-sizes of intermediate layers (which are geometrically
+interpolated between \code{kernel_size_0} and \code{kernel_size_end}).}
+
+\item{kernel_size_end}{(\code{numeric(1)})\cr
+Target CNN kernel size of the last CNN-layer; ignored if only one
+CNN-layer is used (i.e. if \code{number_of_cnn_layers} is 1). Although CNN
+kernel size is always an integer, this value can be non-integer,
+potentially affecting the kernel-sizes of intermediate layers (which are
+geometrically interpolated between \code{kernel_size_0} and \code{kernel_size_end}).}
 
 \item{filters_0}{(\code{numeric(1)})\cr
 Target filter number of the first CNN-layer. Although CNN filter number is
@@ -92,6 +123,11 @@ layer.}
 
 \item{dense_layer_units}{(integer \code{numeric(1)})\cr
 Number of units in each dense layer, except for the output layer.}
+
+\item{dropout_lstm}{Fraction of the units to drop for inputs.}
+
+\item{dropout}{(\code{numeric(1)})\cr
+Dropout rate of dense layers, except for the output layer.}
 
 \item{batch_norm_momentum}{(\code{numeric(1)})\cr
 \code{momentum}-parameter of \code{layer_batch_normalization} layers used in the
@@ -139,6 +175,10 @@ Only used when \code{model_type} is \code{"recurrent"}.}
 Number of units in each recurrent layer.
 Only used when \code{model_type} is \code{"recurrent"}.}
 
+\item{vocabulary_size}{(integer \code{numeric(1)})\cr
+Vocabulary size of (one-hot encoded) input strings. This determines the
+input tensor shape, together with \code{maxlen}.}
+
 \item{last_layer_activation}{Either \code{"sigmoid"} or \code{"softmax"}.}
 
 \item{loss_fn}{Either \code{"categorical_crossentropy"} or \code{"binary_crossentropy"}. If \code{label_noise_matrix} given, will use custom \code{"noisy_loss"}.}
@@ -148,44 +188,25 @@ Only used when \code{model_type} is \code{"recurrent"}.}
 \item{num_targets}{(integer \code{numeric(1)})\cr
 Number of output units to create.}
 
-\item{learning.rate}{(\code{numeric(1)})\cr
-Used by the \code{keras} optimizer that is specified by \code{optimizer}.}
+\item{model_seed}{Set seed for model parameters in tensorflow if not \code{NULL}.}
 
-\item{`conv_block_count`}{(integer \code{numeric(1)})\cr
-Number of convolutional blocks, into which the CNN layers are divided.
-If this is greater than \code{number_of_cnn_layers}, then it is set to
-\code{number_of_cnn_layers} (the convolutional block size will then be 1).\cr
-Convolutional blocks are used when \code{model_type} is \code{"gap"} (the output of
-the last \code{conv_block_count * (1 - skip_block_fraction)} blocks is
-fed to global average pooling and then concatenated), and also when
-\code{residual_block} is \code{TRUE} (the number of filters is held constant within
-blocks). If neither of these is the case, \code{conv_block_count} has little
-effect besides the fact that \code{number_of_cnn_layers} is set to the closest
-integer divisible by \code{conv_block_count}.}
+\item{bal_acc}{Whether to add balanced accuracy.}
 
-\item{`kernel_size_0`}{(\code{numeric(1)})\cr
-Target CNN kernel size of the first CNN-layer. Although CNN kernel size is
-always an integer, this value can be non-integer, potentially affecting
-the kernel-sizes of intermediate layers (which are geometrically
-interpolated between \code{kernel_size_0} and \code{kernel_size_end}).}
+\item{f1_metric}{Whether to add F1 metric.}
 
-\item{`kernel_size_end`}{(\code{numeric(1)})\cr
-Target CNN kernel size of the last CNN-layer; ignored if only one
-CNN-layer is used (i.e. if \code{number_of_cnn_layers} is 1). Although CNN
-kernel size is always an integer, this value can be non-integer,
-potentially affecting the kernel-sizes of intermediate layers (which are
-geometrically interpolated between \code{kernel_size_0} and \code{kernel_size_end}).}
+\item{mixed_precision}{Whether to use mixed precision (https://www.tensorflow.org/guide/mixed_precision).}
 
-\item{dropout}{(\code{numeric(1)})\cr
-Dropout rate of dense layers, except for the output layer.}
-
-\item{vocabulary.size}{(integer \code{numeric(1)})\cr
-Vocabulary size of (one-hot encoded) input strings. This determines the
-input tensor shape, together with \code{maxlen}.}
+\item{mirrored_strategy}{Whether to use distributed mirrored strategy. If NULL, will use distributed mirrored strategy only if >1 GPU available.}
 }
 \value{
 A keras model.
 }
 \description{
 Create GenomeNet Model with Given Architecture Parameters
+}
+\examples{
+model <- create_model_genomenet()
+model
+
+
 }

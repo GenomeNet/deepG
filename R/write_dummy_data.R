@@ -6,7 +6,7 @@
 #' \code{num_files = 1}).
 #' @param num_files Number of files to create.
 #' @param header Fasta header name. 
-#' @param seq_length Length of one sequence.
+#' @param seq_length Length of one sequence. If vector longer than 1, will randomly sample from that vector. 
 #' @param num_seq Number of sequences per file.
 #' @param fasta_name_start Beginning string of file name. Output files are named fasta_name_start + _i.fasta where i is an integer index.
 #' @param write_to_file_path Whether to write output directly to \code{file_path}, i.e. file_path is not a directory.
@@ -20,7 +20,8 @@
 #'                   seq_length = 11, 
 #'                   num_seq = 5,                   
 #'                   vocabulary = c("a", "c", "g", "t"))
-#' list.files(path_output)                   
+#' list.files(path_output)                
+#'    
 #' @export
 create_dummy_data <- function(file_path,
                               num_files,
@@ -66,5 +67,8 @@ create_dummy_data <- function(file_path,
 }
 
 random_seq <- function(vocabulary, seq_length, prob = NULL) {
+  if (length(seq_length) > 1) {
+    seq_length <- sample(seq_length, 1)
+  }
   sample(vocabulary, seq_length, replace = TRUE, prob = prob) %>% paste(collapse = "")
 }

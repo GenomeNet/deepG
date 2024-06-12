@@ -128,9 +128,9 @@ evaluate_model <- function(path_input,
       
       # remove files not in csv table
       if (mode == "label_csv") {
-        csv_file <- read.csv2(target_from_csv, header = TRUE, stringsAsFactors = FALSE)
+        csv_file <- utils::read.csv2(target_from_csv, header = TRUE, stringsAsFactors = FALSE)
         if (dim(csv_file)[2] == 1) {
-          csv_file <- read.csv(target_from_csv, header = TRUE, stringsAsFactors = FALSE)
+          csv_file <- utils::read.csv(target_from_csv, header = TRUE, stringsAsFactors = FALSE)
         }
         index <- basename(files) %in% csv_file$file
         files <- files[index]
@@ -217,7 +217,7 @@ evaluate_model <- function(path_input,
   }
   
   if (evaluate_all_files & format == "rds") {
-    rds_files <- list_fasta_files(path_corpus = file_path,
+    rds_files <- list_fasta_files(path_corpus = path_input,
                                   format = "rds",
                                   file_filter = NULL)
     num_samples <- 0
@@ -694,7 +694,7 @@ plot_roc <- function(y_true, y_conf, path_roc_plot = NULL,
     y_conf <- y_conf[ , 2]
   }
   
-  if (var(y_true) == 0) {
+  if (stats::var(y_true) == 0) {
     stop("y_true contains just one label")
   }
   

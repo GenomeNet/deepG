@@ -178,7 +178,7 @@ test_that("Sucessful prediction", {
                          output_format = "by_entry_one_file",
                          filename = h5_file,
                          step = 2,
-                         target_len = 3,
+                         target_len = 1,
                          batch_size = 2, 
                          padding = "standard",
                          verbose = FALSE,

@@ -12,3 +12,7 @@ loss_cl(margin = 1)
 \description{
 Contrastive loss as used here: https://keras.io/examples/vision/siamese_contrastive/.
 }
+\examples{
+cl <- loss_cl(margin=1)
+
+}

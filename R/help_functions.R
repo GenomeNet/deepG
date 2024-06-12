@@ -8,7 +8,7 @@
 stridecalc <- function(maxlen, plen) {
   vec <- c()
   for (i in ceiling(plen / 3):(floor(plen / 2) - 1)) {
-    if ((len - plen) %% i == 0) {
+    if ((maxlen - plen) %% i == 0) {
       vec <- c(vec, i)
     }
   }
@@ -137,7 +137,7 @@ ReadOpt <- function(pretrained_model) {
     np$load(paste(
       sub("/[^/]+$", "", pretrained_model),
       "/",
-      tail(str_remove(
+      utils::tail(stringr::str_remove(
         strsplit(pretrained_model, "/")[[1]], "mod.h5"
       ), 1),
       "opt.npy",
@@ -410,7 +410,6 @@ reorder_masked_lm_lists <- function(array_lists, include_sw = NULL) {
 }
 
 # stack 
-
 create_x_y_tensors_lm <- function(sequence_list, nuc_dist_list, target_middle,
                                   maxlen, vocabulary, ambiguous_nuc,
                                   start_index_list, quality_list, target_len,
@@ -709,6 +708,21 @@ to_time_dist <- function(x, samples_per_target) {
 }
 
 
+#' Plot confusion matrix
+#' 
+#' Plot confusion matrix, either with absolute numbers or percentages per column (true labels).
+#' 
+#' @param cm A confusion matrix
+#' @param perc Whether to use absolute numbers or percentages.
+#' @param cm_labels Labels correspoding to confusion matrix entries.
+#' @param round_dig How to round numbers.
+#' @param text_size Size of text annotations.
+#' @param highlight_diag Whether to highlight entries in diagonal.
+#' @examples
+#' cm <- matrix(c(90, 1, 0, 2, 7, 1, 8, 3, 1), nrow = 3, byrow = TRUE)
+#' plot_cm(cm, perc = TRUE, cm_labels = paste0('label_', 1:3), text_size = 8)
+#' 
+#' @export
 plot_cm <- function(cm, perc = FALSE, cm_labels, round_dig = 2, text_size = 1, highlight_diag = TRUE) {
   
   if (perc) cm <- cm_perc(cm, round_dig)
@@ -722,10 +736,11 @@ plot_cm <- function(cm, perc = FALSE, cm_labels, round_dig = 2, text_size = 1, h
                      ggplot2::element_text(size = text_size))
   
   if (highlight_diag) {
-    diagonal_data <- data.frame(x = levels(y_true), y = levels(y_pred))
-    cm_plot <- cm_plot + geom_tile(data = diagonal_data, aes(x = x, y = y),
-                                   fill = "red", colour = "white", size = 1,
-                                   alpha = 0.000001) 
+    #diagonal_data <- data.frame(x = levels(y_true), y = levels(y_pred))
+    diagonal_data <- data.frame(x = cm_labels, y = cm_labels)
+    cm_plot <- cm_plot + ggplot2::geom_tile(data = diagonal_data, ggplot2::aes(x = x, y = y),
+                                            fill = "red", colour = "white", size = 1,
+                                            alpha = 0.000001) 
   }
   
   
@@ -745,6 +760,16 @@ plot_cm <- function(cm, perc = FALSE, cm_labels, round_dig = 2, text_size = 1, h
 #' @param metric Either `"acc"`, `"loss"` or `"last_ep"`. Condition which checkpoints to keep.
 #' @param best_n Number of checkpoints to keep.
 #' @param ask_before_remove Whether to show files to keep before deleting rest.
+#' @examples
+#' model <- create_model_lstm_cnn(layer_lstm = 8)
+#' checkpoint_folder <- tempfile()
+#' dir.create(checkpoint_folder)
+#' keras::save_model_hdf5(model, file.path(checkpoint_folder, 'Ep.007-val_loss11.07-val_acc0.6.hdf5'))
+#' keras::save_model_hdf5(model, file.path(checkpoint_folder, 'Ep.019-val_loss8.74-val_acc0.7.hdf5'))
+#' keras::save_model_hdf5(model, file.path(checkpoint_folder, 'Ep.025-val_loss0.03-val_acc0.8.hdf5'))
+#' remove_checkpoints(cp_dir = checkpoint_folder, metric = "acc", best_n = 2,
+#'                    ask_before_remove = FALSE)
+#' list.files(checkpoint_folder)
 #'  
 #' @export 
 remove_checkpoints <- function(cp_dir, metric = "acc", best_n = 1, ask_before_remove = TRUE) {
@@ -790,7 +815,9 @@ remove_checkpoints <- function(cp_dir, metric = "acc", best_n = 1, ask_before_re
   if (ask_before_remove) {
     cat("Deleting", sum(!index), paste0(ifelse(sum(!index) == 1, "file", "files") , "."),
         "Only keep \n", paste0(basename(files[index]), collapse = ",\n "), "\n")
-    remove_cps <- askYesNo("")
+    remove_cps <- utils::askYesNo("")
+  } else {
+    remove_cps <- TRUE
   }
   
   if (is.na(remove_cps)) return(NULL)

@@ -35,7 +35,7 @@ predict_model(
 \arguments{
 \item{output_format}{Either \code{"one_seq"}, \code{"by_entry"}, \code{"by_entry_one_file"}, \code{"one_pred_per_entry"}.}
 
-\item{model}{A keras model. If model and path_model are not NULL, model will be used for inference.}
+\item{model}{A keras model.}
 
 \item{layer_name}{Name of layer to get output from. If \code{NULL}, will use the last layer.}
 
@@ -49,9 +49,9 @@ predict_model(
 
 \item{step}{Frequency of sampling steps.}
 
-\item{vocabulary}{Vector of allowed characters, character outside vocabulary get encoded as 0-vector.}
+\item{vocabulary}{Vector of allowed characters. Characters outside vocabulary get encoded as specified in \code{ambiguous_nuc}.}
 
-\item{batch_size}{Number of samples to evaluate at once. Does not change output, only relevant for speed and memory.}
+\item{batch_size}{Number of samples used for one network update.}
 
 \item{verbose}{Boolean.}
 
@@ -69,19 +69,31 @@ Example: if sequence is "ACGT" and maxlen is 10, make prediction for "ACGTACGTAC
 Only applied if sequence is shorter than maxlen.
 }}
 
+\item{use_quality}{Whether to use quality scores.}
+
+\item{quality_string}{String for encoding with quality scores (as used in fastq format).}
+
 \item{path_model}{Path to a pretrained model.}
 
 \item{mode}{Either \code{"lm"} for language model or \code{"label"} for label classification.}
 
+\item{lm_format}{Either \code{"target_right"}, \code{"target_middle_lstm"}, \code{"target_middle_cnn"} or \code{"wavenet"}.}
+
 \item{output_dir}{Directory for file output.}
 
-\item{format}{Either \code{"fasta"} or \code{"fastq"}.}
+\item{format}{File format, \code{"fasta"}, \code{"fastq"}, \code{"rds"} or \code{"fasta.tar.gz"}, \code{"fastq.tar.gz"} for \code{tar.gz} files.}
 
 \item{include_seq}{Whether to include input sequence in h5 file.}
 
 \item{reverse_complement_encoding}{Whether to use both original sequence and reverse complement as two input sequences.}
 
-\item{ambiguous_nuc}{\code{"zero"} or \code{"equal"}.}
+\item{ambiguous_nuc}{How to handle nucleotides outside vocabulary, either \code{"zero"}, \code{"discard"}, \code{"empirical"} or \code{"equal"}.
+\itemize{
+\item If \code{"zero"}, input gets encoded as zero vector.
+\item If \code{"equal"}, input is repetition of \code{1/length(vocabulary)}.
+\item If \code{"discard"}, samples containing nucleotides outside vocabulary get discarded.
+\item If \code{"empirical"}, use nucleotide distribution of current file.
+}}
 
 \item{...}{Further arguments for sequence encoding with \code{\link{seq_encoding_label}}.}
 }

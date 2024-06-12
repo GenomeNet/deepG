@@ -36,7 +36,7 @@ create_model_lstm_cnn_time_dist(
   batch_norm_momentum = 0.99,
   verbose = TRUE,
   model_seed = NULL,
-  aggregation_sum = TRUE,
+  aggregation_method = NULL,
   transformer_args = NULL,
   lstm_time_dist = NULL,
   mixed_precision = FALSE,
@@ -112,7 +112,7 @@ If first label contains 5 percent wrong labels and second label no noise, then
 
 \item{model_seed}{Set seed for model parameters in tensorflow if not \code{NULL}.}
 
-\item{aggregation_sum}{Whether to add representations.}
+\item{aggregation_method}{Can be one or more of the options \verb{"sum", "mean", "max}. Not applied if \code{NULL}.}
 
 \item{transformer_args}{List of arguments for transformer blocks; see \link{layer_transformer_block_wrapper}.
 Additionally, list can contain \code{pool_flatten} argument to apply global pooling or flattening after last transformer block (same options
@@ -147,6 +147,8 @@ create_model_lstm_cnn_time_dist(
   filters = c(64, 128),
   pool_size = c(2, 2),
   layer_lstm = c(32),
+  aggregation_method = c("max"),
   layer_dense = c(64, 2),
   learning_rate = 0.001)
+  
 }

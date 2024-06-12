@@ -14,3 +14,10 @@ validation_after_training_cb(gen.val, validation_steps)
 \description{
 Do validation only once at end of training.
 }
+\examples{
+maxlen <- 20
+model <- create_model_lstm_cnn(layer_lstm = 8, maxlen = maxlen)
+gen <- get_generator(train_type = 'dummy_gen', model = model, batch_size = 4, maxlen = maxlen)
+vat <- validation_after_training_cb(gen.val = gen, validation_steps = 10)
+
+}
