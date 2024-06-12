@@ -39,6 +39,9 @@ jobs:
           - os: ubuntu-latest
             action: coverage
             r: release
+          - os: ubuntu-latest
+            action: notensorflow
+            r: release
 
     steps:
       - uses: actions/checkout@v4
@@ -85,7 +88,8 @@ jobs:
       - name: Mac OS Miniconda Setup
         run: |
           echo "options(reticulate.conda_binary = reticulate:::miniconda_conda())" >> .Rprofile
-      - name: Install TF
+      - if: matrix.action != 'notensorflow'
+        name: Install TF
         shell: Rscript {0}
         run: |
           reticulate::conda_create('r-reticulate', packages = c('python==3.7'))
