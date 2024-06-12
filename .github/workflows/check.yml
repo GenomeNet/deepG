@@ -80,12 +80,27 @@ jobs:
         name: install package dependencies
         run: | 
           remotes::install_deps(dependencies = TRUE)
+      - name: Install Miniconda
+        shell: Rscript {0}
+        run: |
+          reticulate::install_miniconda()
+      - name: Mac OS Miniconda Setup
+        run: |
+          echo "options(reticulate.conda_binary = reticulate:::miniconda_conda())" >> .Rprofile
+      - name: Install TF
+        shell: Rscript {0}
+        run: |
+          reticulate::conda_create('r-reticulate', packages = c('python==3.7'))
+          keras::install_keras()
       - name: Session Info
         shell: Rscript {0}
         run: |
           options(width = 200)
           installed.packages()[, c("Package", "Version", "Built")]
-          sessionInfo() 
+          sessionInfo()
+          tensorflow::tf_config()
+          tensorflow::tf_version()
+          reticulate::py_config()
       - name: Document
         shell: Rscript {0}
         run: |
