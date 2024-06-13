@@ -1,11 +1,9 @@
 
 on:
   push:
-    branches: [master, devel]
+    branches: master
   pull_request:
-    branches: [master, devel]
-  schedule:
-    - cron: '33 4 * * *'  # work 4:33 in the morning
+    branches: master
 name: check
 
 env:
@@ -40,6 +38,9 @@ jobs:
             r: '4.1'
           - os: ubuntu-latest
             action: coverage
+            r: release
+          - os: ubuntu-latest
+            action: notensorflow
             r: release
 
     steps:
@@ -80,20 +81,33 @@ jobs:
         name: install package dependencies
         run: | 
           remotes::install_deps(dependencies = TRUE)
+      - name: Install Miniconda
+        shell: Rscript {0}
+        run: |
+          reticulate::install_miniconda()
+      - name: Mac OS Miniconda Setup
+        run: |
+          echo "options(reticulate.conda_binary = reticulate:::miniconda_conda())" >> .Rprofile
+      - if: matrix.action != 'notensorflow'
+        name: Install TF
+        shell: Rscript {0}
+        run: |
+          reticulate::conda_create('r-reticulate', packages = c('python==3.10'))
+          keras::install_keras(envname = 'r-reticulate')
       - name: Session Info
         shell: Rscript {0}
         run: |
           options(width = 200)
           installed.packages()[, c("Package", "Version", "Built")]
-          sessionInfo() 
+          sessionInfo()
+          tensorflow::tf_config()
+          tensorflow::tf_version()
+          reticulate::py_config()
       - name: Document
         shell: Rscript {0}
         run: |
           roxygen2::roxygenise()
           system("attic/clean_man.sh")
-      - if: runner.os == 'windows'
-        name: Remove hypertarget from Latex for Windows
-        run: "sed -i 's/\\\\hypertarget{[^}]*}//g' man/*"
       - if: runner.os == 'windows'
         name: Install tinytex packages
         shell: Rscript {0}
