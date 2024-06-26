@@ -11,6 +11,9 @@ n_gram_of_matrix(input_matrix, n = 3)
 
 \item{n}{Length of one n-gram.}
 }
+\value{
+Matrix of one-hot encodings.
+}
 \description{
 One-hot encoding matrix to n-gram encoding matrix
 }

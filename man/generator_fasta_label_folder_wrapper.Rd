@@ -47,6 +47,9 @@ argument. If \code{buffer_len} is an integer, the subsequences are interspaced w
 (\code{maxlen} \eqn{*} \code{samples_per_target}) + \code{buffer_len} \eqn{*} (\code{samples_per_target} - 1).
 }}
 }
+\value{
+A generator function.
+}
 \description{
 Combines generators created by \code{\link{generator_initialize}} into a single generator.
 }

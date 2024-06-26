@@ -95,6 +95,9 @@ The closer the argument is to 1 the more the labels get smoothed.}
 
 \item{mirrored_strategy}{Whether to use distributed mirrored strategy. If NULL, will use distributed mirrored strategy only if >1 GPU available.}
 }
+\value{
+A keras model implementing transformer architecture.
+}
 \description{
 Creates transformer network for classification. Model can consist of several stacked attention blocks.
 }

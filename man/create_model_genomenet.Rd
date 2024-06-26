@@ -200,6 +200,8 @@ Number of output units to create.}
 }
 \value{
 A keras model.
+
+A keras model implementing genomenet architecture.
 }
 \description{
 Create GenomeNet Model with Given Architecture Parameters
@@ -207,6 +209,5 @@ Create GenomeNet Model with Given Architecture Parameters
 \examples{
 model <- create_model_genomenet()
 model
-
 
 }

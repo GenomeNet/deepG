@@ -1,12 +1,9 @@
 ---
 title: "Training Types"
-output:
-  pdf_document:
-    toc: yes
-    toc_depth: '3'
-  html_document:
-    toc: yes
-    toc_depth: 3
+vignette: >
+  %\VignetteIndexEntry{Training Types}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
 ---
 
 ```{r, eval=FALSE, message=FALSE}

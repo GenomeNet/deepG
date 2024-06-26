@@ -10,6 +10,7 @@
 #' mc <- model_card_cb(model_card_path = tempdir(), run_name = 'run_1',
 #'                     argumentList = list(learning_rate = 0.01)) 
 #' 
+#' @returns Keras callback writing model cards every epoch.
 #' @export
 model_card_cb <- function(model_card_path = NULL, run_name, argumentList) {
   
@@ -97,6 +98,7 @@ model_card_cb <- function(model_card_path = NULL, run_name, argumentList) {
 #' @examples
 #' est <- early_stopping_time_cb(stop_time = 60)
 #' 
+#' @returns A Keras callback that stops training after specified time.
 #' @export
 early_stopping_time_cb <- function(stop_time = NULL) {
   
@@ -128,7 +130,8 @@ early_stopping_time_cb <- function(stop_time = NULL) {
 #' @param early_stopping_time Time in seconds after which to stop training.
 #' @param early_stopping_patience Stop training if val_loss does not improve for \code{early_stopping_patience}.
 #' @param by_time Whether to use time or patience as metric.
-#' @keywords internal
+#' @returns Keras callback; stop training after specified time.
+#' @noRd
 early_stopping_cb <- function(early_stopping_patience = 0, early_stopping_time, by_time = TRUE) {
   
   if (by_time) {
@@ -142,7 +145,8 @@ early_stopping_cb <- function(early_stopping_patience = 0, early_stopping_time, 
 #'
 #' @param path_log Path to output directory.
 #' @param run_name Name of output file is run_name + ".csv".
-#' @keywords internal
+#' @returns Keras callback, writes epoch scores to csv file.
+#' @noRd
 log_cb <- function(path_log, run_name) {
   keras::callback_csv_logger(
     paste0(path_log, "/", run_name, ".csv"),
@@ -153,7 +157,8 @@ log_cb <- function(path_log, run_name) {
 #' Learning_rate callback
 #'
 #' @inheritParams train_model
-#' @keywords internal
+#' @returns Keras callback, reduces learning rate.
+#' @noRd
 reduce_lr_cb <- function(patience,
                          cooldown,
                          lr_plateau_factor,
@@ -168,7 +173,8 @@ reduce_lr_cb <- function(patience,
 #' Checkpoint callback
 #'
 #' @inheritParams train_model
-#' @keywords internal
+#' @returns Keras callback, store model checkpoint.
+#' @noRd
 checkpoint_cb <- function(filepath_checkpoints,
                           save_weights_only,
                           save_best_only,
@@ -237,7 +243,8 @@ checkpoint_cb <- function(filepath_checkpoints,
 #' Get hyperparameters excluding model parameters.
 #'
 #' @inheritParams train_model
-#' @keywords internal
+#' @returns Keras callback, track model hyperparameters.
+#' @noRd
 hyper_param_model_outside_cb <- function(path_tensorboard, run_name, wavenet_format, cnn_format, model, vocabulary, path, reverse_complement,
                                          vocabulary_label, maxlen, epochs, max_queue_size, lr_plateau_factor, batch_size,
                                          patience, cooldown, steps_per_epoch, step, shuffle_file_order) {
@@ -289,7 +296,8 @@ hyper_param_model_outside_cb <- function(path_tensorboard, run_name, wavenet_for
 #' Get model hyperparameters.
 #'
 #' @inheritParams train_model
-#' @keywords internal
+#' @returns Keras callback, track training hyperparameters.
+#' @noRd
 hyper_param_with_model_cb <- function(default_arguments, model, path_tensorboard, run_name, train_type, path, train_val_ratio, batch_size,
                                       epochs, max_queue_size, lr_plateau_factor,
                                       patience, cooldown, steps_per_epoch, step, shuffle_file_order, initial_epoch, vocabulary, learning_rate,
@@ -338,7 +346,8 @@ hyper_param_with_model_cb <- function(default_arguments, model, path_tensorboard
 #' Tensorboard callback
 #'
 #' @inheritParams train_model
-#' @keywords internal
+#' @returns Keras callback, write tensorboard logs.
+#' @noRd
 tensorboard_cb <- function(path_tensorboard, run_name) {
   keras::callback_tensorboard(file.path(path_tensorboard, run_name),
                               write_graph = TRUE,
@@ -353,7 +362,8 @@ tensorboard_cb <- function(path_tensorboard, run_name) {
 #' 
 #' @inheritParams train_model
 #' @param argumentList List of function arguments.
-#' @keywords internal
+#' @returns Keras callback, track arguments of `train_model` function.
+#' @noRd
 function_args_cb <- function(argumentList, path_tensorboard, run_name) {
   
   argAsChar <- as.character(argumentList)
@@ -407,7 +417,8 @@ function_args_cb <- function(argumentList, path_tensorboard, run_name) {
 #' Tensorboard callback wrapper
 #'
 #' @inheritParams train_model
-#' @keywords internal
+#' @returns Keras callback, wrapper for all callbacks involving tensorboard.
+#' @noRd
 tensorboard_complete_cb <- function(default_arguments, model, path_tensorboard, run_name, train_type, path, train_val_ratio, batch_size,
                                     epochs, max_queue_size, lr_plateau_factor, patience, cooldown, steps_per_epoch, step, shuffle_file_order, initial_epoch, vocabulary, learning_rate,
                                     shuffle_input, vocabulary_label, solver, file_limit, reverse_complement, wavenet_format, cnn_format, create_model_function, vocabulary_size, gen_cb,
@@ -539,6 +550,7 @@ tensorboard_complete_cb <- function(default_arguments, model, path_tensorboard, 
 #' @examples
 #' rs <- reset_states_cb(path_file_log = tempfile(), path_file_logVal = tempfile())
 #' 
+#' @returns A keras callback that resets states of LSTM layers. 
 #' @export
 reset_states_cb <- function(path_file_log, path_file_logVal) {
   
@@ -599,6 +611,7 @@ reset_states_cb <- function(path_file_log, path_file_logVal) {
 #' gen <- get_generator(train_type = 'dummy_gen', model = model, batch_size = 4, maxlen = maxlen)
 #' vat <- validation_after_training_cb(gen.val = gen, validation_steps = 10)
 #' 
+#' @returns Keras callback, apply validation only after training.
 #' @export
 validation_after_training_cb <- function(gen.val, validation_steps) {
   
@@ -643,6 +656,7 @@ validation_after_training_cb <- function(gen.val, validation_steps) {
 #' cm <- conf_matrix_cb(path_tensorboard = tempfile(), run_name = 'run_1',
 #'                      confMatLabels = c('label_1', 'label_2'), cm_dir = tempfile())
 #' 
+#' @returns Keras callback, plot confusion matrix in tensorboard.
 #' @export
 conf_matrix_cb <- function(path_tensorboard, run_name, confMatLabels, cm_dir) {
   

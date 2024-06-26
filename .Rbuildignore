@@ -2,3 +2,15 @@
 ^\.Rproj\.user$
 ^docs/\.nojekyll$
 ^\.github$
+^.*\.Rproj$
+README.Rmd
+README_files
+_pkgdown.yml
+data-raw
+docs
+example_files
+model_results
+output.json
+pkgdown
+__autograph_generated_file.*
+__pycache__/

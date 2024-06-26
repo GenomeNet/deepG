@@ -15,6 +15,9 @@ plot_roc(y_true, y_conf, path_roc_plot = NULL, return_plot = TRUE)
 
 \item{return_plot}{Whether to return plot.}
 }
+\value{
+A ggplot of ROC curve.
+}
 \description{
 Compute ROC and AUC from target and prediction matrix and plot ROC. Target/prediction matrix should
 have one column if output of layer with sigmoid activation and two columns for softmax activation.
@@ -24,4 +27,5 @@ y_true <- matrix(c(1, 0, 0, 0, 1, 1), ncol = 1)
 y_conf <- matrix(runif(n = nrow(y_true)), ncol = 1)
 p <- plot_roc(y_true, y_conf, return_plot = TRUE)
 p
+
 }

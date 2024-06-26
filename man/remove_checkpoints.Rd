@@ -20,6 +20,9 @@ remove_checkpoints(
 
 \item{ask_before_remove}{Whether to show files to keep before deleting rest.}
 }
+\value{
+None. Deletes certain files.
+}
 \description{
 Remove all but n 'best' checkpoints, based on some condition. Condition can be
 accuracy, loss or epoch number.

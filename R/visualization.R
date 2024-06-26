@@ -3,7 +3,7 @@
 #' @param baseline_type Baseline sequence, either "zero" for all zeros or "shuffle" for random permutation of input_seq.
 #' @param m_steps Number of steps between baseline and original input.
 #' @param input_seq Input tensor.
-#' @keywords internal
+#' @noRd
 interpolate_seq <- function(m_steps = 50,
                             baseline_type = "shuffle",
                             input_seq) {
@@ -52,7 +52,7 @@ interpolate_seq <- function(m_steps = 50,
 #' @param model Model to compute gradient for.
 #' @param pred_stepwise Whether to do predictions with batch_size 1 rather than all at once. Can be used if
 #' input is too big to handle at once.
-#' @keywords internal
+#' @noRd
 compute_gradients <- function(input_tensor, target_class_idx, model, input_idx = NULL, pred_stepwise = FALSE) {
 
   # if (is.list(input_tensor)) {
@@ -121,6 +121,7 @@ integral_approximation <- function(gradients) {
 #'   target_class_idx = 3,
 #'   model = model)
 #'   
+#' @returns A tensorflow tensor.
 #' @export
 integrated_gradients <- function(m_steps = 50,
                                  baseline_type = "zero",
@@ -214,7 +215,7 @@ integrated_gradients <- function(m_steps = 50,
 
 #' Compute gradients stepwise (one batch at a time)
 #'
-#' @keywords internal
+#' @noRd
 gradients_stepwise <- function(model = model, baseline_seq, target_class_idx,
                                input_idx = NULL) {
 
@@ -290,7 +291,8 @@ gradients_stepwise <- function(model = model, baseline_seq, target_class_idx,
 #'   model = model)
 #' heatmaps_integrated_grad(integrated_grads = ig,
 #'                          input_seq = input_seq)
-#'                          
+#'  
+#' @returns A list of heatmaps.                          
 #' @export
 heatmaps_integrated_grad <- function(integrated_grads,
                                      input_seq) {

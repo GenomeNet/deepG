@@ -72,6 +72,9 @@ argument \code{layer_name}. Can be used to have shared dense layers, before mode
 
 \item{mirrored_strategy}{Whether to use distributed mirrored strategy. If NULL, will use distributed mirrored strategy only if >1 GPU available.}
 }
+\value{
+A keras model; added and/or removed layers from some base model.
+}
 \description{
 Function takes a model as input and removes all layers after a certain layer, specified in \code{layer_name} argument.
 Optional to add dense layers on top of pruned model. Model can have multiple output layers with separate loss/activation functions.

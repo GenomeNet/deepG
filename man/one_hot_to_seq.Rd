@@ -23,6 +23,9 @@ one_hot_to_seq(
 
 \item{paste_chars}{Whether to return vector or single sequence.}
 }
+\value{
+A string.
+}
 \description{
 Return character sequence corresponding to one-hot elements in matrix or tensor.
 }

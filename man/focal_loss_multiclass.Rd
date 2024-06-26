@@ -15,6 +15,9 @@ focal_loss_multiclass(y_true, y_pred, gamma = 2.5, alpha = c(1))
 
 \item{alpha}{Vector of weighting factors.}
 }
+\value{
+A function implementing focal loss.
+}
 \description{
 Focal loss for two or more labels
 }

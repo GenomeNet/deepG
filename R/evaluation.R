@@ -49,6 +49,8 @@
 #'   output_format = "target_right",
 #'   evaluate_all_files = TRUE,
 #'   verbose = FALSE)
+#'   
+#' @returns A list of evaluation results. Each list element corresponds to an output layer of the model.   
 #' @export
 evaluate_model <- function(path_input,
                            model = NULL,
@@ -476,6 +478,8 @@ reshape_y_list <- function(y, num_out_layers, tf_format = TRUE) {
 #' y <- matrix(c(1, 0, 0, 0, 1, 1), ncol = 2)
 #' y_conf <- matrix(c(0.3, 0.5, 0.1, 0.7, 0.5, 0.9), ncol = 2)
 #' evaluate_softmax(y, y_conf, auc = TRUE, auprc = TRUE, label_names = c("A", "B")) 
+#' 
+#' @returns A list of evaluation results. 
 #' @export    
 evaluate_softmax <- function(y, y_conf, auc = FALSE, auprc = FALSE, label_names = NULL) {
   
@@ -568,6 +572,7 @@ evaluate_softmax <- function(y, y_conf, auc = FALSE, auprc = FALSE, label_names 
 #' y_conf <- matrix(runif(n = 30), ncol = 3)
 #' evaluate_sigmoid(y, y_conf, auc = TRUE, auprc = TRUE)
 #' 
+#' @returns A list of evaluation results. 
 #' @export    
 evaluate_sigmoid <- function(y, y_conf, auc = FALSE, auprc = FALSE, label_names = NULL) {
   
@@ -645,6 +650,8 @@ evaluate_sigmoid <- function(y, y_conf, auc = FALSE, auprc = FALSE, label_names 
 #' y_true <- matrix(rnorm(n = 12), ncol = 3)
 #' y_pred <- matrix(rnorm(n = 12), ncol = 3)
 #' evaluate_linear(y_true, y_pred)
+#' 
+#' @returns A list of evaluation results. 
 #' @export    
 evaluate_linear <- function(y_true, y_pred, label_names = NULL) {
   
@@ -677,6 +684,8 @@ evaluate_linear <- function(y_true, y_pred, label_names = NULL) {
 #' y_conf <- matrix(runif(n = nrow(y_true)), ncol = 1)
 #' p <- plot_roc(y_true, y_conf, return_plot = TRUE)
 #' p
+#' 
+#' @returns A ggplot of ROC curve.
 #' @export    
 plot_roc <- function(y_true, y_conf, path_roc_plot = NULL,
                      return_plot = TRUE) {

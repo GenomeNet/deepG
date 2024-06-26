@@ -29,6 +29,9 @@ merge_models(
 
 \item{model_seed}{Set seed for model parameters in tensorflow if not \code{NULL}.}
 }
+\value{
+A keras model merging two input models.
+}
 \description{
 Combine two models at certain layers and add dense layer(s) afterwards.
 }
@@ -47,5 +50,5 @@ model <- merge_models(models = list(model_1, model_2),
                       layer_names = c(layer_name_1, layer_name_2),
                       layer_dense = c(6, 2), 
                       freeze_base_model = c(FALSE, FALSE)) 
-                      
+
 }

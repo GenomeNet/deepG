@@ -11,6 +11,9 @@ validation_after_training_cb(gen.val, validation_steps)
 
 \item{validation_steps}{Number of validation steps.}
 }
+\value{
+Keras callback, apply validation only after training.
+}
 \description{
 Do validation only once at end of training.
 }

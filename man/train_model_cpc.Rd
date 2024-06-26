@@ -119,6 +119,9 @@ subset of \code{max_samples} samples.}
 
 \item{emb_scale}{Scales the impact of a patches context.}
 }
+\value{
+A list of training metrics.
+}
 \description{
 Train a CPC (Oord et al.) inspired neural network on genomic data.
 }

@@ -1,15 +1,16 @@
 ---
 title: "Data Generator"
-output:
-  rmarkdown::html_vignette:
-    toc: true
-    toc_depth: 3
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Data Generator}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
 ---
 
 ```{r, eval=FALSE, message=FALSE}
 #devtools::install_github("GenomeNet/deepG")
 #library(deepG)
-library(magrittr)
+#library(magrittr)
 ```
 
 ```{r, echo=FALSE, warning=FALSE, message=FALSE}

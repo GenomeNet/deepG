@@ -1,9 +1,9 @@
 ---
 title: "Integrated Gradient"
-output:
-  html_document:
-    toc: true
-    toc_depth: 3
+vignette: >
+  %\VignetteIndexEntry{Integrated Gradient}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
 ---
 
 ```{r, eval=FALSE, message=FALSE}

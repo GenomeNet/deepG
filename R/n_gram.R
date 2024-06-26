@@ -23,6 +23,7 @@
 #'                  step = 1,
 #'                  nuc_dist = FALSE)
 #' head(round(m, 2))
+#' @returns A data frame of n-gram predictions.
 #' @export
 n_gram_dist <- function(path_input,
                         n = 2,
@@ -177,6 +178,8 @@ df_to_distribution_matrix <- function(freq_df, vocabulary = c("A", "C", "G", "T"
 #' 
 #' # show accuracy
 #' predictions[[1]]
+#' 
+#' @returns List of prediction evaluations.
 #' @export
 predict_with_n_gram <- function(path_input, distribution_matrix, default_pred = "random", vocabulary = c("A", "C", "G", "T"),
                                 file_sample = NULL, format = "fasta", return_data_frames = FALSE, step = 1) {

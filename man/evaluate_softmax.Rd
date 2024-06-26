@@ -17,6 +17,9 @@ evaluate_softmax(y, y_conf, auc = FALSE, auprc = FALSE, label_names = NULL)
 
 \item{label_names}{Names of corresponding labels. Length must be equal to number of columns of \code{y}.}
 }
+\value{
+A list of evaluation results.
+}
 \description{
 Compute confusion matrix, accuracy, categorical crossentropy and (optionally) AUC or AUPRC, given predictions and
 true targets. AUC and AUPRC only possible for 2 targets.
@@ -25,4 +28,5 @@ true targets. AUC and AUPRC only possible for 2 targets.
 y <- matrix(c(1, 0, 0, 0, 1, 1), ncol = 2)
 y_conf <- matrix(c(0.3, 0.5, 0.1, 0.7, 0.5, 0.9), ncol = 2)
 evaluate_softmax(y, y_conf, auc = TRUE, auprc = TRUE, label_names = c("A", "B")) 
+
 }

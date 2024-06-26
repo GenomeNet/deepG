@@ -54,6 +54,8 @@
 #' 
 #' x[2,,] # taatn
 #' y[2,] # t
+#' 
+#' @returns A list of 2 tensors.
 #' @export
 seq_encoding_lm <- function(sequence = NULL, maxlen, vocabulary, start_ind, ambiguous_nuc = "zero",
                             nuc_dist = NULL, quality_vector = NULL, return_int = FALSE,
@@ -122,13 +124,6 @@ seq_encoding_lm <- function(sequence = NULL, maxlen, vocabulary, start_ind, ambi
     amb_nuc_pos <- which(sequence == (voc_len + 1))
     z[amb_nuc_pos, ] <- matrix(rep(nuc_dist, length(amb_nuc_pos)), nrow = length(amb_nuc_pos), byrow = TRUE)
   }
-  
-  # if (ambiguous_nuc == "discard") {
-  #   amb_nuc_pos <- which(sequence == (voc_len + 1))
-  #   if (length(amb_nuc_pos) > 0) {
-  #     stop("sequence contains ambiguous nucleotides")
-  #   }
-  # }
   
   if (use_coverage) {
     z <- z * (cov_vector/max_cov)
@@ -304,6 +299,8 @@ seq_encoding_lm <- function(sequence = NULL, maxlen, vocabulary, start_ind, ambi
 #' x[1,,] # actaa
 #' 
 #' x[2,,] # taatn
+#' 
+#' @returns A list of 2 tensors.
 #' @export
 seq_encoding_label <- function(sequence = NULL, maxlen, vocabulary, start_ind, ambiguous_nuc = "zero", nuc_dist = NULL,
                                quality_vector = NULL, use_coverage = FALSE, max_cov = NULL,
@@ -480,6 +477,8 @@ seq_encoding_label <- function(sequence = NULL, maxlen, vocabulary, start_ind, a
 #'   train_mode = "label",
 #'   discard_amb_nuc = TRUE,
 #'   vocabulary = c("A", "C", "G", "T"))
+#'   
+#' @returns A numeric vector.   
 #' @export
 get_start_ind <- function(seq_vector, length_vector, maxlen,
                           step, train_mode = "label", 
@@ -527,7 +526,7 @@ get_start_ind <- function(seq_vector, length_vector, maxlen,
 #' @param step How often to take a sample.
 #' @param vocabulary Vector of allowed characters in samples.
 #' @param train_mode "lm" or "label".
-#' @keywords internal
+#' @noRd
 start_ind_ignore_amb_single_seq <- function(seq, maxlen, step, vocabulary, train_mode = "lm") {
   
   vocabulary <- stringr::str_to_lower(vocabulary)
@@ -586,7 +585,7 @@ start_ind_ignore_amb_single_seq <- function(seq, maxlen, step, vocabulary, train
 #' @param step How often to take a sample.
 #' @param vocabulary Vector of allowed characters in samples.
 #' @param train_mode "lm" or "label".
-#' @keywords internal
+#' @noRd
 start_ind_ignore_amb <- function(seq_vector, length_vector, maxlen, step, vocabulary, train_mode = "lm") {
   start_ind <- purrr::map(1:length(seq_vector), ~start_ind_ignore_amb_single_seq(seq = seq_vector[.x],
                                                                                  maxlen = maxlen,
@@ -664,6 +663,7 @@ remove_amb_nuc_entries <- function(fasta.file, skip_amb_nuc, pattern) {
 #' 
 #' class_weight
 #' 
+#' @returns A list of numeric values (class weights).
 #' @export
 get_class_weight <- function(path,
                              vocabulary_label = NULL,
@@ -717,7 +717,7 @@ get_class_weight <- function(path,
 #' Count nucleotides per class
 #'
 #' @inheritParams get_class_weight
-#' @keywords internal
+#' @noRd
 count_nuc <- function(path,
                       vocabulary_label = NULL,
                       format = "fasta",
@@ -894,24 +894,6 @@ input_from_csv <- function(added_label_path) {
   label_csv <- data.table::as.data.table(label_csv)
   label_csv$file <- stringr::str_to_lower(as.character(label_csv$file))
   data.table::setkey(label_csv, file)
-  #   data.table::setkey(label_csv, file)
-  # if ("file" %in% names(label_csv) & "header" %in% names(label_csv)) {
-  #   stop('names in added_label_path should contain "header" or "file" not both')
-  # } else if ("header" %in% names(label_csv)) {
-  #   added_label_by_header <- TRUE
-  #   label_csv$file <- stringr::str_to_lower(as.character(label_csv$header))
-  #   data.table::setkey(label_csv, header)
-  # } else if ("file" %in% names(label_csv)) {
-  #   added_label_by_header <- FALSE
-  #   label_csv$file <- stringr::str_to_lower(as.character(label_csv$file))
-  #   data.table::setkey(label_csv, file)
-  # } else {
-  #   stop('file in added_label_path must contain one column named "header" or "file"')
-  # }
-  #
-  # if (!added_label_by_header) {
-  #   fasta.file$Header <- rep(basename(fasta.files[file_index]), nrow(fasta.file))
-  # }
   added_label_by_header <- FALSE
   
   if (!("file" %in% names(label_csv))) {
@@ -957,7 +939,7 @@ csv_to_tensor <- function(label_csv, added_label_vector, added_label_by_header, 
 
 #' Divide tensor to list of subsets
 #'
-#' @keywords internal
+#' @noRd
 slice_tensor <- function(tensor, target_split) {
   
   num_row <- nrow(tensor)
@@ -1149,6 +1131,8 @@ get_coverage_concat <- function(fasta.file, concat_seq) {
 #' length(reshaped_data[[1]])
 #' dim(reshaped_data[[1]][[1]])
 #' reshaped_data[[2]]
+#' 
+#' @returns A list of 2 tensors.
 #' @export
 reshape_tensor <- function(x, y, new_batch_size,
                            samples_per_target,
@@ -1232,7 +1216,7 @@ reshape_tensor <- function(x, y, new_batch_size,
 
 #' Transform confusion matrix with total numbers to matrix with percentages.
 #'
-#' @keywords internal
+#' @noRd
 cm_perc <- function(cm, round_dig = 2) {
   col_sums <- colSums(cm)
   for (i in 1:ncol(cm)) {
@@ -1268,6 +1252,7 @@ create_conf_mat_obj <- function(m, confMatLabels) {
 #' @examples
 #' int_to_n_gram(int_seq = c(1,1,2,4,4), n = 2, voc_size = 4)
 #' 
+#' @returns A numeric vector.
 #' @export
 int_to_n_gram <- function(int_seq, n, voc_size = 4) {
   
@@ -1303,6 +1288,7 @@ int_to_n_gram <- function(int_seq, n, voc_size = 4) {
 #' input_matrix <- keras::to_categorical(x, 4)
 #' n_gram_of_matrix(input_matrix, n = 2) 
 #' 
+#' @returns Matrix of one-hot encodings. 
 #' @export
 n_gram_of_matrix <- function(input_matrix, n = 3) {
   voc_len <- ncol(input_matrix)^n
@@ -1370,7 +1356,7 @@ n_gram_vocabulary <- function(n_gram = 3, vocabulary = c("A", "C", "G", "T")) {
 #'             split_n = 5)
 #' length(list.files(target_folder)) 
 #' 
-#' 
+#' @returns None. Writes files to output.
 #' @export
 split_fasta <- function(path_input,
                         target_folder,
@@ -1418,7 +1404,7 @@ split_fasta <- function(path_input,
 #'
 #' @param noise_type "normal" or "uniform".
 #' @param ... additional arguments for rnorm or runif call.
-#' @keywords internal
+#' @noRd
 add_noise_tensor <- function(x, noise_type, ...) {
   
   stopifnot(noise_type %in% c("normal", "uniform"))
@@ -1525,7 +1511,7 @@ mask_seq <- function(int_seq,
     stop("Sum of mask_rate, random_rate, identity_rate bigger than 1")
   } 
   # don't mask padding or oov positions 
-  valid_pos <- which(int_seq != 0 | int_seq != mask_token) 
+  valid_pos <- which(int_seq != 0 & int_seq != mask_token) 
   
   # randomly decide whether to round up or down
   ceiling_floor <- sample(c(TRUE, FALSE), 3, replace = TRUE)
@@ -1595,6 +1581,7 @@ mask_seq <- function(int_seq,
 #' m <- matrix(c(1,0,0,0,0,1,0,0), 2)
 #' one_hot_to_seq(m)
 #' 
+#' @returns A string.
 #' @export
 one_hot_to_seq <- function(m, vocabulary = c("A", "C", "G", "T"), amb_enc = "zero",
                            amb_char = "N", paste_chars = TRUE) {

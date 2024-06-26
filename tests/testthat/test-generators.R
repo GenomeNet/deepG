@@ -2626,18 +2626,59 @@ test_that("Checking the generator for the Fasta files", {
   expect_equivalent(unique(as.vector(x[5, 1:4, ])), 0) # padding
   expect_equivalent(which.max(x[5, 5, ]), 64) # TTT = 4^3
   
-  # masked lm 
+  ##### masked lm #####
   
-  testpath <- file.path("fasta_2")
-  masked_lm <- list(mask_rate = 0.10, random_rate = 0.025, identity_rate = 0.025, include_sw = TRUE)
+  testpath <- file.path("a.fastq")
+  masked_lm <- list(mask_rate = 0.25, random_rate = 0.25, identity_rate = 0.25, include_sw = TRUE)
   gen <- get_generator(path = testpath,
                        train_type = "masked_lm",
                        masked_lm = masked_lm,
                        batch_size = 1,
-                       maxlen = 12,
+                       maxlen = 200,
+                       format = "fastq",
                        padding = TRUE,
-                       return_int = FALSE,
-                       step = 2)
+                       return_int = TRUE)
   
+  z <- gen()
+  x <- z[[1]]
+  y <- z[[2]]
+  sw <- z[[3]]
+  
+  expect_equivalent(x[1,1:12], rep(0, 12)) # padding
+  expect_equivalent(sw[1,1:12], rep(0, 12)) # no sample weights in padding region
+  sw_pos <- which(sw[1,] == 1)
+  random_pos <- which(x[1,] %in% c(2,3,4))
+  masked_pos <- which(x[1,] == 5)
+  # masked and random positions must have sw 1
+  expect_contains(sw_pos, random_pos)
+  expect_contains(sw_pos, masked_pos)
+  
+  ###
+  
+  testpath <- file.path("/home/rmreches/deepGdev/tests/testthat/fasta_2/b.fasta")
+  masked_lm <- list(mask_rate = 0.25, random_rate = 0.25, identity_rate = 0.25, include_sw = TRUE)
+  gen <- get_generator(path = testpath,
+                       train_type = "masked_lm",
+                       shuffle_input = FALSE,
+                       masked_lm = masked_lm,
+                       batch_size = 3,
+                       maxlen = 10,
+                       padding = TRUE,
+                       return_int = TRUE)
+  
+  z <- gen()
+  x <- z[[1]]
+  y <- z[[2]]
+  sw <- z[[3]]
+  
+  expect_equivalent(sum(x[,1:2]), 0) # padding
+  expect_equivalent(sum(sw[,1:2]), 0) # no sample weights in padding region
+  for (i in 1:3) {
+    sw_pos <- which(sw[i,] == 1)
+    masked_pos <- which(x[i,] == 5)
+    expect_contains(sw_pos, masked_pos)   # masked positions must have sw 1
+  }  
+  
+  #### test reshape #### 
   
 })

@@ -223,7 +223,12 @@ Must be list with the following arguments:
 \item{delete_used_files}{Whether to delete file once used. Only applies for rds files.}
 
 \item{reshape_xy}{Can be a list of functions to apply to input and/or target. List elements (containing the reshape functions)
-must be called x for input or y for target.}
+must be called x for input or y for target and each have arguments called x and y. For example:
+\code{reshape_xy = list(x = function(x, y) {return(x+1)}, y = function(x, y) {return(x+y)})} .
+For rds generator needs to have an additional argument called sw.}
+}
+\value{
+A generator function.
 }
 \description{
 For a detailed description see the data generator \href{https://deepg.de/articles/data_generator.html}{tutorial}.

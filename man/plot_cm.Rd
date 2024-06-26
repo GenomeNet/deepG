@@ -26,6 +26,9 @@ plot_cm(
 
 \item{highlight_diag}{Whether to highlight entries in diagonal.}
 }
+\value{
+A ggplot of a confusion matrix.
+}
 \description{
 Plot confusion matrix, either with absolute numbers or percentages per column (true labels).
 }

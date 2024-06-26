@@ -11,6 +11,9 @@ reset_states_cb(path_file_log, path_file_logVal)
 
 \item{path_file_logVal}{Path to log of validation files.}
 }
+\value{
+A keras callback that resets states of LSTM layers.
+}
 \description{
 Reset states at start/end of validation and whenever file changes. Can be used for stateful LSTM.
 }

@@ -57,7 +57,12 @@ optional arguments \code{sd} or \code{mean} if noise_type is \code{"normal"} (de
 (default is \verb{min=0, max=1}).}
 
 \item{reshape_xy}{Can be a list of functions to apply to input and/or target. List elements (containing the reshape functions)
-must be called x for input or y for target.}
+must be called x for input or y for target and each have arguments called x and y. For example:
+\code{reshape_xy = list(x = function(x, y) {return(x+1)}, y = function(x, y) {return(x+y)})} .
+For rds generator needs to have an additional argument called sw.}
+}
+\value{
+A generator function.
 }
 \description{
 Creates training batches from rds files. Rds files must contain a

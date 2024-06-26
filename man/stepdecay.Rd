@@ -15,6 +15,9 @@ stepdecay(lrmax = 0.005, newstep = 50, mult = 0.7, epoch = NULL)
 
 \item{epoch}{Epoch, for which the learning rate shall be calculated.}
 }
+\value{
+A numeric value.
+}
 \description{
 Compute the learning Rate for a given epoch using Step Decay.
 }

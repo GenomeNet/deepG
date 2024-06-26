@@ -2,9 +2,10 @@
 #' 
 #' Compute the optimal length for Stride.
 #'
-#'@param maxlen Length of the input sequence.
-#'@param plen Length of a patch.
-#' @keywords internal
+#' @param maxlen Length of the input sequence.
+#' @param plen Length of a patch.
+#' @returns Numerical value.
+#' @noRd
 stridecalc <- function(maxlen, plen) {
   vec <- c()
   for (i in ceiling(plen / 3):(floor(plen / 2) - 1)) {
@@ -20,10 +21,11 @@ stridecalc <- function(maxlen, plen) {
 #' 
 #' Compute the Number of Patches.
 #'
-#'@param plen Length of a patch.
-#'@param maxlen Length of the input sequence.
-#'@param stride Stride.
-#' @keywords internal
+#' @param plen Length of a patch.
+#' @param maxlen Length of the input sequence.
+#' @param stride Stride.
+#' @returns Numerical value.
+#' @noRd
 nopatchescalc <- function(plen, maxlen, stride) {
   ((maxlen - plen)/stride) + 1
 }
@@ -35,12 +37,13 @@ maxlencalc <- function(plen, nopatches, stride) {
 
 #' Checkpoints saving function
 #'
-#'@param cp Type of the checkpoint.
-#'@param runname Name of the run. Name will be used to identify output from callbacks.
-#'@param model A keras model.
-#'@param optimizer A keras optimizer.
-#'@param history A keras history object.
-#' @keywords internal
+#' @param cp Type of the checkpoint.
+#' @param runname Name of the run. Name will be used to identify output from callbacks.
+#' @param model A keras model.
+#' @param optimizer A keras optimizer.
+#' @param history A keras history object.
+#' @returns None. Saves object to file.
+#' @noRd
 savechecks <- function(cp, runname, model, optimizer, history) {
   np = import("numpy", convert = F)
   ## define path for saved objects
@@ -73,7 +76,8 @@ savechecks <- function(cp, runname, model, optimizer, history) {
 #' @param loss Computed loss for a given epoch.
 #' @param acc Computed accracy for a given epoch.
 #' @param epoch Epoch, for which the values shall be written to the tensorboard.
-#' @keywords internal
+#' @returns None. Saves object to file.
+#' @noRd
 TB_loss_acc <- function(writer, loss, acc, epoch) {
   with(writer$as_default(), {
     tensorflow::tf$summary$scalar('epoch_loss',
@@ -88,11 +92,11 @@ TB_loss_acc <- function(writer, loss, acc, epoch) {
 
 #' Step function 
 #'
-#'@param trainvaldat A data generator.
-#'@param model A keras model.
-#'@param train_type Either `"cpc"`, `"Self-GenomeNet"`.
-#'@param training Boolean. Whether this step is a training step.
-#' @keywords internal
+#' @param trainvaldat A data generator.
+#' @param model A keras model.
+#' @param train_type Either `"cpc"`, `"Self-GenomeNet"`.
+#' @param training Boolean. Whether this step is a training step.
+#' @noRd
 modelstep <-
   function(trainvaldat,
            model,
@@ -113,8 +117,8 @@ modelstep <-
 
 #' Reading Pretrained Model function
 #'
-#'@param pretrained_model The path to a saved keras model.
-#' @keywords internal
+#' @param pretrained_model The path to a saved keras model.
+#' @noRd
 ReadOpt <- function(pretrained_model) {
   ## Read configuration
   optconf <-
@@ -154,7 +158,7 @@ ReadOpt <- function(pretrained_model) {
 #' Checks, whether all necessary parameters for a defined learning rate schedule are given.
 #'
 #' @param lr_schedule The name of a learning rate schedule.
-#' @keywords internal
+#' @noRd
 LRstop <- function(lr_schedule) {
   # cosine annealing
   if ("cosine_annealing" %in% lr_schedule) {
@@ -186,9 +190,9 @@ LRstop <- function(lr_schedule) {
 #' 
 #' Computes the learning rate for a given epoch.
 #'
-#'@param lr_schedule The name of a learning rate schedule.
-#'@param epoch Epoch, for which the learning rate shall be calculated.
-#' @keywords internal
+#' @param lr_schedule The name of a learning rate schedule.
+#' @param epoch Epoch, for which the learning rate shall be calculated.
+#' @noRd
 getEpochLR <- function(lr_schedule, epoch) {
   if (lr_schedule$schedule == "cosine_annealing") {
     # cosine annealing
@@ -722,6 +726,7 @@ to_time_dist <- function(x, samples_per_target) {
 #' cm <- matrix(c(90, 1, 0, 2, 7, 1, 8, 3, 1), nrow = 3, byrow = TRUE)
 #' plot_cm(cm, perc = TRUE, cm_labels = paste0('label_', 1:3), text_size = 8)
 #' 
+#' @returns A ggplot of a confusion matrix.
 #' @export
 plot_cm <- function(cm, perc = FALSE, cm_labels, round_dig = 2, text_size = 1, highlight_diag = TRUE) {
   
@@ -771,6 +776,7 @@ plot_cm <- function(cm, perc = FALSE, cm_labels, round_dig = 2, text_size = 1, h
 #'                    ask_before_remove = FALSE)
 #' list.files(checkpoint_folder)
 #'  
+#' @returns None. Deletes certain files.
 #' @export 
 remove_checkpoints <- function(cp_dir, metric = "acc", best_n = 1, ask_before_remove = TRUE) {
   

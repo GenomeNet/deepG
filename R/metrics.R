@@ -4,9 +4,9 @@
 #' loss is `"binary_crossentropy"` and number of targets > 1, will flatten `y_true` and `y_pred` matrices 
 #' to a single vector (rather than computing separate F1 scores for each class).
 #'
-#'@param num_targets Size of model output.
-#'@param loss Loss function of model.
-#'@examples 
+#' @param num_targets Size of model output.
+#' @param loss Loss function of model.
+#' @examples 
 #' y_true <- c(1,0,0,1,1,0,1,0,0)  
 #' y_pred <-  c(0.9,0.05,0.05,0.9,0.05,0.05,0.9,0.05,0.05)
 #'
@@ -28,8 +28,8 @@
 #' model %>% keras::compile(loss = model$loss, 
 #'                          optimizer = model$optimizer,
 #'                          metrics = c(model$metrics, f1_metric))
-#'                          
-#'@export
+#' @returns A keras metric.                          
+#' @export
 f1_wrapper <- function(num_targets = 2, loss = "binary_crossentropy") {
   
   stopifnot(loss %in% c("binary_crossentropy", "categorical_crossentropy"))
@@ -114,6 +114,7 @@ f1_wrapper <- function(num_targets = 2, loss = "binary_crossentropy") {
 #' bal_acc_metric$result()
 #' as.array(bal_acc_metric$cm)
 #'
+#' @returns A keras metric.                          
 #' @export
 balanced_acc_wrapper <- function(num_targets, cm_dir) {
   balanced_acc_stateful <- reticulate::PyClass("balanced_acc",
@@ -214,7 +215,8 @@ balanced_acc_wrapper <- function(num_targets, cm_dir) {
 #' model %>% keras::compile(loss = model$loss, 
 #'                          optimizer = model$optimizer,
 #'                          metrics = c(model$metrics, auc_metric))
-#'                          
+#'
+#' @returns A keras metric.                          
 #' @export
 auc_wrapper <- function(model_output_size,
                         loss = "binary_crossentropy") {
@@ -258,6 +260,7 @@ auc_wrapper <- function(model_output_size,
 #' noise_matrix <- matrix(c(0.95, 0.05, 0, 1), nrow = 2, byrow = TRUE)
 #' noisy_loss <- noisy_loss_wrapper(noise_matrix)
 #' 
+#' @returns A function implementing noisy loss.                          
 #' @export
 noisy_loss_wrapper <- function(noise_matrix) {
   inverted_noise_matrix <- solve(noise_matrix)
@@ -371,7 +374,8 @@ cpcloss <- function(latents,
 #' sgdr(lrmin = 5e-10, lrmax = 5e-2, restart = 50,
 #' mult = 1, epoch = 5)
 #' 
-#'@export
+#' @returns A numeric value.
+#' @export
 sgdr <- function(lrmin = 5e-10,
                  lrmax = 5e-2,
                  restart = 50,
@@ -401,8 +405,9 @@ sgdr <- function(lrmin = 5e-10,
 #' @examples
 #' stepdecay(lrmax = 0.005, newstep = 50,
 #' mult = 0.7, epoch = 3)
-#'
-#'@export
+#' 
+#' @returns A numeric value.
+#' @export
 stepdecay <- function(lrmax = 0.005,
                       newstep = 50,
                       mult = 0.7,
@@ -422,6 +427,7 @@ stepdecay <- function(lrmax = 0.005,
 #' @examples
 #' exp_decay(lrmax = 0.005, mult = 0.1, epoch = 8) 
 #' 
+#' @returns A numeric value.
 #' @export
 exp_decay <- function(lrmax = 0.005,
                       mult = 0.1,
@@ -453,8 +459,9 @@ cosine_similarity <- function(vects) {
 #' @param margin Integer, baseline for distance for which pairs should be classified as dissimilar.
 #' @examples
 #' cl <- loss_cl(margin=1)
-#'
-#'@export
+#' 
+#' @returns A function implementing contrastive loss.
+#' @export
 loss_cl <- function(margin=1) {
   
   contrastive_loss <- function(y_true, y_pred) {
@@ -484,6 +491,7 @@ loss_cl <- function(margin=1) {
 #' fl <- focal_loss_multiclass(y_true, y_pred)
 #' fl$numpy()
 #' 
+#' @returns A function implementing focal loss.
 #' @export
 focal_loss_multiclass <- function(y_true, y_pred, gamma = 2.5, alpha = c(1)) {
   y_pred <- keras::k_clip(y_pred, keras::k_epsilon(), 1.0 - keras::k_epsilon())

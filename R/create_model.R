@@ -61,7 +61,8 @@
 #'   layer_lstm = c(32, 64),
 #'   layer_dense = c(128, 4),
 #'   learning_rate = 0.001)
-#'   
+#' 
+#' @returns A keras model, stacks CNN, LSTM and dense layers.   
 #' @export
 create_model_lstm_cnn <- function(
     maxlen = 50,
@@ -534,6 +535,8 @@ create_model_lstm_cnn <- function(
 #'\dontrun{
 #' model <- create_model_wavenet(residual_blocks = 2^rep(1:4, 2), maxlen = 1000)
 #' }
+#' 
+#' @returns A keras model implementing wavenet architecture.
 #' @export
 create_model_wavenet <- function(filters = 16, kernel_size = 2, residual_blocks, maxlen,
                                  input_tensor = NULL, initial_kernel_size = 32, initial_filters = 32,
@@ -582,6 +585,7 @@ create_model_wavenet <- function(filters = 16, kernel_size = 2, residual_blocks,
 #' Function creates two sub networks consisting each of (optional) CNN layers followed by an arbitrary number of LSTM layers. Afterwards the last LSTM layers
 #' get concatenated and followed by one or more dense layers. Last layer is a dense layer.
 #' Network tries to predict target in the middle of a sequence. If input is AACCTAAGG, input tensors should correspond to x1 = AACC, x2 = GGAA and y = T.
+#' 
 #' @inheritParams create_model_lstm_cnn
 #' @examples
 #' create_model_lstm_cnn_target_middle(
@@ -593,7 +597,8 @@ create_model_wavenet <- function(filters = 16, kernel_size = 2, residual_blocks,
 #'   layer_lstm = c(32, 64),
 #'   layer_dense = c(128, 4),
 #'   learning_rate = 0.001)
-#'   
+#'  
+#' @returns A keras model with two input layers. Consists of LSTN, CNN and dense layers.
 #' @export
 create_model_lstm_cnn_target_middle <- function(
     maxlen = 50,
@@ -979,6 +984,7 @@ create_model_lstm_cnn_target_middle <- function(
 #' Extract hyperparameters from model
 #'
 #' @param model A keras model.
+#' @returns List of hyperparameters.
 #' @keywords internal
 get_hyper_param <- function(model) {
   layers.lstm <- 0
@@ -1101,7 +1107,8 @@ get_hyper_param <- function(model) {
 #'                                                  "out_2_regression", 
 #'                                                  "out_3_classification")
 #' ) 
-#'
+#' 
+#' @returns A keras model; added and/or removed layers from some base model. 
 #' @export
 remove_add_layers <- function(model = NULL,
                               layer_name = NULL,
@@ -1349,7 +1356,8 @@ remove_add_layers <- function(model = NULL,
 #'                       layer_names = c(layer_name_1, layer_name_2),
 #'                       layer_dense = c(6, 2), 
 #'                       freeze_base_model = c(FALSE, FALSE)) 
-#'                       
+#' 
+#' @returns A keras model merging two input models.                        
 #' @export
 merge_models <- function(models, layer_names, layer_dense, solver = "adam",
                          learning_rate = 0.0001,
@@ -1399,6 +1407,7 @@ merge_models <- function(models, layer_names, layer_dense, solver = "adam",
 
 #' Check if layer is in model
 #' 
+#' @returns Error message if model does not contain layer of certain name.
 #' @keywords internal
 check_layer_name <- function(model, layer_name) {
   num_layers <- length(model$layers)
@@ -1410,61 +1419,6 @@ check_layer_name <- function(model, layer_name) {
     message <- paste0("Model has no layer named ", "'", layer_name, "'")
     stop(message)
   }
-}
-
-#' Add layer 
-#' 
-#' Add output of time distribution representations.
-#' 
-#' @param load_r6 Whether to load the R6 layer class.
-#' @param method At least one of the options, `"sum", "max"` or `"mean"`.
-#' l <- layer_aggregate_time_dist_wrapper() 
-#' 
-#' @export
-layer_aggregate_time_dist_wrapper <- function(load_r6 = FALSE, method = "sum") {
-  
-  layer_aggregate_time_dist <- keras::new_layer_class(
-    "layer_aggregate_time_dist",
-    
-    initialize = function(method, ...) {
-      super$initialize(...)
-      self$method <- method
-    },
-    
-    call = function(inputs, mask = NULL) {
-      out <- list()
-      if ("sum" %in% self$method) {
-        out <- c(out, tensorflow::tf$math$reduce_sum(inputs, axis = 1L))
-      }
-      if ("mean" %in% self$method) {
-        out <- c(out, tensorflow::tf$math$reduce_mean(inputs, axis = 1L))
-      }
-      if ("max" %in% self$method) {
-        out <- c(out, tensorflow::tf$math$reduce_max(inputs, axis = 1L))
-      }
-      
-      if (length(out) > 1) {
-        out <- tensorflow::tf$concat(out, axis = -1L)
-      } else {
-        out <- out[[1]]
-      }
-      
-      out
-    },
-    
-    get_config = function() {
-      config <- super$get_config()
-      config$method <- self$method
-      config
-    }
-  )
-  
-  if (load_r6) {
-    return(layer_aggregate_time_dist)
-  } else {
-    return(layer_aggregate_time_dist(method = method))
-  }
-  
 }
 
 
@@ -1504,7 +1458,8 @@ layer_aggregate_time_dist_wrapper <- function(load_r6 = FALSE, method = "sum") {
 #'   aggregation_method = c("max"),
 #'   layer_dense = c(64, 2),
 #'   learning_rate = 0.001)
-#'   
+#' 
+#' @returns A keras model with time distribution wrapper applied to LSTM and CNN layers.   
 #' @export
 create_model_lstm_cnn_time_dist <- function(
     maxlen = 50,
@@ -1756,19 +1711,6 @@ create_model_lstm_cnn_time_dist <- function(
     aggr_layer_list[[num_aggr_layers]] <- output_tensor_lstm
   }
   
-  # if (aggregation_method == "lstm_sum") {
-  #   layer_add_td <- layer_add_time_dist_wrapper()
-  #   output_tensor_sum <- output_tensor %>% layer_add_td
-  #   
-  #   return_sequences <- TRUE
-  #   for (i in 1:length(lstm_time_dist)) {
-  #     if (i == length(lstm_time_dist)) return_sequences <- FALSE
-  #     output_tensor <- output_tensor %>% keras::layer_lstm(units=lstm_time_dist[i], return_sequences = return_sequences)
-  #   }
-  #   
-  #   output_tensor <- keras::layer_concatenate(c(output_tensor, output_tensor_sum)) 
-  # } 
-  
   if (num_aggr_layers == 0) {
     stop("You need to choose an aggregation method, either with aggregation_method, transformer_args or lstm_time_dist.")
   }
@@ -1876,6 +1818,7 @@ create_model_lstm_cnn_time_dist <- function(
 #'   layer_dense = c(64, 2),
 #'   learning_rate = 0.001)
 #'   
+#' @returns A keras model with multiple input layers. Input goes through shared LSTM/CNN layers.   
 #' @export
 create_model_lstm_cnn_multi_input <- function(
     maxlen = 50,
@@ -2161,6 +2104,7 @@ create_model_lstm_cnn_multi_input <- function(
 #' model <- reshape_input(model_1, input_shape = c(120, 4))
 #' model
 #' 
+#' @returns A keras model with changed input shape of input model.
 #' @export
 reshape_input <- function(model, input_shape) {
   
@@ -2180,6 +2124,7 @@ reshape_input <- function(model, input_shape) {
 
 #' Get solver and learning_rate from model.
 #'
+#' @returns Keras optimizer.
 #' @keywords internal
 get_optimizer <- function(model) {
   solver <- stringr::str_to_lower(model$optimizer$get_config()["name"])
@@ -2319,7 +2264,7 @@ get_optimizer <- function(model) {
 #' model <- create_model_genomenet()
 #' model
 #' 
-#' 
+#' @returns A keras model implementing genomenet architecture.
 #' @export
 create_model_genomenet <- function(
     maxlen = 300,
@@ -2663,6 +2608,7 @@ set_optimizer <- function(solver = "adam", learning_rate = 0.01) {
 #'   verbose = FALSE)
 #' get_output_activations(model)
 #' 
+#' @returns Character vector with names of activation functions of model outputs.
 #' @export
 get_output_activations <- function(model) {
   
@@ -2740,8 +2686,9 @@ manage_metrics <- function(model, compile = FALSE) {
 #' keras::save_model_hdf5(model, file.path(checkpoint_folder, 'Ep.007-val_loss11.07-val_acc0.6.hdf5'))
 #' keras::save_model_hdf5(model, file.path(checkpoint_folder, 'Ep.019-val_loss8.74-val_acc0.7.hdf5'))
 #' keras::save_model_hdf5(model, file.path(checkpoint_folder, 'Ep.025-val_loss0.03-val_acc0.8.hdf5'))
-#' model <- load_cp(cp_path = checkpoint_folder, cp_filter = "last_ep")
+#' #model <- load_cp(cp_path = checkpoint_folder, cp_filter = "last_ep")
 #' 
+#' @returns A keras model loaded from a checkpoint.
 #' @export
 load_cp <- function(cp_path, cp_filter = "last_ep", ep_index = NULL, compile = FALSE,
                     learning_rate = 0.01, solver = "adam", re_compile = FALSE,
@@ -2912,190 +2859,6 @@ get_cp  <- function(cp_path, cp_filter = "last_ep", ep_index = NULL) {
   
 }
 
-#' Layer for positional embedding
-#' 
-#' Positional encoding layer with learned embedding.
-#' 
-#' @inheritParams create_model_transformer
-#' @param load_r6 Whether to load the R6 layer class.
-#' @examples
-#' l <- layer_pos_embedding_wrapper()
-#' 
-#' @export
-layer_pos_embedding_wrapper <- function(maxlen = 100, vocabulary_size = 4, load_r6 = FALSE, embed_dim = 64) {
-  
-  layer_pos_embedding <- keras::new_layer_class(
-    "layer_pos_embedding",
-    
-    initialize = function(maxlen=100, vocabulary_size=4, embed_dim=64, ...) {
-      super$initialize(...)
-      if (embed_dim != 0) {
-        self$token_emb <- tensorflow::tf$keras$layers$Embedding(input_dim = as.integer(vocabulary_size),
-                                                                output_dim = as.integer(embed_dim))
-        self$position_embeddings <- tensorflow::tf$keras$layers$Embedding(input_dim = as.integer(maxlen),
-                                                                          output_dim = as.integer(embed_dim))
-      } else {
-        self$position_embeddings <- tensorflow::tf$keras$layers$Embedding(input_dim = as.integer(maxlen),
-                                                                          output_dim = as.integer(vocabulary_size))
-      }
-      self$embed_dim <- as.integer(embed_dim)
-      self$maxlen <- as.integer(maxlen)
-      self$vocabulary_size <- as.integer(vocabulary_size)
-    },
-    
-    call = function(inputs) {
-      positions <- tensorflow::tf$range(self$maxlen, dtype = "int32") 
-      embedded_positions <- self$position_embeddings(positions)
-      if (self$embed_dim != 0) inputs <- self$token_emb(inputs)
-      inputs + embedded_positions
-    },
-    
-    get_config = function() {
-      config <- super$get_config()
-      config$maxlen <- self$maxlen
-      config$vocabulary_size <- self$vocabulary_size
-      config$embed_dim <- self$embed_dim
-      config
-    }
-  )
-  
-  if (load_r6) {
-    return(layer_pos_embedding)
-  } else {
-    return(layer_pos_embedding(maxlen=maxlen, vocabulary_size=vocabulary_size, embed_dim=embed_dim))
-  }
-  
-}
-
-#' Layer for positional encoding
-#' 
-#' Positional encoding layer with sine/cosine matrix of different frequencies.
-#' 
-#' @inheritParams create_model_transformer
-#' @param load_r6 Whether to load the R6 layer class.
-#' @examples
-#' l <- layer_pos_sinusoid_wrapper() 
-#' 
-#' @export
-layer_pos_sinusoid_wrapper <- function(maxlen = 100, vocabulary_size = 4, n = 10000, load_r6 = FALSE, embed_dim = 64) {
-  
-  layer_pos_sinusoid <- keras::new_layer_class(
-    "layer_pos_sinusoid",
-    initialize = function(maxlen, vocabulary_size, n, embed_dim, ...) {
-      super$initialize(...)
-      self$maxlen <- as.integer(maxlen)
-      self$vocabulary_size <- vocabulary_size
-      self$n <- as.integer(n)
-      self$pe_matrix <- positional_encoding(seq_len = maxlen,
-                                            d_model = ifelse(embed_dim == 0,
-                                                             as.integer(vocabulary_size),
-                                                             as.integer(embed_dim)),  
-                                            n = n)
-      
-      if (embed_dim != 0) {
-        self$token_emb <- tensorflow::tf$keras$layers$Embedding(input_dim = vocabulary_size, output_dim = as.integer(embed_dim))
-      }
-      self$embed_dim <- as.integer(embed_dim)
-      
-    },
-    
-    call = function(inputs) {
-      if (self$embed_dim != 0) {
-        inputs <- self$token_emb(inputs)
-      } 
-      inputs + self$pe_matrix
-    },
-    
-    get_config = function() {
-      config <- super$get_config()
-      config$maxlen <- self$maxlen
-      config$vocabulary_size <- self$vocabulary_size
-      config$n <- self$n
-      config$embed_dim <- self$embed_dim
-      config$pe_matrix <- self$pe_matrix
-      config
-    }
-  )
-  
-  if (load_r6) {
-    return(layer_pos_sinusoid)
-  } else {
-    return(layer_pos_sinusoid(maxlen=maxlen, vocabulary_size=vocabulary_size, n=n,
-                              embed_dim = embed_dim))
-  }
-  
-}
-
-#' Transformer block
-#' 
-#' Create transformer block. Consists of self attention, dense layers, layer normalization, recurrent connection and dropout.
-#' 
-#' @inheritParams create_model_transformer
-#' @param dropout_rate Rate to randomly drop out connections.
-#' @param load_r6 Whether to return the layer class.
-#' @examples
-#' l <- layer_transformer_block_wrapper()
-#' 
-#' @export
-layer_transformer_block_wrapper <- function(num_heads = 2, head_size = 4, dropout_rate = 0, ff_dim = 64,  
-                                            vocabulary_size = 4, load_r6 = FALSE, embed_dim = 64) {
-  
-  layer_transformer_block <- keras::new_layer_class(
-    "layer_transformer_block",
-    initialize = function(num_heads=2, head_size=4, dropout_rate=0, ff_dim=64L, vocabulary_size=4, embed_dim=64, ...) {
-      super$initialize(...)
-      self$num_heads <- num_heads
-      self$head_size <- head_size
-      self$dropout_rate <- dropout_rate
-      self$ff_dim <- ff_dim
-      self$embed_dim <- as.integer(embed_dim)
-      self$vocabulary_size <- vocabulary_size
-      self$att <- tensorflow::tf$keras$layers$MultiHeadAttention(num_heads=as.integer(num_heads),
-                                                                 key_dim=as.integer(head_size))
-      
-      self$ffn <- keras::keras_model_sequential() %>% keras::layer_dense(units=as.integer(ff_dim), activation="relu") %>%
-        keras::layer_dense(units=ifelse(embed_dim == 0, as.integer(vocabulary_size), as.integer(embed_dim)))
-      
-      self$layernorm1 <- keras::layer_layer_normalization(epsilon=1e-6)
-      self$layernorm2 <- keras::layer_layer_normalization(epsilon=1e-6)
-      self$dropout1 <- keras::layer_dropout(rate=dropout_rate)
-      self$dropout2 <- keras::layer_dropout(rate=dropout_rate)
-    },
-    
-    call = function(inputs) {
-      attn_output <- self$att(inputs, inputs, inputs)
-      attn_output <- self$dropout1(attn_output)
-      out1 <- self$layernorm1(inputs + attn_output)
-      ffn_output <- self$ffn(out1)
-      ffn_output <- self$dropout2(ffn_output)
-      seq_output <- self$layernorm2(out1 + ffn_output)
-      return(seq_output)
-    },
-    
-    get_config = function() {
-      config <- super$get_config()
-      config$num_heads <- self$num_heads
-      config$head_size <- self$head_size
-      config$dropout_rate <- self$dropout_rate
-      config$ff_dim <- self$ff_dim
-      config$vocabulary_size <- self$vocabulary_size
-      config$embed_dim <- self$embed_dim
-      config
-    }
-  )
-  
-  if (load_r6) {
-    return(layer_transformer_block)
-  } else {
-    return(layer_transformer_block(num_heads=num_heads,
-                                   head_size=head_size,
-                                   dropout_rate=dropout_rate,
-                                   vocabulary_size=vocabulary_size,
-                                   embed_dim=embed_dim,
-                                   ff_dim=ff_dim))
-  }
-  
-}
 
 #' Create transformer model
 #'
@@ -3125,6 +2888,7 @@ layer_transformer_block_wrapper <- function(num_heads = 2, head_size = 4, dropou
 #'                                   ff_dim=c(5,9), 
 #'                                   dropout=c(0.3, 0.5))
 #' 
+#' @returns A keras model implementing transformer architecture.
 #' @export
 create_model_transformer <- function(maxlen,
                                      vocabulary_size = 4,
@@ -3255,6 +3019,7 @@ create_model_transformer <- function(maxlen,
 #'                        learning_rate = 0.01,
 #'                        loss_fn = 'categorical_crossentropy')
 #' 
+#' @returns A compiled keras model.
 #' @export
 compile_model <- function(model, solver, learning_rate, loss_fn, label_smoothing = 0,
                           num_output_layers = 1, label_noise_matrix = NULL,
@@ -3436,6 +3201,7 @@ layer_cosine_sim_wrapper <- function(load_r6 = FALSE) {
 #'   pool_size = 3,
 #'   learning_rate = 0.001)
 #'   
+#' @returns A keras model implementing twin network architecture.   
 #' @export
 create_model_twin_network <- function(
     maxlen = 50,

@@ -134,6 +134,7 @@
 #'                         nopatches = 8)
 #' }                        
 #'  
+#' @returns A list of training metrics.  
 #' @export
 train_model_cpc <-
   function(train_type = "CPC",

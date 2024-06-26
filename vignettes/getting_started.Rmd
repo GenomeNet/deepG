@@ -1,9 +1,9 @@
 ---
 title: "Getting started"
-output:
-  html_document:
-    toc: true
-    toc_depth: 3
+vignette: >
+  %\VignetteIndexEntry{Getting started}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
 ---
 
 ```{r, eval=FALSE, message=FALSE}
@@ -196,5 +196,4 @@ label_names <- c("high_gc", "equal_dist")
 pred_summary <- summarize_states(label_names = label_names, df = pred_df[, 1:2])
 print(pred_summary)
 ```
-
 

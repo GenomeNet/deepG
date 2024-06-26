@@ -12,6 +12,9 @@ auc_wrapper(model_output_size, loss = "binary_crossentropy")
 \item{loss}{Loss function of model, for which metric will be applied to; must be \code{"binary_crossentropy"}
 or \code{"categorical_crossentropy"}.}
 }
+\value{
+A keras metric.
+}
 \description{
 Compute AUC score as additional metric. If model has several output neurons with binary crossentropy loss, will use the average score.
 }
@@ -37,5 +40,5 @@ auc_metric <- auc_wrapper(num_targets, loss = model$loss)
 model \%>\% keras::compile(loss = model$loss, 
                          optimizer = model$optimizer,
                          metrics = c(model$metrics, auc_metric))
-                         
+
 }

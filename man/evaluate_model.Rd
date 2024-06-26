@@ -115,6 +115,9 @@ and else an integer.}
 
 \item{...}{Further generator options. See \code{\link{get_generator}}.}
 }
+\value{
+A list of evaluation results. Each list element corresponds to an output layer of the model.
+}
 \description{
 Returns evaluation metric like confusion matrix, loss, AUC, AUPRC, MAE, MSE (depending on output layer).
 }
@@ -139,4 +142,5 @@ evaluate_model(path_input = path_input,
   output_format = "target_right",
   evaluate_all_files = TRUE,
   verbose = FALSE)
+  
 }

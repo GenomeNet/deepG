@@ -43,6 +43,9 @@ If first label contains 5 percent wrong labels and second label no noise, then
 
 \item{auc_metric}{Whether to add AUC metric.}
 }
+\value{
+A compiled keras model.
+}
 \description{
 Compile model
 }

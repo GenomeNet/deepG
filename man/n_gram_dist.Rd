@@ -31,6 +31,8 @@ n_gram_dist(
 }
 \value{
 Returns a matrix with distributions of nucleotides given the previous n nucleotides.
+
+A data frame of n-gram predictions.
 }
 \description{
 Get distribution of next character given previous n nucleotides.

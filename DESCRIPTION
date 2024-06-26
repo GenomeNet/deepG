@@ -67,6 +67,7 @@ Suggests:
     ComplexHeatmap,
     wavenet,
     knitr,
-    rmarkdown
+    rmarkdown,
+    devtools
 VignetteBuilder: 
     knitr

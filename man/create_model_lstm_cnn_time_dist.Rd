@@ -124,6 +124,9 @@ as \code{flatten_method} argument in \link{create_model_transformer} function).}
 
 \item{mirrored_strategy}{Whether to use distributed mirrored strategy. If NULL, will use distributed mirrored strategy only if >1 GPU available.}
 }
+\value{
+A keras model with time distribution wrapper applied to LSTM and CNN layers.
+}
 \description{
 Creates a network consisting of an arbitrary number of CNN, LSTM and dense layers.
 Input is a 4D tensor, where axis correspond to:
@@ -150,5 +153,5 @@ create_model_lstm_cnn_time_dist(
   aggregation_method = c("max"),
   layer_dense = c(64, 2),
   learning_rate = 0.001)
-  
+
 }

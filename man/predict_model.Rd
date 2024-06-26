@@ -5,8 +5,8 @@
 \title{Make prediction for nucleotide sequence or entries in fasta/fastq file}
 \usage{
 predict_model(
+  model,
   output_format = "one_seq",
-  model = NULL,
   layer_name = NULL,
   sequence = NULL,
   path_input = NULL,
@@ -21,7 +21,6 @@ predict_model(
   padding = "none",
   use_quality = FALSE,
   quality_string = NULL,
-  path_model = NULL,
   mode = "label",
   lm_format = "target_right",
   output_dir = NULL,
@@ -33,9 +32,9 @@ predict_model(
 )
 }
 \arguments{
-\item{output_format}{Either \code{"one_seq"}, \code{"by_entry"}, \code{"by_entry_one_file"}, \code{"one_pred_per_entry"}.}
-
 \item{model}{A keras model.}
+
+\item{output_format}{Either \code{"one_seq"}, \code{"by_entry"}, \code{"by_entry_one_file"}, \code{"one_pred_per_entry"}.}
 
 \item{layer_name}{Name of layer to get output from. If \code{NULL}, will use the last layer.}
 
@@ -45,7 +44,8 @@ predict_model(
 
 \item{round_digits}{Number of decimal places.}
 
-\item{filename}{Filename to store states in. No file output if argument is \code{NULL}.}
+\item{filename}{Filename to store states in. No file output if argument is \code{NULL}.
+If \code{output_format = "by_entry"}, adds "\emph{nr}" + "i" after name, where i is entry number.}
 
 \item{step}{Frequency of sampling steps.}
 
@@ -73,8 +73,6 @@ Only applied if sequence is shorter than maxlen.
 
 \item{quality_string}{String for encoding with quality scores (as used in fastq format).}
 
-\item{path_model}{Path to a pretrained model.}
-
 \item{mode}{Either \code{"lm"} for language model or \code{"label"} for label classification.}
 
 \item{lm_format}{Either \code{"target_right"}, \code{"target_middle_lstm"}, \code{"target_middle_cnn"} or \code{"wavenet"}.}
@@ -96,6 +94,11 @@ Only applied if sequence is shorter than maxlen.
 }}
 
 \item{...}{Further arguments for sequence encoding with \code{\link{seq_encoding_label}}.}
+}
+\value{
+If \code{return_states = TRUE} returns a list of model predictions and position of corresponding sequences.
+If additionally \code{include_seq = TRUE}, list contains sequence strings.
+If \code{return_states = FALSE} returns nothing, just writes output to file(s).
 }
 \description{
 Removes layers (optional) from pretrained model and calculates states of fasta/fastq file or nucleotide sequence.
@@ -131,4 +134,5 @@ dir.create(output_dir)
 predict_model(output_format = "by_entry", model = model, step = 10, verbose = FALSE,
                output_dir = output_dir, mode = "label", path_input = fasta_path)
 list.files(output_dir)
+
 }

@@ -129,11 +129,11 @@ generator_fasta_lm <- function(path_corpus,
   if (!is.null(reshape_xy)) {
     reshape_xy_bool <- TRUE
     reshape_x_bool <- ifelse(is.null(reshape_xy$x), FALSE, TRUE)
-    if (reshape_x_bool & !all(c('x', 'y') %in% formalArgs(reshape_xy$x))) {
+    if (reshape_x_bool & !all(c('x', 'y') %in% formals(reshape_xy$x))) {
       stop("function reshape_xy$x needs to have arguments named x and y")
     }
     reshape_y_bool <- ifelse(is.null(reshape_xy$y), FALSE, TRUE)
-    if (reshape_y_bool & !all(c('x', 'y') %in% formalArgs(reshape_xy$y))) {
+    if (reshape_y_bool & !all(c('x', 'y') %in% formals(reshape_xy$y))) {
       stop("function reshape_xy$y needs to have arguments named x and y")
     }
   } else {

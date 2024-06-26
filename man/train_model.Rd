@@ -310,7 +310,12 @@ second entry contains the column named \code{"label_3"}.}
 \item{delete_used_files}{Whether to delete file once used. Only applies for rds files.}
 
 \item{reshape_xy}{Can be a list of functions to apply to input and/or target. List elements (containing the reshape functions)
-must be called x for input or y for target.}
+must be called x for input or y for target and each have arguments called x and y. For example:
+\code{reshape_xy = list(x = function(x, y) {return(x+1)}, y = function(x, y) {return(x+y)})} .
+For rds generator needs to have an additional argument called sw.}
+}
+\value{
+A list of training metrics.
 }
 \description{
 Train a neural network on genomic data. Data can be fasta/fastq files, rds files or a prepared data set.
@@ -319,6 +324,7 @@ from files. Function includes several options to determine the sampling strategy
 Training progress can be visualized in tensorboard. Model weights can be stored during training using checkpoints.
 }
 \examples{
+\dontrun{
 # create dummy data
 path_train_1 <- tempfile()
 path_train_2 <- tempfile()
@@ -349,5 +355,5 @@ hist <- train_model(train_type = "label_folder",
                     step = 5,
                     format = "fasta",
                     vocabulary_label = c("label_1", "label_2"))
- 
+}  
 }

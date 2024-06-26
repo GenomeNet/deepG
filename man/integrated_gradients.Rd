@@ -31,6 +31,9 @@ input is too big to handle at once. Only supported for single input layer.}
 \item{num_baseline_repeats}{Number of different baseline estimations if baseline_type is \code{"shuffle"} (estimate integrated
 gradient repeatedly for different shuffles). Final result is average of \code{num_baseline} single calculations.}
 }
+\value{
+A tensorflow tensor.
+}
 \description{
 Computes integrated gradients scores for model and an input sequence.
 This can be used to visualize what part of the input is import for the models decision.

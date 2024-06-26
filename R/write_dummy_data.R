@@ -22,6 +22,7 @@
 #'                   vocabulary = c("a", "c", "g", "t"))
 #' list.files(path_output)                
 #'    
+#' @returns None. Writes data to files.     
 #' @export
 create_dummy_data <- function(file_path,
                               num_files,

@@ -9,6 +9,9 @@ get_hyper_param(model)
 \arguments{
 \item{model}{A keras model.}
 }
+\value{
+List of hyperparameters.
+}
 \description{
 Extract hyperparameters from model
 }

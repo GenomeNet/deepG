@@ -48,11 +48,14 @@ dir.create(checkpoint_folder)
 keras::save_model_hdf5(model, file.path(checkpoint_folder, 'Ep.007-val_loss11.07-val_acc0.6.hdf5'))
 keras::save_model_hdf5(model, file.path(checkpoint_folder, 'Ep.019-val_loss8.74-val_acc0.7.hdf5'))
 keras::save_model_hdf5(model, file.path(checkpoint_folder, 'Ep.025-val_loss0.03-val_acc0.8.hdf5'))
-model <- load_cp(cp_path = checkpoint_folder, cp_filter = "last_ep")}
+#model <- load_cp(cp_path = checkpoint_folder, cp_filter = "last_ep")}
 
 \item{verbose}{Whether to print chosen checkpoint path.}
 
 \item{mirrored_strategy}{Whether to use distributed mirrored strategy. If NULL, will use distributed mirrored strategy only if >1 GPU available.}
+}
+\value{
+A keras model loaded from a checkpoint.
 }
 \description{
 Load checkpoint from directory. Chooses best checkpoint based on some condition. Condition

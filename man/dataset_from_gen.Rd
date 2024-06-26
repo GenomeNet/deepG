@@ -115,6 +115,9 @@ Must be list with the following arguments:
 
 \item{...}{further generator options. See \code{\link{get_generator}}.}
 }
+\value{
+None. Function writes data to files and does not return a value.
+}
 \description{
 Repeatedly generate samples with data generator and store output. Creates a separate rds or pickle file in \code{output_path} for each
 batch.

@@ -1,9 +1,9 @@
 ---
 title: "Using Tensorboard"
-output:
-  rmarkdown::html_vignette:
-    toc: true
-    toc_depth: 3
+vignette: >
+  %\VignetteIndexEntry{Using Tensorboard}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
 ---
 
 ```{r, eval=FALSE, message=FALSE}

@@ -30,3 +30,12 @@
   #usethis::use_pipe(export = TRUE)
   #packageStartupMessage("The deepG package has been successfully loaded.")
 }
+
+# # remove temp files
+# .onUnload <- function(libpath = dirname(tempdir())) {
+#   temp_files <- list.files(libpath, pattern = "__autograph_generated_file.*\\.py", full.names = TRUE)
+#   unlink(temp_files)
+#   temp_files <- list.files(libpath, pattern = "__pycache__", full.names = TRUE)
+#   unlink(temp_files)
+# }
+

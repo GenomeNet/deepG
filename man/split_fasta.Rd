@@ -23,6 +23,9 @@ split_fasta(
 
 \item{delete_input}{Whether to delete the original file.}
 }
+\value{
+None. Writes files to output.
+}
 \description{
 Returns smaller files with same file name and "_x" (where x is an integer). For example,
 assume we have input file called "abc.fasta" with 100 entries and \code{split_n = 50}. Function will
@@ -44,6 +47,5 @@ split_fasta(path_input = path_input,
             target_folder = target_folder,
             split_n = 5)
 length(list.files(target_folder)) 
-
 
 }

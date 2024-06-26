@@ -6,6 +6,9 @@
 \usage{
 check_layer_name(model, layer_name)
 }
+\value{
+Error message if model does not contain layer of certain name.
+}
 \description{
 Check if layer is in model
 }

@@ -74,6 +74,9 @@ Assume a sequence \code{"AACCGTA"}. Output correspond as follows
 
 \item{tokenizer}{A keras tokenizer.}
 }
+\value{
+A list of 2 tensors.
+}
 \description{
 Helper function for \code{\link{generator_fasta_lm}}.
 Encodes integer sequence to input/target list according to \code{output_format} argument.
@@ -117,4 +120,5 @@ y[1,] # t
 
 x[2,,] # taatn
 y[2,] # t
+
 }

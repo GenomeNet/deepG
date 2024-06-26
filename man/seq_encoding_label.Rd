@@ -71,6 +71,9 @@ Must be list with the following arguments:
 
 \item{return_int}{Whether to return integer encoding or one-hot encoding.}
 }
+\value{
+A list of 2 tensors.
+}
 \description{
 Returns encoding for integer or character sequence.
 }
@@ -96,4 +99,5 @@ x <- seq_encoding_label(maxlen = 5,
 x[1,,] # actaa
 
 x[2,,] # taatn
+
 }

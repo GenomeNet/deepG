@@ -128,6 +128,7 @@
 #' directory where parameters are stored. List can contain additional (optional) arguments, for example 
 #' `model_card = list(path_model_card = "/path/to/logs", description = "transfer learning with BERT model on virus data", ...)`  
 #' @examples
+#' \dontrun{
 #' # create dummy data
 #' path_train_1 <- tempfile()
 #' path_train_2 <- tempfile()
@@ -158,7 +159,8 @@
 #'                     step = 5,
 #'                     format = "fasta",
 #'                     vocabulary_label = c("label_1", "label_2"))
-#'  
+#' }  
+#' @returns A list of training metrics.  
 #' @export
 train_model <- function(model = NULL,
                         dataset = NULL,

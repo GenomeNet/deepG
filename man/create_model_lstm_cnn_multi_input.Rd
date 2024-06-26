@@ -112,6 +112,9 @@ If first label contains 5 percent wrong labels and second label no noise, then
 
 \item{mirrored_strategy}{Whether to use distributed mirrored strategy. If NULL, will use distributed mirrored strategy only if >1 GPU available.}
 }
+\value{
+A keras model with multiple input layers. Input goes through shared LSTM/CNN layers.
+}
 \description{
 Creates a network consisting of an arbitrary number of CNN, LSTM and dense layers with multiple
 input layers. After LSTM/CNN part all representations get aggregated by summation.

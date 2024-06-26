@@ -23,6 +23,9 @@ load_prediction(
 
 \item{get_seq}{Return nucleotide sequence if \code{TRUE}.}
 }
+\value{
+A list of data frames, containing model predictions and sequence positions.
+}
 \description{
 Reads h5 file created by  \code{\link{predict_model}} function.
 }
@@ -35,4 +38,5 @@ output_file <- tempfile(fileext = ".h5")
 predict_model(output_format = "one_seq", model = model, step = 10,
               sequence = sequence, filename = output_file, mode = "label")
 load_prediction(h5_path = output_file)
+
 }

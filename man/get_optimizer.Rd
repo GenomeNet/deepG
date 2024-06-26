@@ -6,6 +6,9 @@
 \usage{
 get_optimizer(model)
 }
+\value{
+Keras optimizer.
+}
 \description{
 Get solver and learning_rate from model.
 }

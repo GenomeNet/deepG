@@ -17,6 +17,9 @@ evaluate_sigmoid(y, y_conf, auc = FALSE, auprc = FALSE, label_names = NULL)
 
 \item{label_names}{Names of corresponding labels. Length must be equal to number of columns of \code{y}.}
 }
+\value{
+A list of evaluation results.
+}
 \description{
 Compute accuracy, binary crossentropy and (optionally) AUC or AUPRC, given predictions and
 true targets. Outputs columnwise average.

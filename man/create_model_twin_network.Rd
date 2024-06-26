@@ -104,6 +104,9 @@ create_model_twin_network(
 
 \item{mirrored_strategy}{Whether to use distributed mirrored strategy. If NULL, will use distributed mirrored strategy only if >1 GPU available.}
 }
+\value{
+A keras model implementing twin network architecture.
+}
 \description{
 Twin network can be trained to maximize the distance
 between embeddings of inputs.

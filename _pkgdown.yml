@@ -70,6 +70,7 @@ reference:
   - validation_after_training_cb
   - reset_states_cb
   - remove_checkpoints
+  - model_card_cb
 - title: Metrics and Losses
   contents:
   - noisy_loss_wrapper
@@ -79,6 +80,8 @@ reference:
   - exp_decay
   - stepdecay
   - sgdr
+  - focal_loss_multiclass
+  - loss_cl
 - title: Generators
   contents:
   - starts_with("generator_")
@@ -98,6 +101,7 @@ reference:
   contents:
   - integrated_gradients
   - heatmaps_integrated_grad
+  - plot_cm
 - title: Preprocessing
   contents:
   - seq_encoding_label
@@ -109,14 +113,13 @@ reference:
   - n_gram_of_matrix
   - reshape_tensor
   - split_fasta
+  - one_hot_to_seq
 - title: Data
   contents:
   - crispr_full
   - crispr_sample
   - ecoli
   - ecoli_small
-  - model_self_genomenet_maxlen_10k
-  - model_self_genomenet_maxlen_150
   - parenthesis
 - title: Dummy Data
   contents: create_dummy_data

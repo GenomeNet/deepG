@@ -12,6 +12,9 @@ heatmaps_integrated_grad(integrated_grads, input_seq)
 \item{input_seq}{Input sequence for model. Should be the same as \code{input_seq} input for corresponding
 \code{\link{integrated_gradients}} call that computed input for \code{integrated_grads} argument.}
 }
+\value{
+A list of heatmaps.
+}
 \description{
 Creates a heatmap from output of \code{\link{integrated_gradients}} function. The first row contains
 the column-wise absolute sums of IG scores and the second row the sums. Rows 3 to 6 contain the IG scores for each
@@ -27,5 +30,5 @@ ig <- integrated_gradients(
   model = model)
 heatmaps_integrated_grad(integrated_grads = ig,
                          input_seq = input_seq)
-                         
+ 
 }

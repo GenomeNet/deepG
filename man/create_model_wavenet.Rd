@@ -60,6 +60,9 @@ then it's used as the dilation rate of each residual block.}
 
 \item{mirrored_strategy}{Whether to use distributed mirrored strategy. If NULL, will use distributed mirrored strategy only if >1 GPU available.}
 }
+\value{
+A keras model implementing wavenet architecture.
+}
 \description{
 Creates network architecture as described \href{https://arxiv.org/abs/1609.03499}{here}. Implementation
 uses code from \href{https://github.com/r-tensorflow/wavenet}{here}.
@@ -68,4 +71,5 @@ uses code from \href{https://github.com/r-tensorflow/wavenet}{here}.
 \dontrun{
 model <- create_model_wavenet(residual_blocks = 2^rep(1:4, 2), maxlen = 1000)
 }
+
 }

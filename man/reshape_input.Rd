@@ -11,6 +11,9 @@ reshape_input(model, input_shape)
 
 \item{input_shape}{The new input shape vector (without batch size).}
 }
+\value{
+A keras model with changed input shape of input model.
+}
 \description{
 Replace first layer of model with new input layer of different shape. Only works for sequential models that
 use CNN and LSTM layers.

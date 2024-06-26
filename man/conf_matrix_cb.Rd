@@ -16,6 +16,9 @@ If name already present, will add \code{"_2"} to name or \code{"_{x+1}"} if name
 
 \item{cm_dir}{Directory that contains confusion matrix files.}
 }
+\value{
+Keras callback, plot confusion matrix in tensorboard.
+}
 \description{
 Create a confusion matrix to display under tensorboard images.
 }

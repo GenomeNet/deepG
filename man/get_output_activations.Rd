@@ -9,6 +9,9 @@ get_output_activations(model)
 \arguments{
 \item{model}{A keras model.}
 }
+\value{
+Character vector with names of activation functions of model outputs.
+}
 \description{
 Get activation functions of output layers.
 }

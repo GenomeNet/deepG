@@ -13,6 +13,9 @@ model_card_cb(model_card_path = NULL, run_name, argumentList)
 
 \item{argumentList}{List of training arguments.}
 }
+\value{
+Keras callback writing model cards every epoch.
+}
 \description{
 Log information about model, hyperparameters, generator options, training data, scores etc
 }

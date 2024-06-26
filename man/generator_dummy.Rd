@@ -11,6 +11,9 @@ generator_dummy(model, batch_size)
 
 \item{batch_size}{Number of samples in one batch.}
 }
+\value{
+A generator function.
+}
 \description{
 Creates a random input/target list once and repeatedly returns list.
 }

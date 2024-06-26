@@ -130,6 +130,9 @@ If first label contains 5 percent wrong labels and second label no noise, then
 
 \item{mirrored_strategy}{Whether to use distributed mirrored strategy. If NULL, will use distributed mirrored strategy only if >1 GPU available.}
 }
+\value{
+A keras model, stacks CNN, LSTM and dense layers.
+}
 \description{
 Creates a network consisting of an arbitrary number of CNN, LSTM and dense layers.
 Last layer is a dense layer.
@@ -144,5 +147,5 @@ create_model_lstm_cnn(
   layer_lstm = c(32, 64),
   layer_dense = c(128, 4),
   learning_rate = 0.001)
-  
+
 }

@@ -36,6 +36,9 @@ create_dummy_data(
 
 \item{vocabulary}{Set of characters to sample sequences from.}
 }
+\value{
+None. Writes data to files.
+}
 \description{
 Create random sequences from predefined vocabulary and write to fasta file.
 }
