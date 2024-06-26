@@ -34,6 +34,7 @@
 #' dim(z[[1]])
 #' z[[2]]
 #' 
+#' @returns A generator function.  
 #' @export
 generator_fasta_label_folder <- function(path_corpus,
                                          format = "fasta",
@@ -76,7 +77,13 @@ generator_fasta_label_folder <- function(path_corpus,
   if (!is.null(reshape_xy)) {
     reshape_xy_bool <- TRUE
     reshape_x_bool <- ifelse(is.null(reshape_xy$x), FALSE, TRUE)
+    if (reshape_x_bool & !all(c('x', 'y') %in% methods::formalArgs(reshape_xy$x))) {
+      stop("function reshape_xy$x needs to have arguments named x and y")
+    }
     reshape_y_bool <- ifelse(is.null(reshape_xy$y), FALSE, TRUE)
+    if (reshape_y_bool & !all(c('x', 'y') %in% methods::formalArgs(reshape_xy$y))) {
+      stop("function reshape_xy$y needs to have arguments named x and y")
+    }
   } else {
     reshape_xy_bool <- FALSE
   }
@@ -722,8 +729,8 @@ generator_fasta_label_folder <- function(path_corpus,
     num_samples <<- 0
     if (reverse_complement_encoding) {
       if (reshape_xy_bool) {
-        if (reshape_x_bool) x <- reshape_xy$x(x)
-        if (reshape_y_bool) y <- reshape_xy$y(y)
+        if (reshape_x_bool) x <- reshape_xy$x(x = x, y = y)
+        if (reshape_y_bool) y <- reshape_xy$y(x = x, y = y)
       }
       return(list(X = x, Y = y))
     }
@@ -745,8 +752,8 @@ generator_fasta_label_folder <- function(path_corpus,
     }
     
     if (reshape_xy_bool) {
-      if (reshape_x_bool) x <- reshape_xy$x(x)
-      if (reshape_y_bool) y <- reshape_xy$y(y)
+      if (reshape_x_bool) x <- reshape_xy$x(x = x, y = y)
+      if (reshape_y_bool) y <- reshape_xy$y(x = x, y = y)
     }
     
     if (!is.null(masked_lm) && include_sw) return(list(x, y, sample_weight))

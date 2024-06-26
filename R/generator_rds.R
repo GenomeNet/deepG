@@ -35,6 +35,7 @@
 #' x[1, , ]
 #' y[1, ]
 #' 
+#' @returns A generator function.  
 #' @export
 generator_rds <- function(rds_folder, batch_size, path_file_log = NULL,
                           max_samples = NULL,
@@ -51,12 +52,21 @@ generator_rds <- function(rds_folder, batch_size, path_file_log = NULL,
   if (!is.null(reshape_xy)) {
     reshape_xy_bool <- TRUE
     reshape_x_bool <- ifelse(is.null(reshape_xy$x), FALSE, TRUE)
+    if (reshape_x_bool & !all(c('x', 'y', 'sw') %in% methods::formalArgs(reshape_xy$x))) {
+      stop("function reshape_xy$x needs to have arguments named x, y and sw")
+    }
     reshape_y_bool <- ifelse(is.null(reshape_xy$y), FALSE, TRUE)
+    if (reshape_y_bool & !all(c('x', 'y', 'sw') %in% methods::formalArgs(reshape_xy$y))) {
+      stop("function reshape_xy$y needs to have arguments named x, y and sw")
+    }
     reshape_sw_bool <- ifelse(is.null(reshape_xy$sw), FALSE, TRUE)
+    if (reshape_sw_bool & !all(c('x', 'y', 'sw') %in% methods::formalArgs(reshape_xy$sw))) {
+      stop("function reshape_xy$sw needs to have arguments named x, y and sw")
+    }
   } else {
     reshape_xy_bool <- FALSE
   }
-  
+ 
   if (!is.null(seed)) set.seed(seed)
   is_lm <- !is.null(target_len)
   
@@ -386,9 +396,9 @@ generator_rds <- function(rds_folder, batch_size, path_file_log = NULL,
     }
     
     if (reshape_xy_bool) {
-      if (reshape_x_bool) x <- reshape_xy$x(x)
-      if (reshape_y_bool) y <- reshape_xy$y(y)
-      if (reshape_sw_bool) sw <- reshape_xy$sw(sw)
+      if (reshape_x_bool) x <- reshape_xy$x(x = x, y = y, sw = sw)
+      if (reshape_y_bool) y <- reshape_xy$y(x = x, y = y, sw = sw)
+      if (reshape_sw_bool) sw <- reshape_xy$sw(x = x, y = y, sw = sw)
     }
     
     if (include_sw) {

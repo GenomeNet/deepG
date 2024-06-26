@@ -52,7 +52,9 @@
 #' (default is `min=0, max=1`).
 #' @param return_int Whether to return integer encoding or one-hot encoding.
 #' @param reshape_xy Can be a list of functions to apply to input and/or target. List elements (containing the reshape functions)
-#'  must be called x for input or y for target. 
+#'  must be called x for input or y for target and each have arguments called x and y. For example: 
+#'  `reshape_xy = list(x = function(x, y) {return(x+1)}, y = function(x, y) {return(x+y)})` .
+#' For rds generator needs to have an additional argument called sw.
 #' @rawNamespace import(data.table, except = c(first, last, between))
 #' @importFrom magrittr %>%
 #' @examples
@@ -71,6 +73,7 @@
 #' dim(z[[1]])
 #' z[[2]]
 #' 
+#' @returns A generator function.  
 #' @export
 generator_fasta_lm <- function(path_corpus,
                                format = "fasta",
@@ -126,11 +129,16 @@ generator_fasta_lm <- function(path_corpus,
   if (!is.null(reshape_xy)) {
     reshape_xy_bool <- TRUE
     reshape_x_bool <- ifelse(is.null(reshape_xy$x), FALSE, TRUE)
+    if (reshape_x_bool & !all(c('x', 'y') %in% formalArgs(reshape_xy$x))) {
+      stop("function reshape_xy$x needs to have arguments named x and y")
+    }
     reshape_y_bool <- ifelse(is.null(reshape_xy$y), FALSE, TRUE)
+    if (reshape_y_bool & !all(c('x', 'y') %in% formalArgs(reshape_xy$y))) {
+      stop("function reshape_xy$y needs to have arguments named x and y")
+    }
   } else {
     reshape_xy_bool <- FALSE
   }
-  
   
   total_seq_len <- maxlen + target_len
   gen <- generator_fasta_label_folder(path_corpus = path_corpus,
@@ -190,8 +198,8 @@ generator_fasta_lm <- function(path_corpus,
                                return_int = return_int)
     
     if (reshape_xy_bool) {
-      if (reshape_x_bool) xy_list$x <- reshape_xy$x(xy_list$x)
-      if (reshape_y_bool) xy_list$y <- reshape_xy$y(xy_list$y)
+      if (reshape_x_bool) xy_list$x <- reshape_xy$x(x = xy_list$x, y = xy_list$y)
+      if (reshape_y_bool) xy_list$y <- reshape_xy$y(x = xy_list$x, y = xy_list$y)
     }
     
     if (is.null(added_label_path)) {

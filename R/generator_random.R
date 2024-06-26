@@ -31,6 +31,7 @@
 #' dim(z[[1]])
 #' z[[2]]
 #' 
+#' @returns A generator function.  
 #' @export
 generator_random <- function(
     train_type = "label_folder",
@@ -67,7 +68,13 @@ generator_random <- function(
   if (!is.null(reshape_xy)) {
     reshape_xy_bool <- TRUE
     reshape_x_bool <- ifelse(is.null(reshape_xy$x), FALSE, TRUE)
+    if (reshape_x_bool & !all(c('x', 'y') %in% methods::formalArgs(reshape_xy$x))) {
+      stop("function reshape_xy$x needs to have arguments named x and y")
+    }
     reshape_y_bool <- ifelse(is.null(reshape_xy$y), FALSE, TRUE)
+    if (reshape_y_bool & !all(c('x', 'y') %in% methods::formalArgs(reshape_xy$y))) {
+      stop("function reshape_xy$y needs to have arguments named x and y")
+    }
   } else {
     reshape_xy_bool <- FALSE
   }
@@ -395,8 +402,8 @@ generator_random <- function(
     
     if (train_type == "lm") {
       if (reshape_xy_bool) {
-        if (reshape_x_bool) xy_list$x <- reshape_xy$x(xy_list$x)
-        if (reshape_y_bool) xy_list$y <- reshape_xy$y(xy_list$y)
+        if (reshape_x_bool) xy_list$x <- reshape_xy$x(x = xy_list$x, y = xy_list$y)
+        if (reshape_y_bool) xy_list$y <- reshape_xy$y(x = xy_list$x, y = xy_list$y)
       }
       return(xy_list)
     } 
@@ -430,8 +437,8 @@ generator_random <- function(
     
     if (train_type == "masked_lm") {
       if (reshape_xy_bool) {
-        if (reshape_x_bool) one_hot_sample$x <- reshape_xy$x(one_hot_sample$x)
-        if (reshape_y_bool) one_hot_sample$y <- reshape_xy$y(one_hot_sample$y)
+        if (reshape_x_bool) one_hot_sample$x <- reshape_xy$x(x = one_hot_sample$x, y = one_hot_sample$y)
+        if (reshape_y_bool) one_hot_sample$y <- reshape_xy$y(x = one_hot_sample$x, y = one_hot_sample$y)
       }
       return(one_hot_sample)
     }
@@ -451,8 +458,8 @@ generator_random <- function(
       return(l)
     } else {
       if (reshape_xy_bool) {
-        if (reshape_x_bool) x <- reshape_xy$x(x)
-        if (reshape_y_bool) y <- reshape_xy$y(y)
+        if (reshape_x_bool) x <- reshape_xy$x(x = x, y = y)
+        if (reshape_y_bool) y <- reshape_xy$y(x = x, y = y)
       }
       return(list(X = x, Y = y))
     }

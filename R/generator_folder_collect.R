@@ -29,6 +29,7 @@
 #' z1[[1]]
 #' z1[[2]]
 #' 
+#' @returns List of generator function. 
 #' @export
 generator_initialize <- function(directories,
                                  format = "fasta",
@@ -73,7 +74,13 @@ generator_initialize <- function(directories,
   if (!is.null(reshape_xy)) {
     reshape_xy_bool <- TRUE
     reshape_x_bool <- ifelse(is.null(reshape_xy$x), FALSE, TRUE)
+    if (reshape_x_bool & !all(c('x', 'y') %in% methods::formalArgs(reshape_xy$x))) {
+      stop("function reshape_xy$x needs to have arguments named x and y")
+    }
     reshape_y_bool <- ifelse(is.null(reshape_xy$y), FALSE, TRUE)
+    if (reshape_y_bool & !all(c('x', 'y') %in% methods::formalArgs(reshape_xy$y))) {
+      stop("function reshape_xy$y needs to have arguments named x and y")
+    }
   } else {
     reshape_xy_bool <- FALSE
   }
@@ -294,6 +301,7 @@ generator_initialize <- function(directories,
 #' dim(z[[1]])
 #' z[[2]]
 #' 
+#' @returns A generator function.  
 #' @export
 generator_fasta_label_folder_wrapper <- function(val, 
                                                  batch_size = NULL,

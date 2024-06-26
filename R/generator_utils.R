@@ -16,6 +16,7 @@
 #' dim(x)
 #' dim(y)
 #' 
+#' @returns A generator function.  
 #' @export
 generator_dummy <- function(model, batch_size) {
   
@@ -120,6 +121,7 @@ generator_dummy <- function(model, batch_size) {
 #' 
 #' list.files(out_dir)
 #' 
+#' @returns None. Function writes data to files and does not return a value.
 #' @export
 dataset_from_gen <- function(output_path,
                              iterations = 10,

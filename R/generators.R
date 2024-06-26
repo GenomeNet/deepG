@@ -35,6 +35,7 @@
 #' dim(x)
 #' dim(y)
 #' 
+#' @returns A generator function.
 #' @export
 get_generator <- function(path = NULL,
                           train_type,
