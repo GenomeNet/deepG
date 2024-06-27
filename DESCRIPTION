@@ -68,6 +68,8 @@ Suggests:
     wavenet,
     knitr,
     rmarkdown,
-    devtools
+    devtools,
+    spelling
 VignetteBuilder: 
     knitr
+Language: en-US

@@ -718,7 +718,7 @@ to_time_dist <- function(x, samples_per_target) {
 #' 
 #' @param cm A confusion matrix
 #' @param perc Whether to use absolute numbers or percentages.
-#' @param cm_labels Labels correspoding to confusion matrix entries.
+#' @param cm_labels Labels corresponding to confusion matrix entries.
 #' @param round_dig How to round numbers.
 #' @param text_size Size of text annotations.
 #' @param highlight_diag Whether to highlight entries in diagonal.

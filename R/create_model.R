@@ -2187,7 +2187,7 @@ get_optimizer <- function(model) {
 #'   Target filter number of the last CNN-layer; ignored if only one CNN-layer
 #'   is used (i.e. if `number_of_cnn_layers` is 1). Although CNN filter number
 #'   is always an integer, this value can be non-integer, potentially affecting
-#'   the filter-numbers of intermediatdilation_rates layers (which are geometrically
+#'   the filter-numbers of intermediate dilation_rates layers (which are geometrically
 #'   interpolated between `kernel_size_0` and `kernel_size_end`).\cr
 #'   Note that filters are constant within convolutional blocks when
 #'   `residual_block` is `TRUE`.
