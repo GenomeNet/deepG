@@ -28,7 +28,7 @@ Authors@R: c(
               role = "aut",
               email = "alice.mchardy@helmholtz-hzi.de")
      )
-Description: 'deepG' is a toolbox for training and applying deep learning models for genomic sequence data.
+Description: Toolbox for training and applying deep learning models for genomic sequence data.
   Applications include data preprocessing, model fitting, model evaluation, model optimization and inference.
   A few genomic datasets for testing are provided, as is the possibility to extract deep representations.
 License: AGPL-3 + file LICENSE
