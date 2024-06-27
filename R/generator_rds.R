@@ -52,21 +52,21 @@ generator_rds <- function(rds_folder, batch_size, path_file_log = NULL,
   if (!is.null(reshape_xy)) {
     reshape_xy_bool <- TRUE
     reshape_x_bool <- ifelse(is.null(reshape_xy$x), FALSE, TRUE)
-    if (reshape_x_bool & !all(c('x', 'y') %in% names(formals(reshape_xy$x)))) {
+    if (reshape_x_bool && !all(c('x', 'y') %in% names(formals(reshape_xy$x)))) {
       stop("function reshape_xy$x needs to have arguments named x, y and sw")
     }
     reshape_y_bool <- ifelse(is.null(reshape_xy$y), FALSE, TRUE)
-    if (reshape_y_bool & !all(c('x', 'y') %in% names(formals(reshape_xy$y)))) {
+    if (reshape_y_bool && !all(c('x', 'y') %in% names(formals(reshape_xy$y)))) {
       stop("function reshape_xy$y needs to have arguments named x, y and sw")
     }
     reshape_sw_bool <- ifelse(is.null(reshape_xy$sw), FALSE, TRUE)
-    if (reshape_sw_bool & !all(c('x', 'y') %in% names(formals(reshape_xy$sw)))) {
+    if (reshape_sw_bool && !all(c('x', 'y') %in% names(formals(reshape_xy$sw)))) {
       stop("function reshape_xy$sw needs to have arguments named x, y and sw")
     }
   } else {
     reshape_xy_bool <- FALSE
   }
- 
+  
   if (!is.null(seed)) set.seed(seed)
   is_lm <- !is.null(target_len)
   
@@ -395,15 +395,30 @@ generator_rds <- function(rds_folder, batch_size, path_file_log = NULL,
       sw <- tensorflow::tf$split(sw, num_or_size_splits = size_splits_sw, axis = as.integer(length(sw_dim)-1))
     }
     
-    if (reshape_xy_bool) {
-      if (reshape_x_bool) x <- reshape_xy$x(x = x, y = y, sw = sw)
-      if (reshape_y_bool) y <- reshape_xy$y(x = x, y = y, sw = sw)
-      if (reshape_sw_bool) sw <- reshape_xy$sw(x = x, y = y, sw = sw)
-    }
-    
     if (include_sw) {
+      
+      if (reshape_xy_bool) {
+        l <- f_reshape(x = xy_list$x, y = xy_list$y,
+                       reshape_xy = reshape_xy,
+                       reshape_x_bool = reshape_x_bool,
+                       reshape_y_bool = reshape_y_bool,
+                       reshape_sw_bool = reshape_sw_bool, sw = sw)
+        return(l)
+      } 
+      
       return(list(x, y, sw))
+      
     } else {
+      
+      if (reshape_xy_bool) {
+        l <- f_reshape(x = xy_list$x, y = xy_list$y,
+                       reshape_xy = reshape_xy,
+                       reshape_x_bool = reshape_x_bool,
+                       reshape_y_bool = reshape_y_bool,
+                       reshape_sw_bool = FALSE, sw = NULL)
+        return(l)
+      } 
+      
       return(list(x, y))
     }
     

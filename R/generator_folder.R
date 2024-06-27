@@ -77,12 +77,16 @@ generator_fasta_label_folder <- function(path_corpus,
   if (!is.null(reshape_xy)) {
     reshape_xy_bool <- TRUE
     reshape_x_bool <- ifelse(is.null(reshape_xy$x), FALSE, TRUE)
-    if (reshape_x_bool & !all(c('x', 'y') %in% names(formals(reshape_xy$x)))) {
-      stop("function reshape_xy$x needs to have arguments named x and y")
+    if (reshape_x_bool && !all(c('x', 'y') %in% names(formals(reshape_xy$x)))) {
+      stop("function reshape_xy$x needs to have arguments named x, y and sw")
     }
     reshape_y_bool <- ifelse(is.null(reshape_xy$y), FALSE, TRUE)
-    if (reshape_y_bool & !all(c('x', 'y') %in% names(formals(reshape_xy$y)))) {
-      stop("function reshape_xy$y needs to have arguments named x and y")
+    if (reshape_y_bool && !all(c('x', 'y') %in% names(formals(reshape_xy$y)))) {
+      stop("function reshape_xy$y needs to have arguments named x, y and sw")
+    }
+    reshape_sw_bool <- ifelse(is.null(reshape_xy$sw), FALSE, TRUE)
+    if (reshape_sw_bool && !all(c('x', 'y') %in% names(formals(reshape_xy$sw)))) {
+      stop("function reshape_xy$sw needs to have arguments named x, y and sw")
     }
   } else {
     reshape_xy_bool <- FALSE
@@ -751,12 +755,18 @@ generator_fasta_label_folder <- function(path_corpus,
       x <- do.call(add_noise_tensor, noise_args)
     }
     
+    if (!is.null(masked_lm) && include_sw) return(list(x, y, sample_weight))
+    
     if (reshape_xy_bool) {
-      if (reshape_x_bool) x <- reshape_xy$x(x = x, y = y)
-      if (reshape_y_bool) y <- reshape_xy$y(x = x, y = y)
+      l <- f_reshape(x = x, y = y,
+                     reshape_xy = reshape_xy,
+                     reshape_x_bool = reshape_x_bool,
+                     reshape_y_bool = reshape_y_bool,
+                     reshape_sw_bool = FALSE,
+                     sw = NULL)
+      return(l)
     }
     
-    if (!is.null(masked_lm) && include_sw) return(list(x, y, sample_weight))
     return(list(X = x, Y = y))
     
   }

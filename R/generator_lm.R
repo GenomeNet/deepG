@@ -129,11 +129,11 @@ generator_fasta_lm <- function(path_corpus,
   if (!is.null(reshape_xy)) {
     reshape_xy_bool <- TRUE
     reshape_x_bool <- ifelse(is.null(reshape_xy$x), FALSE, TRUE)
-    if (reshape_x_bool & !all(c('x', 'y') %in% formals(reshape_xy$x))) {
+    if (reshape_x_bool && !all(c('x', 'y') %in% formals(reshape_xy$x))) {
       stop("function reshape_xy$x needs to have arguments named x and y")
     }
     reshape_y_bool <- ifelse(is.null(reshape_xy$y), FALSE, TRUE)
-    if (reshape_y_bool & !all(c('x', 'y') %in% formals(reshape_xy$y))) {
+    if (reshape_y_bool && !all(c('x', 'y') %in% formals(reshape_xy$y))) {
       stop("function reshape_xy$y needs to have arguments named x and y")
     }
   } else {
@@ -197,18 +197,19 @@ generator_fasta_lm <- function(path_corpus,
                                total_seq_len = total_seq_len,
                                return_int = return_int)
     
+    if (!is.null(added_label_path)) {
+      xy_list <- (list(append(added_input, list(xy_list$x)), xy_list$y))
+    }
+    
     if (reshape_xy_bool) {
-      if (reshape_x_bool) xy_list$x <- reshape_xy$x(x = xy_list$x, y = xy_list$y)
-      if (reshape_y_bool) xy_list$y <- reshape_xy$y(x = xy_list$x, y = xy_list$y)
-    }
+      xy_list <- f_reshape(x = xy_list$x, y = xy_list$y,
+                           reshape_xy = reshape_xy,
+                           reshape_x_bool = reshape_x_bool,
+                           reshape_y_bool = reshape_y_bool,
+                           reshape_sw_bool = FALSE, sw = NULL)
+    } 
     
-    if (is.null(added_label_path)) {
-      return(xy_list)
-    } else {
-      return(list(append(added_input, list(xy_list$x)), xy_list$y))
-    }
-    
-    # add dim for batch size 1
+    return(xy_list)
     
   }
 }

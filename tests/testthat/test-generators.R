@@ -2681,4 +2681,100 @@ test_that("Checking the generator for the Fasta files", {
   
   #### test reshape #### 
   
+  directories <- c("fasta_2", "fasta_3")
+  fx <- function(x) {return(x)}
+  reshape_xy <- list(x = fx)
+  expect_error(gen <- get_generator(path = directories,
+                                    reshape_xy = reshape_xy,
+                                    train_type = "label_folder",
+                                    batch_size = 4,
+                                    maxlen = 3))
+  
+  
+  directories <- c("fasta_2", "fasta_3")
+  fx <- function(x = NULL, y = NULL) {
+    return(x + 1)
+  }
+  fy <- function(x = NULL, y = NULL) {
+    return(x)
+  }
+  reshape_xy <- list(x = fx, y = fy)
+  gen <- get_generator(path = directories,
+                       reshape_xy = reshape_xy,
+                       val = FALSE,
+                       train_type = "label_folder",
+                       format = "fasta",
+                       batch_size = 4,
+                       maxlen = 3,
+                       vocabulary = c("a", "c", "g", "t"),
+                       reverse_complement = FALSE, 
+                       ambiguous_nuc = "zero",
+                       step = 2)
+  
+  arrays <- gen()
+  arrays[[1]][1,,]
+  y <- arrays[[2]]
+  
+  expect_equivalent(arrays[[1]][1, 1,  ], c(1, 0, 0, 0) + 1)
+  expect_equivalent(arrays[[1]][1, 2,  ], c(1, 0, 0, 0) + 1)
+  expect_equivalent(arrays[[1]][1, 3,  ], c(0, 1, 0, 0) + 1)
+  expect_equivalent(arrays[[2]][1, 1,  ], c(1, 0, 0, 0))
+  expect_equivalent(arrays[[2]][1, 2,  ], c(1, 0, 0, 0))
+  expect_equivalent(arrays[[2]][1, 3,  ], c(0, 1, 0, 0))
+  
+  expect_equivalent(arrays[[1]][4, 1,  ], rep(0, 4) + 1)
+  expect_equivalent(arrays[[1]][4, 2,  ], c(0, 1, 0, 0) + 1)
+  expect_equivalent(arrays[[1]][4, 3,  ], c(0, 1, 0, 0) + 1)
+  expect_equivalent(arrays[[2]][4, 1,  ], rep(0, 4))
+  expect_equivalent(arrays[[2]][4, 2,  ], c(0, 1, 0, 0))
+  expect_equivalent(arrays[[2]][4, 3,  ], c(0, 1, 0, 0))
+  
+  
+  testpath <- file.path("fasta_2")
+  label_from_csv <- "output_label.csv"
+  fx <- function(x = NULL, y = NULL) {
+    return(y + 3)
+  }
+  fy <- function(x = NULL, y = NULL) {
+    return(x + 2)
+  }
+  reshape_xy <- list(x = fx, y = fy)
+  gen <- generator_fasta_label_header_csv(path_corpus = testpath, batch_size = 5,
+                                          reshape_xy = reshape_xy,
+                                          maxlen = 10, step = 10,
+                                          vocabulary = c("a", "c", "g", "t", "Z"),
+                                          reverse_complement = FALSE, 
+                                          vocabulary_label = c("w", "x", "y"),
+                                          shuffle_file_order = FALSE,
+                                          seed = 1234,
+                                          shuffle_input = FALSE,
+                                          padding = TRUE,
+                                          concat_seq = "ZZ",
+                                          target_from_csv = label_from_csv)
+  
+  arrays <- gen()
+  
+  expect_equivalent(arrays[[2]][1, 8, ], c(0, 0, 0, 1, 0) + 2) 
+  expect_equivalent(arrays[[2]][1, 9, ], c(0, 0, 0, 0, 1) + 2) 
+  expect_equivalent(arrays[[2]][1, 10, ], c(0, 0, 0, 0, 1) + 2) 
+  
+  expect_equivalent(arrays[[2]][4, 3, ], c(1, 0, 0, 0, 0) + 2) 
+  expect_equivalent(arrays[[2]][4, 4, ], c(1, 0, 0, 0, 0) + 2) 
+  
+  expect_equivalent(arrays[[1]][1, ], 1:4 + 3)
+  expect_equivalent(arrays[[1]][2, ], 1:4 + 3)
+  expect_equivalent(arrays[[1]][3, ], 1:4 + 3)
+  expect_equivalent(arrays[[1]][4, ], 11:14 + 3)
+  expect_equivalent(arrays[[1]][5, ], 11:14 + 3)
+  
+  arrays <- gen()
+  
+  expect_equivalent(arrays[[2]][1, 8, ], c(1, 0, 0, 0, 0) + 2) 
+  expect_equivalent(arrays[[2]][2, 3, ], c(0, 1, 0, 0, 0) + 2)
+  
+  expect_equivalent(arrays[[1]][1, ], 11:14 + 3)
+  expect_equivalent(arrays[[1]][5, ], 11:14 + 3)
+  
+  
+  
 })

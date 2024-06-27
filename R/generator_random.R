@@ -68,11 +68,11 @@ generator_random <- function(
   if (!is.null(reshape_xy)) {
     reshape_xy_bool <- TRUE
     reshape_x_bool <- ifelse(is.null(reshape_xy$x), FALSE, TRUE)
-    if (reshape_x_bool & !all(c('x', 'y') %in% names(formals(reshape_xy$x)))) {
+    if (reshape_x_bool && !all(c('x', 'y') %in% names(formals(reshape_xy$x)))) {
       stop("function reshape_xy$x needs to have arguments named x and y")
     }
     reshape_y_bool <- ifelse(is.null(reshape_xy$y), FALSE, TRUE)
-    if (reshape_y_bool & !all(c('x', 'y') %in% names(formals(reshape_xy$y)))) {
+    if (reshape_y_bool && !all(c('x', 'y') %in% names(formals(reshape_xy$y)))) {
       stop("function reshape_xy$y needs to have arguments named x and y")
     }
   } else {
@@ -402,9 +402,13 @@ generator_random <- function(
     
     if (train_type == "lm") {
       if (reshape_xy_bool) {
-        if (reshape_x_bool) xy_list$x <- reshape_xy$x(x = xy_list$x, y = xy_list$y)
-        if (reshape_y_bool) xy_list$y <- reshape_xy$y(x = xy_list$x, y = xy_list$y)
-      }
+        xy_list <- f_reshape(x = xy_list$x, y = xy_list$y,
+                             reshape_xy = reshape_xy,
+                             reshape_x_bool = reshape_x_bool,
+                             reshape_y_bool = reshape_y_bool,
+                             reshape_sw_bool = FALSE, sw = NULL)
+      } 
+      
       return(xy_list)
     } 
     
@@ -457,10 +461,16 @@ generator_random <- function(
                           reshape_mode = reshape_mode)
       return(l)
     } else {
+      
       if (reshape_xy_bool) {
-        if (reshape_x_bool) x <- reshape_xy$x(x = x, y = y)
-        if (reshape_y_bool) y <- reshape_xy$y(x = x, y = y)
+        l <- f_reshape(x = x, y = y,
+                       reshape_xy = reshape_xy,
+                       reshape_x_bool = reshape_x_bool,
+                       reshape_y_bool = reshape_y_bool,
+                       reshape_sw_bool = FALSE, sw = NULL)
+        return(l)
       }
+      
       return(list(X = x, Y = y))
     }
   }

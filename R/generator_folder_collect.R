@@ -74,11 +74,11 @@ generator_initialize <- function(directories,
   if (!is.null(reshape_xy)) {
     reshape_xy_bool <- TRUE
     reshape_x_bool <- ifelse(is.null(reshape_xy$x), FALSE, TRUE)
-    if (reshape_x_bool & !all(c('x', 'y') %in% names(formals(reshape_xy$x)))) {
+    if (reshape_x_bool && !all(c('x', 'y') %in% names(formals(reshape_xy$x)))) {
       stop("function reshape_xy$x needs to have arguments named x and y")
     }
     reshape_y_bool <- ifelse(is.null(reshape_xy$y), FALSE, TRUE)
-    if (reshape_y_bool & !all(c('x', 'y') %in% names(formals(reshape_xy$y)))) {
+    if (reshape_y_bool && !all(c('x', 'y') %in% names(formals(reshape_xy$y)))) {
       stop("function reshape_xy$y needs to have arguments named x and y")
     }
   } else {
@@ -367,7 +367,7 @@ generator_fasta_label_folder_wrapper <- function(val,
       if (length(directories) > 1) {
         for (i in 2:length(directories)) {
           subBatchTrain <- gen_list[[paste0("gen", i)]]()
-          yTrain <- rbind(yTrain, subBatchTrain[[2]])
+          yTrain <- abind::abind(yTrain, subBatchTrain[[2]], along = 1)
           
           if (num_inputs == 1) {
             xTrain <- abind::abind(xTrain, subBatchTrain[[1]], along = 1)
@@ -416,7 +416,7 @@ generator_fasta_label_folder_wrapper <- function(val,
       if (length(directories) > 1) {
         for (i in 2:length(directories)) {
           subBatchVal <- gen_list[[paste0("genVal", i)]]()
-          yVal <- rbind(yVal, subBatchVal[[2]])
+          yVal <- abind::abind(yVal, subBatchVal[[2]], along = 1)
           
           if (num_inputs == 1) {
             xVal <- abind::abind(xVal, subBatchVal[[1]], along = 1)

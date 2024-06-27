@@ -995,3 +995,53 @@ get_pooling_flatten_layer <- function(global_pooling = NULL) {
   
   return(keras::layer_flatten())
 }
+
+
+f_reshape <- function(x, y, reshape_xy, reshape_x_bool, reshape_y_bool, reshape_sw_bool = FALSE, sw = NULL) {
+  
+  if (is.null(reshape_xy)) {
+    return(list(X = x, Y = y, SW = sw))
+  }
+  
+  if (!is.null(sw)) {
+    
+    if (reshape_x_bool) {
+      x_new <- reshape_xy$x(x = x, y = y, sw = sw)
+    } else {
+      x_new <- x
+    }
+    
+    if (reshape_y_bool) {
+      y_new <- reshape_xy$y(x = x, y = y, sw = sw)
+    } else {
+      y_new <- y
+    }
+    
+    if (reshape_sw_bool) {
+      sw_new <- reshape_xy$sw(x = x, y = y, sw = sw)
+    } else {
+      sw_new <- sw
+    }
+    
+    return(list(X = x_new, Y = y_new, SW = sw_new))
+    
+  } else {
+    
+    
+    if (reshape_x_bool) {
+      x_new <- reshape_xy$x(x = x, y = y)
+    } else {
+      x_new <- x
+    }
+    
+    if (reshape_y_bool) {
+      y_new <- reshape_xy$y(x = x, y = y)
+    } else {
+      y_new <- y
+    }
+    #browser()
+    return(list(X = x_new, Y = y_new))
+    
+  }
+  
+}
