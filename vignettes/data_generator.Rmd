@@ -684,6 +684,34 @@ x # defgh
 y # i
 ```
 
+### file_limit
+
+Integer or NULL. If integer, use only specified number of randomly sampled files for training. 
+
+### delete_used_files
+
+If true, delete file once used. Only applies for rds files.
+
+```{r warning = FALSE, message = FALSE}
+
+x <- array(0, dim = c(1,5,4))
+y <- matrix(0, ncol = 1)
+rds_path <- tempfile(fileext = ".rds")
+saveRDS(list(x, y), rds_path)
+
+gen <- get_generator(path = rds_path,
+                     delete_used_files = TRUE,
+                     train_type = "label_rds",
+                     batch_size = 1,
+                     maxlen = 5)
+
+z <- gen()
+file.exists(rds_path)
+# z <- gen()
+# When calling the generator again, it will wait until it finds a file again from the files listed in 
+# the initial `path` argument. Can be used if another process(es) create rds files.
+```
+
 ### max_samples
 
 Only use fixed number of samples per file. Randomly choose which samples to use. (If `random_sampling = FALSE`, samples are consecutive.)
@@ -1114,6 +1142,34 @@ y <- z[[2]]
 colnames(x) <- c("AAA", "CCC")
 x
 colnames(y) <- "TTT"
+y
+```
+
+### reshape_xy
+
+Apply some function to the output of a generator call.
+
+```{r}
+df <- data.frame(Sequence = "AAAATTTT", Header = "header_1")
+fasta_path <- tempfile(fileext = ".fasta")
+fasta_file <- microseq::writeFasta(df, fasta_path)
+fx <- function(x = NULL, y = NULL) {
+  return(x - 1)
+}
+fy <- function(x = NULL, y = NULL) {
+  return(exp(y * 5))
+}
+
+gen <-  get_generator(path = fasta_path,
+                      reshape_xy = list(x = fx, y = fy),
+                      train_type = "label_folder",
+                      batch_size = 1,
+                      maxlen = 8)
+
+z <- gen()
+x <- z[[1]]
+x[1,,]
+y <- z[[2]]
 y
 ```
 
