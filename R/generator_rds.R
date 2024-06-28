@@ -98,6 +98,8 @@ generator_rds <- function(rds_folder, batch_size, path_file_log = NULL,
     )
   }
   
+  if (delete_used_files) file.remove(rds_files[file_index])
+  
   if (is.list(rds_file)) {
     x_complete <- rds_file[[1]]
     include_sw <- ifelse(length(rds_file) == 3, TRUE, FALSE) 
@@ -212,8 +214,35 @@ generator_rds <- function(rds_folder, batch_size, path_file_log = NULL,
       
       # go to next file if sample index empty
       if (length(sample_index) == 0) {
+        
         if (num_files == 1) {
+          
           sample_index <<- 1:x_dim[1]
+          if (delete_used_files) {
+            file.remove(rds_files[file_index])
+            read_success <- FALSE
+            while (!read_success) {
+              tryCatch(
+                expr = {
+                  if (sample_by_file_size) {
+                    file_index <<- sample(1:num_files, size = 1, prob = file_prob)
+                  } else {
+                    file_index <<- file_index + 1
+                    if (file_index > num_files) {
+                      file_index <<- 1
+                      rds_files <<- sample(rds_files)
+                    }
+                  }
+                  rds_file <<- readRDS(rds_files[file_index])
+                  read_success <- TRUE
+                },
+                error = function(e){ 
+                  
+                }
+              )
+            }
+          } 
+          
         } else {
           
           if (delete_used_files) file.remove(rds_files[file_index])
