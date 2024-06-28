@@ -157,6 +157,7 @@ generator_initialize <- function(directories,
   argg[["add_noise"]] <- NULL
   argg[["return_int"]] <- NULL
   argg[["num_class"]] <- NULL
+  argg[["reshape_xy"]] <- NULL
   
   for (i in 1:length(argg)) {
     if (length(argg[[i]]) == 1) {
