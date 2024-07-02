@@ -128,7 +128,6 @@
 #' directory where parameters are stored. List can contain additional (optional) arguments, for example 
 #' `model_card = list(path_model_card = "/path/to/logs", description = "transfer learning with BERT model on virus data", ...)`  
 #' @examples
-#' \dontrun{
 #' # create dummy data
 #' path_train_1 <- tempfile()
 #' path_train_2 <- tempfile()
@@ -159,7 +158,7 @@
 #'                     step = 5,
 #'                     format = "fasta",
 #'                     vocabulary_label = c("label_1", "label_2"))
-#' }  
+#'  
 #' @returns A list of training metrics.  
 #' @export
 train_model <- function(model = NULL,
@@ -234,6 +233,12 @@ train_model <- function(model = NULL,
                         vocabulary_label = NULL,
                         delete_used_files = FALSE,
                         reshape_xy = NULL) {
+  
+  if (!is.null(model_card)) {
+    if (!is.list(model_card)) {
+      stop("model_card must be a list and contain at least an entry called 'path_model_card'")
+    }
+  }
   
   # initialize metrics, temporary fix
   model <- manage_metrics(model)
@@ -553,7 +558,7 @@ train_model <- function(model = NULL,
 #' _x+1 if name ends with _x and x is integer. 
 #'
 #' @param auto_extend If run_name is already present, add "_2" to name. If name already ends with "_x" replace x with x+1.
-#' @keywords internal
+#' @noRd
 get_run_name <- function(run_name = NULL, path_tensorboard, path_checkpoint, path_log, path_model_card, auto_extend = FALSE) {
   
   if (is.null(run_name)) {
@@ -643,3 +648,165 @@ get_run_name <- function(run_name = NULL, path_tensorboard, path_checkpoint, pat
   return(run_name_new)
 }
 
+#' Continue training from model card
+#' 
+#' Use information from model card to resume from the corresponding checkpoint using the same training arguments.
+#' 
+#' @param path_model_card Path to model card to resume training from.
+#' @param seed Seed for reproducible results. If `NULL`, set random seed.
+#' @param epoch Epoch to resume from. If `NULL`, use last epoch.
+#' @param new_run_name New run name. If `NULL`, new run name is old run name + '_cont'.
+#' @param new_args Named list of arguments to overwrite. Will use previous arguments from model card otherwise.
+#' For example, if you want to change the batch size and padding option:
+#' `new_args = list(batch_size = 6, padding = TRUE)`.
+#' @param new_compile List of arguments to compile the model again. If `NULL`, use compiled model from checkpoint.
+#' Example: `new_compile = list(loss = 'binary_crossentropy', metrics = 'acc', optimizer = keras::optimizer_adam())`
+#' @param verbose Whether to print all training arguments. 
+#' @examples
+#' # create dummy data and temp directories
+#' path_train_1 <- tempfile()
+#' path_train_2 <- tempfile()
+#' path_val_1 <- tempfile()
+#' path_val_2 <- tempfile()
+#' path_checkpoint <- tempfile()
+#' dir.create(path_checkpoint)
+#' path_model_card <- tempfile()
+#' dir.create(path_model_card)
+#' 
+#' for (current_path in c(path_train_1, path_train_2,
+#'                        path_val_1, path_val_2)) {
+#'   dir.create(current_path)
+#'   create_dummy_data(file_path = current_path,
+#'                     num_files = 3,
+#'                     seq_length = 10,
+#'                     num_seq = 5,
+#'                     vocabulary = c("a", "c", "g", "t"))
+#' }
+#' 
+#' # create model
+#' model <- create_model_lstm_cnn(layer_lstm = 8, layer_dense = 2, maxlen = 5)
+#' 
+#' # train model
+#' run_name <- 'test_run_1'
+#' hist <- train_model(train_type = "label_folder",
+#'                     run_name = run_name,
+#'                     path_checkpoint = path_checkpoint,
+#'                     model_card = list(path_model_card = path_model_card, description = 'test run'),
+#'                     model = model,
+#'                     path = c(path_train_1, path_train_2),
+#'                     path_val = c(path_val_1, path_val_2),
+#'                     batch_size = 8,
+#'                     epochs = 3,
+#'                     steps_per_epoch = 6,
+#'                     vocabulary_label = c("label_1", "label_2"))
+#' 
+#' # resume training
+#' resume_training_from_model_card(path_model_card = file.path(path_model_card, run_name))
+#' 
+#' @returns A list of training metrics.  
+#' @export
+resume_training_from_model_card <- function(path_model_card,
+                                            seed = NULL,
+                                            epoch = NULL,
+                                            new_run_name = NULL,
+                                            new_args = NULL,
+                                            new_compile = NULL,
+                                            verbose = FALSE) {
+  
+  info <- file.info(path_model_card)
+  is_directory <- info$isdir
+  
+  if (is.na(is_directory)) {
+    stop("model_card path does not exist.\n")
+  } else if (is_directory) {
+    mc <- get_mc(path_model_card = path_model_card, epoch = epoch)
+  } else {
+    mc <- path_model_card
+  }
+  
+  mc_args <- readRDS(mc)
+  train_args_mc <- mc_args$train_model_args
+  new_train_args <- train_args_mc
+  
+  if (is.null(new_run_name)) {
+    new_train_args$run_name <- set_new_run_name(train_args_mc$run_name)
+  }
+
+  # overwrite args
+  if (is.null(seed)) seed <- get_seed()
+  new_train_args$seed <- seed
+  
+  # load checkpoint to resume from
+  if (is.null(train_args_mc$path_checkpoint)) {
+    stop('Did not save checkpoints in the run from model card')
+  }
+  model <- load_cp(file.path(train_args_mc$path_checkpoint, train_args_mc$run_name),
+                   ep_index = epoch,
+                   compile = ifelse(is.null(new_compile), TRUE, FALSE))
+  
+  if (!is.null(new_compile)) {
+    model <- keras::compile(model,
+                            optimizer = new_compile$optimizer,
+                            loss = new_compile$loss,
+                            metrics = new_compile$metrics)
+  }
+  
+  new_train_args$model <- model
+  
+  if (!is.null(new_args)) {
+    stopifnot(is.list(new_args))
+    for (n in names(new_args))
+      new_train_args[[n]] <- new_args[[n]]
+  }
+  
+  new_train_args$model_card[['cont_train_info']] <- paste0('run continues training from run ',
+                                                           train_args_mc, ' and epoch ',
+                                                           max(mc_args$logs$processing_step))
+  
+  if (verbose) {
+    print(new_train_args)
+  }
+  
+  do.call(train_model, new_train_args)
+  
+}
+
+get_mc <- function(path_model_card, epoch = NULL) {
+  
+  all_cards <- list.files(path_model_card, full.names = TRUE)
+  all_epochs <- vector("integer", length(all_cards))
+  for (i in seq_along(all_cards)) {
+    split_string <- all_cards[i] %>% basename() %>% stringr::str_split("_")  
+    all_epochs[i] <- split_string[[1]][2] %>% as.integer()
+  }
+  
+  if (is.null(epoch)) epoch <- max(all_epochs)
+  
+  index <- all_epochs == epoch
+  if (sum(index) == 0) {
+    error_message <- paste('epoch not found in model card directory, possible values:',
+                           paste(all_epochs, collapse = ", "))
+    stop(error_message)
+  } 
+  
+  mc <- all_cards[index]
+  return(mc)
+  
+}
+
+get_seed <- function() {
+  
+  current_time <- Sys.time()
+  current_time <- as.numeric(current_time) * 1e2
+  seed_value <- (current_time %% 10^5) %>% as.integer()
+  set.seed(seed_value)
+  return(sample(1:10^6, 2))
+  
+}
+
+set_new_run_name <- function(run_name_old) {
+  
+  run_name_new <- paste0(run_name_old, '_cont')
+  return(run_name_new)
+  
+}

@@ -98,7 +98,7 @@ create_model_lstm_cnn <- function(
     num_output_layers = 1,
     auc_metric = FALSE,
     f1_metric = FALSE,
-    bal_acc = TRUE,
+    bal_acc = FALSE,
     verbose = TRUE,
     batch_norm_momentum = 0.99,
     model_seed = NULL,
@@ -985,7 +985,7 @@ create_model_lstm_cnn_target_middle <- function(
 #'
 #' @param model A keras model.
 #' @returns List of hyperparameters.
-#' @keywords internal
+#' @noRd
 get_hyper_param <- function(model) {
   layers.lstm <- 0
   use.cudnn <- FALSE
@@ -1408,7 +1408,7 @@ merge_models <- function(models, layer_names, layer_dense, solver = "adam",
 #' Check if layer is in model
 #' 
 #' @returns Error message if model does not contain layer of certain name.
-#' @keywords internal
+#' @noRd
 check_layer_name <- function(model, layer_name) {
   num_layers <- length(model$layers)
   layer_names <- vector("character")
@@ -2125,7 +2125,7 @@ reshape_input <- function(model, input_shape) {
 #' Get solver and learning_rate from model.
 #'
 #' @returns Keras optimizer.
-#' @keywords internal
+#' @noRd
 get_optimizer <- function(model) {
   solver <- stringr::str_to_lower(model$optimizer$get_config()["name"])
   learning_rate <- keras::k_eval(model$optimizer$lr)

@@ -904,6 +904,7 @@ input_from_csv <- function(added_label_path) {
 }
 
 #' @rawNamespace import(data.table, except = c(first, last, between))
+#' @noRd
 csv_to_tensor <- function(label_csv, added_label_vector, added_label_by_header, batch_size,
                           start_index_list) {
   .datatable.aware = TRUE

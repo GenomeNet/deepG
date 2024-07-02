@@ -427,11 +427,12 @@ generator_rds <- function(rds_folder, batch_size, path_file_log = NULL,
     if (include_sw) {
       
       if (reshape_xy_bool) {
-        l <- f_reshape(x = xy_list$x, y = xy_list$y,
+        l <- f_reshape(x = x, y = y,
                        reshape_xy = reshape_xy,
                        reshape_x_bool = reshape_x_bool,
                        reshape_y_bool = reshape_y_bool,
-                       reshape_sw_bool = reshape_sw_bool, sw = sw)
+                       reshape_sw_bool = reshape_sw_bool,
+                       sw = sw)
         return(l)
       } 
       
@@ -440,7 +441,7 @@ generator_rds <- function(rds_folder, batch_size, path_file_log = NULL,
     } else {
       
       if (reshape_xy_bool) {
-        l <- f_reshape(x = xy_list$x, y = xy_list$y,
+        l <- f_reshape(x = x, y = y,
                        reshape_xy = reshape_xy,
                        reshape_x_bool = reshape_x_bool,
                        reshape_y_bool = reshape_y_bool,
