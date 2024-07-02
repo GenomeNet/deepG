@@ -14,3 +14,5 @@ output.json
 pkgdown
 __autograph_generated_file.*
 __pycache__/
+^doc$
+^Meta$

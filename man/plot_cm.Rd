@@ -18,7 +18,7 @@ plot_cm(
 
 \item{perc}{Whether to use absolute numbers or percentages.}
 
-\item{cm_labels}{Labels correspoding to confusion matrix entries.}
+\item{cm_labels}{Labels corresponding to confusion matrix entries.}
 
 \item{round_dig}{How to round numbers.}
 

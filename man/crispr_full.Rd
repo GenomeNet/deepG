@@ -18,6 +18,6 @@ contain all CRISPR loci found in NCBI representative genomes using CRT.
 Can be loaded to workspace via \code{data(crispr_full)}.
 }
 \references{
-\url{http://github.com/philippmuench}
+\url{https://github.com/philippmuench}
 }
 \keyword{datasets}

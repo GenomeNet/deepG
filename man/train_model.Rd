@@ -324,7 +324,6 @@ from files. Function includes several options to determine the sampling strategy
 Training progress can be visualized in tensorboard. Model weights can be stored during training using checkpoints.
 }
 \examples{
-\dontrun{
 # create dummy data
 path_train_1 <- tempfile()
 path_train_2 <- tempfile()
@@ -355,5 +354,5 @@ hist <- train_model(train_type = "label_folder",
                     step = 5,
                     format = "fasta",
                     vocabulary_label = c("label_1", "label_2"))
-}  
+ 
 }

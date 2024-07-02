@@ -38,7 +38,7 @@ create_model_lstm_cnn(
   num_output_layers = 1,
   auc_metric = FALSE,
   f1_metric = FALSE,
-  bal_acc = TRUE,
+  bal_acc = FALSE,
   verbose = TRUE,
   batch_norm_momentum = 0.99,
   model_seed = NULL,

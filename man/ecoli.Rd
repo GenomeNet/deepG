@@ -15,6 +15,6 @@ E. coli genome for evaluation.
 Can be loaded to workspace via \code{data(ecoli)}.
 }
 \references{
-\url{https://science.sciencemag.org/content/277/5331/1453.long}
+\url{https://www.science.org/doi/10.1126/science.277.5331.1453}
 }
 \keyword{datasets}

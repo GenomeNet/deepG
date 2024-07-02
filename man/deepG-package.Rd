@@ -10,7 +10,7 @@ deepG is a is an open source software library for building deep neuronal
 networks for genomic modeling
 }
 \details{
-This package generates \href{http://deepg.de}{deepG}
+This package generates \href{https://deepg.de}{deepG}
 
 For additional documentation on the deepG package see
 \href{https://genomenet.de}{https://genomenet.de}
@@ -19,7 +19,7 @@ For additional documentation on the deepG package see
 Useful links:
 \itemize{
   \item \url{https://github.com/GenomeNet/deepG}
-  \item \url{https://genomenet.github.io/deepG/}
+  \item \url{https://deepg.de/}
   \item Report bugs at \url{https://github.com/GenomeNet/deepG/issues}
 }
 

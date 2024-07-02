@@ -17,6 +17,6 @@ Filtered for unambiguous characters and contains only characters in the vocabula
 Can be loaded to workspace via \code{data(crispr_sample)}.
 }
 \references{
-\url{http://github.com/philippmuench}
+\url{https://github.com/philippmuench}
 }
 \keyword{datasets}

@@ -6,7 +6,7 @@
 #' Can be loaded to workspace via `data(crispr_sample)`.
 #' @format Large character of 442.41 kB
 #' @usage data(crispr_sample)
-#' @references \url{http://github.com/philippmuench}
+#' @references \url{https://github.com/philippmuench}
 "crispr_sample"
 
 #' CRISPR data subset
@@ -18,7 +18,7 @@
 #' Can be loaded to workspace via `data(crispr_full)`.
 #' @format Large character of 7.50 MB
 #' @usage data(crispr_full)
-#' @references \url{http://github.com/philippmuench}
+#' @references \url{https://github.com/philippmuench}
 "crispr_full"
 
 #' Parenthesis data
@@ -27,7 +27,7 @@
 #' Can be loaded to workspace via `data(parenthesis)`.
 #' @format Large character of 1.00 MB
 #' @usage data(parenthesis)
-#' @references \url{http://github.com/philippmuench}
+#' @references \url{https://github.com/philippmuench}
 "parenthesis"
 
 #' Ecoli genome
@@ -36,7 +36,7 @@
 #' Can be loaded to workspace via `data(ecoli)`.
 #' @format Large character of 4.64 MB
 #' @usage data(ecoli)
-#' @references \url{https://science.sciencemag.org/content/277/5331/1453.long}
+#' @references \url{https://www.science.org/doi/10.1126/science.277.5331.1453}
 "ecoli"
 
 #' Ecoli subset
@@ -45,6 +45,6 @@
 #' Can be loaded to workspace via `data(ecoli_small)`.
 #' @format character 326.73 kB
 #' @usage data(ecoli_small)
-#' @references \url{https://science.sciencemag.org/content/277/5331/1453.long}
+#' @references \url{https://www.science.org/doi/10.1126/science.277.5331.1453}
 "ecoli_small"
 
