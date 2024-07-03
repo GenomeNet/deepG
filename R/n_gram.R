@@ -38,7 +38,7 @@ n_gram_dist <- function(path_input,
     fasta_files <- path_input
   } else {
     fasta_files <- list.files(
-      path = normalizePath(path_input),
+      path = path_input,
       pattern = paste0("\\.", format, "$"),
       full.names = TRUE)
     num_files <- length(fasta_files)
@@ -208,7 +208,7 @@ predict_with_n_gram <- function(path_input, distribution_matrix, default_pred = 
     fasta_files <- path_input
   } else {
     fasta_files <- list.files(
-      path = normalizePath(path_input),
+      path = path_input,
       pattern = paste0("\\.", format, "$"),
       full.names = TRUE)
     num_files <- length(fasta_files)
