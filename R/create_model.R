@@ -2121,7 +2121,6 @@ reshape_input <- function(model, input_shape) {
   return(new_model)
 }
 
-
 #' Get solver and learning_rate from model.
 #'
 #' @returns Keras optimizer.
@@ -2694,7 +2693,7 @@ load_cp <- function(cp_path, cp_filter = "last_ep", ep_index = NULL, compile = F
                     learning_rate = 0.01, solver = "adam", re_compile = FALSE,
                     loss = "categorical_crossentropy",
                     add_custom_object = NULL, margin = 1,
-                    verbose = TRUE, mirrored_strategy = NULL) {
+                    verbose = TRUE, mirrored_strategy = FALSE) {
   
   if (is.null(mirrored_strategy)) mirrored_strategy <- ifelse(count_gpu() > 1, TRUE, FALSE)
   if (mirrored_strategy) {
@@ -2724,67 +2723,8 @@ load_cp <- function(cp_path, cp_filter = "last_ep", ep_index = NULL, compile = F
     }
   }
   
-  if (!is.null(cp_filter)) {
-    stopifnot(cp_filter %in% c("acc", "loss", "last_ep"))
-    if (!is.null(ep_index)) {
-      cp_filter <- NULL
-    }
-  } 
-  
-  is_directory <- dir.exists(cp_path)
-  if (is_directory) {
-    cps <- list.files(cp_path, full.names = TRUE)
-    files_basename <- basename(cps)
-    stopifnot(xor(is.null(cp_filter), is.null(ep_index)))
-  } else {
-    stopifnot(file.exists(cp_path))
-    cp <- cp_path
-    model <- keras::load_model_hdf5(cp, compile = compile, custom_objects = custom_objects)
-  } 
-  
-  if (is_directory & !is.null(cp_filter)) {
-    
-    if (cp_filter == "acc") {
-      if (!all(stringr::str_detect(files_basename, "acc"))) {
-        stop("No accuracy information in checkpoint names ('acc' string), use other metric.")
-      }
-      acc_scores <- files_basename %>% stringr::str_extract("acc\\d++\\.\\d++") %>% 
-        stringr::str_remove("acc") %>% as.numeric()
-      # use later epoch for ties
-      index <- which.max(rank(acc_scores, ties.method = "last"))
-    }
-    
-    if (cp_filter == "loss") {
-      if (!all(stringr::str_detect(files_basename, "loss"))) {
-        stop("No loss information in checkpoint names ('loss' string), use other metric.")
-      }
-      loss_scores <- files_basename %>% stringr::str_extract("loss\\d++\\.\\d++") %>% 
-        stringr::str_remove("loss") %>% as.numeric()
-      index <- which.min(rank(loss_scores, ties.method = "last"))
-    }
-    
-    if (cp_filter == "last_ep") {
-      ep_scores <- files_basename %>% stringr::str_extract("Ep\\.\\d++") %>% 
-        stringr::str_remove("Ep\\.") %>% as.numeric()
-      index <- which.max(ep_scores)
-    }
-    
-  }
-  
-  if (is_directory & !is.null(ep_index)) {
-    ep_scores <- files_basename %>% stringr::str_extract("Ep\\.\\d++") %>% 
-      stringr::str_remove("Ep\\.") %>% as.numeric()
-    index <- which(ep_scores == ep_index)
-  }
-  
-  if (is_directory) {
-    cp <- cps[index]
-    model <- keras::load_model_hdf5(cp, compile = compile, custom_objects = custom_objects)
-  }
-  
-  if (verbose) {
-    cat("Using checkpoint", cp, "\n")
-  }
+  cp <- get_cp(cp_path = cp_path, cp_filter = cp_filter,
+               ep_index = ep_index, verbose = verbose) 
   
   if (re_compile) {
     optimizer <- set_optimizer(solver, learning_rate)
@@ -2797,7 +2737,7 @@ load_cp <- function(cp_path, cp_filter = "last_ep", ep_index = NULL, compile = F
   
 }
 
-get_cp  <- function(cp_path, cp_filter = "last_ep", ep_index = NULL) {
+get_cp  <- function(cp_path, cp_filter = "last_ep", ep_index = NULL, verbose = TRUE) {
   
   if (!is.null(cp_filter)) {
     stopifnot(cp_filter %in% c("acc", "loss", "last_ep"))
@@ -2853,6 +2793,11 @@ get_cp  <- function(cp_path, cp_filter = "last_ep", ep_index = NULL) {
   
   if (is_directory) {
     cp <- cps[index]
+  }
+  
+  if (verbose) {
+    cat("Using checkpoint", cp, "\n")
+    print(paste("Date created:", file.info(cp)$mtime))
   }
   
   return(cp)
