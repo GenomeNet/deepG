@@ -1003,7 +1003,7 @@ f_reshape <- function(x, y, reshape_xy, reshape_x_bool, reshape_y_bool, reshape_
     return(list(X = x, Y = y, SW = sw))
   }
   
-  if (!is.null(sw)) {
+  if (reshape_sw_bool) {
     
     if (reshape_x_bool) {
       x_new <- reshape_xy$x(x = x, y = y, sw = sw)

@@ -445,7 +445,7 @@ generator_rds <- function(rds_folder, batch_size, path_file_log = NULL,
                        reshape_xy = reshape_xy,
                        reshape_x_bool = reshape_x_bool,
                        reshape_y_bool = reshape_y_bool,
-                       reshape_sw_bool = FALSE, sw = NULL)
+                       reshape_sw_bool = reshape_sw_bool, sw = NULL)
         return(l)
       } 
       
