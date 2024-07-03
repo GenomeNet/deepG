@@ -16,7 +16,7 @@ load_cp(
   add_custom_object = NULL,
   margin = 1,
   verbose = TRUE,
-  mirrored_strategy = NULL
+  mirrored_strategy = FALSE
 )
 }
 \arguments{
