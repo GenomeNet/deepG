@@ -11,6 +11,7 @@ resume_training_from_model_card(
   new_run_name = NULL,
   new_args = NULL,
   new_compile = NULL,
+  use_mirrored_strategy = NULL,
   verbose = FALSE
 )
 }
@@ -29,6 +30,8 @@ For example, if you want to change the batch size and padding option:
 
 \item{new_compile}{List of arguments to compile the model again. If \code{NULL}, use compiled model from checkpoint.
 Example: \code{new_compile = list(loss = 'binary_crossentropy', metrics = 'acc', optimizer = keras::optimizer_adam())}}
+
+\item{use_mirrored_strategy}{Whether to use distributed mirrored strategy. If NULL, will use distributed mirrored strategy only if >1 GPU available.}
 
 \item{verbose}{Whether to print all training arguments.}
 }

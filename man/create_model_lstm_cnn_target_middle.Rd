@@ -30,6 +30,8 @@ create_model_lstm_cnn_target_middle(
   loss_fn = "categorical_crossentropy",
   num_output_layers = 1,
   f1_metric = FALSE,
+  auc_metric = FALSE,
+  bal_acc = FALSE,
   verbose = TRUE,
   batch_norm_momentum = 0.99,
   model_seed = NULL,
@@ -92,6 +94,10 @@ If first label contains 5 percent wrong labels and second label no noise, then
 \item{num_output_layers}{Number of output layers.}
 
 \item{f1_metric}{Whether to add F1 metric.}
+
+\item{auc_metric}{Whether to add AUC metric.}
+
+\item{bal_acc}{Whether to add balanced accuracy.}
 
 \item{verbose}{Boolean.}
 

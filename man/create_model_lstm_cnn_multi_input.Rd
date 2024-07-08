@@ -32,6 +32,7 @@ create_model_lstm_cnn_multi_input(
   loss_fn = "categorical_crossentropy",
   auc_metric = FALSE,
   f1_metric = FALSE,
+  bal_acc = FALSE,
   samples_per_target,
   batch_norm_momentum = 0.99,
   verbose = TRUE,
@@ -99,6 +100,8 @@ If first label contains 5 percent wrong labels and second label no noise, then
 \item{auc_metric}{Whether to add AUC metric.}
 
 \item{f1_metric}{Whether to add F1 metric.}
+
+\item{bal_acc}{Whether to add balanced accuracy.}
 
 \item{samples_per_target}{Number of samples to combine for one target.}
 
