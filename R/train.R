@@ -372,7 +372,7 @@ train_model <- function(model = NULL,
   argumentList <- as.list(match.call(expand.dots=FALSE))
   #argumentList <- c(as.list(environment()), list(...)) log default args too
   argumentList <- argumentList[names(argumentList) != ""]
-
+  
   # extract maxlen from model
   if (is.null(maxlen)) {
     maxlen <- get_maxlen(model, set_learning, target_middle, read_data)
@@ -661,6 +661,7 @@ get_run_name <- function(run_name = NULL, path_tensorboard, path_checkpoint, pat
 #' `new_args = list(batch_size = 6, padding = TRUE)`.
 #' @param new_compile List of arguments to compile the model again. If `NULL`, use compiled model from checkpoint.
 #' Example: `new_compile = list(loss = 'binary_crossentropy', metrics = 'acc', optimizer = keras::optimizer_adam())`
+#' @param use_mirrored_strategy Whether to use distributed mirrored strategy. If NULL, will use distributed mirrored strategy only if >1 GPU available.   
 #' @param verbose Whether to print all training arguments. 
 #' @examples
 #' # create dummy data and temp directories
@@ -711,7 +712,10 @@ resume_training_from_model_card <- function(path_model_card,
                                             new_run_name = NULL,
                                             new_args = NULL,
                                             new_compile = NULL,
+                                            use_mirrored_strategy = NULL,
                                             verbose = FALSE) {
+  
+  if (is.null(use_mirrored_strategy)) use_mirrored_strategy <- ifelse(count_gpu() > 1, TRUE, FALSE)
   
   info <- file.info(path_model_card)
   is_directory <- info$isdir
@@ -731,7 +735,7 @@ resume_training_from_model_card <- function(path_model_card,
   if (is.null(new_run_name)) {
     new_train_args$run_name <- set_new_run_name(train_args_mc$run_name)
   }
-
+  
   # overwrite args
   if (is.null(seed)) seed <- get_seed()
   new_train_args$seed <- seed
@@ -740,15 +744,18 @@ resume_training_from_model_card <- function(path_model_card,
   if (is.null(train_args_mc$path_checkpoint)) {
     stop('Did not save checkpoints in the run from model card')
   }
-  model <- load_cp(file.path(train_args_mc$path_checkpoint, train_args_mc$run_name),
-                   ep_index = epoch,
-                   compile = ifelse(is.null(new_compile), TRUE, FALSE))
   
-  if (!is.null(new_compile)) {
-    model <- keras::compile(model,
-                            optimizer = new_compile$optimizer,
-                            loss = new_compile$loss,
-                            metrics = new_compile$metrics)
+  if (use_mirrored_strategy) {
+    mirrored_strategy <- tensorflow::tf$distribute$MirroredStrategy()
+    with(mirrored_strategy$scope(), {
+      model <- load_model(cp_path = file.path(train_args_mc$path_checkpoint, train_args_mc$run_name),
+                          ep_index = epoch,
+                          new_compile = new_compile)
+    })
+  } else {
+    model <- load_model(cp_path = file.path(train_args_mc$path_checkpoint, train_args_mc$run_name),
+                        ep_index = epoch,
+                        new_compile = new_compile)
   }
   
   new_train_args$model <- model
@@ -791,6 +798,26 @@ get_mc <- function(path_model_card, epoch = NULL) {
   
   mc <- all_cards[index]
   return(mc)
+  
+}
+
+load_model <- function(cp_path,
+                       ep_index,
+                       new_compile) {
+  
+  model <- load_cp(cp_path,
+                   ep_index = ep_index,
+                   mirrored_strategy = FALSE,
+                   compile = ifelse(is.null(new_compile), TRUE, FALSE))
+  
+  if (!is.null(new_compile)) {
+    model <- keras::compile(model,
+                            optimizer = new_compile$optimizer,
+                            loss = new_compile$loss,
+                            metrics = new_compile$metrics)
+  }
+  
+  return(model)
   
 }
 
