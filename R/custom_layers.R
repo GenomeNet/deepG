@@ -4,12 +4,13 @@
 #' 
 #' @param load_r6 Whether to load the R6 layer class.
 #' @param method At least one of the options, `"sum", "max"` or `"mean"`.
+#' @param multi_in Whether to aggregate for a model with multiple inputs (and shared weights).
 #' @examples
 #' l <- layer_aggregate_time_dist_wrapper() 
 #' 
 #' @returns A keras layer applying pooling operation(s).
 #' @export
-layer_aggregate_time_dist_wrapper <- function(load_r6 = FALSE, method = "sum") {
+layer_aggregate_time_dist_wrapper <- function(load_r6 = FALSE, method = "sum", multi_in = FALSE) {
   
   layer_aggregate_time_dist <- keras::new_layer_class(
     "layer_aggregate_time_dist",
@@ -17,18 +18,19 @@ layer_aggregate_time_dist_wrapper <- function(load_r6 = FALSE, method = "sum") {
     initialize = function(method, ...) {
       super$initialize(...)
       self$method <- method
+      self$axis <- ifelse(multi_in, 0L, 1L)
     },
     
     call = function(inputs, mask = NULL) {
       out <- list()
       if ("sum" %in% self$method) {
-        out <- c(out, tensorflow::tf$math$reduce_sum(inputs, axis = 1L))
+        out <- c(out, tensorflow::tf$math$reduce_sum(inputs, axis = self$axis))
       }
       if ("mean" %in% self$method) {
-        out <- c(out, tensorflow::tf$math$reduce_mean(inputs, axis = 1L))
+        out <- c(out, tensorflow::tf$math$reduce_mean(inputs, axis = self$axis))
       }
       if ("max" %in% self$method) {
-        out <- c(out, tensorflow::tf$math$reduce_max(inputs, axis = 1L))
+        out <- c(out, tensorflow::tf$math$reduce_max(inputs, axis = self$axis))
       }
       
       if (length(out) > 1) {
@@ -43,6 +45,7 @@ layer_aggregate_time_dist_wrapper <- function(load_r6 = FALSE, method = "sum") {
     get_config = function() {
       config <- super$get_config()
       config$method <- self$method
+      config$multi_in <- self$multi_in
       config
     }
   )
