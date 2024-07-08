@@ -113,7 +113,7 @@ If first label contains 5 percent wrong labels and second label no noise, then
 
 \item{model_seed}{Set seed for model parameters in tensorflow if not \code{NULL}.}
 
-\item{aggregation_method}{Can be one or more of the options \verb{"sum", "mean", "max}. Not applied if \code{NULL}.}
+\item{aggregation_method}{Can be one or more of the options \verb{"sum", "mean", "max"}. Not applied if \code{NULL}.}
 
 \item{transformer_args}{List of arguments for transformer blocks; see \link{layer_transformer_block_wrapper}.
 Additionally, list can contain \code{pool_flatten} argument to apply global pooling or flattening after last transformer block (same options
@@ -141,7 +141,7 @@ Input is a 4D tensor, where axis correspond to:
 }
 After LSTM/CNN part all representations get aggregated by summation.
 Can be used to make single prediction for combination of multiple input sequences. Architecture
-is equivalent to \code{\link[=create_model_lstm_cnn_multi_input]{create_model_lstm_cnn_multi_input()}} but instead of multiple input layers with 3D input,
+is equivalent to \link{create_model_lstm_cnn_multi_input} but instead of multiple input layers with 3D input,
 input here in one 4D tensor.
 }
 \examples{
