@@ -2,7 +2,7 @@
 % Please edit documentation in R/create_model_set_learning.R
 \name{create_model_lstm_cnn_time_dist}
 \alias{create_model_lstm_cnn_time_dist}
-\title{Create LSTM/CNN network for combining multiple sequences}
+\title{Create}
 \usage{
 create_model_lstm_cnn_time_dist(
   maxlen = 50,
@@ -133,16 +133,6 @@ A keras model with time distribution wrapper applied to LSTM and CNN layers.
 \description{
 Creates a network consisting of an arbitrary number of CNN, LSTM and dense layers.
 Input is a 4D tensor, where axis correspond to:
-\enumerate{
-\item batch size
-\item number of samples in one batch
-\item length of one sample
-\item size of vocabulary
-}
-After LSTM/CNN part all representations get aggregated by summation.
-Can be used to make single prediction for combination of multiple input sequences. Architecture
-is equivalent to \link{create_model_lstm_cnn_multi_input} but instead of multiple input layers with 3D input,
-input here in one 4D tensor.
 }
 \examples{
 create_model_lstm_cnn_time_dist(

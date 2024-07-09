@@ -566,7 +566,7 @@ create_model_lstm_cnn_multi_input <- function(
   }
   
   if (!is.null(aggregation_method)) {
-    layer_aggregate_td <- layer_aggregate_multi_in_wrapper(method = aggregation_method, multi_in = TRUE)
+    layer_aggregate_td <- layer_aggregate_time_dist_wrapper(method = aggregation_method, multi_in = TRUE)
     y <- representation_list %>% layer_aggregate_td
   }
   
