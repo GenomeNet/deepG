@@ -79,6 +79,9 @@ create_model_lstm_cnn_multi_input(
 
 \item{dilation_rate}{Integer, the dilation rate to use for dilated convolution.}
 
+\item{gap_inputs}{Global pooling method to apply. Same options as for \code{flatten_method} argument
+in \link{create_model_transformer} function.}
+
 \item{use_bias}{Boolean. Usage of bias for CNN layers.}
 
 \item{zero_mask}{Boolean, whether to apply zero masking before LSTM layer. Only used if model does not use any CNN layers.}
@@ -92,7 +95,7 @@ If first label contains 5 percent wrong labels and second label no noise, then
 
 \code{label_noise_matrix <- matrix(c(0.95, 0.05, 0, 1), nrow = 2, byrow = TRUE )}}
 
-\item{last_layer_activation}{Either \code{"sigmoid"} or \code{"softmax"}.}
+\item{last_layer_activation}{Activation function of output layer(s). For example \code{"sigmoid"} or \code{"softmax"}.}
 
 \item{loss_fn}{Either \code{"categorical_crossentropy"} or \code{"binary_crossentropy"}. If \code{label_noise_matrix} given, will use custom \code{"noisy_loss"}.}
 
@@ -105,6 +108,8 @@ If first label contains 5 percent wrong labels and second label no noise, then
 \item{samples_per_target}{Number of samples to combine for one target.}
 
 \item{batch_norm_momentum}{Momentum for the moving mean and the moving variance.}
+
+\item{aggregation_method}{At least one of the options \verb{"sum", "mean", "max"}.}
 
 \item{verbose}{Boolean.}
 

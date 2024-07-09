@@ -248,3 +248,59 @@ layer_transformer_block_wrapper <- function(num_heads = 2, head_size = 4, dropou
   }
   
 }
+
+
+layer_cosine_sim_wrapper <- function(load_r6 = FALSE) {
+  
+  layer_cosine_sim <- keras::new_layer_class(
+    "layer_cosine_sim",
+    
+    initialize = function(...) {
+      super$initialize(...)
+    },
+    
+    call = function(inputs) {
+      cosine_similarity(vects=inputs)
+    },
+    
+    get_config = function() {
+      config <- super$get_config()
+      config
+    }
+  )
+  
+  if (load_r6) {
+    return(layer_cosine_sim)
+  } else {
+    return(layer_cosine_sim())
+  }
+  
+}
+
+
+layer_euc_dist_wrapper <- function(load_r6 = FALSE) {
+  
+  layer_euc_dist <- keras::new_layer_class(
+    "layer_euc_dist",
+    
+    initialize = function(...) {
+      super$initialize(...)
+    },
+    
+    call = function(inputs) {
+      euclidean_distance(vects=inputs)
+    },
+    
+    get_config = function() {
+      config <- super$get_config()
+      config
+    }
+  )
+  
+  if (load_r6) {
+    return(layer_euc_dist)
+  } else {
+    return(layer_euc_dist())
+  }
+  
+}

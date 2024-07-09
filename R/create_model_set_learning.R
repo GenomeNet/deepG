@@ -15,7 +15,7 @@
 #'     
 #' @inheritParams create_model_lstm_cnn
 #' @param samples_per_target Number of samples to combine for one target.
-#' @param aggregation_method Can be one or more of the options `"sum", "mean", "max"`. Not applied if `NULL`. 
+#' @param aggregation_method At least one of the options `"sum", "mean", "max"`.
 #' @param gap_time_dist Pooling or flatten method after last time distribution wrapper. Same options as for `flatten_method` argument
 #' in \link{create_model_transformer} function.
 #' @param lstm_time_dist Vector containing number of units per LSTM cell. Applied after time distribution part. 
@@ -325,7 +325,7 @@ create_model_lstm_cnn_time_dist <- function(
   }
   
   if (compile) {
-    model <- compile_model(model = model, label_smoothing = label_smoothing,
+    model <- compile_model(model = model, label_smoothing = label_smoothing, layer_dense = layer_dense,
                            solver = solver, learning_rate = learning_rate, loss_fn = loss_fn, 
                            num_output_layers = num_output_layers, label_noise_matrix = label_noise_matrix,
                            bal_acc = bal_acc, f1_metric = f1_metric, auc_metric = auc_metric)
@@ -346,8 +346,11 @@ create_model_lstm_cnn_time_dist <- function(
 #' Implements approach as described [here](https://arxiv.org/abs/1703.06114)
 #'
 #' @inheritParams create_model_lstm_cnn
+#' @inheritParams create_model_lstm_cnn_time_dist
 #' @param samples_per_target Number of samples to combine for one target.
 #' @param dropout_dense Vector of dropout rates between dense layers. No dropout if `NULL`.
+#' @param gap_inputs Global pooling method to apply. Same options as for `flatten_method` argument
+#' in \link{create_model_transformer} function.
 #' @examples
 #' create_model_lstm_cnn_multi_input(
 #'   maxlen = 50,
@@ -581,7 +584,7 @@ create_model_lstm_cnn_multi_input <- function(
   model <- keras::keras_model(inputs = input_list, outputs = y)
   
   if (compile) {
-    model <- compile_model(model = model, label_smoothing = label_smoothing,
+    model <- compile_model(model = model, label_smoothing = label_smoothing, layer_dense = layer_dense,
                            solver = solver, learning_rate = learning_rate, loss_fn = loss_fn, 
                            num_output_layers = num_output_layers, label_noise_matrix = label_noise_matrix,
                            bal_acc = bal_acc, f1_metric = f1_metric, auc_metric = auc_metric)

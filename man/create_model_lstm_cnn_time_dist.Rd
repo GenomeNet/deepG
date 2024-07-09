@@ -2,7 +2,7 @@
 % Please edit documentation in R/create_model_set_learning.R
 \name{create_model_lstm_cnn_time_dist}
 \alias{create_model_lstm_cnn_time_dist}
-\title{Create}
+\title{Create LSTM/CNN network for combining multiple sequences}
 \usage{
 create_model_lstm_cnn_time_dist(
   maxlen = 50,
@@ -97,7 +97,7 @@ If first label contains 5 percent wrong labels and second label no noise, then
 
 \code{label_noise_matrix <- matrix(c(0.95, 0.05, 0, 1), nrow = 2, byrow = TRUE )}}
 
-\item{last_layer_activation}{Either \code{"sigmoid"} or \code{"softmax"}.}
+\item{last_layer_activation}{Activation function of output layer(s). For example \code{"sigmoid"} or \code{"softmax"}.}
 
 \item{loss_fn}{Either \code{"categorical_crossentropy"} or \code{"binary_crossentropy"}. If \code{label_noise_matrix} given, will use custom \code{"noisy_loss"}.}
 
@@ -113,7 +113,7 @@ If first label contains 5 percent wrong labels and second label no noise, then
 
 \item{model_seed}{Set seed for model parameters in tensorflow if not \code{NULL}.}
 
-\item{aggregation_method}{Can be one or more of the options \verb{"sum", "mean", "max"}. Not applied if \code{NULL}.}
+\item{aggregation_method}{At least one of the options \verb{"sum", "mean", "max"}.}
 
 \item{transformer_args}{List of arguments for transformer blocks; see \link{layer_transformer_block_wrapper}.
 Additionally, list can contain \code{pool_flatten} argument to apply global pooling or flattening after last transformer block (same options
@@ -133,6 +133,16 @@ A keras model with time distribution wrapper applied to LSTM and CNN layers.
 \description{
 Creates a network consisting of an arbitrary number of CNN, LSTM and dense layers.
 Input is a 4D tensor, where axis correspond to:
+\enumerate{
+\item batch size
+\item number of samples in one batch
+\item length of one sample
+\item size of vocabulary
+}
+After LSTM/CNN part all representations get aggregated by summation.
+Can be used to make single prediction for combination of multiple input sequences. Architecture
+is equivalent to \link{create_model_lstm_cnn_multi_input} but instead of multiple input layers with 3D input,
+input here in one 4D tensor.
 }
 \examples{
 create_model_lstm_cnn_time_dist(

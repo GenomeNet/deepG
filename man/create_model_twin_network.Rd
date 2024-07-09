@@ -74,6 +74,9 @@ create_model_twin_network(
 
 \item{dilation_rate}{Integer, the dilation rate to use for dilated convolution.}
 
+\item{gap_inputs}{Global pooling method to apply. Same options as for \code{flatten_method} argument
+in \link{create_model_transformer} function.}
+
 \item{use_bias}{Boolean. Usage of bias for CNN layers.}
 
 \item{residual_block}{Boolean. If true, the residual connections are used in CNN. It is not used in the first convolutional layer.}
@@ -90,7 +93,7 @@ create_model_twin_network(
 
 \item{distance_method}{Either "euclidean" or "cosine".}
 
-\item{last_layer_activation}{Either \code{"sigmoid"} or \code{"softmax"}.}
+\item{last_layer_activation}{Activation function of output layer(s). For example \code{"sigmoid"} or \code{"softmax"}.}
 
 \item{loss_fn}{Either \code{"categorical_crossentropy"} or \code{"binary_crossentropy"}. If \code{label_noise_matrix} given, will use custom \code{"noisy_loss"}.}
 
