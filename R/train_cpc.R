@@ -31,7 +31,6 @@
 #' @param patchlen The length of a patch when splitting the input sequence.
 #' @param nopatches The number of patches when splitting the input sequence. 
 #' @param step Frequency of sampling steps.
-#' @param preloadGeneratorpath 
 #' @param stride The overlap between two patches when splitting the input sequence.
 #' @param pretrained_model A pretrained keras model, for which training will be continued
 #' @param learningrate A Tensor, floating point value. If a schedule is defines, this value gives the initial learning rate. Defaults to 0.001.
@@ -166,7 +165,6 @@ train_model_cpc <-
            patchlen = NULL,
            nopatches = NULL,
            step = NULL,
-           preloadGeneratorpath = NULL,
            file_filter = NULL,
            stride = 0.4,
            pretrained_model = NULL,
@@ -257,9 +255,7 @@ train_model_cpc <-
       GenParams(maxlen, batch_size, step, proportion_per_seq, max_samples)
     GenTConfig <-
       GenTParams(path, shuffle_file_order, path_file_log, seed)
-    if (is.null(preloadGeneratorpath)) {
-      GenVConfig <- GenVParams(path_val, shuffle_file_order)
-    }
+    GenVConfig <- GenVParams(path_val, shuffle_file_order)
     
     # train train_val_ratio via csv file
     if (!is.null(train_val_split_csv)) {
@@ -321,11 +317,7 @@ train_model_cpc <-
     
     
     ####~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Validation Generator ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~####
-    if (!is.null(preloadGeneratorpath)) {
-      fasval <-
-        readPLGpar(preloadGeneratorpath, batch_size, maxlen, 8, seed)
-    } else{
-      fasval <-
+    fasval <-
         do.call(
           generator_fasta_lm,
           c(
@@ -335,7 +327,6 @@ train_model_cpc <-
             file_filter = file_filter[2]
           )
         )
-    }
     ####~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Creation of metrics ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~####
     cat(format(Sys.time(), "%F %R"), ": Preparing the metrics\n")
     train_loss <- tensorflow::tf$keras$metrics$Mean(name = 'train_loss')
@@ -514,19 +505,12 @@ train_model_cpc <-
               
             } else {
               ####~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Validation step ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~####
-              if (is.null(preloadGeneratorpath)) {
-                out <-
-                  modelstep(fasval(),
-                            model,
-                            train_type,
-                            F)
-              } else {
-                out <-
-                  modelstep(fasval$gen(),
-                            model,
-                            train_type,
-                            F)
-              }
+              out <-
+                modelstep(fasval(),
+                          model,
+                          train_type,
+                          F)
+              
               l <- out[1]
               acc <- out[2]
               val_loss(l)
@@ -609,9 +593,6 @@ train_model_cpc <-
             # Reset states
             val_loss$reset_states()
             val_acc$reset_states()
-            if (!is.null(preloadGeneratorpath)) {
-              fasval$reset()
-            }
           }
         }
       }
@@ -620,9 +601,6 @@ train_model_cpc <-
     ############################################# Training run #############################################
     ########################################################################################################
     
-    # initialize global list of validation results for best model saving condition
-    .GlobalEnv$eploss <- list()
-    .GlobalEnv$epacc <- list()
     
     cat(format(Sys.time(), "%F %R"), ": Starting Training\n")
     
@@ -635,12 +613,12 @@ train_model_cpc <-
       
       ## Save checkpoints
       # best model (smallest loss)
-      if (eploss[[i]] == min(unlist(eploss))) {
-        savechecks("best", runname, model, optimizer, history)
+      if (.GlobalEnv$eploss[[i]] == min(unlist(.GlobalEnv$eploss))) {
+        savechecks("best", runname, model, optimizer, .GlobalEnv$history)
       }
       # backup model every 10 epochs
       if (i %% 2 == 0) {
-        savechecks("backup", runname, model, optimizer, history)
+        savechecks("backup", runname, model, optimizer, .GlobalEnv$history)
       }
     }
     
@@ -648,7 +626,7 @@ train_model_cpc <-
     ############################################# Final saves ##############################################
     ########################################################################################################
     
-    savechecks(cp = "FINAL", runname, model, optimizer, history)
+    savechecks(cp = "FINAL", runname, model, optimizer, .GlobalEnv$history)
     if (!is.null(path_tensorboard)) {
       writegraph <-
         tensorflow::tf$keras$callbacks$TensorBoard(file.path(logdir, runname))

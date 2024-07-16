@@ -29,7 +29,6 @@ train_model_cpc(
   patchlen = NULL,
   nopatches = NULL,
   step = NULL,
-  preloadGeneratorpath = NULL,
   file_filter = NULL,
   stride = 0.4,
   pretrained_model = NULL,
@@ -98,8 +97,6 @@ subset of \code{max_samples} samples.}
 \item{nopatches}{The number of patches when splitting the input sequence.}
 
 \item{step}{Frequency of sampling steps.}
-
-\item{preloadGeneratorpath}{}
 
 \item{file_filter}{Vector of file names to use from path_corpus.}
 

@@ -2655,7 +2655,7 @@ test_that("Checking the generator for the Fasta files", {
   
   ###
   
-  testpath <- file.path("/home/rmreches/deepGdev/tests/testthat/fasta_2/b.fasta")
+  testpath <- file.path("fasta_2/b.fasta")
   masked_lm <- list(mask_rate = 0.25, random_rate = 0.25, identity_rate = 0.25, include_sw = TRUE)
   gen <- get_generator(path = testpath,
                        train_type = "masked_lm",

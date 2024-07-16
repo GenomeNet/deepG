@@ -13,7 +13,7 @@ library(magrittr)
 ```
 
 ```{r, echo=FALSE, warning=FALSE, message=FALSE}
-devtools::load_all(path = "~/deepGdev")
+devtools::load_all(path = "~/deepG")
 library(deepG)
 library(magrittr)
 ```
