@@ -10,16 +10,10 @@ The goal of the package is to speed up the development of
 bioinformatical tools for sequence classification, homology detection
 and other bioinformatical tasks. It is developed for biologists and
 advanced AI researchers. DeepG is a collaborative effort from the
-<<<<<<< HEAD
 McHardy Lab at the *Helmholtz Centre for Infection Research*, the Chair of
 Statistical Learning and Data Science at the *Ludwig Maximilian
 University of Munich* and the Huttenhower lab at *Harvard T.H. Chan
 School of Public Health*.
-=======
-McHardy Lab at the *Helmholtz Centre for Infection Research*, The Bischl
-lab at the *University of Munich* and the Huttenhower lab at *Harvard
-T.H. Chan School of Public Health*.
->>>>>>> b47d9d4 (update README)
 
 [![DOI](https://zenodo.org/badge/387820006.svg)](https://zenodo.org/badge/latestdoi/387820006)
 
