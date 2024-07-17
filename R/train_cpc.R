@@ -40,7 +40,7 @@
 #' @param stepsmax The maximum distance between the predicted patch and the given patch.
 #' @param emb_scale Scales the impact of a patches context.
 #' @examples
-#' \dontrun{
+#' 
 #' #create dummy data
 #' path_train_1 <- tempfile()
 #' path_train_2 <- tempfile()
@@ -116,7 +116,6 @@
 #' 
 #' # train model
 #' temp_dir <- tempdir()
-#' dir.create(temp_dir)
 #' hist <- train_model_cpc(train_type = "CPC",
 #'                         ### cpc functions ###
 #'                         encoder = encoder,
@@ -131,7 +130,7 @@
 #'                         steps_per_epoch = 6,
 #'                         patchlen = 100,
 #'                         nopatches = 8)
-#' }                        
+#'                
 #'  
 #' @returns A list of training metrics.  
 #' @export
@@ -240,11 +239,10 @@ train_model_cpc <-
       paste0(run_name , format(Sys.time(), "_%y%m%d_%H%M%S"))
     
     ## Create folder for model
-    dir.create(paste(path_checkpoint, runname, sep = "/"))
-    dir <- paste(path_checkpoint, runname, sep = "/")
-    
+    if (!is.null(path_checkpoint)) {
+      dir.create(paste(path_checkpoint, runname, sep = "/"))
+      dir <- paste(path_checkpoint, runname, sep = "/")
     ## Create folder for filelog
-    if (!is.na(path_checkpoint)) {
       path_file_log <-
         paste(path_checkpoint, runname, "filelog.csv", sep = "/")
     } else {
@@ -408,30 +406,30 @@ train_model_cpc <-
     
     ####~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Saving necessary model objects ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~####
     ## optimizer configuration
-    saveRDS(
-      optimizer$get_config(),
-      paste(dir, "optconfig.rds", sep = "/")
-    )
-    ## model parameters
-    saveRDS(
-      list(
-        maxlen = maxlen,
-        patchlen = patchlen,
-        stride = stride,
-        nopatches = nopatches,
-        step = step,
-        batch_size = batch_size,
-        epochs = epochs,
-        steps_per_epoch = steps_per_epoch,
-        train_val_ratio = train_val_ratio,
-        max_samples = max_samples,
-        k = k,
-        emb_scale = emb_scale,
-        learningrate = learningrate
-      ),
-      paste(dir, "modelspecs.rds", sep = "/")
-    )
     
+    if (!is.null(path_checkpoint)) {
+      saveRDS(optimizer$get_config(),
+              paste(dir, "optconfig.rds", sep = "/"))
+      ## model parameters
+      saveRDS(
+        list(
+          maxlen = maxlen,
+          patchlen = patchlen,
+          stride = stride,
+          nopatches = nopatches,
+          step = step,
+          batch_size = batch_size,
+          epochs = epochs,
+          steps_per_epoch = steps_per_epoch,
+          train_val_ratio = train_val_ratio,
+          max_samples = max_samples,
+          k = k,
+          emb_scale = emb_scale,
+          learningrate = learningrate
+        ),
+        paste(dir, "modelspecs.rds", sep = "/")
+      )
+    }
     ########################################################################################################
     ######################################## Tensorboard connection ########################################
     ########################################################################################################

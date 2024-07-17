@@ -318,34 +318,29 @@ cpcloss <- function(latents,
           0, (batch_size - 1)
         ))), (c_dim - (i + 1))) %>% as.integer()
     } else {
+      c_dim_i <- c_dim - i - 1
+      # define total number of elements in context tensor
+      total_elements <- batch_size * c_dim_i
       # add conv layer and reshape tensor for matrix multiplication
       targets <-
-        ctx %>% keras::layer_conv_1d(kernel_size = 1, filters = target_dim)
+        latents %>% keras::layer_conv_1d(kernel_size = 1, filters = target_dim) %>% keras::k_reshape(c(-1, target_dim))
       # add conv layer and reshape for matrix multiplication
-      preds_i <- targets[1:batch_size, , ]
-      revcompl <-
-        targets[(batch_size + 1):as.integer(batch_size * 2), ,]
-      # define logits
-      logits_flag <- FALSE
-      for (j in seq_len(c_dim - (i + 1))) {
-        preds_ij <- targets[, j, ] %>% keras::k_reshape(c(-1, target_dim))
-        revcompl_j <-
-          ctx[, (c_dim - j - i),] %>% keras::k_reshape(c(-1, target_dim))
-        logitsnew <- tensorflow::tf$matmul(preds_ij, tensorflow::tf$transpose(revcompl_j))
-        if (logits_flag) {
-          logits <- tensorflow::tf$concat(list(logits, logitsnew), axis = 0L)
-        } else {
-          logits <- logitsnew
-          logits_flag <- TRUE
-        }
-      }
+      preds_i <-
+        ctx %>% keras::layer_conv_1d(kernel_size = 1, filters = target_dim)
+      preds_i <- preds_i[, (1:(c_dim - i - 1)),]
+      preds_i <- keras::k_reshape(preds_i, c(-1, target_dim)) * emb_scale
+      
+      # define logits normally
+      logits <- tensorflow::tf$matmul(preds_i, tensorflow::tf$transpose(targets))
+      
+      # get position of labels
+      b <- floor(seq(0, total_elements - 1) / c_dim_i)
+      col <- seq(0, total_elements - 1) %% c_dim_i
+      
       # define labels
-      labels <-
-        rep(c(seq(batch_size, (
-          2 * batch_size - 1
-        )), (seq(
-          0, (batch_size - 1)
-        ))), (dim(targets)[[2]] - (i + 1))) %>% as.integer()
+      labels <- b * c_dim + col + (i + 1)
+      labels <- as.integer(labels)
+      
     }
     # calculate loss and accuracy for each step
     loss[[length(loss) + 1]] <-

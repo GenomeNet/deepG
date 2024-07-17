@@ -16,3 +16,4 @@ __autograph_generated_file.*
 __pycache__/
 ^doc$
 ^Meta$
+^attic$
