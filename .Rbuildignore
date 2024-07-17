@@ -15,5 +15,11 @@ pkgdown
 __autograph_generated_file.*
 __pycache__/
 ^doc$
+^docs$
 ^Meta$
+<<<<<<< HEAD
 ^attic$
+=======
+^NEWS.md$
+^cran-comments\.md$
+>>>>>>> 963d86e (ignore NEWS file)
