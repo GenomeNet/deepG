@@ -123,7 +123,7 @@ A list of training metrics.
 Train a CPC (Oord et al.) inspired neural network on genomic data.
 }
 \examples{
-\dontrun{
+
 #create dummy data
 path_train_1 <- tempfile()
 path_train_2 <- tempfile()
@@ -199,7 +199,6 @@ context <- function(latents) {
 
 # train model
 temp_dir <- tempdir()
-dir.create(temp_dir)
 hist <- train_model_cpc(train_type = "CPC",
                         ### cpc functions ###
                         encoder = encoder,
@@ -214,6 +213,6 @@ hist <- train_model_cpc(train_type = "CPC",
                         steps_per_epoch = 6,
                         patchlen = 100,
                         nopatches = 8)
-}                        
+               
  
 }
