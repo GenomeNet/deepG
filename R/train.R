@@ -372,6 +372,7 @@ train_model <- function(model = NULL,
   argumentList <- as.list(match.call(expand.dots=FALSE))
   #argumentList <- c(as.list(environment()), list(...)) log default args too
   argumentList <- argumentList[names(argumentList) != ""]
+  argumentList <- lapply(argumentList, eval, envir = parent.frame())
   
   # extract maxlen from model
   if (is.null(maxlen)) {
@@ -734,8 +735,10 @@ resume_training_from_model_card <- function(path_model_card,
   
   if (is.null(new_run_name)) {
     new_train_args$run_name <- set_new_run_name(train_args_mc$run_name)
+  } else {
+    new_train_args$run_name <- new_run_name
   }
-  
+
   # overwrite args
   if (is.null(seed)) seed <- get_seed()
   new_train_args$seed <- seed
