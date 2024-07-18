@@ -6,10 +6,9 @@
 #' @inheritParams wavenet::wavenet
 #' @inheritParams create_model_lstm_cnn
 #' @examples 
-#'\dontrun{
+#'
 #' model <- create_model_wavenet(residual_blocks = 2^rep(1:4, 2), maxlen = 1000)
-#' }
-#' 
+#'  
 #' @returns A keras model implementing wavenet architecture.
 #' @export
 create_model_wavenet <- function(filters = 16, kernel_size = 2, residual_blocks, maxlen,

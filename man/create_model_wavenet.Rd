@@ -68,8 +68,7 @@ Creates network architecture as described \href{https://arxiv.org/abs/1609.03499
 uses code from \href{https://github.com/r-tensorflow/wavenet}{here}.
 }
 \examples{
-\dontrun{
-model <- create_model_wavenet(residual_blocks = 2^rep(1:4, 2), maxlen = 1000)
-}
 
+model <- create_model_wavenet(residual_blocks = 2^rep(1:4, 2), maxlen = 1000)
+ 
 }

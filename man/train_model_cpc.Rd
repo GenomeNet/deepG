@@ -213,6 +213,6 @@ hist <- train_model_cpc(train_type = "CPC",
                         steps_per_epoch = 6,
                         patchlen = 100,
                         nopatches = 8)
-               
+                
  
 }
