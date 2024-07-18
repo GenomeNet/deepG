@@ -17,10 +17,7 @@ __pycache__/
 ^doc$
 ^docs$
 ^Meta$
-<<<<<<< HEAD
 ^attic$
-=======
 ^NEWS.md$
 ^cran-comments\.md$
->>>>>>> 963d86e (ignore NEWS file)
 ^LICENSE\.md$
