@@ -31,7 +31,7 @@ Authors@R: c(
 Description: Toolbox for training and applying deep learning models for genomic sequence data.
   Applications include data preprocessing, model fitting, model evaluation, model optimization and inference.
   A few genomic datasets for testing are provided, as is the possibility to extract deep representations.
-License: AGPL-3 + file LICENSE
+License: LGPL (>= 3)
 URL: https://github.com/GenomeNet/deepG,
     https://deepg.de/
 BugReports: https://github.com/GenomeNet/deepG/issues
