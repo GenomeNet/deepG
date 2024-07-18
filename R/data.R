@@ -9,18 +9,6 @@
 #' @references \url{https://github.com/philippmuench}
 "crispr_sample"
 
-#' CRISPR data subset
-#'
-#' Example training dataset consisting of a sequence of nucleotides of CRISPR loci.
-#' Filtered for unambiguous characters and contains only characters in the vocabulary \{A,G,G,T
-#' \}.
-#' contain all CRISPR loci found in NCBI representative genomes using CRT.
-#' Can be loaded to workspace via `data(crispr_full)`.
-#' @format Large character of 7.50 MB
-#' @usage data(crispr_full)
-#' @references \url{https://github.com/philippmuench}
-"crispr_full"
-
 #' Parenthesis data
 #' 
 #' Training dataset of synthetic parenthesis language.
@@ -29,15 +17,6 @@
 #' @usage data(parenthesis)
 #' @references \url{https://github.com/philippmuench}
 "parenthesis"
-
-#' Ecoli genome
-#' 
-#' E. coli genome for evaluation.
-#' Can be loaded to workspace via `data(ecoli)`.
-#' @format Large character of 4.64 MB
-#' @usage data(ecoli)
-#' @references \url{https://www.science.org/doi/10.1126/science.277.5331.1453}
-"ecoli"
 
 #' Ecoli subset
 #' 
