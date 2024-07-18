@@ -9,7 +9,7 @@ _pkgdown.yml
 data-raw
 docs
 example_files
-model_results
+^model_results.+$
 output.json
 pkgdown
 __autograph_generated_file.*
@@ -21,3 +21,5 @@ __pycache__/
 ^NEWS.md$
 ^cran-comments\.md$
 ^LICENSE\.md$
+vignettes/using_tb.Rmd
+vignettes/tb_images
