@@ -130,7 +130,7 @@
 #'                         steps_per_epoch = 6,
 #'                         patchlen = 100,
 #'                         nopatches = 8)
-#'                
+#'                 
 #'  
 #' @returns A list of training metrics.  
 #' @export

@@ -15,10 +15,11 @@ layer_aggregate_time_dist_wrapper <- function(load_r6 = FALSE, method = "sum", m
   layer_aggregate_time_dist <- keras::new_layer_class(
     "layer_aggregate_time_dist",
     
-    initialize = function(method, ...) {
+    initialize = function(method, multi_in, ...) {
       super$initialize(...)
       self$method <- method
       self$axis <- ifelse(multi_in, 0L, 1L)
+      self$multi_in <- multi_in
     },
     
     call = function(inputs, mask = NULL) {
