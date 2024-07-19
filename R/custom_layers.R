@@ -54,7 +54,7 @@ layer_aggregate_time_dist_wrapper <- function(load_r6 = FALSE, method = "sum", m
   if (load_r6) {
     return(layer_aggregate_time_dist)
   } else {
-    return(layer_aggregate_time_dist(method = method))
+    return(layer_aggregate_time_dist(method = method, multi_in = multi_in))
   }
   
 }
