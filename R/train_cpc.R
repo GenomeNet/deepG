@@ -612,11 +612,11 @@ train_model_cpc <-
       ## Save checkpoints
       # best model (smallest loss)
       if (.GlobalEnv$eploss[[i]] == min(unlist(.GlobalEnv$eploss))) {
-        savechecks("best", runname, model, optimizer, .GlobalEnv$history)
+        savechecks("best", runname, model, optimizer, .GlobalEnv$history, path_checkpoint)
       }
       # backup model every 10 epochs
       if (i %% 2 == 0) {
-        savechecks("backup", runname, model, optimizer, .GlobalEnv$history)
+        savechecks("backup", runname, model, optimizer, .GlobalEnv$history, path_checkpoint)
       }
     }
     
@@ -624,7 +624,7 @@ train_model_cpc <-
     ############################################# Final saves ##############################################
     ########################################################################################################
     
-    savechecks(cp = "FINAL", runname, model, optimizer, .GlobalEnv$history)
+    savechecks(cp = "FINAL", runname, model, optimizer, .GlobalEnv$history, path_checkpoint)
     if (!is.null(path_tensorboard)) {
       writegraph <-
         tensorflow::tf$keras$callbacks$TensorBoard(file.path(logdir, runname))

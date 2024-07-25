@@ -44,11 +44,11 @@ maxlencalc <- function(plen, nopatches, stride) {
 #' @param history A keras history object.
 #' @returns None. Saves object to file.
 #' @noRd
-savechecks <- function(cp, runname, model, optimizer, history) {
+savechecks <- function(cp, runname, model, optimizer, history, path_checkpoint) {
   np = import("numpy", convert = F)
   ## define path for saved objects
   modpath <-
-    paste("model_results/models", runname, cp , sep = "/")
+    file.path(path_checkpoint, runname, cp)
   ## save model object
   model %>% keras::save_model_hdf5(paste0(modpath, "mod_temp.h5"))
   file.rename(paste0(modpath, "mod_temp.h5"),
