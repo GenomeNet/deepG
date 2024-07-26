@@ -257,7 +257,7 @@ get_cp  <- function(cp_path, cp_filter = "last_ep", ep_index = NULL, verbose = T
   
   if (verbose) {
     cat("Using checkpoint", cp, "\n")
-    cat("Date created:", as.character(file.info(cp)$mtime), "\n")
+    cat("(Date created:", as.character(file.info(cp)$mtime), "\n)")
   }
   
   return(cp)

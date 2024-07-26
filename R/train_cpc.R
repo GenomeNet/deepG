@@ -150,11 +150,11 @@ train_model_cpc <-
            batch_size = 32,
            epochs = 100,
            steps_per_epoch = 2000,
-           shuffle_file_order = F,
+           shuffle_file_order = FALSE,
            initial_epoch = 1,
            seed = 1234,
            
-           path_file_log = T,
+           path_file_log = TRUE,
            train_val_split_csv = NULL,
            file_limit = NULL,
            proportion_per_seq = NULL,
@@ -399,7 +399,7 @@ train_model_cpc <-
     } else {
       cat(format(Sys.time(), "%F %R"), ": Loading the trained model.\n")
       ## Read model
-      model <- keras::load_model_hdf5(pretrained_model, compile = F)
+      model <- keras::load_model_hdf5(pretrained_model, compile = FALSE)
       optimizer <- ReadOpt(pretrained_model)
       optimizer$learning_rate$assign(learningrate)
     }
@@ -507,7 +507,7 @@ train_model_cpc <-
                 modelstep(fasval(),
                           model,
                           train_type,
-                          F)
+                          FALSE)
               
               l <- out[1]
               acc <- out[2]
