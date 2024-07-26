@@ -45,7 +45,7 @@ maxlencalc <- function(plen, nopatches, stride) {
 #' @returns None. Saves object to file.
 #' @noRd
 savechecks <- function(cp, runname, model, optimizer, history, path_checkpoint) {
-  np = import("numpy", convert = F)
+
   ## define path for saved objects
   modpath <-
     file.path(path_checkpoint, runname, cp)
@@ -101,7 +101,7 @@ modelstep <-
   function(trainvaldat,
            model,
            train_type = "cpc",
-           training = F) {
+           training = FALSE) {
     ## get batch
     a <- trainvaldat$x %>% tensorflow::tf$convert_to_tensor()
     if (train_type == "Self-GenomeNet") {
@@ -235,12 +235,12 @@ GenParams <- function(maxlen,
   checkmate::assertInt(maxlen, lower = 1)
   checkmate::assertInt(batch_size, lower = 1)
   checkmate::assertInt(step, lower = 1)
-  checkmate::assertInt(max_samples, lower = 1, null.ok = T)
+  checkmate::assertInt(max_samples, lower = 1, null.ok = TRUE)
   checkmate::assertNumber(
     proportion_per_seq,
     lower = 0,
     upper = 1,
-    null.ok = T
+    null.ok = TRUE
   )
   
   structure(
