@@ -7,27 +7,35 @@
 interpolate_seq <- function(m_steps = 50,
                             baseline_type = "shuffle",
                             input_seq) {
-
-  stopifnot(baseline_type %in% c("zero", "shuffle"))
+  
+  stopifnot(baseline_type %in% c("zero", "shuffle", "unif"))
   if (is.list(input_seq)) {
     baseline <- list()
     for (i in 1:length(input_seq)) {
       input_dim <- dim(input_seq[[i]])
       if (baseline_type == "zero") {
         baseline[[i]] <- array(rep(0, prod(input_dim)), dim = input_dim)
-      } else {
+      } 
+      if (baseline_type == "shuffle") {
         input_dim <- dim(input_seq[[i]])
         baseline[[i]] <- array(input_seq[[i]][ , sample(input_dim[2]), ], dim = input_dim)
       }
+      if (baseline_type == "unif") {
+        baseline[[i]] <- array(stats::runif(prod(input_dim)), dim = input_dim)
+      } 
     }
   } else {
     if (baseline_type == "zero") {
       baseline <- array(rep(0, prod(dim(input_seq))), dim = dim(input_seq))
-    } else {
+    } 
+    if (baseline_type == "shuffle") {
       baseline <- array(input_seq[ , sample(dim(input_seq)[2]), ], dim = dim(input_seq))
     }
+    if (baseline_type == "unif") {
+      baseline <- array(stats::runif(prod(dim(input_seq))), dim = dim(input_seq))
+    } 
   }
-
+  
   m_steps <- as.integer(m_steps)
   alphas <- tensorflow::tf$linspace(start = 0.0, stop = 1.0, num = m_steps + 1L) # Generate m_steps intervals for integral_approximation() below.
   alphas_x <- alphas[ , tensorflow::tf$newaxis, tensorflow::tf$newaxis]
@@ -54,17 +62,17 @@ interpolate_seq <- function(m_steps = 50,
 #' input is too big to handle at once.
 #' @noRd
 compute_gradients <- function(input_tensor, target_class_idx, model, input_idx = NULL, pred_stepwise = FALSE) {
-
+  
   # if (is.list(input_tensor)) {
   #   stop("Stepwise predictions only supported for single input layer yet")
   # }
-
+  
   reticulate::py_run_string("import tensorflow as tf")
   py$input_tensor <- input_tensor
   py$input_idx <- as.integer(input_idx - 1)
   py$target_class_idx <- as.integer(target_class_idx - 1)
   py$model <- model
-
+  
   if (!is.null(input_idx)) {
     reticulate::py_run_string(
       "with tf.GradientTape() as tape:
@@ -78,7 +86,7 @@ compute_gradients <- function(input_tensor, target_class_idx, model, input_idx =
              probs = model(input_tensor)[:, target_class_idx]
     ")
   }
-
+  
   grad <- py$tape$gradient(py$probs, py$input_tensor)
   if (!is.null(input_idx)) {
     return(grad[[input_idx]])
@@ -130,20 +138,20 @@ integrated_gradients <- function(m_steps = 50,
                                  model,
                                  pred_stepwise = FALSE,
                                  num_baseline_repeats = 1) {
-
+  
   #library(reticulate)
   reticulate::py_run_string("import tensorflow as tf")
   input_idx <- NULL
   if (num_baseline_repeats > 1 & baseline_type == "zero") {
     warning('Ignoring num_baseline_repeats if baseline is of type "zero". Did you mean to use baseline_type = "shuffle"?')
   }
-
+  
   if (num_baseline_repeats == 1 | baseline_type == "zero") {
-
+    
     baseline_seq <- interpolate_seq(m_steps = m_steps,
                                     baseline_type = baseline_type,
                                     input_seq = input_seq)
-
+    
     if (is.list(baseline_seq)) {
       for (i in 1:length(baseline_seq)) {
         baseline_seq[[i]] <- tensorflow::tf$cast(baseline_seq[[i]], dtype = "float32")
@@ -151,19 +159,19 @@ integrated_gradients <- function(m_steps = 50,
     } else {
       baseline_seq <- tensorflow::tf$cast(baseline_seq, dtype = "float32")
     }
-
+    
     if (is.list(input_seq)) {
       path_gradients <- list()
       avg_grads <- list()
       ig <- list()
-
+      
       if (pred_stepwise) {
         path_gradients <- gradients_stepwise(
           model = model,
           baseline_seq = baseline_seq,
           target_class_idx = target_class_idx)
       } else {
-
+        
         path_gradients <- compute_gradients(
           model = model,
           input_tensor = baseline_seq,
@@ -171,13 +179,13 @@ integrated_gradients <- function(m_steps = 50,
           input_idx = NULL,
           pred_stepwise = pred_stepwise)
       }
-
+      
       for (i in 1:length(input_seq)) {
         avg_grads[[i]] <- integral_approximation(gradients = path_gradients[[i]])
         ig[[i]] <- ((input_seq[[i]] - baseline_seq[[i]][1, , ]) * avg_grads[[i]])[1, , ]
       }
     } else {
-
+      
       if (pred_stepwise) {
         path_gradients <- gradients_stepwise(model = model,
                                              baseline_seq = baseline_seq,
@@ -191,7 +199,7 @@ integrated_gradients <- function(m_steps = 50,
           input_idx = NULL,
           pred_stepwise = pred_stepwise)
       }
-
+      
       avg_grads <- integral_approximation(gradients = path_gradients)
       ig <- ((input_seq - baseline_seq[1, , ]) * avg_grads)[1, , ]
     }
@@ -209,7 +217,7 @@ integrated_gradients <- function(m_steps = 50,
     ig_stacked <- tensorflow::tf$stack(ig_list, axis = 0L)
     ig <- tensorflow::tf$reduce_mean(ig_stacked, axis = 0L)
   }
-
+  
   return(ig)
 }
 
@@ -218,11 +226,11 @@ integrated_gradients <- function(m_steps = 50,
 #' @noRd
 gradients_stepwise <- function(model = model, baseline_seq, target_class_idx,
                                input_idx = NULL) {
-
+  
   if (is.list(baseline_seq)) {
     first_dim <- dim(baseline_seq[[1]])[1]
     num_input_layers <- length(baseline_seq)
-
+    
     l <- list()
     for (j in 1:first_dim) {
       input_list <- list()
@@ -242,7 +250,7 @@ gradients_stepwise <- function(model = model, baseline_seq, target_class_idx,
       }
       l[[j]] <- output
     }
-
+    
     path_gradients <- vector("list", num_input_layers)
     for (n in 1:num_input_layers) {
       temp_list <- vector("list", first_dim)
@@ -251,7 +259,7 @@ gradients_stepwise <- function(model = model, baseline_seq, target_class_idx,
       }
       path_gradients[[n]] <- tensorflow::tf$stack(temp_list)
     }
-
+    
   } else {
     l <- list()
     for (j in 1:dim(baseline_seq)[1]) {
@@ -296,12 +304,12 @@ gradients_stepwise <- function(model = model, baseline_seq, target_class_idx,
 #' @export
 heatmaps_integrated_grad <- function(integrated_grads,
                                      input_seq) {
-
+  
   if (is.list(input_seq)) {
     for (i in 1:length(input_seq)) {
       input_seq[[i]] <- tensorflow::tf$cast(input_seq[[i]], dtype = "float32")
     }
-
+    
     for (i in 1:length(integrated_grads)) {
       integrated_grads[[i]] <- tensorflow::tf$cast(integrated_grads[[i]], dtype = "float32")
     }
@@ -309,8 +317,8 @@ heatmaps_integrated_grad <- function(integrated_grads,
     input_seq <- tensorflow::tf$cast(input_seq, dtype = "float32")
     integrated_grads <- tensorflow::tf$cast(integrated_grads, dtype = "float32")
   }
-
-
+  
+  
   if (is.list(input_seq)) {
     num_input <- length(input_seq)
     attribution_mask <- list()
@@ -327,7 +335,7 @@ heatmaps_integrated_grad <- function(integrated_grads,
       sum_nuc[[i]] <- py$sum_nuc
       sum_nuc[[i]] <- as.matrix(sum_nuc[[i]], nrow = 1) %>% as.data.frame()
       colnames(sum_nuc[[i]]) <- "sum"
-
+      
       if (length(dim(integrated_grads[[i]])) == 3) {
         nuc_matrix[[i]] <- as.matrix(integrated_grads[[i]][1, , ])
       }
@@ -344,22 +352,22 @@ heatmaps_integrated_grad <- function(integrated_grads,
       rownames(nuc_matrix[[i]]) <- nuc_seq[[i]]
       colnames(nuc_matrix[[i]]) <- c("A", "C", "G", "T")
     }
-
+    
   } else {
     num_input <- 1
     py$integrated_grads <- integrated_grads
     reticulate::py_run_string("attribution_mask = tf.reduce_sum(tf.math.abs(integrated_grads), axis=-1)")
     reticulate::py_run_string("sum_nuc = tf.reduce_sum(integrated_grads, axis=-1)")
     #py_run_string("mean_nuc = tf.reduce_mean(integrated_grads, axis=-1)")
-
+    
     attribution_mask <- py$attribution_mask
     attribution_mask <- as.matrix(attribution_mask, nrow = 1) %>% as.data.frame()
     colnames(attribution_mask) <- "abs_sum"
-
+    
     sum_nuc <- py$sum_nuc
     sum_nuc <- as.matrix(sum_nuc, nrow = 1) %>% as.data.frame()
     colnames(sum_nuc) <- "sum"
-
+    
     if (length(dim(integrated_grads)) == 3) {
       nuc_matrix <- as.matrix(integrated_grads[1, , ])
     }
@@ -376,7 +384,7 @@ heatmaps_integrated_grad <- function(integrated_grads,
     rownames(nuc_matrix) <- nuc_seq
     colnames(nuc_matrix) <- c("A", "C", "G", "T")
   }
-
+  
   if (num_input == 1) {
     ig_min <- keras::k_min(integrated_grads)$numpy()
     ig_max <- keras::k_max(integrated_grads)$numpy()
@@ -389,7 +397,7 @@ heatmaps_integrated_grad <- function(integrated_grads,
       col_fun[[i]] <- circlize::colorRamp2(c(ig_min, mean(c(ig_max, ig_min)) , ig_max), c("blue", "white", "red"))
     }
   }
-
+  
   hm_list <- list()
   if (num_input == 1) {
     row_ha = ComplexHeatmap::columnAnnotation(abs_sum = attribution_mask[,1], sum = sum_nuc[,1]) # mean = mean_nuc[,1]
