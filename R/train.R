@@ -662,7 +662,9 @@ get_run_name <- function(run_name = NULL, path_tensorboard, path_checkpoint, pat
 #' `new_args = list(batch_size = 6, padding = TRUE)`.
 #' @param new_compile List of arguments to compile the model again. If `NULL`, use compiled model from checkpoint.
 #' Example: `new_compile = list(loss = 'binary_crossentropy', metrics = 'acc', optimizer = keras::optimizer_adam())`
-#' @param use_mirrored_strategy Whether to use distributed mirrored strategy. If NULL, will use distributed mirrored strategy only if >1 GPU available.   
+#' @param use_mirrored_strategy Whether to use distributed mirrored strategy. 
+#' If NULL, will use distributed mirrored strategy only if >1 GPU available.   
+#' @param unfreeze If `TRUE`, set trainable attribute of model to `TRUE` (unfreeze weights). 
 #' @param verbose Whether to print all training arguments. 
 #' @examples
 #' # create dummy data and temp directories
@@ -714,6 +716,7 @@ resume_training_from_model_card <- function(path_model_card,
                                             new_args = NULL,
                                             new_compile = NULL,
                                             use_mirrored_strategy = NULL,
+                                            unfreeze = FALSE, 
                                             verbose = FALSE) {
   
   if (is.null(use_mirrored_strategy)) use_mirrored_strategy <- ifelse(count_gpu() > 1, TRUE, FALSE)
@@ -746,6 +749,10 @@ resume_training_from_model_card <- function(path_model_card,
   # load checkpoint to resume from
   if (is.null(train_args_mc$path_checkpoint)) {
     stop('Did not save checkpoints in the run from model card')
+  }
+  
+  if (unfreeze) {
+    model$trainable <- TRUE
   }
   
   if (use_mirrored_strategy) {
