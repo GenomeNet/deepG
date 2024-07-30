@@ -1,0 +1,50 @@
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+
+name: R-CMD-check
+
+jobs:
+  R-CMD-check:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: ['windows-latest', 'macOS-latest', 'ubuntu-latest']
+
+    runs-on: ${{ matrix.os }}
+    name: ${{ matrix.os }}
+    env:
+      R_REMOTES_NO_ERRORS_FROM_WARNINGS: true
+      PIP_NO_WARN_SCRIPT_LOCATION: false
+      RETICULATE_AUTOCONFIGURE: 'FALSE'
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - uses: r-lib/actions/setup-r@v2
+
+      - uses: r-lib/actions/setup-pandoc@v2
+
+      - uses: r-lib/actions/setup-r-dependencies@v2
+        with:
+          extra-packages: rcmdcheck remotes reticulate
+
+      - uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
+
+      - name: setup r-reticulate venv
+        shell: Rscript {0}
+        run: |
+          remotes::install_local()
+          library(reticulate)
+          virtualenv_create("r-reticulate", python = Sys.which("python"))
+          use_virtualenv("r-reticulate", required = TRUE)
+          reticulate::py_install("tensorflow-cpu")
+
+      - name: Check
+        continue-on-error: ${{ contains(matrix.allow_failure, 'true') }}
+        run: Rscript -e "rcmdcheck::rcmdcheck(args = '--no-manual', error_on = 'warning', check_dir = 'check')"
+
