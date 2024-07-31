@@ -19,6 +19,7 @@ Compute balanced accuracy as additional score. Useful for imbalanced data. Only 
 model with mutually exclusive targets.
 }
 \examples{
+\dontshow{if (reticulate::py_module_available("tensorflow")) (if (getRversion() >= "3.4") withAutoprint else force)(\{ # examplesIf}
 
 y_true <- c(1,0,0,1,
             0,1,0,0,
@@ -33,5 +34,5 @@ bal_acc_metric <- balanced_acc_wrapper(num_targets = 3L, cm_dir = cm_dir)
 bal_acc_metric$update_state(y_true, y_pred)
 bal_acc_metric$result()
 as.array(bal_acc_metric$cm)
-
+\dontshow{\}) # examplesIf}
 }

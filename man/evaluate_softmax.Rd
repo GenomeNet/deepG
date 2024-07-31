@@ -25,8 +25,9 @@ Compute confusion matrix, accuracy, categorical crossentropy and (optionally) AU
 true targets. AUC and AUPRC only possible for 2 targets.
 }
 \examples{
+\dontshow{if (reticulate::py_module_available("tensorflow")) (if (getRversion() >= "3.4") withAutoprint else force)(\{ # examplesIf}
 y <- matrix(c(1, 0, 0, 0, 1, 1), ncol = 2)
 y_conf <- matrix(c(0.3, 0.5, 0.1, 0.7, 0.5, 0.9), ncol = 2)
 evaluate_softmax(y, y_conf, auc = TRUE, auprc = TRUE, label_names = c("A", "B")) 
-
+\dontshow{\}) # examplesIf}
 }

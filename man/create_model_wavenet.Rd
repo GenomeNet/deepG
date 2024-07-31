@@ -68,7 +68,9 @@ Creates network architecture as described \href{https://arxiv.org/abs/1609.03499
 uses code from \href{https://github.com/r-tensorflow/wavenet}{here}.
 }
 \examples{
+\dontshow{if (reticulate::py_module_available("tensorflow")) (if (getRversion() >= "3.4") withAutoprint else force)(\{ # examplesIf}
 
 model <- create_model_wavenet(residual_blocks = 2^rep(1:4, 2), maxlen = 1000)
  
+\dontshow{\}) # examplesIf}
 }

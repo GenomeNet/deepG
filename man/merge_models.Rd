@@ -36,6 +36,7 @@ A keras model merging two input models.
 Combine two models at certain layers and add dense layer(s) afterwards.
 }
 \examples{
+\dontshow{if (reticulate::py_module_available("tensorflow")) (if (getRversion() >= "3.4") withAutoprint else force)(\{ # examplesIf}
 model_1 <- create_model_lstm_cnn(layer_lstm = c(64, 64), maxlen = 50, layer_dense = c(32, 4),
                                  verbose = FALSE)
 model_2 <- create_model_lstm_cnn(layer_lstm = c(32), maxlen = 40, 
@@ -50,5 +51,5 @@ model <- merge_models(models = list(model_1, model_2),
                       layer_names = c(layer_name_1, layer_name_2),
                       layer_dense = c(6, 2), 
                       freeze_base_model = c(FALSE, FALSE)) 
-
+\dontshow{\}) # examplesIf}
 }

@@ -18,6 +18,7 @@ A keras callback that resets states of LSTM layers.
 Reset states at start/end of validation and whenever file changes. Can be used for stateful LSTM.
 }
 \examples{
+\dontshow{if (reticulate::py_module_available("tensorflow")) (if (getRversion() >= "3.4") withAutoprint else force)(\{ # examplesIf}
 rs <- reset_states_cb(path_file_log = tempfile(), path_file_logVal = tempfile())
-
+\dontshow{\}) # examplesIf}
 }

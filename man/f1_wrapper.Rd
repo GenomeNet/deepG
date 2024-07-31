@@ -20,6 +20,8 @@ loss is \code{"binary_crossentropy"} and number of targets > 1, will flatten \co
 to a single vector (rather than computing separate F1 scores for each class).
 }
 \examples{
+\dontshow{if (reticulate::py_module_available("tensorflow")) (if (getRversion() >= "3.4") withAutoprint else force)(\{ # examplesIf}
+
 y_true <- c(1,0,0,1,1,0,1,0,0)  
 y_pred <-  c(0.9,0.05,0.05,0.9,0.05,0.05,0.9,0.05,0.05)
 
@@ -41,4 +43,5 @@ f1_metric <- f1_wrapper(num_targets, loss = model$loss)
 model \%>\% keras::compile(loss = model$loss, 
                          optimizer = model$optimizer,
                          metrics = c(model$metrics, f1_metric))
+\dontshow{\}) # examplesIf}
 }

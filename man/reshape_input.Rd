@@ -19,6 +19,7 @@ Replace first layer of model with new input layer of different shape. Only works
 use CNN and LSTM layers.
 }
 \examples{
+\dontshow{if (reticulate::py_module_available("tensorflow")) (if (getRversion() >= "3.4") withAutoprint else force)(\{ # examplesIf}
 model_1 <-  create_model_lstm_cnn(
   maxlen = 50,
   kernel_size = c(10, 10),
@@ -29,5 +30,5 @@ model_1 <-  create_model_lstm_cnn(
   layer_dense = c(64, 2))
 model <- reshape_input(model_1, input_shape = c(120, 4))
 model
-
+\dontshow{\}) # examplesIf}
 }

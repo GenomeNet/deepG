@@ -122,6 +122,7 @@ A list of evaluation results. Each list element corresponds to an output layer o
 Returns evaluation metric like confusion matrix, loss, AUC, AUPRC, MAE, MSE (depending on output layer).
 }
 \examples{
+\dontshow{if (reticulate::py_module_available("tensorflow")) (if (getRversion() >= "3.4") withAutoprint else force)(\{ # examplesIf}
 # create dummy data
 path_input <- tempfile()
 dir.create(path_input)
@@ -143,4 +144,5 @@ evaluate_model(path_input = path_input,
   evaluate_all_files = TRUE,
   verbose = FALSE)
   
+\dontshow{\}) # examplesIf}
 }

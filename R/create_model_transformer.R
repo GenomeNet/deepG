@@ -19,7 +19,7 @@
 #' If `"average_ch_last"` /  `"max_ch_last"`  or `"average_ch_first"` / `"max_ch_first"`, will apply global average/max pooling.
 #' `_ch_first` / `_ch_last` to decide along which axis. `"both_ch_first"` / `"both_ch_last"` to use max and average together. `"all"` to use all 4 
 #' global pooling options together. If `"flatten"`, will flatten output after last attention block. If `"none"` no flattening applied.
-#' @examples 
+#' @examplesIf reticulate::py_module_available("tensorflow")
 #' model <- create_model_transformer(maxlen = 50,
 #'                                   head_size=c(10,12),
 #'                                   num_heads=c(7,8),

@@ -41,6 +41,7 @@ Code is R implementation of python code from \href{https://www.tensorflow.org/tu
 Tensorflow implementation is based on this \href{https://arxiv.org/abs/1703.01365}{paper}.
 }
 \examples{
+\dontshow{if (reticulate::py_module_available("tensorflow")) (if (getRversion() >= "3.4") withAutoprint else force)(\{ # examplesIf}
 model <- create_model_lstm_cnn(layer_lstm = 8, layer_dense = 3, maxlen = 20, verbose = FALSE)
 random_seq <- sample(0:3, 20, replace = TRUE)
 input_seq <- array(keras::to_categorical(random_seq), dim = c(1, 20, 4))
@@ -49,4 +50,5 @@ integrated_gradients(
   target_class_idx = 3,
   model = model)
   
+\dontshow{\}) # examplesIf}
 }

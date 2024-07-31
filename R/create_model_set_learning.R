@@ -22,7 +22,7 @@
 #' @param transformer_args List of arguments for transformer blocks; see \link{layer_transformer_block_wrapper}.
 #' Additionally, list can contain `pool_flatten` argument to apply global pooling or flattening after last transformer block (same options
 #' as `flatten_method` argument in \link{create_model_transformer} function).
-#' @examples 
+#' @examplesIf reticulate::py_module_available("tensorflow")
 #' create_model_lstm_cnn_time_dist(
 #'   maxlen = 50,
 #'   vocabulary_size = 4,
@@ -351,7 +351,7 @@ create_model_lstm_cnn_time_dist <- function(
 #' @param dropout_dense Vector of dropout rates between dense layers. No dropout if `NULL`.
 #' @param gap_inputs Global pooling method to apply. Same options as for `flatten_method` argument
 #' in \link{create_model_transformer} function.
-#' @examples
+#' @examplesIf reticulate::py_module_available("tensorflow")
 #' create_model_lstm_cnn_multi_input(
 #'   maxlen = 50,
 #'   vocabulary_size = 4,

@@ -71,6 +71,7 @@ If \code{target_len} is not NULL will take the last \code{target_len} entries of
 the first list element as targets and the rest as input.
 }
 \examples{
+\dontshow{if (reticulate::py_module_available("tensorflow")) (if (getRversion() >= "3.4") withAutoprint else force)(\{ # examplesIf}
 # create 3 rds files
 rds_folder <- tempfile()
 dir.create(rds_folder)
@@ -95,5 +96,5 @@ x <- z[[1]]
 y <- z[[2]]
 x[1, , ]
 y[1, ]
-
+\dontshow{\}) # examplesIf}
 }

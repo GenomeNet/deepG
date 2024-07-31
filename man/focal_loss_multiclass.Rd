@@ -22,10 +22,11 @@ A function implementing focal loss.
 Focal loss for two or more labels
 }
 \examples{
+\dontshow{if (reticulate::py_module_available("tensorflow")) (if (getRversion() >= "3.4") withAutoprint else force)(\{ # examplesIf}
 y_true <- matrix(c(0, 1, 0, 0, 0, 1), nrow = 2, byrow = TRUE)
 y_pred <- matrix(c(0.15, 0.8, 0.05,
                    0.08, 0.02, 0.9), nrow = 2, byrow = TRUE) 
 fl <- focal_loss_multiclass(y_true, y_pred)
 fl$numpy()
-
+\dontshow{\}) # examplesIf}
 }

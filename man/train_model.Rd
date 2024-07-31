@@ -324,6 +324,7 @@ from files. Function includes several options to determine the sampling strategy
 Training progress can be visualized in tensorboard. Model weights can be stored during training using checkpoints.
 }
 \examples{
+\dontshow{if (reticulate::py_module_available("tensorflow")) (if (getRversion() >= "3.4") withAutoprint else force)(\{ # examplesIf}
 # create dummy data
 path_train_1 <- tempfile()
 path_train_2 <- tempfile()
@@ -355,4 +356,5 @@ hist <- train_model(train_type = "label_folder",
                     format = "fasta",
                     vocabulary_label = c("label_1", "label_2"))
  
+\dontshow{\}) # examplesIf}
 }

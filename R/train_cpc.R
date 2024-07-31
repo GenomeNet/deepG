@@ -39,7 +39,7 @@
 #' @param stepsmin In CPC, a patch is predicted given another patch. stepsmin defines how many patches between these two should be ignored during prediction.
 #' @param stepsmax The maximum distance between the predicted patch and the given patch.
 #' @param emb_scale Scales the impact of a patches context.
-#' @examples
+#' @examplesIf reticulate::py_module_available("tensorflow")
 #' 
 #' #create dummy data
 #' path_train_1 <- tempfile()

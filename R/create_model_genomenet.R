@@ -114,7 +114,7 @@
 #'   Number of output units to create.
 #' @return A keras model.
 #' @inheritParams create_model_lstm_cnn
-#' @examples
+#' @examplesIf reticulate::py_module_available("tensorflow")
 #' model <- create_model_genomenet()
 #' model
 #' 

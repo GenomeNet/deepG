@@ -23,7 +23,8 @@ Keras callback, plot confusion matrix in tensorboard.
 Create a confusion matrix to display under tensorboard images.
 }
 \examples{
+\dontshow{if (reticulate::py_module_available("tensorflow")) (if (getRversion() >= "3.4") withAutoprint else force)(\{ # examplesIf}
 cm <- conf_matrix_cb(path_tensorboard = tempfile(), run_name = 'run_1',
                      confMatLabels = c('label_1', 'label_2'), cm_dir = tempfile())
-
+\dontshow{\}) # examplesIf}
 }

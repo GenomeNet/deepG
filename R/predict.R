@@ -43,7 +43,7 @@
 #' @param quality_string String for encoding with quality scores (as used in fastq format).
 #' @param lm_format Either `"target_right"`, `"target_middle_lstm"`, `"target_middle_cnn"` or `"wavenet"`.
 #' @param ... Further arguments for sequence encoding with \code{\link{seq_encoding_label}}.
-#' @examples
+#' @examplesIf reticulate::py_module_available("tensorflow")
 #' # make prediction for single sequence and write to h5 file
 #' model <- create_model_lstm_cnn(maxlen = 20, layer_lstm = 8, layer_dense = 2, verbose = FALSE)
 #' vocabulary <- c("a", "c", "g", "t")

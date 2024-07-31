@@ -12,7 +12,7 @@ get_layer_names <- function(model) {
 #' 
 #' @inheritParams create_model_lstm_cnn
 #' @param model A keras model.
-#' @examples
+#' @examplesIf reticulate::py_module_available("tensorflow")
 #' model <- create_model_lstm_cnn(layer_lstm = 8, compile = FALSE)
 #' model <- compile_model(model = model,
 #'                        solver = 'adam',
@@ -308,7 +308,7 @@ manage_metrics <- function(model, compile = FALSE) {
 #' Get activation functions of output layers.
 #' 
 #' @param model A keras model.
-#' @examples 
+#' @examplesIf reticulate::py_module_available("tensorflow")
 #' model <-  create_model_lstm_cnn(
 #'   maxlen = 50,
 #'   layer_lstm = 8,
@@ -388,7 +388,7 @@ get_optimizer <- function(model) {
 #'
 #' @param model A keras model.
 #' @param input_shape The new input shape vector (without batch size).
-#' @examples 
+#' @examplesIf reticulate::py_module_available("tensorflow")
 #' model_1 <-  create_model_lstm_cnn(
 #'   maxlen = 50,
 #'   kernel_size = c(10, 10),
@@ -464,7 +464,7 @@ check_layer_name <- function(model, layer_name) {
 #' "max_ch_last" for global max pooling with channel last, "average_ch_first" for global average pooling with channel first, 
 #' "average_ch_last" for global average pooling with channel last or `NULL` for no global pooling. 
 #' "both_ch_first" or "both_ch_last" to combine average and max pooling. "all" for all 4 options at once.
-#' @examples
+#' @examplesIf reticulate::py_module_available("tensorflow")
 #' model_1 <- create_model_lstm_cnn(layer_lstm = c(64, 64),
 #'                                  maxlen = 50,
 #'                                  layer_dense = c(32, 4), 
@@ -718,7 +718,7 @@ remove_add_layers <- function(model = NULL,
 #' @param layer_names Vector of length 2 with names of layers to merge.
 #' @param freeze_base_model Boolean vector of length 2. Whether to freeze weights of individual models.
 #' @inheritParams create_model_lstm_cnn
-#' @examples
+#' @examplesIf reticulate::py_module_available("tensorflow")
 #' model_1 <- create_model_lstm_cnn(layer_lstm = c(64, 64), maxlen = 50, layer_dense = c(32, 4),
 #'                                  verbose = FALSE)
 #' model_2 <- create_model_lstm_cnn(layer_lstm = c(32), maxlen = 40, 

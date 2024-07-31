@@ -9,7 +9,7 @@
 #' @param metrics Vector or list of metrics.
 #' @inheritParams create_model_lstm_cnn
 #' @inheritParams create_model_lstm_cnn_multi_input
-#' @examples
+#' @examplesIf reticulate::py_module_available("tensorflow")
 #' model <- create_model_twin_network(
 #'   maxlen = 50,
 #'   layer_dense = 16,

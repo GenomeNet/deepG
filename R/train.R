@@ -127,7 +127,7 @@
 #' @param model_card List of arguments for training parameters of training run. Must contain at least an entry `path_model_card`, i.e. the 
 #' directory where parameters are stored. List can contain additional (optional) arguments, for example 
 #' `model_card = list(path_model_card = "/path/to/logs", description = "transfer learning with BERT model on virus data", ...)`  
-#' @examples
+#' @examplesIf reticulate::py_module_available("tensorflow")
 #' # create dummy data
 #' path_train_1 <- tempfile()
 #' path_train_2 <- tempfile()
@@ -666,7 +666,7 @@ get_run_name <- function(run_name = NULL, path_tensorboard, path_checkpoint, pat
 #' If NULL, will use distributed mirrored strategy only if >1 GPU available.   
 #' @param unfreeze If `TRUE`, set trainable attribute of model to `TRUE` (unfreeze weights). 
 #' @param verbose Whether to print all training arguments. 
-#' @examples
+#' @examplesIf reticulate::py_module_available("tensorflow")
 #' # create dummy data and temp directories
 #' path_train_1 <- tempfile()
 #' path_train_2 <- tempfile()

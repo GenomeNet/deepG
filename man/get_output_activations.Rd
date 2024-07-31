@@ -16,11 +16,12 @@ Character vector with names of activation functions of model outputs.
 Get activation functions of output layers.
 }
 \examples{
+\dontshow{if (reticulate::py_module_available("tensorflow")) (if (getRversion() >= "3.4") withAutoprint else force)(\{ # examplesIf}
 model <-  create_model_lstm_cnn(
   maxlen = 50,
   layer_lstm = 8,
   layer_dense = c(64, 2),
   verbose = FALSE)
 get_output_activations(model)
-
+\dontshow{\}) # examplesIf}
 }

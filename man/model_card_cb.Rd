@@ -20,8 +20,9 @@ Keras callback writing model cards every epoch.
 Log information about model, hyperparameters, generator options, training data, scores etc
 }
 \examples{
+\dontshow{if (reticulate::py_module_available("tensorflow")) (if (getRversion() >= "3.4") withAutoprint else force)(\{ # examplesIf}
 model_card_cb <- function(model_card_path = NULL, run_name, argumentList)
 mc <- model_card_cb(model_card_path = tempdir(), run_name = 'run_1',
                     argumentList = list(learning_rate = 0.01)) 
-
+\dontshow{\}) # examplesIf}
 }

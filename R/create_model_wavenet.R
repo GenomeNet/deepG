@@ -5,7 +5,7 @@
 #' 
 #' @inheritParams wavenet::wavenet
 #' @inheritParams create_model_lstm_cnn
-#' @examples 
+#' @examplesIf reticulate::py_module_available("tensorflow")
 #'
 #' model <- create_model_wavenet(residual_blocks = 2^rep(1:4, 2), maxlen = 1000)
 #'  

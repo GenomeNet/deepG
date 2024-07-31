@@ -28,7 +28,7 @@
 #' @param activations List containing output formats for output layers (`softmax, sigmoid` or `linear`). If `NULL`, will be estimated from model.   
 #' @param include_seq Whether to store input. Only applies if `path_pred_list` is not `NULL`.
 #' @param ... Further generator options. See \code{\link{get_generator}}.
-#' @examples
+#' @examplesIf reticulate::py_module_available("tensorflow")
 #' # create dummy data
 #' path_input <- tempfile()
 #' dir.create(path_input)
@@ -474,7 +474,7 @@ reshape_y_list <- function(y, num_out_layers, tf_format = TRUE) {
 #' @param auc Whether to include AUC metric. Only possible for 2 targets. 
 #' @param auprc Whether to include AUPRC metric. Only possible for 2 targets. 
 #' @param label_names Names of corresponding labels. Length must be equal to number of columns of \code{y}.
-#' @examples
+#' @examplesIf reticulate::py_module_available("tensorflow")
 #' y <- matrix(c(1, 0, 0, 0, 1, 1), ncol = 2)
 #' y_conf <- matrix(c(0.3, 0.5, 0.1, 0.7, 0.5, 0.9), ncol = 2)
 #' evaluate_softmax(y, y_conf, auc = TRUE, auprc = TRUE, label_names = c("A", "B")) 
@@ -567,7 +567,7 @@ evaluate_softmax <- function(y, y_conf, auc = FALSE, auprc = FALSE, label_names 
 #' @inheritParams evaluate_softmax
 #' @param auc Whether to include AUC metric.
 #' @param auprc Whether to include AUPRC metric. 
-#' @examples
+#' @examplesIf reticulate::py_module_available("tensorflow")
 #' y <- matrix(sample(c(0, 1), 30, replace = TRUE), ncol = 3)
 #' y_conf <- matrix(runif(n = 30), ncol = 3)
 #' evaluate_sigmoid(y, y_conf, auc = TRUE, auprc = TRUE)
@@ -646,7 +646,7 @@ evaluate_sigmoid <- function(y, y_conf, auc = FALSE, auprc = FALSE, label_names 
 #' @inheritParams evaluate_softmax
 #' @param y_true Matrix of true labels.
 #' @param y_pred Matrix of predictions.
-#' @examples 
+#' @examplesIf reticulate::py_module_available("tensorflow")
 #' y_true <- matrix(rnorm(n = 12), ncol = 3)
 #' y_pred <- matrix(rnorm(n = 12), ncol = 3)
 #' evaluate_linear(y_true, y_pred)

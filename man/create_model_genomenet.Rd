@@ -207,7 +207,8 @@ A keras model implementing genomenet architecture.
 Create GenomeNet Model with Given Architecture Parameters
 }
 \examples{
+\dontshow{if (reticulate::py_module_available("tensorflow")) (if (getRversion() >= "3.4") withAutoprint else force)(\{ # examplesIf}
 model <- create_model_genomenet()
 model
-
+\dontshow{\}) # examplesIf}
 }

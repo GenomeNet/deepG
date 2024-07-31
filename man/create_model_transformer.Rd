@@ -102,10 +102,11 @@ A keras model implementing transformer architecture.
 Creates transformer network for classification. Model can consist of several stacked attention blocks.
 }
 \examples{
+\dontshow{if (reticulate::py_module_available("tensorflow")) (if (getRversion() >= "3.4") withAutoprint else force)(\{ # examplesIf}
 model <- create_model_transformer(maxlen = 50,
                                   head_size=c(10,12),
                                   num_heads=c(7,8),
                                   ff_dim=c(5,9), 
                                   dropout=c(0.3, 0.5))
-
+\dontshow{\}) # examplesIf}
 }

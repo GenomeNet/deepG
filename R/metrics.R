@@ -6,7 +6,8 @@
 #'
 #' @param num_targets Size of model output.
 #' @param loss Loss function of model.
-#' @examples 
+#' @examplesIf reticulate::py_module_available("tensorflow")
+#' 
 #' y_true <- c(1,0,0,1,1,0,1,0,0)  
 #' y_pred <-  c(0.9,0.05,0.05,0.9,0.05,0.05,0.9,0.05,0.05)
 #'
@@ -98,7 +99,7 @@ f1_wrapper <- function(num_targets = 2, loss = "binary_crossentropy") {
 #'
 #' @param num_targets Number of targets.
 #' @param cm_dir Directory of confusion matrix used to compute balanced accuracy.
-#' @examples 
+#' @examplesIf reticulate::py_module_available("tensorflow")
 #' 
 #' y_true <- c(1,0,0,1,
 #'             0,1,0,0,
@@ -193,7 +194,8 @@ balanced_acc_wrapper <- function(num_targets, cm_dir) {
 #' @param model_output_size Number of neurons in model output layer.
 #' @param loss Loss function of model, for which metric will be applied to; must be `"binary_crossentropy"`
 #' or `"categorical_crossentropy"`.
-#' @examples 
+#' @examplesIf reticulate::py_module_available("tensorflow")
+#' 
 #' y_true <- c(1,0,0,1,1,0,1,0,0) %>% matrix(ncol = 3)
 #' y_pred <- c(0.9,0.05,0.05,0.9,0.05,0.05,0.9,0.05,0.05) %>% matrix(ncol = 3)
 #' 
@@ -255,7 +257,7 @@ auc_wrapper <- function(model_output_size,
 #'
 #' @param noise_matrix Matrix of noise distribution.
 #' @importFrom magrittr "%>%"
-#' @examples 
+#' @examplesIf reticulate::py_module_available("tensorflow")
 #' # If first label contains 5% wrong labels and second label no noise
 #' noise_matrix <- matrix(c(0.95, 0.05, 0, 1), nrow = 2, byrow = TRUE)
 #' noisy_loss <- noisy_loss_wrapper(noise_matrix)
@@ -452,7 +454,7 @@ cosine_similarity <- function(vects) {
 #' Contrastive loss as used here: https://keras.io/examples/vision/siamese_contrastive/.
 #'
 #' @param margin Integer, baseline for distance for which pairs should be classified as dissimilar.
-#' @examples
+#' @examplesIf reticulate::py_module_available("tensorflow")
 #' cl <- loss_cl(margin=1)
 #' 
 #' @returns A function implementing contrastive loss.
@@ -479,7 +481,7 @@ loss_cl <- function(margin=1) {
 #' @param y_pred Vector of predicted values.
 #' @param gamma Focusing parameter.
 #' @param alpha Vector of weighting factors.
-#' @examples
+#' @examplesIf reticulate::py_module_available("tensorflow")
 #' y_true <- matrix(c(0, 1, 0, 0, 0, 1), nrow = 2, byrow = TRUE)
 #' y_pred <- matrix(c(0.15, 0.8, 0.05,
 #'                    0.08, 0.02, 0.9), nrow = 2, byrow = TRUE) 

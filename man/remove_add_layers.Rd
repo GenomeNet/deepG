@@ -81,6 +81,7 @@ Optional to add dense layers on top of pruned model. Model can have multiple out
 You can freeze all the weights of the pruned model by setting \code{freeze_base_model = TRUE}.
 }
 \examples{
+\dontshow{if (reticulate::py_module_available("tensorflow")) (if (getRversion() >= "3.4") withAutoprint else force)(\{ # examplesIf}
 model_1 <- create_model_lstm_cnn(layer_lstm = c(64, 64),
                                  maxlen = 50,
                                  layer_dense = c(32, 4), 
@@ -100,5 +101,5 @@ model_2 <- remove_add_layers(model = model_1,
                                                  "out_2_regression", 
                                                  "out_3_classification")
 ) 
-
+\dontshow{\}) # examplesIf}
 }

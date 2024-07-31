@@ -145,6 +145,7 @@ is equivalent to \link{create_model_lstm_cnn_multi_input} but instead of multipl
 input here in one 4D tensor.
 }
 \examples{
+\dontshow{if (reticulate::py_module_available("tensorflow")) (if (getRversion() >= "3.4") withAutoprint else force)(\{ # examplesIf}
 create_model_lstm_cnn_time_dist(
   maxlen = 50,
   vocabulary_size = 4,
@@ -156,5 +157,5 @@ create_model_lstm_cnn_time_dist(
   aggregation_method = c("max"),
   layer_dense = c(64, 2),
   learning_rate = 0.001)
-
+\dontshow{\}) # examplesIf}
 }

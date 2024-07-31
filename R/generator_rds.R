@@ -9,7 +9,7 @@
 #' @param rds_folder Path to input files.
 #' @param target_len Number of target nucleotides for language model.
 #' @param delete_used_files Whether to delete file once used. Only applies for rds files. 
-#' @examples 
+#' @examplesIf reticulate::py_module_available("tensorflow")
 #' # create 3 rds files
 #' rds_folder <- tempfile()
 #' dir.create(rds_folder)

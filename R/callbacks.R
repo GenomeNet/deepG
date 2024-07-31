@@ -5,7 +5,7 @@
 #' @param model_card_path Directory for model card logs.
 #' @param run_name Name of training run.
 #' @param argumentList List of training arguments.
-#' @examples
+#' @examplesIf reticulate::py_module_available("tensorflow")
 #' model_card_cb <- function(model_card_path = NULL, run_name, argumentList)
 #' mc <- model_card_cb(model_card_path = tempdir(), run_name = 'run_1',
 #'                     argumentList = list(learning_rate = 0.01)) 
@@ -95,7 +95,7 @@ model_card_cb <- function(model_card_path = NULL, run_name, argumentList) {
 #' Stop training after specified time.
 #'
 #' @param stop_time Time in seconds after which to stop training.
-#' @examples
+#' @examplesIf reticulate::py_module_available("tensorflow")
 #' est <- early_stopping_time_cb(stop_time = 60)
 #' 
 #' @returns A Keras callback that stops training after specified time.
@@ -547,7 +547,7 @@ tensorboard_complete_cb <- function(default_arguments, model, path_tensorboard, 
 #' 
 #' @param path_file_log Path to log of training files.
 #' @param path_file_logVal  Path to log of validation files.
-#' @examples
+#' @examplesIf reticulate::py_module_available("tensorflow")
 #' rs <- reset_states_cb(path_file_log = tempfile(), path_file_logVal = tempfile())
 #' 
 #' @returns A keras callback that resets states of LSTM layers. 
@@ -605,7 +605,7 @@ reset_states_cb <- function(path_file_log, path_file_logVal) {
 #' 
 #' @param gen.val Validation generator
 #' @param validation_steps Number of validation steps.
-#' @examples
+#' @examplesIf reticulate::py_module_available("tensorflow")
 #' maxlen <- 20
 #' model <- create_model_lstm_cnn(layer_lstm = 8, maxlen = maxlen)
 #' gen <- get_generator(train_type = 'dummy_gen', model = model, batch_size = 4, maxlen = maxlen)
@@ -652,7 +652,7 @@ validation_after_training_cb <- function(gen.val, validation_steps) {
 #' @inheritParams train_model
 #' @param confMatLabels Names of classes.
 #' @param cm_dir Directory that contains confusion matrix files.
-#' @examples
+#' @examplesIf reticulate::py_module_available("tensorflow")
 #' cm <- conf_matrix_cb(path_tensorboard = tempfile(), run_name = 'run_1',
 #'                      confMatLabels = c('label_1', 'label_2'), cm_dir = tempfile())
 #' 

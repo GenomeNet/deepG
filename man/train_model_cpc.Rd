@@ -123,6 +123,7 @@ A list of training metrics.
 Train a CPC (Oord et al.) inspired neural network on genomic data.
 }
 \examples{
+\dontshow{if (reticulate::py_module_available("tensorflow")) (if (getRversion() >= "3.4") withAutoprint else force)(\{ # examplesIf}
 
 #create dummy data
 path_train_1 <- tempfile()
@@ -215,4 +216,5 @@ hist <- train_model_cpc(train_type = "CPC",
                         nopatches = 8)
                 
  
+\dontshow{\}) # examplesIf}
 }

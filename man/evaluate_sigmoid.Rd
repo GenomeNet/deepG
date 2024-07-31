@@ -25,8 +25,9 @@ Compute accuracy, binary crossentropy and (optionally) AUC or AUPRC, given predi
 true targets. Outputs columnwise average.
 }
 \examples{
+\dontshow{if (reticulate::py_module_available("tensorflow")) (if (getRversion() >= "3.4") withAutoprint else force)(\{ # examplesIf}
 y <- matrix(sample(c(0, 1), 30, replace = TRUE), ncol = 3)
 y_conf <- matrix(runif(n = 30), ncol = 3)
 evaluate_sigmoid(y, y_conf, auc = TRUE, auprc = TRUE)
-
+\dontshow{\}) # examplesIf}
 }

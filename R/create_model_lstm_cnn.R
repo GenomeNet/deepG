@@ -51,7 +51,7 @@
 #' @param model_seed Set seed for model parameters in tensorflow if not `NULL`.
 #' @param mixed_precision Whether to use mixed precision (https://www.tensorflow.org/guide/mixed_precision).
 #' @param mirrored_strategy Whether to use distributed mirrored strategy. If NULL, will use distributed mirrored strategy only if >1 GPU available.   
-#' @examples 
+#' @examplesIf reticulate::py_module_available("tensorflow")
 #' create_model_lstm_cnn(
 #'   maxlen = 500,
 #'   vocabulary_size = 4,
@@ -476,7 +476,7 @@ create_model_lstm_cnn <- function(
 #' Network tries to predict target in the middle of a sequence. If input is AACCTAAGG, input tensors should correspond to x1 = AACC, x2 = GGAA and y = T.
 #' 
 #' @inheritParams create_model_lstm_cnn
-#' @examples
+#' @examplesIf reticulate::py_module_available("tensorflow")
 #' create_model_lstm_cnn_target_middle(
 #'   maxlen = 500,
 #'   vocabulary_size = 4,

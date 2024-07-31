@@ -115,6 +115,7 @@ or pad sequence for short sequences.
 }
 }
 \examples{
+\dontshow{if (reticulate::py_module_available("tensorflow")) (if (getRversion() >= "3.4") withAutoprint else force)(\{ # examplesIf}
 # make prediction for single sequence and write to h5 file
 model <- create_model_lstm_cnn(maxlen = 20, layer_lstm = 8, layer_dense = 2, verbose = FALSE)
 vocabulary <- c("a", "c", "g", "t")
@@ -134,5 +135,5 @@ dir.create(output_dir)
 predict_model(output_format = "by_entry", model = model, step = 10, verbose = FALSE,
                output_dir = output_dir, mode = "label", path_input = fasta_path)
 list.files(output_dir)
-
+\dontshow{\}) # examplesIf}
 }

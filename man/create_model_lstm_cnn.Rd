@@ -138,6 +138,7 @@ Creates a network consisting of an arbitrary number of CNN, LSTM and dense layer
 Last layer is a dense layer.
 }
 \examples{
+\dontshow{if (reticulate::py_module_available("tensorflow")) (if (getRversion() >= "3.4") withAutoprint else force)(\{ # examplesIf}
 create_model_lstm_cnn(
   maxlen = 500,
   vocabulary_size = 4,
@@ -147,5 +148,5 @@ create_model_lstm_cnn(
   layer_lstm = c(32, 64),
   layer_dense = c(128, 4),
   learning_rate = 0.001)
-
+\dontshow{\}) # examplesIf}
 }

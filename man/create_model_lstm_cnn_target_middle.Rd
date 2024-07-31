@@ -119,6 +119,7 @@ get concatenated and followed by one or more dense layers. Last layer is a dense
 Network tries to predict target in the middle of a sequence. If input is AACCTAAGG, input tensors should correspond to x1 = AACC, x2 = GGAA and y = T.
 }
 \examples{
+\dontshow{if (reticulate::py_module_available("tensorflow")) (if (getRversion() >= "3.4") withAutoprint else force)(\{ # examplesIf}
 create_model_lstm_cnn_target_middle(
   maxlen = 500,
   vocabulary_size = 4,
@@ -129,4 +130,5 @@ create_model_lstm_cnn_target_middle(
   layer_dense = c(128, 4),
   learning_rate = 0.001)
  
+\dontshow{\}) # examplesIf}
 }
