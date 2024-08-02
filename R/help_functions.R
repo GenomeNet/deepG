@@ -45,7 +45,7 @@ maxlencalc <- function(plen, nopatches, stride) {
 #' @returns None. Saves object to file.
 #' @noRd
 savechecks <- function(cp, runname, model, optimizer, history, path_checkpoint) {
-
+  
   np = import("numpy", convert = FALSE)
   ## define path for saved objects
   modpath <- file.path(path_checkpoint, runname, cp)
@@ -1045,3 +1045,21 @@ f_reshape <- function(x, y, reshape_xy, reshape_x_bool, reshape_y_bool, reshape_
   }
   
 }
+
+bal_acc_from_cm <- function(cm, verbose = TRUE) {
+  
+  class_acc <- list()
+  names_list <- list()
+  count <- 1
+  for (i in 1:ncol(cm)) {
+    v_col <- cm[,i]
+    if (sum(v_col) == 0) next
+    class_acc[count] <- v_col[i]/sum(v_col)
+    names_list[count] <- colnames(cm)[i]
+    count <- count + 1
+  }
+  class_acc <- unlist(class_acc)
+  names(class_acc) <- unlist(names_list)
+  if (verbose) print(class_acc)
+  return(mean(class_acc))
+} 
