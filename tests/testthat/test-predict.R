@@ -2,6 +2,8 @@ context("predict")
 
 test_that("Sucessful prediction", {
    
+   testthat::skip_if_not_installed("tensorflow")
+   
    sequence <- "AAACCNGGGTTT"
    maxlen <- 8
    filename <- tempfile(fileext = ".h5")

@@ -33,7 +33,8 @@ A ggplot of a confusion matrix.
 Plot confusion matrix, either with absolute numbers or percentages per column (true labels).
 }
 \examples{
+\dontshow{if (reticulate::py_module_available("tensorflow")) (if (getRversion() >= "3.4") withAutoprint else force)(\{ # examplesIf}
 cm <- matrix(c(90, 1, 0, 2, 7, 1, 8, 3, 1), nrow = 3, byrow = TRUE)
 plot_cm(cm, perc = TRUE, cm_labels = paste0('label_', 1:3), text_size = 8)
-
+\dontshow{\}) # examplesIf}
 }

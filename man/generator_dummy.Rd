@@ -18,6 +18,7 @@ A generator function.
 Creates a random input/target list once and repeatedly returns list.
 }
 \examples{
+\dontshow{if (reticulate::py_module_available("tensorflow")) (if (getRversion() >= "3.4") withAutoprint else force)(\{ # examplesIf}
 model <- create_model_lstm_cnn(
   maxlen = 10,
   layer_lstm = c(4),
@@ -28,5 +29,5 @@ x <- z[[1]]
 y <- z[[2]]
 dim(x)
 dim(y)
-
+\dontshow{\}) # examplesIf}
 }

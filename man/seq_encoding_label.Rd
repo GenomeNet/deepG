@@ -78,6 +78,7 @@ A list of 2 tensors.
 Returns encoding for integer or character sequence.
 }
 \examples{
+\dontshow{if (reticulate::py_module_available("tensorflow")) (if (getRversion() >= "3.4") withAutoprint else force)(\{ # examplesIf}
 # use integer sequence as input
 x <- seq_encoding_label(sequence = c(1,0,5,1,3,4,3,1,4,1,2),
                         maxlen = 5,
@@ -99,5 +100,5 @@ x <- seq_encoding_label(maxlen = 5,
 x[1,,] # actaa
 
 x[2,,] # taatn
-
+\dontshow{\}) # examplesIf}
 }

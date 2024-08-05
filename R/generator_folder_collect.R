@@ -12,7 +12,7 @@
 #' @param target_middle Split input sequence into two sequences while removing nucleotide in middle. If input is x_1,..., x_(n+1), input gets split into
 #' input_1 = x_1,..., x_m and input_2 = x_(n+1),..., x_(m+2) where m = ceiling((n+1)/2) and n = maxlen. Note that x_(m+1) is not used.
 #' @param read_data If true the first element of output is a list of length 2, each containing one part of paired read.
-#' @examples
+#' @examplesIf reticulate::py_module_available("tensorflow")
 #' # create two folders with dummy fasta files
 #' path_input_1 <- tempfile()
 #' dir.create(path_input_1)
@@ -279,7 +279,7 @@ generator_initialize <- function(directories,
 #' @param path Path to input files.
 #' @param voc_len Length of vocabulary.
 #' @param gen_list List of generator functions.
-#' @examples
+#' @examplesIf reticulate::py_module_available("tensorflow")
 #' # create two folders with dummy fasta files
 #' path_input_1 <- tempfile()
 #' dir.create(path_input_1)

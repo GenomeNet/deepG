@@ -1,13 +1,12 @@
 ---
 title: "Getting started"
-vignette: >
-  %\VignetteIndexEntry{Getting started}
-  %\VignetteEngine{knitr::rmarkdown}
-  %\VignetteEncoding{UTF-8}
+vignette: "%\\VignetteIndexEntry{Getting started} %\\VignetteEngine{knitr::rmarkdown}
+  %\\VignetteEncoding{UTF-8}\n"
+output: pdf_document
 ---
 
 ```{r, eval=FALSE, message=FALSE}
-devtools::install_github("GenomeNet/deepG")
+#devtools::install_github("GenomeNet/deepG")
 library(deepG)
 library(magrittr)
 ```
@@ -17,10 +16,19 @@ library(magrittr)
 library(deepG)
 library(magrittr)
 library(ggplot2)
+
+if (!reticulate::py_module_available("tensorflow")) {
+  knitr::opts_chunk$set(eval = FALSE)
+} else {
+  knitr::opts_chunk$set(eval = TRUE)
+}
 ```
+
 ```{r, echo=FALSE, warning=FALSE, message=FALSE}
 options(rmarkdown.html_vignette.check_title = FALSE)
 ```
+
+
 
 ```{css, echo=FALSE}
 mark.in {

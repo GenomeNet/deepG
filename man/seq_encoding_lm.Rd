@@ -82,6 +82,7 @@ Helper function for \code{\link{generator_fasta_lm}}.
 Encodes integer sequence to input/target list according to \code{output_format} argument.
 }
 \examples{
+\dontshow{if (reticulate::py_module_available("tensorflow")) (if (getRversion() >= "3.4") withAutoprint else force)(\{ # examplesIf}
 # use integer sequence as input 
 
 z <- seq_encoding_lm(sequence = c(1,0,5,1,3,4,3,1,4,1,2),
@@ -120,5 +121,5 @@ y[1,] # t
 
 x[2,,] # taatn
 y[2,] # t
-
+\dontshow{\}) # examplesIf}
 }

@@ -722,7 +722,7 @@ to_time_dist <- function(x, samples_per_target) {
 #' @param round_dig How to round numbers.
 #' @param text_size Size of text annotations.
 #' @param highlight_diag Whether to highlight entries in diagonal.
-#' @examples
+#' @examplesIf reticulate::py_module_available("tensorflow")
 #' cm <- matrix(c(90, 1, 0, 2, 7, 1, 8, 3, 1), nrow = 3, byrow = TRUE)
 #' plot_cm(cm, perc = TRUE, cm_labels = paste0('label_', 1:3), text_size = 8)
 #' 
@@ -765,7 +765,7 @@ plot_cm <- function(cm, perc = FALSE, cm_labels, round_dig = 2, text_size = 1, h
 #' @param metric Either `"acc"`, `"loss"` or `"last_ep"`. Condition which checkpoints to keep.
 #' @param best_n Number of checkpoints to keep.
 #' @param ask_before_remove Whether to show files to keep before deleting rest.
-#' @examples
+#' @examplesIf reticulate::py_module_available("tensorflow")
 #' model <- create_model_lstm_cnn(layer_lstm = 8)
 #' checkpoint_folder <- tempfile()
 #' dir.create(checkpoint_folder)
@@ -1064,11 +1064,4 @@ bal_acc_from_cm <- function(cm, verbose = TRUE) {
   return(mean(class_acc))
 } 
 
-# reshape df with train and val scores 
-reshape_data <- function(df, col_name = 'loss', value.name = NULL, variable.name = "train_val") {
-  if (is.null(value.name)) value.name <- col_name
-  df_long <- melt(df, measure.vars = c(col_name, paste0("val_", col_name)),
-                  variable.name = variable.name, value.name = value.name)
-  df_long[[variable.name]] <- ifelse(stringr::str_starts(df_long[[variable.name]], 'val'), 'validation', 'train')
-  return(df_long)
-}
+

@@ -54,6 +54,7 @@ A generator function.
 Combines generators created by \code{\link{generator_initialize}} into a single generator.
 }
 \examples{
+\dontshow{if (reticulate::py_module_available("tensorflow")) (if (getRversion() >= "3.4") withAutoprint else force)(\{ # examplesIf}
 # create two folders with dummy fasta files
 path_input_1 <- tempfile()
 dir.create(path_input_1)
@@ -75,5 +76,5 @@ gen <- generator_fasta_label_folder_wrapper(val = FALSE, batch_size = 8,
 z <- gen()
 dim(z[[1]])
 z[[2]]
-
+\dontshow{\}) # examplesIf}
 }

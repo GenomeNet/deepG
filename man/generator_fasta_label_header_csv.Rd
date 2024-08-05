@@ -152,6 +152,7 @@ Iterates over folder containing fasta/fastq files and produces encoding of predi
 and target variables. Targets will be read from fasta headers or a separate csv file.
 }
 \examples{
+\dontshow{if (reticulate::py_module_available("tensorflow")) (if (getRversion() >= "3.4") withAutoprint else force)(\{ # examplesIf}
 path_input <- tempfile()
 dir.create(path_input)
 # create 2 fasta files called 'file_1.fasta', 'file_2.fasta'
@@ -170,5 +171,5 @@ gen <- generator_fasta_label_header_csv(path_corpus = path_input, batch_size = 2
 z <- gen()
 dim(z[[1]])
 z[[2]]
-
+\dontshow{\}) # examplesIf}
 }

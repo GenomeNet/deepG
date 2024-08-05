@@ -15,7 +15,7 @@
 #' @inheritParams generator_random
 #' @inheritParams generator_initialize
 #' @param path_file_logVal Path to csv file logging used validation files.
-#' @examples 
+#' @examplesIf reticulate::py_module_available("tensorflow")
 #' # create dummy fasta files
 #' fasta_path <- tempfile()
 #' dir.create(fasta_path)

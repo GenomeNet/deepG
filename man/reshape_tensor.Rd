@@ -43,6 +43,7 @@ A list of 2 tensors.
 Reshape input x and target y. Aggregates multiple samples from x and y into single input/target batches.
 }
 \examples{
+\dontshow{if (reticulate::py_module_available("tensorflow")) (if (getRversion() >= "3.4") withAutoprint else force)(\{ # examplesIf}
 # create dummy data
 batch_size <- 8
 maxlen <- 11
@@ -65,5 +66,5 @@ reshaped_data <- reshape_tensor(
 length(reshaped_data[[1]])
 dim(reshaped_data[[1]][[1]])
 reshaped_data[[2]]
-
+\dontshow{\}) # examplesIf}
 }

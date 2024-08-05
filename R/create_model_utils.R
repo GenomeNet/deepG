@@ -137,6 +137,7 @@ compile_model <- function(model, solver, learning_rate, loss_fn, label_smoothing
 #' @param verbose Whether to print chosen checkpoint path.
 #' @param loss Loss function. Only used if model gets compiled.
 #' @param margin Margin for contrastive loss, see \link{loss_cl}.
+#' @examplesIf reticulate::py_module_available("tensorflow")
 #' model <- create_model_lstm_cnn(layer_lstm = 8)
 #' checkpoint_folder <- tempfile()
 #' dir.create(checkpoint_folder)

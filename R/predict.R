@@ -760,7 +760,7 @@ predict_model_one_pred_per_entry <- function(model, layer_name = NULL, path_inpu
 #' @param get_sample_position Return position of sample corresponding to state if `TRUE`.
 #' @param get_seq Return nucleotide sequence if `TRUE`.
 #' @param verbose Boolean.
-#' @examples
+#' @examplesIf reticulate::py_module_available("tensorflow")
 #' # make prediction for single sequence and write to h5 file
 #' model <- create_model_lstm_cnn(maxlen = 20, layer_lstm = 8, layer_dense = 2, verbose = FALSE)
 #' vocabulary <- c("a", "c", "g", "t")

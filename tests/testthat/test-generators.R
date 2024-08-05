@@ -2,6 +2,8 @@ context("generators")
 
 test_that("Checking the generator for the Fasta files", {
   
+  testthat::skip_if_not_installed("tensorflow")
+  
   testpath <- file.path("fasta_2")
   vocabulary <- c("a", "c", "g", "t")
   batch_size <- 5
@@ -2774,7 +2776,5 @@ test_that("Checking the generator for the Fasta files", {
   
   expect_equivalent(arrays[[1]][1, ], 11:14 + 3)
   expect_equivalent(arrays[[1]][5, ], 11:14 + 3)
-  
-  
   
 })

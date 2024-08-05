@@ -13,7 +13,7 @@
 #' second entry contains the column named `"label_3"`.
 #' @param read_data If `TRUE` the first element of input is a list of length 2, each containing one part of paired read. Maxlen should be 2*length of one read.
 #' @rawNamespace import(data.table, except = c(first, last, between))
-#' @examples
+#' @examplesIf reticulate::py_module_available("tensorflow")
 #' path_input <- tempfile()
 #' dir.create(path_input)
 #' # create 2 fasta files called 'file_1.fasta', 'file_2.fasta'

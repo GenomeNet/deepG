@@ -28,6 +28,7 @@ Remove all but n 'best' checkpoints, based on some condition. Condition can be
 accuracy, loss or epoch number.
 }
 \examples{
+\dontshow{if (reticulate::py_module_available("tensorflow")) (if (getRversion() >= "3.4") withAutoprint else force)(\{ # examplesIf}
 model <- create_model_lstm_cnn(layer_lstm = 8)
 checkpoint_folder <- tempfile()
 dir.create(checkpoint_folder)
@@ -38,4 +39,5 @@ remove_checkpoints(cp_dir = checkpoint_folder, metric = "acc", best_n = 2,
                    ask_before_remove = FALSE)
 list.files(checkpoint_folder)
  
+\dontshow{\}) # examplesIf}
 }

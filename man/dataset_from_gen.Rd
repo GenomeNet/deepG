@@ -123,6 +123,7 @@ Repeatedly generate samples with data generator and store output. Creates a sepa
 batch.
 }
 \examples{
+\dontshow{if (reticulate::py_module_available("tensorflow")) (if (getRversion() >= "3.4") withAutoprint else force)(\{ # examplesIf}
 # create dummy fasta files
 temp_dir <- tempfile()
 dir.create(temp_dir)
@@ -145,5 +146,5 @@ dataset_from_gen(output_path = out_dir,
                  file_name_start = "batch_")
 
 list.files(out_dir)
-
+\dontshow{\}) # examplesIf}
 }

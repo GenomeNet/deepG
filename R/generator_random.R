@@ -9,7 +9,7 @@
 #' @inheritParams generator_fasta_label_folder
 #' @inheritParams train_model
 #' @param number_target_nt Number of target nucleotides for language model.
-#' @examples
+#' @examplesIf reticulate::py_module_available("tensorflow")
 #' path_input <- tempfile()
 #' dir.create(path_input)
 #' # create 2 fasta files called 'file_1.fasta', 'file_2.fasta'

@@ -239,6 +239,7 @@ Will choose one of the generators from \code{\link{generator_fasta_lm}},
 arguments.
 }
 \examples{
+\dontshow{if (reticulate::py_module_available("tensorflow")) (if (getRversion() >= "3.4") withAutoprint else force)(\{ # examplesIf}
 # create dummy fasta files
 fasta_path <- tempfile()
 dir.create(fasta_path)
@@ -257,5 +258,5 @@ x <- z[[1]]
 y <- z[[2]]
 dim(x)
 dim(y)
-
+\dontshow{\}) # examplesIf}
 }

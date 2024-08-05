@@ -15,7 +15,7 @@
 #' @param quality_vector Vector of quality probabilities.
 #' @param tokenizer A keras tokenizer.
 #' @param char_sequence A character string.
-#' @examples 
+#' @examplesIf reticulate::py_module_available("tensorflow")
 #' # use integer sequence as input 
 #' 
 #' z <- seq_encoding_lm(sequence = c(1,0,5,1,3,4,3,1,4,1,2),
@@ -277,7 +277,7 @@ seq_encoding_lm <- function(sequence = NULL, maxlen, vocabulary, start_ind, ambi
 #' @inheritParams generator_fasta_lm
 #' @inheritParams train_model
 #' @param return_int Whether to return integer encoding or one-hot encoding.
-#' @examples 
+#' @examplesIf reticulate::py_module_available("tensorflow")
 #' # use integer sequence as input
 #' x <- seq_encoding_label(sequence = c(1,0,5,1,3,4,3,1,4,1,2),
 #'                         maxlen = 5,
@@ -467,7 +467,7 @@ seq_encoding_label <- function(sequence = NULL, maxlen, vocabulary, start_ind, a
 #' @param step Distance between samples from one entry in \code{seq_vector}.
 #' @param train_mode Either `"lm"` for language model or `"label"` for label classification. 
 #' @param discard_amb_nuc Whether to discard all samples that contain characters outside vocabulary.
-#' @examples 
+#' @examples
 #' seq_vector <- c("AAACCCNNNGGGTTT")
 #' get_start_ind(
 #'   seq_vector = seq_vector,
@@ -1109,7 +1109,7 @@ get_coverage_concat <- function(fasta.file, concat_seq) {
 #' new maxlen: (`maxlen` \eqn{*} `samples_per_target`) + `buffer_len` \eqn{*} (`samples_per_target` - 1).
 #' @param new_batch_size Size of first axis of input/targets after reshaping.
 #' @param check_y Check if entries in `y` are consistent with reshape strategy (same label when aggregating).   
-#' @examples 
+#' @examplesIf reticulate::py_module_available("tensorflow")
 #' # create dummy data
 #' batch_size <- 8
 #' maxlen <- 11
@@ -1284,7 +1284,7 @@ int_to_n_gram <- function(int_seq, n, voc_size = 4) {
 #' 
 #' @param input_matrix Matrix with one 1 per row and zeros otherwise.
 #' @param n Length of one n-gram.   
-#' @examples
+#' @examplesIf reticulate::py_module_available("tensorflow")
 #' x <- c(0,0,1,3,3) 
 #' input_matrix <- keras::to_categorical(x, 4)
 #' n_gram_of_matrix(input_matrix, n = 2) 

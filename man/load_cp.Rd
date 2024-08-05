@@ -41,14 +41,7 @@ Either "acc" for bast validation accuracy, "loss" for best validation loss or "l
 
 \item{add_custom_object}{Named list of custom objects.}
 
-\item{margin}{Margin for contrastive loss, see \link{loss_cl}.
-model <- create_model_lstm_cnn(layer_lstm = 8)
-checkpoint_folder <- tempfile()
-dir.create(checkpoint_folder)
-keras::save_model_hdf5(model, file.path(checkpoint_folder, 'Ep.007-val_loss11.07-val_acc0.6.hdf5'))
-keras::save_model_hdf5(model, file.path(checkpoint_folder, 'Ep.019-val_loss8.74-val_acc0.7.hdf5'))
-keras::save_model_hdf5(model, file.path(checkpoint_folder, 'Ep.025-val_loss0.03-val_acc0.8.hdf5'))
-model <- load_cp(cp_path = checkpoint_folder, cp_filter = "last_ep")}
+\item{margin}{Margin for contrastive loss, see \link{loss_cl}.}
 
 \item{verbose}{Whether to print chosen checkpoint path.}
 
@@ -60,4 +53,15 @@ A keras model loaded from a checkpoint.
 \description{
 Load checkpoint from directory. Chooses best checkpoint based on some condition. Condition
 can be best accuracy, best loss, last epoch number or a specified epoch number.
+}
+\examples{
+\dontshow{if (reticulate::py_module_available("tensorflow")) (if (getRversion() >= "3.4") withAutoprint else force)(\{ # examplesIf}
+model <- create_model_lstm_cnn(layer_lstm = 8)
+checkpoint_folder <- tempfile()
+dir.create(checkpoint_folder)
+keras::save_model_hdf5(model, file.path(checkpoint_folder, 'Ep.007-val_loss11.07-val_acc0.6.hdf5'))
+keras::save_model_hdf5(model, file.path(checkpoint_folder, 'Ep.019-val_loss8.74-val_acc0.7.hdf5'))
+keras::save_model_hdf5(model, file.path(checkpoint_folder, 'Ep.025-val_loss0.03-val_acc0.8.hdf5'))
+model <- load_cp(cp_path = checkpoint_folder, cp_filter = "last_ep")
+\dontshow{\}) # examplesIf}
 }

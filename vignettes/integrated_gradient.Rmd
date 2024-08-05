@@ -18,7 +18,14 @@ library(ggplot2)
 library(deepG)
 library(magrittr)
 library(ggplot2)
+
+if (!reticulate::py_module_available("tensorflow")) {
+  knitr::opts_chunk$set(eval = FALSE)
+} else {
+  knitr::opts_chunk$set(eval = TRUE)
+}
 ```
+
 ```{r, echo=FALSE, warning=FALSE, message=FALSE}
 options(rmarkdown.html_vignette.check_title = FALSE)
 ```

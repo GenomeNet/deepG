@@ -25,12 +25,12 @@ Useful links:
 
 }
 \author{
-\strong{Maintainer}: Martin Binder \email{developer.mb706@mb706.com}
+\strong{Maintainer}: René Mreches \email{rene.mreches@helmholtz-hzi.de}
 
 Authors:
 \itemize{
   \item Philipp Münch \email{philipp.muench@helmholtz-hzi.de}
-  \item René Mreches \email{rene.mreches@helmholtz-hzi.de}
+  \item Martin Binder \email{developer.mb706@mb706.com}
   \item Hüseyin Anil Gündüz \email{anil.guenduez@stat.uni-muenchen.de}
   \item Xiao-Yin To \email{x.to@stat.uni-muenchen.de}
   \item Alice McHardy \email{alice.mchardy@helmholtz-hzi.de}

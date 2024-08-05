@@ -4,7 +4,7 @@
 #'
 #' @inheritParams generator_fasta_lm
 #' @param model A keras model.
-#' @examples 
+#' @examplesIf reticulate::py_module_available("tensorflow")
 #' model <- create_model_lstm_cnn(
 #'   maxlen = 10,
 #'   layer_lstm = c(4),
@@ -97,7 +97,7 @@ generator_dummy <- function(model, batch_size) {
 #' @param file_name_start Start of output file names.
 #' @param store_format Either "rds" or "pickle". 
 #' @param ... further generator options. See \code{\link{get_generator}}.
-#' @examples 
+#' @examplesIf reticulate::py_module_available("tensorflow")
 #' # create dummy fasta files
 #' temp_dir <- tempfile()
 #' dir.create(temp_dir)

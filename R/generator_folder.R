@@ -18,7 +18,7 @@
 #' \item `include_sw`: Whether to include sample weigths.  
 #' \item `block_len` (optional): Masked/random/identity regions appear in blocks of size `block_len`.     
 #' }
-#' @examples
+#' @examplesIf reticulate::py_module_available("tensorflow")
 #' # create dummy fasta files
 #' path_input_1 <- tempfile()
 #' dir.create(path_input_1)

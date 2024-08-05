@@ -157,6 +157,7 @@ Iterates over folder containing fasta/fastq files and produces encoding of predi
 and target variables. Files in \code{path_corpus} should all belong to one class.
 }
 \examples{
+\dontshow{if (reticulate::py_module_available("tensorflow")) (if (getRversion() >= "3.4") withAutoprint else force)(\{ # examplesIf}
 # create dummy fasta files
 path_input_1 <- tempfile()
 dir.create(path_input_1)
@@ -171,5 +172,5 @@ gen <- generator_fasta_label_folder(path_corpus = path_input_1, batch_size = 2,
 z <- gen()
 dim(z[[1]])
 z[[2]]
-
+\dontshow{\}) # examplesIf}
 }

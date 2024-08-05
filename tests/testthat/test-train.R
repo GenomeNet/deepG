@@ -1,7 +1,9 @@
 context("training")
 
 test_that("Sucessful training from a dummy model", {
-
+   
+   testthat::skip_if_not_installed("tensorflow")
+   
    # language model
    maxlen <- 30
    batch_size <- 10

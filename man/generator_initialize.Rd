@@ -167,6 +167,7 @@ Initializes generators defined by \code{\link{generator_fasta_label_folder}} fun
 Number of classes is given by length of \code{directories}.
 }
 \examples{
+\dontshow{if (reticulate::py_module_available("tensorflow")) (if (getRversion() >= "3.4") withAutoprint else force)(\{ # examplesIf}
 # create two folders with dummy fasta files
 path_input_1 <- tempfile()
 dir.create(path_input_1)
@@ -182,5 +183,5 @@ gen_list <- generator_initialize(directories = c(path_input_1, path_input_1),
 z1 <- gen_list[[1]]()
 z1[[1]]
 z1[[2]]
-
+\dontshow{\}) # examplesIf}
 }

@@ -179,6 +179,7 @@ or \code{\link{generator_fasta_label_folder}} will randomly choose a consecutive
 a \code{max_samples} argument is supplied. \code{generator_random} will choose samples at random.
 }
 \examples{
+\dontshow{if (reticulate::py_module_available("tensorflow")) (if (getRversion() >= "3.4") withAutoprint else force)(\{ # examplesIf}
 path_input <- tempfile()
 dir.create(path_input)
 # create 2 fasta files called 'file_1.fasta', 'file_2.fasta'
@@ -199,5 +200,5 @@ gen <- generator_random(path = path_input, batch_size = 2,
 z <- gen()
 dim(z[[1]])
 z[[2]]
-
+\dontshow{\}) # examplesIf}
 }

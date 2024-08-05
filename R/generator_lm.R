@@ -57,7 +57,7 @@
 #' For rds generator needs to have an additional argument called sw.
 #' @rawNamespace import(data.table, except = c(first, last, between))
 #' @importFrom magrittr %>%
-#' @examples
+#' @examplesIf reticulate::py_module_available("tensorflow")
 #' # create dummy fasta files
 #' path_input_1 <- tempfile()
 #' dir.create(path_input_1)
