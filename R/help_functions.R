@@ -1063,3 +1063,12 @@ bal_acc_from_cm <- function(cm, verbose = TRUE) {
   if (verbose) print(class_acc)
   return(mean(class_acc))
 } 
+
+# reshape df with train and val scores 
+reshape_data <- function(df, col_name = 'loss', value.name = NULL, variable.name = "train_val") {
+  if (is.null(value.name)) value.name <- col_name
+  df_long <- melt(df, measure.vars = c(col_name, paste0("val_", col_name)),
+                  variable.name = variable.name, value.name = value.name)
+  df_long[[variable.name]] <- ifelse(stringr::str_starts(df_long[[variable.name]], 'val'), 'validation', 'train')
+  return(df_long)
+}
