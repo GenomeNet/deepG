@@ -127,6 +127,7 @@
 #' @param model_card List of arguments for training parameters of training run. Must contain at least an entry `path_model_card`, i.e. the 
 #' directory where parameters are stored. List can contain additional (optional) arguments, for example 
 #' `model_card = list(path_model_card = "/path/to/logs", description = "transfer learning with BERT model on virus data", ...)`  
+#' @param return_gen Whether to return the train and validation generators (instead of training).
 #' @examplesIf reticulate::py_module_available("tensorflow")
 #' # create dummy data
 #' path_train_1 <- tempfile()
@@ -232,7 +233,8 @@ train_model <- function(model = NULL,
                         shuffle_input = TRUE,
                         vocabulary_label = NULL,
                         delete_used_files = FALSE,
-                        reshape_xy = NULL) {
+                        reshape_xy = NULL,
+                        return_gen = FALSE) {
   
   if (!is.null(model_card)) {
     if (!is.list(model_card)) {
@@ -498,6 +500,10 @@ train_model <- function(model = NULL,
     if (!is.null(dataset_val)) {
       validation_data <- dataset_val
       validation_steps <- NULL
+    }
+    
+    if (return_gen) {
+      return(list(gen = gen, gen.val = gen.val))
     }
     
     model <- keras::set_weights(model, model_weights)
