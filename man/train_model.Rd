@@ -73,7 +73,8 @@ train_model(
   shuffle_input = TRUE,
   vocabulary_label = NULL,
   delete_used_files = FALSE,
-  reshape_xy = NULL
+  reshape_xy = NULL,
+  return_gen = FALSE
 )
 }
 \arguments{
@@ -313,6 +314,8 @@ second entry contains the column named \code{"label_3"}.}
 must be called x for input or y for target and each have arguments called x and y. For example:
 \code{reshape_xy = list(x = function(x, y) {return(x+1)}, y = function(x, y) {return(x+y)})} .
 For rds generator needs to have an additional argument called sw.}
+
+\item{return_gen}{Whether to return the train and validation generators (instead of training).}
 }
 \value{
 A list of training metrics.
