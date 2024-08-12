@@ -214,7 +214,7 @@ generator_fasta_label_header_csv <- function(path_corpus,
   while (length(seq_vector) == 0) {
     
     # pre-load the first file
-    fasta.file <- read_fasta_fastq(format = format, skip_amb_nuc =  skip_amb_nuc, file_index = file_index, pattern = pattern,
+    fasta.file <- read_fasta_fastq(format = format, skip_amb_nuc = skip_amb_nuc, file_index = file_index, pattern = pattern,
                                    shuffle_input = shuffle_input, proportion_entries = proportion_entries,
                                    reverse_complement = reverse_complement, fasta.files = fasta.files,
                                    vocabulary_label = vocabulary_label, filter_header = TRUE, target_from_csv = target_from_csv)
