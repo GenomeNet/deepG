@@ -2,7 +2,8 @@ context("training")
 
 test_that("Sucessful training from a dummy model", {
    
-   testthat::skip_if_not_installed("tensorflow")
+   #testthat::skip_if_not_installed("tensorflow")
+   testthat::skip_if_not(reticulate::py_module_available("tensorflow"))
    
    # language model
    maxlen <- 30

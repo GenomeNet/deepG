@@ -2,7 +2,8 @@ context("predict")
 
 test_that("Sucessful prediction", {
    
-   testthat::skip_if_not_installed("tensorflow")
+   #testthat::skip_if_not_installed("tensorflow")
+   testthat::skip_if_not(reticulate::py_module_available("tensorflow"))
    
    sequence <- "AAACCNGGGTTT"
    maxlen <- 8

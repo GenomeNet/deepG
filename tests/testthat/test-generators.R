@@ -3,6 +3,7 @@ context("generators")
 test_that("Checking the generator for the Fasta files", {
   
   testthat::skip_if_not_installed("tensorflow")
+  testthat::skip_if_not(reticulate::py_module_available("tensorflow"))
   
   testpath <- file.path("fasta_2")
   vocabulary <- c("a", "c", "g", "t")
