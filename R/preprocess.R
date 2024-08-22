@@ -829,7 +829,6 @@ read_fasta_fastq <- function(format, skip_amb_nuc, file_index, pattern, shuffle_
     if (is.null(skip_amb_nuc)) {
       utils::write.table(x = fasta.files[file_index], file = path_file_log, col.names = FALSE, row.names = FALSE, append = TRUE)
       fasta.file <- microseq::readFasta(fasta.files[file_index])
-      print(head(fasta.file))
     } else {
       fasta.file <- remove_amb_nuc_entries(microseq::readFasta(fasta.files[file_index]), skip_amb_nuc = skip_amb_nuc,
                                            pattern = pattern)
@@ -884,6 +883,7 @@ read_fasta_fastq <- function(format, skip_amb_nuc, file_index, pattern, shuffle_
       fasta.file$Sequence <- microseq::reverseComplement(fasta.file$Sequence)
     }
   }
+  print(head(fasta.file))
   return(fasta.file)
 }
 
