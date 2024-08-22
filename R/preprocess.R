@@ -821,13 +821,15 @@ count_nuc <- function(path,
   return(classes)
 }
 
-read_fasta_fastq <- function(format, skip_amb_nuc, file_index, pattern, shuffle_input,
+read_fasta_fastq <- function(format, skip_amb_nuc, file_index, pattern, shuffle_input, path_file_log, 
                              reverse_complement, fasta.files, use_coverage = FALSE, proportion_entries = NULL,
                              vocabulary_label = NULL, filter_header = FALSE, target_from_csv = NULL) {
   
   if (stringr::str_detect(format, "fasta")) {
     if (is.null(skip_amb_nuc)) {
+      utils::write.table(x = fasta.files[file_index], file = path_file_log, col.names = FALSE, row.names = FALSE, append = TRUE)
       fasta.file <- microseq::readFasta(fasta.files[file_index])
+      print(head(fasta.file))
     } else {
       fasta.file <- remove_amb_nuc_entries(microseq::readFasta(fasta.files[file_index]), skip_amb_nuc = skip_amb_nuc,
                                            pattern = pattern)

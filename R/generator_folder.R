@@ -180,7 +180,7 @@ generator_fasta_label_folder <- function(path_corpus,
   while (length(seq_vector) == 0) {
     
     fasta.file <- read_fasta_fastq(format = format, skip_amb_nuc =  skip_amb_nuc, file_index = file_index, pattern = pattern,
-                                   shuffle_input = shuffle_input, proportion_entries = proportion_entries,
+                                   shuffle_input = shuffle_input, proportion_entries = proportion_entries, path_file_log = path_file_log,
                                    reverse_complement = reverse_complement, fasta.files = fasta.files)
     
     if (concat) {
@@ -205,7 +205,7 @@ generator_fasta_label_folder <- function(path_corpus,
           stop("Can not extract enough samples, try reducing maxlen parameter")
         }
         fasta.file <- read_fasta_fastq(format = format, skip_amb_nuc =  skip_amb_nuc, file_index = file_index, pattern = pattern,
-                                       shuffle_input = shuffle_input, proportion_entries = proportion_entries,
+                                       shuffle_input = shuffle_input, proportion_entries = proportion_entries, path_file_log = path_file_log,
                                        reverse_complement = reverse_complement, fasta.files = fasta.files)
         
         if (concat) {
@@ -230,7 +230,7 @@ generator_fasta_label_folder <- function(path_corpus,
           stop("Can not extract enough samples, try reducing maxlen parameter")
         }
         fasta.file <- read_fasta_fastq(format = format, skip_amb_nuc =  skip_amb_nuc, file_index = file_index, pattern = pattern,
-                                       shuffle_input = shuffle_input, proportion_entries = proportion_entries,
+                                       shuffle_input = shuffle_input, proportion_entries = proportion_entries, path_file_log = path_file_log,
                                        reverse_complement = reverse_complement, fasta.files = fasta.files)
         
         if (concat) {
@@ -450,7 +450,7 @@ generator_fasta_label_folder <- function(path_corpus,
         # skip empty files
         while(TRUE) {
           fasta.file <- read_fasta_fastq(format = format, skip_amb_nuc =  skip_amb_nuc, file_index = file_index, pattern = pattern,
-                                         shuffle_input = shuffle_input, proportion_entries = proportion_entries,
+                                         shuffle_input = shuffle_input, proportion_entries = proportion_entries, path_file_log = path_file_log,
                                          reverse_complement = reverse_complement, fasta.files = fasta.files)
           
           if (concat) {

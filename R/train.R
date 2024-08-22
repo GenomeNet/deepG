@@ -428,7 +428,7 @@ train_model <- function(model = NULL,
                          reverse_complement_encoding = reverse_complement_encoding, read_data = read_data,
                          sample_by_file_size = sample_by_file_size, add_noise = add_noise, target_split = target_split,
                          target_from_csv = target_from_csv, masked_lm = masked_lm, return_int = return_int,
-                         path_file_logVal = path_file_logVal, delete_used_files = delete_used_files,
+                         path_file_logVal = path_file_log, delete_used_files = delete_used_files,
                          vocabulary_label = vocabulary_label, val = FALSE)
     
     if (!is.null(path_val)) {
