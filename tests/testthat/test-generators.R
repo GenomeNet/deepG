@@ -2778,4 +2778,55 @@ test_that("Checking the generator for the Fasta files", {
   expect_equivalent(arrays[[1]][1, ], 11:14 + 3)
   expect_equivalent(arrays[[1]][5, ], 11:14 + 3)
   
+  # set learning
+  
+  directories = c("fasta_2", "fasta_3")
+  maxlen <- 3
+  samples_per_target <- 3
+  reshape_mode <- "time_dist"
+  set_learning <- list(reshape_mode = reshape_mode,
+                       maxlen = maxlen,
+                       samples_per_target = samples_per_target)
+  
+  gen <- get_generator(val = FALSE,
+                       set_learning = set_learning,
+                       train_type = "label_folder",
+                       path = directories,
+                       format = "fasta",
+                       batch_size = 2,
+                       maxlen = maxlen,
+                       ambiguous_nuc = "discard",
+                       vocabulary = c("a", "c", "g", "t"),
+                       step = 2)
+  
+  arrays <- gen()
+  
+  # add axis to previous test
+  expect_equivalent(arrays[[1]][1, 1, 1,  ], c(1, 0, 0, 0))
+  expect_equivalent(arrays[[1]][1, 1, 2,  ], c(1, 0, 0, 0))
+  expect_equivalent(arrays[[1]][1, 1, 3,  ], c(0, 1, 0, 0))
+  expect_equivalent(arrays[[2]][1, ], c(1, 0))
+  
+  expect_equivalent(arrays[[1]][1, 2, 1,  ], c(0, 1, 0, 0))
+  expect_equivalent(arrays[[1]][1, 2, 2,  ], c(0, 1, 0, 0))
+  expect_equivalent(arrays[[1]][1, 2, 3,  ], c(0, 0, 1, 0))
+
+  expect_equivalent(arrays[[1]][1, 3, 1,  ], c(0, 0, 1, 0))
+  expect_equivalent(arrays[[1]][1, 3, 2,  ], c(0, 0, 1, 0))
+  expect_equivalent(arrays[[1]][1, 3, 3,  ], c(0, 0, 0, 1))
+
+  expect_equivalent(arrays[[1]][2, 1, 1,  ], c(0, 0, 0, 1))
+  expect_equivalent(arrays[[1]][2, 1, 2,  ], c(0, 0, 1, 0))
+  expect_equivalent(arrays[[1]][2, 1, 3,  ], c(1, 0, 0, 0))
+
+  expect_equivalent(arrays[[1]][2, 2, 1,  ], c(1, 0, 0, 0))
+  expect_equivalent(arrays[[1]][2, 2, 2,  ], c(1, 0, 0, 0))
+  expect_equivalent(arrays[[1]][2, 2, 3,  ], c(1, 0, 0, 0))
+
+  expect_equivalent(arrays[[1]][2, 3, 1,  ], c(0, 0, 0, 1))
+  expect_equivalent(arrays[[1]][2, 3, 2,  ], c(0, 0, 0, 1))
+  expect_equivalent(arrays[[1]][2, 3, 3,  ], c(0, 0, 0, 1))
+  expect_equivalent(arrays[[2]][1, ], c(1, 0))
+  expect_equivalent(arrays[[2]][2, ], c(0, 1))
+  
 })
