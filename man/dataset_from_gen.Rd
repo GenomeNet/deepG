@@ -109,7 +109,7 @@ Must be list with the following arguments:
 \item \code{mask_rate}: Rate of input to mask (rate of input to replace with mask token).
 \item \code{random_rate}: Rate of input to set to random token.
 \item \code{identity_rate}: Rate of input where sample weights are applied but input and output are identical.
-\item \code{include_sw}: Whether to include sample weigths.
+\item \code{include_sw}: Whether to include sample weights.
 \item \code{block_len} (optional): Masked/random/identity regions appear in blocks of size \code{block_len}.
 }}
 

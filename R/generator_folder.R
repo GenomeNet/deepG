@@ -15,7 +15,7 @@
 #' \item `mask_rate`: Rate of input to mask (rate of input to replace with mask token).
 #' \item `random_rate`: Rate of input to set to random token.
 #' \item `identity_rate`: Rate of input where sample weights are applied but input and output are identical. 
-#' \item `include_sw`: Whether to include sample weigths.  
+#' \item `include_sw`: Whether to include sample weights.  
 #' \item `block_len` (optional): Masked/random/identity regions appear in blocks of size `block_len`.     
 #' }
 #' @examplesIf reticulate::py_module_available("tensorflow")

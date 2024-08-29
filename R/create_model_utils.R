@@ -473,7 +473,7 @@ check_layer_name <- function(model, layer_name) {
 #' # get name of second to last layer 
 #' num_layers <- length(model_1$get_config()$layers)
 #' layer_name <- model_1$get_config()$layers[[num_layers-1]]$name
-#' # add dense layer with multi outputs and separate loss/activations functions
+#' # add dense layer with multi outputs and separate loss/activation functions
 #' model_2 <- remove_add_layers(model = model_1,
 #'                              layer_name = layer_name,
 #'                              dense_layers = list(c(32, 16, 1), c(8, 1), c(12, 5)),
