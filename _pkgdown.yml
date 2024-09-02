@@ -1,8 +1,9 @@
-url: https://genomenet.github.io/deepG/
+url: https://genomenet.github.io/deepG
 development:
   mode: release
   version_label: default
 template:
+  bootstrap: 5
   bootswatch: spacelab
 navbar:
   structure:
