@@ -289,7 +289,7 @@ gradients_stepwise <- function(model = model, baseline_seq, target_class_idx,
 #' @param integrated_grads Matrix of integrated gradient scores (output of \code{\link{integrated_gradients}} function).
 #' @param input_seq Input sequence for model. Should be the same as \code{input_seq} input for corresponding
 #' \code{\link{integrated_gradients}} call that computed input for \code{integrated_grads} argument.
-#' @examplesIf reticulate::py_module_available("tensorflow")
+#' @examplesIf reticulate::py_module_available("tensorflow")  && requireNamespace("ComplexHeatmap", quietly = TRUE)
 #' model <- create_model_lstm_cnn(layer_lstm = 8, layer_dense = 3, maxlen = 20, verbose = FALSE)
 #' random_seq <- sample(0:3, 20, replace = TRUE)
 #' input_seq <- array(keras::to_categorical(random_seq), dim = c(1, 20, 4))
