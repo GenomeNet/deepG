@@ -153,12 +153,12 @@ ig <- integrated_gradients(
   target_class_idx = 1,
   model = model)
 
-#if (requireNamespace("ComplexHeatmap", quietly = TRUE)) {
-heatmaps_integrated_grad(integrated_grads = ig,
-                         input_seq = high_gc_seq_one_hot)
-# } else {
-#   message("Skipping ComplexHeatmap-related code because the package is not installed.")
-# }
+if (requireNamespace("ComplexHeatmap", quietly = TRUE)) {
+  heatmaps_integrated_grad(integrated_grads = ig,
+                           input_seq = high_gc_seq_one_hot)
+} else {
+  message("Skipping ComplexHeatmap-related code because the package is not installed.")
+}
 
 ```
 
