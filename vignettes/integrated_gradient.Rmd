@@ -5,7 +5,7 @@ vignette: >
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
-
+  
 ```{r, eval=FALSE, message=FALSE}
 devtools::install_github("GenomeNet/deepG")
 library(deepG)
@@ -32,11 +32,11 @@ options(rmarkdown.html_vignette.check_title = FALSE)
 
 ```{css, echo=FALSE}
 mark.in {
-  background-color: CornflowerBlue;
+background-color: CornflowerBlue;
 }
 
 mark.out {
-  background-color: IndianRed;
+background-color: IndianRed;
 }
 
 ```
@@ -153,8 +153,13 @@ ig <- integrated_gradients(
   target_class_idx = 1,
   model = model)
 
+#if (requireNamespace("ComplexHeatmap", quietly = TRUE)) {
 heatmaps_integrated_grad(integrated_grads = ig,
                          input_seq = high_gc_seq_one_hot)
+# } else {
+#   message("Skipping ComplexHeatmap-related code because the package is not installed.")
+# }
+
 ```
 
 We may test how our models prediction changes if we exchange certain nucleotides in the input sequence.
@@ -208,7 +213,7 @@ for (i in 1:20) {
     input_seq = high_gc_seq_one_hot_changed,
     target_class_idx = 1,
     model = model) %>% as.array()
-
+  
   smallest_index <- which(ig == min(ig), arr.ind = TRUE)
   smallest_index
   row_index <- smallest_index[ , "row"]
@@ -222,7 +227,7 @@ for (i in 1:20) {
       "to", vocabulary[nt_index_new], "\n")
   pred <- predict(model, high_gc_seq_one_hot_changed, verbose = 0)
   pred_list[[i + 1]] <- pred 
- 
+  
 }
 
 pred_df <- do.call(rbind, pred_list)
@@ -263,7 +268,7 @@ for (i in 1:20) {
   
   pred <- predict(model, high_gc_seq_one_hot_changed, verbose = 0)
   pred_list[[i + 1]] <- pred 
- 
+  
 }
 
 pred_df <- do.call(rbind, pred_list)
