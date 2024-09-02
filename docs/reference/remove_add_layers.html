@@ -97,7 +97,7 @@ You can freeze all the weights of the pruned model by setting freeze_base_model 
   <div class="col-md-9 contents">
     <div class="page-header">
     <h1>Remove layers from model and add dense layers</h1>
-    <small class="dont-index">Source: <a href="https://github.com/GenomeNet/deepG/blob/HEAD/R/create_model.R" class="external-link"><code>R/create_model.R</code></a></small>
+    <small class="dont-index">Source: <a href="https://github.com/GenomeNet/deepG/blob/HEAD/R/create_model_utils.R" class="external-link"><code>R/create_model_utils.R</code></a></small>
     <div class="hidden name"><code>remove_add_layers.Rd</code></div>
     </div>
 
@@ -216,6 +216,12 @@ argument <code>layer_name</code>. Can be used to have shared dense layers, befor
 <dd><p>Whether to use distributed mirrored strategy. If NULL, will use distributed mirrored strategy only if &gt;1 GPU available.</p></dd>
 
 </dl></div>
+    <div id="value">
+    <h2>Value</h2>
+    
+
+<p>A keras model; added and/or removed layers from some base model.</p>
+    </div>
 
     <div id="ref-examples">
     <h2>Examples</h2>
@@ -226,7 +232,7 @@ argument <code>layer_name</code>. Can be used to have shared dense layers, befor
 <span class="r-in"><span><span class="co"># get name of second to last layer </span></span></span>
 <span class="r-in"><span><span class="va">num_layers</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="va">model_1</span><span class="op">$</span><span class="fu">get_config</span><span class="op">(</span><span class="op">)</span><span class="op">$</span><span class="va">layers</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="va">layer_name</span> <span class="op">&lt;-</span> <span class="va">model_1</span><span class="op">$</span><span class="fu">get_config</span><span class="op">(</span><span class="op">)</span><span class="op">$</span><span class="va">layers</span><span class="op">[[</span><span class="va">num_layers</span><span class="op">-</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span><span class="op">$</span><span class="va">name</span></span></span>
-<span class="r-in"><span><span class="co"># add dense layer with multi outputs and separate loss/activations functions</span></span></span>
+<span class="r-in"><span><span class="co"># add dense layer with multi outputs and separate loss/activation functions</span></span></span>
 <span class="r-in"><span><span class="va">model_2</span> <span class="op">&lt;-</span> <span class="fu">remove_add_layers</span><span class="op">(</span>model <span class="op">=</span> <span class="va">model_1</span>,</span></span>
 <span class="r-in"><span>                             layer_name <span class="op">=</span> <span class="va">layer_name</span>,</span></span>
 <span class="r-in"><span>                             dense_layers <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">32</span>, <span class="fl">16</span>, <span class="fl">1</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">8</span>, <span class="fl">1</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">12</span>, <span class="fl">5</span><span class="op">)</span><span class="op">)</span>,</span></span>
@@ -242,10 +248,10 @@ argument <code>layer_name</code>. Can be used to have shared dense layers, befor
 <span class="r-out co"><span class="r-pr">#&gt;</span> NULL</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "New model: "</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> NULL</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> input_23 trainable: FALSE </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> lstm_21 trainable: FALSE </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> lstm_22 trainable: FALSE </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> dense_39 trainable: FALSE </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> input_28 trainable: FALSE </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> lstm_25 trainable: FALSE </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> lstm_26 trainable: FALSE </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> dense_47 trainable: FALSE </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> dense_new_1 trainable: TRUE </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> dense_new_2 trainable: TRUE </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> dense_new_3 trainable: TRUE </span>
@@ -253,7 +259,6 @@ argument <code>layer_name</code>. Can be used to have shared dense layers, befor
 <span class="r-out co"><span class="r-pr">#&gt;</span> out_1_binary_classsification trainable: TRUE </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> out_2_regression trainable: TRUE </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> out_3_classification trainable: TRUE </span>
-<span class="r-in"><span></span></span>
 </code></pre></div>
     </div>
   </div>

@@ -117,13 +117,18 @@ Can be used if labeled data contains noise, i.e. some of the data is labeled wro
 <dd><p>Matrix of noise distribution.</p></dd>
 
 </dl></div>
+    <div id="value">
+    <h2>Value</h2>
+    
+
+<p>A function implementing noisy loss.</p>
+    </div>
 
     <div id="ref-examples">
     <h2>Examples</h2>
     <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="co"># If first label contains 5% wrong labels and second label no noise</span></span></span>
 <span class="r-in"><span><span class="va">noise_matrix</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/matrix.html" class="external-link">matrix</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0.95</span>, <span class="fl">0.05</span>, <span class="fl">0</span>, <span class="fl">1</span><span class="op">)</span>, nrow <span class="op">=</span> <span class="fl">2</span>, byrow <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="va">noisy_loss</span> <span class="op">&lt;-</span> <span class="fu">noisy_loss_wrapper</span><span class="op">(</span><span class="va">noise_matrix</span><span class="op">)</span></span></span>
-<span class="r-in"><span></span></span>
 </code></pre></div>
     </div>
   </div>

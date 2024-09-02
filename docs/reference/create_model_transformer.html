@@ -95,7 +95,7 @@
   <div class="col-md-9 contents">
     <div class="page-header">
     <h1>Create transformer model</h1>
-    <small class="dont-index">Source: <a href="https://github.com/GenomeNet/deepG/blob/HEAD/R/create_model.R" class="external-link"><code>R/create_model.R</code></a></small>
+    <small class="dont-index">Source: <a href="https://github.com/GenomeNet/deepG/blob/HEAD/R/create_model_transformer.R" class="external-link"><code>R/create_model_transformer.R</code></a></small>
     <div class="hidden name"><code>create_model_transformer.Rd</code></div>
     </div>
 
@@ -191,7 +191,7 @@ global pooling options together. If <code>"flatten"</code>, will flatten output 
 
 
 <dt>last_layer_activation</dt>
-<dd><p>Either <code>"sigmoid"</code> or <code>"softmax"</code>.</p></dd>
+<dd><p>Activation function of output layer(s). For example <code>"sigmoid"</code> or <code>"softmax"</code>.</p></dd>
 
 
 <dt>loss_fn</dt>
@@ -246,6 +246,12 @@ The closer the argument is to 1 the more the labels get smoothed.</p></dd>
 <dd><p>Whether to use distributed mirrored strategy. If NULL, will use distributed mirrored strategy only if &gt;1 GPU available.</p></dd>
 
 </dl></div>
+    <div id="value">
+    <h2>Value</h2>
+    
+
+<p>A keras model implementing transformer architecture.</p>
+    </div>
 
     <div id="ref-examples">
     <h2>Examples</h2>
@@ -254,11 +260,11 @@ The closer the argument is to 1 the more the labels get smoothed.</p></dd>
 <span class="r-in"><span>                                  num_heads<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">7</span>,<span class="fl">8</span><span class="op">)</span>,</span></span>
 <span class="r-in"><span>                                  ff_dim<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">5</span>,<span class="fl">9</span><span class="op">)</span>, </span></span>
 <span class="r-in"><span>                                  dropout<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0.3</span>, <span class="fl">0.5</span><span class="op">)</span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Model: "model_8"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Model: "model_10"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> ________________________________________________________________________________</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  Layer (type)                       Output Shape                    Param #     </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> ================================================================================</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  input_9 (InputLayer)               [(None, 50)]                    0           </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  input_11 (InputLayer)              [(None, 50)]                    0           </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  layer_pos_embedding (layer_pos_em  (None, 50, 64)                  3456        </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  bedding)                                                                       </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  layer_transformer_block (layer_tr  (None, 50, 64)                  19159       </span>
@@ -266,13 +272,12 @@ The closer the argument is to 1 the more the labels get smoothed.</p></dd>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  layer_transformer_block_1 (layer_  (None, 50, 64)                  26409       </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  transformer_block)                                                             </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  flatten (Flatten)                  (None, 3200)                    0           </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  dense_17 (Dense)                   (None, 2)                       6402        </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  dense_21 (Dense)                   (None, 2)                       6402        </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> ================================================================================</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Total params: 55426 (216.51 KB)</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Trainable params: 55426 (216.51 KB)</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Non-trainable params: 0 (0.00 Byte)</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> ________________________________________________________________________________</span>
-<span class="r-in"><span></span></span>
 </code></pre></div>
     </div>
   </div>

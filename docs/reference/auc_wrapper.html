@@ -118,10 +118,17 @@
 or <code>"categorical_crossentropy"</code>.</p></dd>
 
 </dl></div>
+    <div id="value">
+    <h2>Value</h2>
+    
+
+<p>A keras metric.</p>
+    </div>
 
     <div id="ref-examples">
     <h2>Examples</h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="va">y_true</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>,<span class="fl">0</span>,<span class="fl">0</span>,<span class="fl">1</span>,<span class="fl">1</span>,<span class="fl">0</span>,<span class="fl">1</span>,<span class="fl">0</span>,<span class="fl">0</span><span class="op">)</span> <span class="op"><a href="pipe.html">%&gt;%</a></span> <span class="fu"><a href="https://rdrr.io/r/base/matrix.html" class="external-link">matrix</a></span><span class="op">(</span>ncol <span class="op">=</span> <span class="fl">3</span><span class="op">)</span></span></span>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="va">y_true</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>,<span class="fl">0</span>,<span class="fl">0</span>,<span class="fl">1</span>,<span class="fl">1</span>,<span class="fl">0</span>,<span class="fl">1</span>,<span class="fl">0</span>,<span class="fl">0</span><span class="op">)</span> <span class="op"><a href="pipe.html">%&gt;%</a></span> <span class="fu"><a href="https://rdrr.io/r/base/matrix.html" class="external-link">matrix</a></span><span class="op">(</span>ncol <span class="op">=</span> <span class="fl">3</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="va">y_pred</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0.9</span>,<span class="fl">0.05</span>,<span class="fl">0.05</span>,<span class="fl">0.9</span>,<span class="fl">0.05</span>,<span class="fl">0.05</span>,<span class="fl">0.9</span>,<span class="fl">0.05</span>,<span class="fl">0.05</span><span class="op">)</span> <span class="op"><a href="pipe.html">%&gt;%</a></span> <span class="fu"><a href="https://rdrr.io/r/base/matrix.html" class="external-link">matrix</a></span><span class="op">(</span>ncol <span class="op">=</span> <span class="fl">3</span><span class="op">)</span></span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="va">auc_metric</span> <span class="op">&lt;-</span> <span class="fu">auc_wrapper</span><span class="op">(</span><span class="fl">3L</span>, <span class="st">"binary_crossentropy"</span><span class="op">)</span></span></span>
@@ -143,7 +150,6 @@ or <code>"categorical_crossentropy"</code>.</p></dd>
 <span class="r-in"><span><span class="va">model</span> <span class="op"><a href="pipe.html">%&gt;%</a></span> <span class="fu">keras</span><span class="fu">::</span><span class="fu"><a href="https://generics.r-lib.org/reference/compile.html" class="external-link">compile</a></span><span class="op">(</span>loss <span class="op">=</span> <span class="va">model</span><span class="op">$</span><span class="va">loss</span>, </span></span>
 <span class="r-in"><span>                         optimizer <span class="op">=</span> <span class="va">model</span><span class="op">$</span><span class="va">optimizer</span>,</span></span>
 <span class="r-in"><span>                         metrics <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">model</span><span class="op">$</span><span class="va">metrics</span>, <span class="va">auc_metric</span><span class="op">)</span><span class="op">)</span></span></span>
-<span class="r-in"><span>                         </span></span>
 </code></pre></div>
     </div>
   </div>

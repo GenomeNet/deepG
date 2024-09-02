@@ -315,9 +315,17 @@ optional arguments <code>sd</code> or <code>mean</code> if noise_type is <code>"
 
 <dt>reshape_xy</dt>
 <dd><p>Can be a list of functions to apply to input and/or target. List elements (containing the reshape functions)
-must be called x for input or y for target.</p></dd>
+must be called x for input or y for target and each have arguments called x and y. For example:
+<code>reshape_xy = list(x = function(x, y) {return(x+1)}, y = function(x, y) {return(x+y)})</code> .
+For rds generator needs to have an additional argument called sw.</p></dd>
 
 </dl></div>
+    <div id="value">
+    <h2>Value</h2>
+    
+
+<p>A generator function.</p>
+    </div>
 
     <div id="ref-examples">
     <h2>Examples</h2>
@@ -343,7 +351,6 @@ must be called x for input or y for target.</p></dd>
 <span class="r-out co"><span class="r-pr">#&gt;</span>      [,1] [,2]</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1,]    0    1</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [2,]    1    0</span>
-<span class="r-in"><span></span></span>
 </code></pre></div>
     </div>
   </div>

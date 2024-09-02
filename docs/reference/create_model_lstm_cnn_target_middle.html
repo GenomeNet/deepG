@@ -98,7 +98,7 @@ Network tries to predict target in the middle of a sequence. If input is AACCTAA
   <div class="col-md-9 contents">
     <div class="page-header">
     <h1>Create LSTM/CNN network to predict middle part of a sequence</h1>
-    <small class="dont-index">Source: <a href="https://github.com/GenomeNet/deepG/blob/HEAD/R/create_model.R" class="external-link"><code>R/create_model.R</code></a></small>
+    <small class="dont-index">Source: <a href="https://github.com/GenomeNet/deepG/blob/HEAD/R/create_model_lstm_cnn.R" class="external-link"><code>R/create_model_lstm_cnn.R</code></a></small>
     <div class="hidden name"><code>create_model_lstm_cnn_target_middle.Rd</code></div>
     </div>
 
@@ -136,6 +136,8 @@ Network tries to predict target in the middle of a sequence. If input is AACCTAA
 <span>  loss_fn <span class="op">=</span> <span class="st">"categorical_crossentropy"</span>,</span>
 <span>  num_output_layers <span class="op">=</span> <span class="fl">1</span>,</span>
 <span>  f1_metric <span class="op">=</span> <span class="cn">FALSE</span>,</span>
+<span>  auc_metric <span class="op">=</span> <span class="cn">FALSE</span>,</span>
+<span>  bal_acc <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  verbose <span class="op">=</span> <span class="cn">TRUE</span>,</span>
 <span>  batch_norm_momentum <span class="op">=</span> <span class="fl">0.99</span>,</span>
 <span>  model_seed <span class="op">=</span> <span class="cn">NULL</span>,</span>
@@ -235,7 +237,7 @@ If first label contains 5 percent wrong labels and second label no noise, then</
 
 
 <dt>last_layer_activation</dt>
-<dd><p>Either <code>"sigmoid"</code> or <code>"softmax"</code>.</p></dd>
+<dd><p>Activation function of output layer(s). For example <code>"sigmoid"</code> or <code>"softmax"</code>.</p></dd>
 
 
 <dt>loss_fn</dt>
@@ -248,6 +250,14 @@ If first label contains 5 percent wrong labels and second label no noise, then</
 
 <dt>f1_metric</dt>
 <dd><p>Whether to add F1 metric.</p></dd>
+
+
+<dt>auc_metric</dt>
+<dd><p>Whether to add AUC metric.</p></dd>
+
+
+<dt>bal_acc</dt>
+<dd><p>Whether to add balanced accuracy.</p></dd>
 
 
 <dt>verbose</dt>
@@ -270,6 +280,12 @@ If first label contains 5 percent wrong labels and second label no noise, then</
 <dd><p>Whether to use distributed mirrored strategy. If NULL, will use distributed mirrored strategy only if &gt;1 GPU available.</p></dd>
 
 </dl></div>
+    <div id="value">
+    <h2>Value</h2>
+    
+
+<p>A keras model with two input layers. Consists of LSTN, CNN and dense layers.</p>
+    </div>
 
     <div id="ref-examples">
     <h2>Examples</h2>
@@ -282,74 +298,76 @@ If first label contains 5 percent wrong labels and second label no noise, then</
 <span class="r-in"><span>  layer_lstm <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">32</span>, <span class="fl">64</span><span class="op">)</span>,</span></span>
 <span class="r-in"><span>  layer_dense <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">128</span>, <span class="fl">4</span><span class="op">)</span>,</span></span>
 <span class="r-in"><span>  learning_rate <span class="op">=</span> <span class="fl">0.001</span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Model: "model_6"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Model: "model_8"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> ________________________________________________________________________________</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  Layer (type)       Output Shape         Para   Connected to         Trainable  </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>                                          m #                                    </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> ================================================================================</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  input_6 (InputLay  [(None, 250, 4)]     0      []                   Y          </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  input_8 (InputLay  [(None, 250, 4)]     0      []                   Y          </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  er)                                                                            </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  input_7 (InputLay  [(None, 250, 4)]     0      []                   Y          </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  input_9 (InputLay  [(None, 250, 4)]     0      []                   Y          </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  er)                                                                            </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  conv1d_6 (Conv1D)  (None, 250, 16)      528    ['input_6[0][0]']    Y          </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  conv1d_9 (Conv1D)  (None, 250, 16)      528    ['input_7[0][0]']    Y          </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  max_pooling1d_5 (  (None, 83, 16)       0      ['conv1d_6[0][0]']   Y          </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  MaxPooling1D)                                                                  </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  max_pooling1d_8 (  (None, 83, 16)       0      ['conv1d_9[0][0]']   Y          </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  MaxPooling1D)                                                                  </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  batch_normalizati  (None, 83, 16)       64     ['max_pooling1d_5[   Y          </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  on_6 (BatchNormal                              0][0]']                         </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  ization)                                                                       </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  batch_normalizati  (None, 83, 16)       64     ['max_pooling1d_8[   Y          </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  on_9 (BatchNormal                              0][0]']                         </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  ization)                                                                       </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  conv1d_7 (Conv1D)  (None, 83, 32)       4128   ['batch_normalizat   Y          </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>                                                 ion_6[0][0]']                   </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  conv1d_10 (Conv1D  (None, 83, 32)       4128   ['batch_normalizat   Y          </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  )                                              ion_9[0][0]']                   </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  max_pooling1d_6 (  (None, 27, 32)       0      ['conv1d_7[0][0]']   Y          </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  MaxPooling1D)                                                                  </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  max_pooling1d_9 (  (None, 27, 32)       0      ['conv1d_10[0][0]'   Y          </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  conv1d_10 (Conv1D  (None, 250, 16)      528    ['input_8[0][0]']    Y          </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  )                                                                              </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  conv1d_13 (Conv1D  (None, 250, 16)      528    ['input_9[0][0]']    Y          </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  )                                                                              </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  max_pooling1d_9 (  (None, 83, 16)       0      ['conv1d_10[0][0]'   Y          </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  MaxPooling1D)                                  ]                               </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  batch_normalizati  (None, 27, 32)       128    ['max_pooling1d_6[   Y          </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  on_7 (BatchNormal                              0][0]']                         </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  ization)                                                                       </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  batch_normalizati  (None, 27, 32)       128    ['max_pooling1d_9[   Y          </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  max_pooling1d_12   (None, 83, 16)       0      ['conv1d_13[0][0]'   Y          </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  (MaxPooling1D)                                 ]                               </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  batch_normalizati  (None, 83, 16)       64     ['max_pooling1d_9[   Y          </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  on_10 (BatchNorma                              0][0]']                         </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  lization)                                                                      </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  conv1d_8 (Conv1D)  (None, 27, 64)       1644   ['batch_normalizat   Y          </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>                                          8      ion_7[0][0]']                   </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  conv1d_11 (Conv1D  (None, 27, 64)       1644   ['batch_normalizat   Y          </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  )                                       8      ion_10[0][0]']                  </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  max_pooling1d_7 (  (None, 9, 64)        0      ['conv1d_8[0][0]']   Y          </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  MaxPooling1D)                                                                  </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  max_pooling1d_10   (None, 9, 64)        0      ['conv1d_11[0][0]'   Y          </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  batch_normalizati  (None, 83, 16)       64     ['max_pooling1d_12   Y          </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  on_13 (BatchNorma                              [0][0]']                        </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  lization)                                                                      </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  conv1d_11 (Conv1D  (None, 83, 32)       4128   ['batch_normalizat   Y          </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  )                                              ion_10[0][0]']                  </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  conv1d_14 (Conv1D  (None, 83, 32)       4128   ['batch_normalizat   Y          </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  )                                              ion_13[0][0]']                  </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  max_pooling1d_10   (None, 27, 32)       0      ['conv1d_11[0][0]'   Y          </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  (MaxPooling1D)                                 ]                               </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  batch_normalizati  (None, 9, 64)        256    ['max_pooling1d_7[   Y          </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  on_8 (BatchNormal                              0][0]']                         </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  ization)                                                                       </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  batch_normalizati  (None, 9, 64)        256    ['max_pooling1d_10   Y          </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  max_pooling1d_13   (None, 27, 32)       0      ['conv1d_14[0][0]'   Y          </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  (MaxPooling1D)                                 ]                               </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  batch_normalizati  (None, 27, 32)       128    ['max_pooling1d_10   Y          </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  on_11 (BatchNorma                              [0][0]']                        </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  lization)                                                                      </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  lstm_5 (LSTM)      (None, 9, 32)        1241   ['batch_normalizat   Y          </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>                                          6      ion_8[0][0]']                   </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  batch_normalizati  (None, 27, 32)       128    ['max_pooling1d_13   Y          </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  on_14 (BatchNorma                              [0][0]']                        </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  lization)                                                                      </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  conv1d_12 (Conv1D  (None, 27, 64)       1644   ['batch_normalizat   Y          </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  )                                       8      ion_11[0][0]']                  </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  conv1d_15 (Conv1D  (None, 27, 64)       1644   ['batch_normalizat   Y          </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  )                                       8      ion_14[0][0]']                  </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  max_pooling1d_11   (None, 9, 64)        0      ['conv1d_12[0][0]'   Y          </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  (MaxPooling1D)                                 ]                               </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  max_pooling1d_14   (None, 9, 64)        0      ['conv1d_15[0][0]'   Y          </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  (MaxPooling1D)                                 ]                               </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  batch_normalizati  (None, 9, 64)        256    ['max_pooling1d_11   Y          </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  on_12 (BatchNorma                              [0][0]']                        </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  lization)                                                                      </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  batch_normalizati  (None, 9, 64)        256    ['max_pooling1d_14   Y          </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  on_15 (BatchNorma                              [0][0]']                        </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  lization)                                                                      </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  lstm_7 (LSTM)      (None, 9, 32)        1241   ['batch_normalizat   Y          </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>                                          6      ion_11[0][0]']                  </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  lstm_6 (LSTM)      (None, 64)           2483   ['lstm_5[0][0]']     Y          </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>                                          2                                      </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                                          6      ion_12[0][0]']                  </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  lstm_9 (LSTM)      (None, 9, 32)        1241   ['batch_normalizat   Y          </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                                          6      ion_15[0][0]']                  </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  lstm_8 (LSTM)      (None, 64)           2483   ['lstm_7[0][0]']     Y          </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>                                          2                                      </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  concatenate (Conc  (None, 128)          0      ['lstm_6[0][0]',     Y          </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  atenate)                                        'lstm_8[0][0]']                </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  dense_9 (Dense)    (None, 128)          1651   ['concatenate[0][0   Y          </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  lstm_10 (LSTM)     (None, 64)           2483   ['lstm_9[0][0]']     Y          </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                                          2                                      </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  concatenate (Conc  (None, 128)          0      ['lstm_8[0][0]',     Y          </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  atenate)                                        'lstm_10[0][0]']               </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  dense_13 (Dense)   (None, 128)          1651   ['concatenate[0][0   Y          </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>                                          2      ]']                             </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  dense_10 (Dense)   (None, 4)            516    ['dense_9[0][0]']    Y          </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  dense_14 (Dense)   (None, 4)            516    ['dense_13[0][0]']   Y          </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> ================================================================================</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Total params: 134628 (525.89 KB)</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Trainable params: 134180 (524.14 KB)</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Non-trainable params: 448 (1.75 KB)</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> ________________________________________________________________________________</span>
-<span class="r-in"><span>  </span></span>
+<span class="r-in"><span> </span></span>
 </code></pre></div>
     </div>
   </div>

@@ -228,7 +228,7 @@ samples are taken from a consecutive subsequence.</p></dd>
 Must be list with the following arguments:</p><ul><li><p><code>mask_rate</code>: Rate of input to mask (rate of input to replace with mask token).</p></li>
 <li><p><code>random_rate</code>: Rate of input to set to random token.</p></li>
 <li><p><code>identity_rate</code>: Rate of input where sample weights are applied but input and output are identical.</p></li>
-<li><p><code>include_sw</code>: Whether to include sample weigths.</p></li>
+<li><p><code>include_sw</code>: Whether to include sample weights.</p></li>
 <li><p><code>block_len</code> (optional): Masked/random/identity regions appear in blocks of size <code>block_len</code>.</p></li>
 </ul></dd>
 
@@ -237,6 +237,12 @@ Must be list with the following arguments:</p><ul><li><p><code>mask_rate</code>:
 <dd><p>further generator options. See <code><a href="get_generator.html">get_generator</a></code>.</p></dd>
 
 </dl></div>
+    <div id="value">
+    <h2>Value</h2>
+    
+
+<p>None. Function writes data to files and does not return a value.</p>
+    </div>
 
     <div id="ref-examples">
     <h2>Examples</h2>
@@ -264,7 +270,6 @@ Must be list with the following arguments:</p><ul><li><p><code>mask_rate</code>:
 <span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/base/list.files.html" class="external-link">list.files</a></span><span class="op">(</span><span class="va">out_dir</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  [1] "batch_1.rds"  "batch_10.rds" "batch_2.rds"  "batch_3.rds"  "batch_4.rds" </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  [6] "batch_5.rds"  "batch_6.rds"  "batch_7.rds"  "batch_8.rds"  "batch_9.rds" </span>
-<span class="r-in"><span></span></span>
 </code></pre></div>
     </div>
   </div>

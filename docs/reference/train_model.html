@@ -179,7 +179,8 @@ Training progress can be visualized in tensorboard. Model weights can be stored 
 <span>  shuffle_input <span class="op">=</span> <span class="cn">TRUE</span>,</span>
 <span>  vocabulary_label <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  delete_used_files <span class="op">=</span> <span class="cn">FALSE</span>,</span>
-<span>  reshape_xy <span class="op">=</span> <span class="cn">NULL</span></span>
+<span>  reshape_xy <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  return_gen <span class="op">=</span> <span class="cn">FALSE</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
 
@@ -420,7 +421,7 @@ will randomly select 5 entries.</p></dd>
 Must be list with the following arguments:</p><ul><li><p><code>mask_rate</code>: Rate of input to mask (rate of input to replace with mask token).</p></li>
 <li><p><code>random_rate</code>: Rate of input to set to random token.</p></li>
 <li><p><code>identity_rate</code>: Rate of input where sample weights are applied but input and output are identical.</p></li>
-<li><p><code>include_sw</code>: Whether to include sample weigths.</p></li>
+<li><p><code>include_sw</code>: Whether to include sample weights.</p></li>
 <li><p><code>block_len</code> (optional): Masked/random/identity regions appear in blocks of size <code>block_len</code>.</p></li>
 </ul></dd>
 
@@ -534,9 +535,21 @@ second entry contains the column named <code>"label_3"</code>.</p></dd>
 
 <dt>reshape_xy</dt>
 <dd><p>Can be a list of functions to apply to input and/or target. List elements (containing the reshape functions)
-must be called x for input or y for target.</p></dd>
+must be called x for input or y for target and each have arguments called x and y. For example:
+<code>reshape_xy = list(x = function(x, y) {return(x+1)}, y = function(x, y) {return(x+y)})</code> .
+For rds generator needs to have an additional argument called sw.</p></dd>
+
+
+<dt>return_gen</dt>
+<dd><p>Whether to return the train and validation generators (instead of training).</p></dd>
 
 </dl></div>
+    <div id="value">
+    <h2>Value</h2>
+    
+
+<p>A list of training metrics.</p>
+    </div>
 
     <div id="ref-examples">
     <h2>Examples</h2>

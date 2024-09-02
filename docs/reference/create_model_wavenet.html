@@ -96,7 +96,7 @@ uses code from here."><meta property="og:image" content="https://genomenet.githu
   <div class="col-md-9 contents">
     <div class="page-header">
     <h1>Create wavenet model</h1>
-    <small class="dont-index">Source: <a href="https://github.com/GenomeNet/deepG/blob/HEAD/R/create_model.R" class="external-link"><code>R/create_model.R</code></a></small>
+    <small class="dont-index">Source: <a href="https://github.com/GenomeNet/deepG/blob/HEAD/R/create_model_wavenet.R" class="external-link"><code>R/create_model_wavenet.R</code></a></small>
     <div class="hidden name"><code>create_model_wavenet.Rd</code></div>
     </div>
 
@@ -196,12 +196,18 @@ then it's used as the dilation rate of each residual block.</p></dd>
 <dd><p>Whether to use distributed mirrored strategy. If NULL, will use distributed mirrored strategy only if &gt;1 GPU available.</p></dd>
 
 </dl></div>
+    <div id="value">
+    <h2>Value</h2>
+    
+
+<p>A keras model implementing wavenet architecture.</p>
+    </div>
 
     <div id="ref-examples">
     <h2>Examples</h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="kw">if</span> <span class="op">(</span><span class="cn">FALSE</span><span class="op">)</span> <span class="op">{</span></span></span>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="va">model</span> <span class="op">&lt;-</span> <span class="fu">create_model_wavenet</span><span class="op">(</span>residual_blocks <span class="op">=</span> <span class="fl">2</span><span class="op">^</span><span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="fl">1</span><span class="op">:</span><span class="fl">4</span>, <span class="fl">2</span><span class="op">)</span>, maxlen <span class="op">=</span> <span class="fl">1000</span><span class="op">)</span></span></span>
-<span class="r-in"><span><span class="op">}</span></span></span>
+<span class="r-in"><span> </span></span>
 </code></pre></div>
     </div>
   </div>

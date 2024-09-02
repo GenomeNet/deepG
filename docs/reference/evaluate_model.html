@@ -271,6 +271,12 @@ and else an integer.</p></dd>
 <dd><p>Further generator options. See <code><a href="get_generator.html">get_generator</a></code>.</p></dd>
 
 </dl></div>
+    <div id="value">
+    <h2>Value</h2>
+    
+
+<p>A list of evaluation results. Each list element corresponds to an output layer of the model.</p>
+    </div>
 
     <div id="ref-examples">
     <h2>Examples</h2>
@@ -299,16 +305,16 @@ and else an integer.</p></dd>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [[1]]$confusion_matrix</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>           Truth</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Prediction a c g t</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>          a 0 0 1 0</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>          c 1 1 2 2</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>          g 0 0 0 3</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>          t 0 2 1 2</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>          a 0 0 0 0</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>          c 2 6 3 4</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>          g 0 0 0 0</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>          t 0 0 0 0</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [[1]]$accuracy</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] 0.2</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] 0.4</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [[1]]$categorical_crossentropy_loss</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] 1.401227</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] 1.388578</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [[1]]$AUC</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> NULL</span>
@@ -317,6 +323,7 @@ and else an integer.</p></dd>
 <span class="r-out co"><span class="r-pr">#&gt;</span> NULL</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-in"><span>  </span></span>
 </code></pre></div>
     </div>
   </div>

@@ -96,7 +96,7 @@ can be best accuracy, best loss, last epoch number or a specified epoch number."
   <div class="col-md-9 contents">
     <div class="page-header">
     <h1>Load checkpoint</h1>
-    <small class="dont-index">Source: <a href="https://github.com/GenomeNet/deepG/blob/HEAD/R/create_model.R" class="external-link"><code>R/create_model.R</code></a></small>
+    <small class="dont-index">Source: <a href="https://github.com/GenomeNet/deepG/blob/HEAD/R/create_model_utils.R" class="external-link"><code>R/create_model_utils.R</code></a></small>
     <div class="hidden name"><code>load_cp.Rd</code></div>
     </div>
 
@@ -118,7 +118,7 @@ can be best accuracy, best loss, last epoch number or a specified epoch number.<
 <span>  add_custom_object <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  margin <span class="op">=</span> <span class="fl">1</span>,</span>
 <span>  verbose <span class="op">=</span> <span class="cn">TRUE</span>,</span>
-<span>  mirrored_strategy <span class="op">=</span> <span class="cn">NULL</span></span>
+<span>  mirrored_strategy <span class="op">=</span> <span class="cn">FALSE</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
 
@@ -164,14 +164,7 @@ Either "acc" for bast validation accuracy, "loss" for best validation loss or "l
 
 
 <dt>margin</dt>
-<dd><p>Margin for contrastive loss, see <a href="loss_cl.html">loss_cl</a>.
-model &lt;- create_model_lstm_cnn(layer_lstm = 8)
-checkpoint_folder &lt;- tempfile()
-dir.create(checkpoint_folder)
-keras::save_model_hdf5(model, file.path(checkpoint_folder, 'Ep.007-val_loss11.07-val_acc0.6.hdf5'))
-keras::save_model_hdf5(model, file.path(checkpoint_folder, 'Ep.019-val_loss8.74-val_acc0.7.hdf5'))
-keras::save_model_hdf5(model, file.path(checkpoint_folder, 'Ep.025-val_loss0.03-val_acc0.8.hdf5'))
-model &lt;- load_cp(cp_path = checkpoint_folder, cp_filter = "last_ep")</p></dd>
+<dd><p>Margin for contrastive loss, see <a href="loss_cl.html">loss_cl</a>.</p></dd>
 
 
 <dt>verbose</dt>
@@ -182,7 +175,26 @@ model &lt;- load_cp(cp_path = checkpoint_folder, cp_filter = "last_ep")</p></dd>
 <dd><p>Whether to use distributed mirrored strategy. If NULL, will use distributed mirrored strategy only if &gt;1 GPU available.</p></dd>
 
 </dl></div>
+    <div id="value">
+    <h2>Value</h2>
+    
 
+<p>A keras model loaded from a checkpoint.</p>
+    </div>
+
+    <div id="ref-examples">
+    <h2>Examples</h2>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="va">model</span> <span class="op">&lt;-</span> <span class="fu"><a href="create_model_lstm_cnn.html">create_model_lstm_cnn</a></span><span class="op">(</span>layer_lstm <span class="op">=</span> <span class="fl">8</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">checkpoint_folder</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/tempfile.html" class="external-link">tempfile</a></span><span class="op">(</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/base/files2.html" class="external-link">dir.create</a></span><span class="op">(</span><span class="va">checkpoint_folder</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="fu">keras</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/keras/man/save_model_hdf5.html" class="external-link">save_model_hdf5</a></span><span class="op">(</span><span class="va">model</span>, <span class="fu"><a href="https://rdrr.io/r/base/file.path.html" class="external-link">file.path</a></span><span class="op">(</span><span class="va">checkpoint_folder</span>, <span class="st">'Ep.007-val_loss11.07-val_acc0.6.hdf5'</span><span class="op">)</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="fu">keras</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/keras/man/save_model_hdf5.html" class="external-link">save_model_hdf5</a></span><span class="op">(</span><span class="va">model</span>, <span class="fu"><a href="https://rdrr.io/r/base/file.path.html" class="external-link">file.path</a></span><span class="op">(</span><span class="va">checkpoint_folder</span>, <span class="st">'Ep.019-val_loss8.74-val_acc0.7.hdf5'</span><span class="op">)</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="fu">keras</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/keras/man/save_model_hdf5.html" class="external-link">save_model_hdf5</a></span><span class="op">(</span><span class="va">model</span>, <span class="fu"><a href="https://rdrr.io/r/base/file.path.html" class="external-link">file.path</a></span><span class="op">(</span><span class="va">checkpoint_folder</span>, <span class="st">'Ep.025-val_loss0.03-val_acc0.8.hdf5'</span><span class="op">)</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">model</span> <span class="op">&lt;-</span> <span class="fu">load_cp</span><span class="op">(</span>cp_path <span class="op">=</span> <span class="va">checkpoint_folder</span>, cp_filter <span class="op">=</span> <span class="st">"last_ep"</span><span class="op">)</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Using checkpoint /tmp/RtmpGFLH90/file30e069da6652/Ep.025-val_loss0.03-val_acc0.8.hdf5 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> (Date created: 2024-09-02 15:34:50.713338 )</span>
+</code></pre></div>
+    </div>
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">
     <nav id="toc" data-toggle="toc" class="sticky-top"><h2 data-toc-skip>Contents</h2>

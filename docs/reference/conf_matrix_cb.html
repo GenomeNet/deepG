@@ -126,12 +126,17 @@ If name already present, will add <code>"_2"</code> to name or <code>"_{x+1}"</c
 <dd><p>Directory that contains confusion matrix files.</p></dd>
 
 </dl></div>
+    <div id="value">
+    <h2>Value</h2>
+    
+
+<p>Keras callback, plot confusion matrix in tensorboard.</p>
+    </div>
 
     <div id="ref-examples">
     <h2>Examples</h2>
     <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="va">cm</span> <span class="op">&lt;-</span> <span class="fu">conf_matrix_cb</span><span class="op">(</span>path_tensorboard <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/tempfile.html" class="external-link">tempfile</a></span><span class="op">(</span><span class="op">)</span>, run_name <span class="op">=</span> <span class="st">'run_1'</span>,</span></span>
 <span class="r-in"><span>                     confMatLabels <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">'label_1'</span>, <span class="st">'label_2'</span><span class="op">)</span>, cm_dir <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/tempfile.html" class="external-link">tempfile</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span></span></span>
-<span class="r-in"><span></span></span>
 </code></pre></div>
     </div>
   </div>

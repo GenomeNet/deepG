@@ -96,7 +96,7 @@ use CNN and LSTM layers."><meta property="og:image" content="https://genomenet.g
   <div class="col-md-9 contents">
     <div class="page-header">
     <h1>Replace input layer</h1>
-    <small class="dont-index">Source: <a href="https://github.com/GenomeNet/deepG/blob/HEAD/R/create_model.R" class="external-link"><code>R/create_model.R</code></a></small>
+    <small class="dont-index">Source: <a href="https://github.com/GenomeNet/deepG/blob/HEAD/R/create_model_utils.R" class="external-link"><code>R/create_model_utils.R</code></a></small>
     <div class="hidden name"><code>reshape_input.Rd</code></div>
     </div>
 
@@ -119,6 +119,12 @@ use CNN and LSTM layers.</p>
 <dd><p>The new input shape vector (without batch size).</p></dd>
 
 </dl></div>
+    <div id="value">
+    <h2>Value</h2>
+    
+
+<p>A keras model with changed input shape of input model.</p>
+    </div>
 
     <div id="ref-examples">
     <h2>Examples</h2>
@@ -132,30 +138,29 @@ use CNN and LSTM layers.</p>
 <span class="r-in"><span>  layer_dense <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">64</span>, <span class="fl">2</span><span class="op">)</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="va">model</span> <span class="op">&lt;-</span> <span class="fu">reshape_input</span><span class="op">(</span><span class="va">model_1</span>, input_shape <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">120</span>, <span class="fl">4</span><span class="op">)</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="va">model</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Model: "model_37"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Model: "model_43"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> ________________________________________________________________________________</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  Layer (type)                  Output Shape               Param #    Trainable  </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> ================================================================================</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  input_26 (InputLayer)         [(None, 120, 4)]           0          Y          </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  conv1d_15 (Conv1D)            multiple                   2624       Y          </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  max_pooling1d_14 (MaxPooling  multiple                   0          Y          </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  input_31 (InputLayer)         [(None, 120, 4)]           0          Y          </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  conv1d_22 (Conv1D)            multiple                   2624       Y          </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  max_pooling1d_18 (MaxPooling  multiple                   0          Y          </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  1D)                                                                            </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  batch_normalization_16 (Batc  multiple                   256        Y          </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  batch_normalization_20 (Batc  multiple                   256        Y          </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  hNormalization)                                                                </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  conv1d_16 (Conv1D)            multiple                   82048      Y          </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  batch_normalization_17 (Batc  multiple                   512        Y          </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  conv1d_23 (Conv1D)            multiple                   82048      Y          </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  batch_normalization_21 (Batc  multiple                   512        Y          </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  hNormalization)                                                                </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  max_pooling1d_15 (MaxPooling  multiple                   0          Y          </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  max_pooling1d_19 (MaxPooling  multiple                   0          Y          </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  1D)                                                                            </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  lstm_24 (LSTM)                (None, 32)                 20608      Y          </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  dense_42 (Dense)              (None, 64)                 2112       Y          </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  dense_43 (Dense)              (None, 2)                  130        Y          </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  lstm_28 (LSTM)                (None, 32)                 20608      Y          </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  dense_50 (Dense)              (None, 64)                 2112       Y          </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  dense_51 (Dense)              (None, 2)                  130        Y          </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> ================================================================================</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Total params: 108290 (423.01 KB)</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Trainable params: 107906 (421.51 KB)</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Non-trainable params: 384 (1.50 KB)</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> ________________________________________________________________________________</span>
-<span class="r-in"><span></span></span>
 </code></pre></div>
     </div>
   </div>

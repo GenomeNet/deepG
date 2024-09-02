@@ -98,7 +98,7 @@ Implements approach as described here"><meta property="og:image" content="https:
   <div class="col-md-9 contents">
     <div class="page-header">
     <h1>Create LSTM/CNN network that can process multiple samples for one target</h1>
-    <small class="dont-index">Source: <a href="https://github.com/GenomeNet/deepG/blob/HEAD/R/create_model.R" class="external-link"><code>R/create_model.R</code></a></small>
+    <small class="dont-index">Source: <a href="https://github.com/GenomeNet/deepG/blob/HEAD/R/create_model_set_learning.R" class="external-link"><code>R/create_model_set_learning.R</code></a></small>
     <div class="hidden name"><code>create_model_lstm_cnn_multi_input.Rd</code></div>
     </div>
 
@@ -129,7 +129,7 @@ Implements approach as described <a href="https://arxiv.org/abs/1703.06114" clas
 <span>  pool_size <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  padding <span class="op">=</span> <span class="st">"same"</span>,</span>
 <span>  dilation_rate <span class="op">=</span> <span class="cn">NULL</span>,</span>
-<span>  gap <span class="op">=</span> <span class="cn">FALSE</span>,</span>
+<span>  gap_inputs <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  use_bias <span class="op">=</span> <span class="cn">TRUE</span>,</span>
 <span>  zero_mask <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  label_smoothing <span class="op">=</span> <span class="fl">0</span>,</span>
@@ -138,8 +138,10 @@ Implements approach as described <a href="https://arxiv.org/abs/1703.06114" clas
 <span>  loss_fn <span class="op">=</span> <span class="st">"categorical_crossentropy"</span>,</span>
 <span>  auc_metric <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  f1_metric <span class="op">=</span> <span class="cn">FALSE</span>,</span>
+<span>  bal_acc <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  <span class="va">samples_per_target</span>,</span>
 <span>  batch_norm_momentum <span class="op">=</span> <span class="fl">0.99</span>,</span>
+<span>  aggregation_method <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"sum"</span><span class="op">)</span>,</span>
 <span>  verbose <span class="op">=</span> <span class="cn">TRUE</span>,</span>
 <span>  model_seed <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  mixed_precision <span class="op">=</span> <span class="cn">FALSE</span>,</span>
@@ -221,8 +223,9 @@ Implements approach as described <a href="https://arxiv.org/abs/1703.06114" clas
 <dd><p>Integer, the dilation rate to use for dilated convolution.</p></dd>
 
 
-<dt>gap</dt>
-<dd><p>Whether to apply global average pooling after last CNN layer.</p></dd>
+<dt>gap_inputs</dt>
+<dd><p>Global pooling method to apply. Same options as for <code>flatten_method</code> argument
+in <a href="create_model_transformer.html">create_model_transformer</a> function.</p></dd>
 
 
 <dt>use_bias</dt>
@@ -246,7 +249,7 @@ If first label contains 5 percent wrong labels and second label no noise, then</
 
 
 <dt>last_layer_activation</dt>
-<dd><p>Either <code>"sigmoid"</code> or <code>"softmax"</code>.</p></dd>
+<dd><p>Activation function of output layer(s). For example <code>"sigmoid"</code> or <code>"softmax"</code>.</p></dd>
 
 
 <dt>loss_fn</dt>
@@ -261,12 +264,20 @@ If first label contains 5 percent wrong labels and second label no noise, then</
 <dd><p>Whether to add F1 metric.</p></dd>
 
 
+<dt>bal_acc</dt>
+<dd><p>Whether to add balanced accuracy.</p></dd>
+
+
 <dt>samples_per_target</dt>
 <dd><p>Number of samples to combine for one target.</p></dd>
 
 
 <dt>batch_norm_momentum</dt>
 <dd><p>Momentum for the moving mean and the moving variance.</p></dd>
+
+
+<dt>aggregation_method</dt>
+<dd><p>At least one of the options <code>"sum", "mean", "max"</code>.</p></dd>
 
 
 <dt>verbose</dt>
@@ -285,6 +296,12 @@ If first label contains 5 percent wrong labels and second label no noise, then</
 <dd><p>Whether to use distributed mirrored strategy. If NULL, will use distributed mirrored strategy only if &gt;1 GPU available.</p></dd>
 
 </dl></div>
+    <div id="value">
+    <h2>Value</h2>
+    
+
+<p>A keras model with multiple input layers. Input goes through shared LSTM/CNN layers.</p>
+    </div>
 
     <div id="ref-examples">
     <h2>Examples</h2>
@@ -297,8 +314,9 @@ If first label contains 5 percent wrong labels and second label no noise, then</
 <span class="r-in"><span>  pool_size <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">2</span>, <span class="fl">2</span><span class="op">)</span>,</span></span>
 <span class="r-in"><span>  layer_lstm <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">32</span><span class="op">)</span>,</span></span>
 <span class="r-in"><span>  layer_dense <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">64</span>, <span class="fl">2</span><span class="op">)</span>,</span></span>
+<span class="r-in"><span>  aggregation_method <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"max"</span><span class="op">)</span>,</span></span>
 <span class="r-in"><span>  learning_rate <span class="op">=</span> <span class="fl">0.001</span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Model: "model_5"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Model: "model_7"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> ________________________________________________________________________________</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  Layer (type)       Output Shape         Para   Connected to         Trainable  </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>                                          m #                                    </span>
@@ -317,22 +335,23 @@ If first label contains 5 percent wrong labels and second label no noise, then</
 <span class="r-out co"><span class="r-pr">#&gt;</span>  er)                                                                            </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  input_7 (InputLay  [(None, 50, 4)]      0      []                   Y          </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  er)                                                                            </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  model_4 (Function  (None, 32)           1060   ['input_1[0][0]',    Y          </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  model_6 (Function  (None, 32)           1060   ['input_1[0][0]',    Y          </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  al)                                     48      'input_2[0][0]',               </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>                                                  'input_3[0][0]',               </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>                                                  'input_4[0][0]',               </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>                                                  'input_5[0][0]',               </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>                                                  'input_6[0][0]',               </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>                                                  'input_7[0][0]']               </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  add (Add)          (None, 32)           0      ['model_4[0][0]',    Y          </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>                                                  'model_4[1][0]',               </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>                                                  'model_4[2][0]',               </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>                                                  'model_4[3][0]',               </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>                                                  'model_4[4][0]',               </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>                                                  'model_4[5][0]',               </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>                                                  'model_4[6][0]']               </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  dense_7 (Dense)    (None, 64)           2112   ['add[0][0]']        Y          </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  dense_8 (Dense)    (None, 2)            130    ['dense_7[0][0]']    Y          </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  layer_aggregate_t  (None, 32)           0      ['model_6[0][0]',    Y          </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  ime_dist (layer_a                               'model_6[1][0]',               </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  ggregate_time_dis                               'model_6[2][0]',               </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  t)                                              'model_6[3][0]',               </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                                                  'model_6[4][0]',               </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                                                  'model_6[5][0]',               </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                                                  'model_6[6][0]']               </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  dense_11 (Dense)   (None, 64)           2112   ['layer_aggregate_   Y          </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                                                 time_dist[0][0]']               </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  dense_12 (Dense)   (None, 2)            130    ['dense_11[0][0]']   Y          </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> ================================================================================</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Total params: 108290 (423.01 KB)</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Trainable params: 107906 (421.51 KB)</span>

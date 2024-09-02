@@ -153,6 +153,12 @@ input is too big to handle at once. Only supported for single input layer.</p></
 gradient repeatedly for different shuffles). Final result is average of <code>num_baseline</code> single calculations.</p></dd>
 
 </dl></div>
+    <div id="value">
+    <h2>Value</h2>
+    
+
+<p>A tensorflow tensor.</p>
+    </div>
 
     <div id="ref-examples">
     <h2>Examples</h2>
@@ -164,26 +170,26 @@ gradient repeatedly for different shuffles). Final result is average of <code>nu
 <span class="r-in"><span>  target_class_idx <span class="op">=</span> <span class="fl">3</span>,</span></span>
 <span class="r-in"><span>  model <span class="op">=</span> <span class="va">model</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> tf.Tensor(</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [[-0.          0.00029479 -0.         -0.        ]</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  [-0.          0.00037617 -0.         -0.        ]</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  [-0.          0.         -0.         -0.00035197]</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  [-0.          0.         -0.         -0.00039203]</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  [-0.          0.00074637 -0.         -0.        ]</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  [-0.          0.00093353 -0.         -0.        ]</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  [-0.00064272  0.         -0.         -0.        ]</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  [-0.          0.00134949 -0.         -0.        ]</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  [-0.          0.00163213 -0.         -0.        ]</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  [-0.          0.00195153 -0.         -0.        ]</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  [-0.          0.00230166 -0.         -0.        ]</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  [-0.00078834  0.          0.         -0.        ]</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  [-0.          0.         -0.00022681 -0.        ]</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  [-0.          0.          0.0002211  -0.        ]</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  [-0.          0.          0.         -0.00091076]</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  [ 0.          0.00354034  0.         -0.        ]</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  [ 0.          0.          0.00386595 -0.        ]</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  [ 0.          0.          0.00672174 -0.        ]</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  [ 0.         -0.          0.         -0.00442119]</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  [ 0.         -0.00427738  0.         -0.        ]], shape=(20, 4), dtype=float32)</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [[ 0.00000000e+00  1.57616560e-05  0.00000000e+00 -0.00000000e+00]</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [ 0.00000000e+00  1.59402425e-05  0.00000000e+00 -0.00000000e+00]</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [ 0.00000000e+00  0.00000000e+00  0.00000000e+00 -1.08250584e-04]</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [ 0.00000000e+00  0.00000000e+00  0.00000000e+00 -1.58376512e-04]</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [ 0.00000000e+00  6.02718173e-05  0.00000000e+00 -0.00000000e+00]</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [ 0.00000000e+00  8.52706289e-05  0.00000000e+00 -0.00000000e+00]</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [ 2.23012088e-04  0.00000000e+00  0.00000000e+00 -0.00000000e+00]</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [ 0.00000000e+00  1.93405343e-04  0.00000000e+00 -0.00000000e+00]</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [ 0.00000000e+00  3.05221358e-04  0.00000000e+00 -0.00000000e+00]</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [ 0.00000000e+00  4.83162323e-04  0.00000000e+00 -0.00000000e+00]</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [ 0.00000000e+00  7.58324401e-04  0.00000000e+00 -0.00000000e+00]</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [ 9.69514076e-04  0.00000000e+00  0.00000000e+00 -0.00000000e+00]</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [ 0.00000000e+00  0.00000000e+00  3.77521454e-03 -0.00000000e+00]</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [ 0.00000000e+00  0.00000000e+00  4.59190132e-03 -0.00000000e+00]</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [ 0.00000000e+00  0.00000000e+00  0.00000000e+00 -5.23078628e-03]</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [ 0.00000000e+00  6.59071980e-03  0.00000000e+00 -0.00000000e+00]</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [ 0.00000000e+00  0.00000000e+00  7.19540706e-03 -0.00000000e+00]</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [ 0.00000000e+00  0.00000000e+00  7.89399166e-03 -0.00000000e+00]</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [ 0.00000000e+00  0.00000000e+00  0.00000000e+00 -1.50655247e-02]</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [-0.00000000e+00  2.58136038e-02  0.00000000e+00 -0.00000000e+00]], shape=(20, 4), dtype=float32)</span>
 <span class="r-in"><span>  </span></span>
 </code></pre></div>
     </div>

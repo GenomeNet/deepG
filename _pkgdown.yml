@@ -52,6 +52,7 @@ reference:
   contents: 
   - train_model
   - train_model_cpc
+  - resume_training_from_model_card
 - title: Model Architecture
   contents:
   - starts_with("create_model_")
@@ -66,7 +67,6 @@ reference:
   contents:
   - conf_matrix_cb
   - early_stopping_time_cb
-  - function_args_cb
   - validation_after_training_cb
   - reset_states_cb
   - remove_checkpoints
@@ -116,9 +116,7 @@ reference:
   - one_hot_to_seq
 - title: Data
   contents:
-  - crispr_full
   - crispr_sample
-  - ecoli
   - ecoli_small
   - parenthesis
 - title: Dummy Data

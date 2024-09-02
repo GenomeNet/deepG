@@ -95,7 +95,7 @@
   <div class="col-md-9 contents">
     <div class="page-header">
     <h1>Compile model</h1>
-    <small class="dont-index">Source: <a href="https://github.com/GenomeNet/deepG/blob/HEAD/R/create_model.R" class="external-link"><code>R/create_model.R</code></a></small>
+    <small class="dont-index">Source: <a href="https://github.com/GenomeNet/deepG/blob/HEAD/R/create_model_utils.R" class="external-link"><code>R/create_model_utils.R</code></a></small>
     <div class="hidden name"><code>compile_model.Rd</code></div>
     </div>
 
@@ -114,7 +114,8 @@
 <span>  label_noise_matrix <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  bal_acc <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  f1_metric <span class="op">=</span> <span class="cn">FALSE</span>,</span>
-<span>  auc_metric <span class="op">=</span> <span class="cn">FALSE</span></span>
+<span>  auc_metric <span class="op">=</span> <span class="cn">FALSE</span>,</span>
+<span>  layer_dense <span class="op">=</span> <span class="cn">NULL</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
 
@@ -163,7 +164,17 @@ If first label contains 5 percent wrong labels and second label no noise, then</
 <dt>auc_metric</dt>
 <dd><p>Whether to add AUC metric.</p></dd>
 
+
+<dt>layer_dense</dt>
+<dd><p>Vector specifying number of neurons per dense layer after last LSTM or CNN layer (if no LSTM used).</p></dd>
+
 </dl></div>
+    <div id="value">
+    <h2>Value</h2>
+    
+
+<p>A compiled keras model.</p>
+    </div>
 
     <div id="ref-examples">
     <h2>Examples</h2>
@@ -172,7 +183,6 @@ If first label contains 5 percent wrong labels and second label no noise, then</
 <span class="r-in"><span>                       solver <span class="op">=</span> <span class="st">'adam'</span>,</span></span>
 <span class="r-in"><span>                       learning_rate <span class="op">=</span> <span class="fl">0.01</span>,</span></span>
 <span class="r-in"><span>                       loss_fn <span class="op">=</span> <span class="st">'categorical_crossentropy'</span><span class="op">)</span></span></span>
-<span class="r-in"><span></span></span>
 </code></pre></div>
     </div>
   </div>

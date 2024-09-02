@@ -95,7 +95,7 @@
   <div class="col-md-9 contents">
     <div class="page-header">
     <h1>Merge two models</h1>
-    <small class="dont-index">Source: <a href="https://github.com/GenomeNet/deepG/blob/HEAD/R/create_model.R" class="external-link"><code>R/create_model.R</code></a></small>
+    <small class="dont-index">Source: <a href="https://github.com/GenomeNet/deepG/blob/HEAD/R/create_model_utils.R" class="external-link"><code>R/create_model_utils.R</code></a></small>
     <div class="hidden name"><code>merge_models.Rd</code></div>
     </div>
 
@@ -145,6 +145,12 @@
 <dd><p>Set seed for model parameters in tensorflow if not <code>NULL</code>.</p></dd>
 
 </dl></div>
+    <div id="value">
+    <h2>Value</h2>
+    
+
+<p>A keras model merging two input models.</p>
+    </div>
 
     <div id="ref-examples">
     <h2>Examples</h2>
@@ -162,7 +168,6 @@
 <span class="r-in"><span>                      layer_names <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">layer_name_1</span>, <span class="va">layer_name_2</span><span class="op">)</span>,</span></span>
 <span class="r-in"><span>                      layer_dense <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">6</span>, <span class="fl">2</span><span class="op">)</span>, </span></span>
 <span class="r-in"><span>                      freeze_base_model <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="cn">FALSE</span>, <span class="cn">FALSE</span><span class="op">)</span><span class="op">)</span> </span></span>
-<span class="r-in"><span>                      </span></span>
 </code></pre></div>
     </div>
   </div>

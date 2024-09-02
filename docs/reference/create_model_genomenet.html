@@ -95,7 +95,7 @@
   <div class="col-md-9 contents">
     <div class="page-header">
     <h1>Create GenomeNet Model with Given Architecture Parameters</h1>
-    <small class="dont-index">Source: <a href="https://github.com/GenomeNet/deepG/blob/HEAD/R/create_model.R" class="external-link"><code>R/create_model.R</code></a></small>
+    <small class="dont-index">Source: <a href="https://github.com/GenomeNet/deepG/blob/HEAD/R/create_model_genomenet.R" class="external-link"><code>R/create_model_genomenet.R</code></a></small>
     <div class="hidden name"><code>create_model_genomenet.Rd</code></div>
     </div>
 
@@ -209,7 +209,7 @@ Note that filters are constant within convolutional blocks when
 Target filter number of the last CNN-layer; ignored if only one CNN-layer
 is used (i.e. if <code>number_of_cnn_layers</code> is 1). Although CNN filter number
 is always an integer, this value can be non-integer, potentially affecting
-the filter-numbers of intermediatdilation_rates layers (which are geometrically
+the filter-numbers of intermediate dilation_rates layers (which are geometrically
 interpolated between <code>kernel_size_0</code> and <code>kernel_size_end</code>).<br>
 Note that filters are constant within convolutional blocks when
 <code>residual_block</code> is <code>TRUE</code>.</p></dd>
@@ -375,30 +375,31 @@ Number of output units to create.</p></dd>
     
 
 <p>A keras model.</p>
+
+
+<p>A keras model implementing genomenet architecture.</p>
     </div>
 
     <div id="ref-examples">
     <h2>Examples</h2>
     <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="va">model</span> <span class="op">&lt;-</span> <span class="fu">create_model_genomenet</span><span class="op">(</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="va">model</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Model: "model_2"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Model: "model_4"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> ________________________________________________________________________________</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  Layer (type)                       Output Shape                    Param #     </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> ================================================================================</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  input_3 (InputLayer)               [(None, 300, 4)]                0           </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  conv1d (Conv1D)                    (None, 300, 256)                16640       </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  input_5 (InputLayer)               [(None, 300, 4)]                0           </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  conv1d_4 (Conv1D)                  (None, 300, 256)                16640       </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  global_average_pooling1d (GlobalA  (None, 256)                     0           </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  veragePooling1D)                                                               </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  dropout (Dropout)                  (None, 256)                     0           </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  dense_3 (Dense)                    (None, 100)                     25700       </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  dense_4 (Dense)                    (None, 2)                       202         </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  dense_7 (Dense)                    (None, 100)                     25700       </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  dense_8 (Dense)                    (None, 2)                       202         </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> ================================================================================</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Total params: 42542 (166.18 KB)</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Trainable params: 42542 (166.18 KB)</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Non-trainable params: 0 (0.00 Byte)</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> ________________________________________________________________________________</span>
-<span class="r-in"><span></span></span>
-<span class="r-in"><span></span></span>
 </code></pre></div>
     </div>
   </div>

@@ -96,7 +96,7 @@ Last layer is a dense layer."><meta property="og:image" content="https://genomen
   <div class="col-md-9 contents">
     <div class="page-header">
     <h1>Create LSTM/CNN network</h1>
-    <small class="dont-index">Source: <a href="https://github.com/GenomeNet/deepG/blob/HEAD/R/create_model.R" class="external-link"><code>R/create_model.R</code></a></small>
+    <small class="dont-index">Source: <a href="https://github.com/GenomeNet/deepG/blob/HEAD/R/create_model_lstm_cnn.R" class="external-link"><code>R/create_model_lstm_cnn.R</code></a></small>
     <div class="hidden name"><code>create_model_lstm_cnn.Rd</code></div>
     </div>
 
@@ -140,7 +140,7 @@ Last layer is a dense layer.</p>
 <span>  num_output_layers <span class="op">=</span> <span class="fl">1</span>,</span>
 <span>  auc_metric <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  f1_metric <span class="op">=</span> <span class="cn">FALSE</span>,</span>
-<span>  bal_acc <span class="op">=</span> <span class="cn">TRUE</span>,</span>
+<span>  bal_acc <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  verbose <span class="op">=</span> <span class="cn">TRUE</span>,</span>
 <span>  batch_norm_momentum <span class="op">=</span> <span class="fl">0.99</span>,</span>
 <span>  model_seed <span class="op">=</span> <span class="cn">NULL</span>,</span>
@@ -268,7 +268,7 @@ If first label contains 5 percent wrong labels and second label no noise, then</
 
 
 <dt>last_layer_activation</dt>
-<dd><p>Either <code>"sigmoid"</code> or <code>"softmax"</code>.</p></dd>
+<dd><p>Activation function of output layer(s). For example <code>"sigmoid"</code> or <code>"softmax"</code>.</p></dd>
 
 
 <dt>loss_fn</dt>
@@ -311,6 +311,12 @@ If first label contains 5 percent wrong labels and second label no noise, then</
 <dd><p>Whether to use distributed mirrored strategy. If NULL, will use distributed mirrored strategy only if &gt;1 GPU available.</p></dd>
 
 </dl></div>
+    <div id="value">
+    <h2>Value</h2>
+    
+
+<p>A keras model, stacks CNN, LSTM and dense layers.</p>
+    </div>
 
     <div id="ref-examples">
     <h2>Examples</h2>
@@ -323,35 +329,35 @@ If first label contains 5 percent wrong labels and second label no noise, then</
 <span class="r-in"><span>  layer_lstm <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">32</span>, <span class="fl">64</span><span class="op">)</span>,</span></span>
 <span class="r-in"><span>  layer_dense <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">128</span>, <span class="fl">4</span><span class="op">)</span>,</span></span>
 <span class="r-in"><span>  learning_rate <span class="op">=</span> <span class="fl">0.001</span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Model: "model_3"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Model: "model_5"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> ________________________________________________________________________________</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  Layer (type)                  Output Shape               Param #    Trainable  </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> ================================================================================</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  input_4 (InputLayer)          [(None, 500, 4)]           0          Y          </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  conv1d_1 (Conv1D)             (None, 500, 16)            528        Y          </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  max_pooling1d (MaxPooling1D)  (None, 166, 16)            0          Y          </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  batch_normalization_1 (Batch  (None, 166, 16)            64         Y          </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  Normalization)                                                                 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  conv1d_2 (Conv1D)             (None, 166, 32)            4128       Y          </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  batch_normalization_2 (Batch  (None, 166, 32)            128        Y          </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  Normalization)                                                                 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  max_pooling1d_1 (MaxPooling1  (None, 55, 32)             0          Y          </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  input_6 (InputLayer)          [(None, 500, 4)]           0          Y          </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  conv1d_5 (Conv1D)             (None, 500, 16)            528        Y          </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  max_pooling1d_4 (MaxPooling1  (None, 166, 16)            0          Y          </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  D)                                                                             </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  conv1d_3 (Conv1D)             (None, 55, 64)             16448      Y          </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  batch_normalization_3 (Batch  (None, 55, 64)             256        Y          </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  batch_normalization_5 (Batch  (None, 166, 16)            64         Y          </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  Normalization)                                                                 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  max_pooling1d_2 (MaxPooling1  (None, 18, 64)             0          Y          </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  conv1d_6 (Conv1D)             (None, 166, 32)            4128       Y          </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  batch_normalization_6 (Batch  (None, 166, 32)            128        Y          </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Normalization)                                                                 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  max_pooling1d_5 (MaxPooling1  (None, 55, 32)             0          Y          </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  D)                                                                             </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  lstm_2 (LSTM)                 (None, 18, 32)             12416      Y          </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  lstm_3 (LSTM)                 (None, 64)                 24832      Y          </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  dense_5 (Dense)               (None, 128)                8320       Y          </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  dense_6 (Dense)               (None, 4)                  516        Y          </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  conv1d_7 (Conv1D)             (None, 55, 64)             16448      Y          </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  batch_normalization_7 (Batch  (None, 55, 64)             256        Y          </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Normalization)                                                                 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  max_pooling1d_6 (MaxPooling1  (None, 18, 64)             0          Y          </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  D)                                                                             </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  lstm_4 (LSTM)                 (None, 18, 32)             12416      Y          </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  lstm_5 (LSTM)                 (None, 64)                 24832      Y          </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  dense_9 (Dense)               (None, 128)                8320       Y          </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  dense_10 (Dense)              (None, 4)                  516        Y          </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> ================================================================================</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Total params: 67636 (264.20 KB)</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Trainable params: 67412 (263.33 KB)</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Non-trainable params: 224 (896.00 Byte)</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> ________________________________________________________________________________</span>
-<span class="r-in"><span>  </span></span>
 </code></pre></div>
     </div>
   </div>
