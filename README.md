@@ -1,7 +1,7 @@
 
 # DeepG <img src="man/figures/logo_small.png"  align="left" vspace="-1800px"/>
 
-**deepG: R toolbox for deep neural networks optimized for genomic
+**deepG: toolbox for deep neural networks optimized for genomic
 datasets** <!---
 % <p><img alt="DeepG logo" height="70px" src="man/figures/logo_small.png" align="left" hspace="-1000px" vspace="-180px"></p>
 -->
