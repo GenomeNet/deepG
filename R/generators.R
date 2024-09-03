@@ -209,7 +209,7 @@ get_generator <- function(path = NULL,
                                      set_learning = set_learning, proportion_entries = proportion_entries,
                                      sample_by_file_size = sample_by_file_size, n_gram = n_gram, n_gram_stride = n_gram_stride,
                                      add_noise = add_noise, reshape_xy = reshape_xy)
-    
+
     gen <- generator_fasta_label_folder_wrapper(val = val, path = path, 
                                                 batch_size = batch_size, voc_len = length(vocabulary),
                                                 gen_list = gen_list,

@@ -747,7 +747,7 @@ resume_training_from_model_card <- function(path_model_card,
   } else {
     new_train_args$run_name <- new_run_name
   }
-
+  
   # overwrite args
   if (is.null(seed)) seed <- get_seed()
   new_train_args$seed <- seed

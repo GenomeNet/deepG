@@ -66,7 +66,7 @@ compute_gradients <- function(input_tensor, target_class_idx, model, input_idx =
   # if (is.list(input_tensor)) {
   #   stop("Stepwise predictions only supported for single input layer yet")
   # }
-  
+
   reticulate::py_run_string("import tensorflow as tf")
   py$input_tensor <- input_tensor
   py$input_idx <- as.integer(input_idx - 1)
@@ -138,7 +138,7 @@ integrated_gradients <- function(m_steps = 50,
                                  model,
                                  pred_stepwise = FALSE,
                                  num_baseline_repeats = 1) {
-  
+
   #library(reticulate)
   reticulate::py_run_string("import tensorflow as tf")
   input_idx <- NULL
