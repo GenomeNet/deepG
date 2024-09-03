@@ -1,11 +1,11 @@
 ---
 title: "Integrated Gradient"
-output:
-  html_document:
-    toc: true
-    toc_depth: 3
+vignette: >
+  %\VignetteIndexEntry{Integrated Gradient}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
 ---
-
+  
 ```{r, eval=FALSE, message=FALSE}
 devtools::install_github("GenomeNet/deepG")
 library(deepG)
@@ -14,22 +14,29 @@ library(ggplot2)
 ```
 
 ```{r, echo=FALSE, warning=FALSE, message=FALSE}
-devtools::load_all(path = "~/deepGdev")
+#devtools::load_all(path = "~/deepGdev")
 library(deepG)
 library(magrittr)
 library(ggplot2)
+
+if (!reticulate::py_module_available("tensorflow")) {
+  knitr::opts_chunk$set(eval = FALSE)
+} else {
+  knitr::opts_chunk$set(eval = TRUE)
+}
 ```
+
 ```{r, echo=FALSE, warning=FALSE, message=FALSE}
 options(rmarkdown.html_vignette.check_title = FALSE)
 ```
 
 ```{css, echo=FALSE}
 mark.in {
-  background-color: CornflowerBlue;
+background-color: CornflowerBlue;
 }
 
 mark.out {
-  background-color: IndianRed;
+background-color: IndianRed;
 }
 
 ```
@@ -146,8 +153,13 @@ ig <- integrated_gradients(
   target_class_idx = 1,
   model = model)
 
-heatmaps_integrated_grad(integrated_grads = ig,
-                         input_seq = high_gc_seq_one_hot)
+if (requireNamespace("ComplexHeatmap", quietly = TRUE)) {
+  heatmaps_integrated_grad(integrated_grads = ig,
+                           input_seq = high_gc_seq_one_hot)
+} else {
+  message("Skipping ComplexHeatmap-related code because the package is not installed.")
+}
+
 ```
 
 We may test how our models prediction changes if we exchange certain nucleotides in the input sequence.
@@ -201,7 +213,7 @@ for (i in 1:20) {
     input_seq = high_gc_seq_one_hot_changed,
     target_class_idx = 1,
     model = model) %>% as.array()
-
+  
   smallest_index <- which(ig == min(ig), arr.ind = TRUE)
   smallest_index
   row_index <- smallest_index[ , "row"]
@@ -215,7 +227,7 @@ for (i in 1:20) {
       "to", vocabulary[nt_index_new], "\n")
   pred <- predict(model, high_gc_seq_one_hot_changed, verbose = 0)
   pred_list[[i + 1]] <- pred 
- 
+  
 }
 
 pred_df <- do.call(rbind, pred_list)
@@ -256,7 +268,7 @@ for (i in 1:20) {
   
   pred <- predict(model, high_gc_seq_one_hot_changed, verbose = 0)
   pred_list[[i + 1]] <- pred 
- 
+  
 }
 
 pred_df <- do.call(rbind, pred_list)

@@ -2,6 +2,9 @@ context("predict")
 
 test_that("Sucessful prediction", {
    
+   #testthat::skip_if_not_installed("tensorflow")
+   testthat::skip_if_not(reticulate::py_module_available("tensorflow"))
+   
    sequence <- "AAACCNGGGTTT"
    maxlen <- 8
    filename <- tempfile(fileext = ".h5")
@@ -178,7 +181,7 @@ test_that("Sucessful prediction", {
                          output_format = "by_entry_one_file",
                          filename = h5_file,
                          step = 2,
-                         target_len = 3,
+                         target_len = 1,
                          batch_size = 2, 
                          padding = "standard",
                          verbose = FALSE,

@@ -4,9 +4,10 @@
 #' loss is `"binary_crossentropy"` and number of targets > 1, will flatten `y_true` and `y_pred` matrices 
 #' to a single vector (rather than computing separate F1 scores for each class).
 #'
-#'@param num_targets Size of model output.
-#'@param loss Loss function of model.
-#'@examples 
+#' @param num_targets Size of model output.
+#' @param loss Loss function of model.
+#' @examplesIf reticulate::py_module_available("tensorflow")
+#' 
 #' y_true <- c(1,0,0,1,1,0,1,0,0)  
 #' y_pred <-  c(0.9,0.05,0.05,0.9,0.05,0.05,0.9,0.05,0.05)
 #'
@@ -28,13 +29,14 @@
 #' model %>% keras::compile(loss = model$loss, 
 #'                          optimizer = model$optimizer,
 #'                          metrics = c(model$metrics, f1_metric))
-#'@export
+#' @returns A keras metric.                          
+#' @export
 f1_wrapper <- function(num_targets = 2, loss = "binary_crossentropy") {
   
   stopifnot(loss %in% c("binary_crossentropy", "categorical_crossentropy"))
   
   if (loss == "binary_crossentropy" & num_targets > 1) {
-    warning("Will flatten y_true and y_pred matrices to a single vector for evaluation
+    message("Will flatten y_true and y_pred matrices to a single vector for evaluation
             rather than computing separate F1 scores for each class and taking the mean.")
   }
   
@@ -97,7 +99,7 @@ f1_wrapper <- function(num_targets = 2, loss = "binary_crossentropy") {
 #'
 #' @param num_targets Number of targets.
 #' @param cm_dir Directory of confusion matrix used to compute balanced accuracy.
-#' @examples 
+#' @examplesIf reticulate::py_module_available("tensorflow")
 #' 
 #' y_true <- c(1,0,0,1,
 #'             0,1,0,0,
@@ -113,6 +115,7 @@ f1_wrapper <- function(num_targets = 2, loss = "binary_crossentropy") {
 #' bal_acc_metric$result()
 #' as.array(bal_acc_metric$cm)
 #'
+#' @returns A keras metric.                          
 #' @export
 balanced_acc_wrapper <- function(num_targets, cm_dir) {
   balanced_acc_stateful <- reticulate::PyClass("balanced_acc",
@@ -191,7 +194,8 @@ balanced_acc_wrapper <- function(num_targets, cm_dir) {
 #' @param model_output_size Number of neurons in model output layer.
 #' @param loss Loss function of model, for which metric will be applied to; must be `"binary_crossentropy"`
 #' or `"categorical_crossentropy"`.
-#' @examples 
+#' @examplesIf reticulate::py_module_available("tensorflow")
+#' 
 #' y_true <- c(1,0,0,1,1,0,1,0,0) %>% matrix(ncol = 3)
 #' y_pred <- c(0.9,0.05,0.05,0.9,0.05,0.05,0.9,0.05,0.05) %>% matrix(ncol = 3)
 #' 
@@ -213,6 +217,8 @@ balanced_acc_wrapper <- function(num_targets, cm_dir) {
 #' model %>% keras::compile(loss = model$loss, 
 #'                          optimizer = model$optimizer,
 #'                          metrics = c(model$metrics, auc_metric))
+#'
+#' @returns A keras metric.                          
 #' @export
 auc_wrapper <- function(model_output_size,
                         loss = "binary_crossentropy") {
@@ -251,10 +257,12 @@ auc_wrapper <- function(model_output_size,
 #'
 #' @param noise_matrix Matrix of noise distribution.
 #' @importFrom magrittr "%>%"
-#' @examples 
+#' @examplesIf reticulate::py_module_available("tensorflow")
 #' # If first label contains 5% wrong labels and second label no noise
 #' noise_matrix <- matrix(c(0.95, 0.05, 0, 1), nrow = 2, byrow = TRUE)
 #' noisy_loss <- noisy_loss_wrapper(noise_matrix)
+#' 
+#' @returns A function implementing noisy loss.                          
 #' @export
 noisy_loss_wrapper <- function(noise_matrix) {
   inverted_noise_matrix <- solve(noise_matrix)
@@ -312,35 +320,29 @@ cpcloss <- function(latents,
           0, (batch_size - 1)
         ))), (c_dim - (i + 1))) %>% as.integer()
     } else {
+      c_dim_i <- c_dim - i - 1
+      # define total number of elements in context tensor
+      total_elements <- batch_size * c_dim_i
       # add conv layer and reshape tensor for matrix multiplication
       targets <-
-        ctx %>% keras::layer_conv_1d(kernel_size = 1, filters = target_dim)
+        latents %>% keras::layer_conv_1d(kernel_size = 1, filters = target_dim) %>% keras::k_reshape(c(-1, target_dim))
       # add conv layer and reshape for matrix multiplication
-      preds_i <- targets[1:batch_size, , ]
-      revcompl <-
-        targets[(batch_size + 1):as.integer(batch_size * 2), ,]
-      # define logits
-      logits_flag <- FALSE
-      for (j in seq_len(c_dim - (i + 1))) {
-        preds_ij <- targets[, j, ] %>% keras::k_reshape(c(-1, target_dim))
-        revcompl_j <-
-          ctx[, (c_dim - j - i),] %>% keras::k_reshape(c(-1, target_dim))
-        logits <- tensorflow::tf$matmul(preds_ij, tensorflow::tf$transpose(revcompl_j))
-        logitsnew <- logitsnew
-        if (isTRUE(logits_flag)) {
-          logits <- tensorflow::tf$concat(list(logits, logitsnew), axis = 0L)
-        } else {
-          logits <- logitsnew
-          logits_flag <- TRUE
-        }
-      }
+      preds_i <-
+        ctx %>% keras::layer_conv_1d(kernel_size = 1, filters = target_dim)
+      preds_i <- preds_i[, (1:(c_dim - i - 1)),]
+      preds_i <- keras::k_reshape(preds_i, c(-1, target_dim)) * emb_scale
+      
+      # define logits normally
+      logits <- tensorflow::tf$matmul(preds_i, tensorflow::tf$transpose(targets))
+      
+      # get position of labels
+      b <- floor(seq(0, total_elements - 1) / c_dim_i)
+      col <- seq(0, total_elements - 1) %% c_dim_i
+      
       # define labels
-      labels <-
-        rep(c(seq(batch_size, (
-          2 * batch_size - 1
-        )), (seq(
-          0, (batch_size - 1)
-        ))), (dim(targets)[[2]] - (i + 1))) %>% as.integer()
+      labels <- b * c_dim + col + (i + 1)
+      labels <- as.integer(labels)
+      
     }
     # calculate loss and accuracy for each step
     loss[[length(loss) + 1]] <-
@@ -360,12 +362,17 @@ cpcloss <- function(latents,
 #' 
 #' Compute the learning Rate for a given epoch using Stochastic Gradient Descent with Warm Restarts. Implements approach from this [paper](https://arxiv.org/abs/1608.03983).
 #'
-#'@param lrmin Lower limit of the range for the learning rate.
-#'@param lrmax Upper limit of the range for the learning rate.
-#'@param restart Number of epochs until a restart is conducted.
-#'@param mult Factor, by which the number of epochs until a restart is increased at every restart.
-#'@param epoch Epoch, for which the learning rate shall be calculated.
-#'@export
+#' @param lrmin Lower limit of the range for the learning rate.
+#' @param lrmax Upper limit of the range for the learning rate.
+#' @param restart Number of epochs until a restart is conducted.
+#' @param mult Factor, by which the number of epochs until a restart is increased at every restart.
+#' @param epoch Epoch, for which the learning rate shall be calculated.
+#' @examples 
+#' sgdr(lrmin = 5e-10, lrmax = 5e-2, restart = 50,
+#' mult = 1, epoch = 5)
+#' 
+#' @returns A numeric value.
+#' @export
 sgdr <- function(lrmin = 5e-10,
                  lrmax = 5e-2,
                  restart = 50,
@@ -388,11 +395,16 @@ sgdr <- function(lrmin = 5e-10,
 #' 
 #' Compute the learning Rate for a given epoch using Step Decay.
 #'
-#'@param lrmax Upper limit of the range for the learning rate.
-#'@param newstep Number of epochs until the learning rate is reduced.
-#'@param mult Factor, by which the number of epochs until a restart is decreased after a new step.
-#'@param epoch Epoch, for which the learning rate shall be calculated.
-#'@export
+#' @param lrmax Upper limit of the range for the learning rate.
+#' @param newstep Number of epochs until the learning rate is reduced.
+#' @param mult Factor, by which the number of epochs until a restart is decreased after a new step.
+#' @param epoch Epoch, for which the learning rate shall be calculated.
+#' @examples
+#' stepdecay(lrmax = 0.005, newstep = 50,
+#' mult = 0.7, epoch = 3)
+#' 
+#' @returns A numeric value.
+#' @export
 stepdecay <- function(lrmax = 0.005,
                       newstep = 50,
                       mult = 0.7,
@@ -406,10 +418,14 @@ stepdecay <- function(lrmax = 0.005,
 #' 
 #' Compute the learning Rate for a given epoch using Exponential Decay.
 #'
-#'@param lrmax Upper limit of the range for the learning rate.
-#'@param mult Factor, by which the number of epochs until a restart is decreased after a new step.
-#'@param epoch Epoch, for which the learning rate shall be calculated.
-#'@export
+#' @param lrmax Upper limit of the range for the learning rate.
+#' @param mult Factor, by which the number of epochs until a restart is decreased after a new step.
+#' @param epoch Epoch, for which the learning rate shall be calculated.
+#' @examples
+#' exp_decay(lrmax = 0.005, mult = 0.1, epoch = 8) 
+#' 
+#' @returns A numeric value.
+#' @export
 exp_decay <- function(lrmax = 0.005,
                       mult = 0.1,
                       epoch = NULL) {
@@ -437,8 +453,12 @@ cosine_similarity <- function(vects) {
 #' 
 #' Contrastive loss as used here: https://keras.io/examples/vision/siamese_contrastive/.
 #'
-#'@param margin Integer, baseline for distance for which pairs should be classified as dissimilar.
-#'@export
+#' @param margin Integer, baseline for distance for which pairs should be classified as dissimilar.
+#' @examplesIf reticulate::py_module_available("tensorflow")
+#' cl <- loss_cl(margin=1)
+#' 
+#' @returns A function implementing contrastive loss.
+#' @export
 loss_cl <- function(margin=1) {
   
   contrastive_loss <- function(y_true, y_pred) {
@@ -457,10 +477,22 @@ loss_cl <- function(margin=1) {
 
 #' Focal loss for two or more labels
 #' 
+#' @param y_true Vector of true values.
+#' @param y_pred Vector of predicted values.
+#' @param gamma Focusing parameter.
+#' @param alpha Vector of weighting factors.
+#' @examplesIf reticulate::py_module_available("tensorflow")
+#' y_true <- matrix(c(0, 1, 0, 0, 0, 1), nrow = 2, byrow = TRUE)
+#' y_pred <- matrix(c(0.15, 0.8, 0.05,
+#'                    0.08, 0.02, 0.9), nrow = 2, byrow = TRUE) 
+#' fl <- focal_loss_multiclass(y_true, y_pred)
+#' fl$numpy()
+#' 
+#' @returns A function implementing focal loss.
 #' @export
-focal_loss_multiclass <- function(y_true, y_pred, gamma = 2.0, alpha = 0.25) {
+focal_loss_multiclass <- function(y_true, y_pred, gamma = 2.5, alpha = c(1)) {
   y_pred <- keras::k_clip(y_pred, keras::k_epsilon(), 1.0 - keras::k_epsilon())
   cd_loss <- -y_true * keras::k_log(y_pred) # categorical cross entropy
   fl_loss <- alpha * keras::k_pow(1. - y_pred, gamma) * cd_loss
-  return(keras::k_sum(fl_loss, axis = 1))
+  return(keras::k_sum(fl_loss, axis = -1))
 }

@@ -20,6 +20,9 @@ summarize_states(
 
 \item{df}{A states data frame. Ignore \code{states_dir} argument if not \code{NULL}.}
 }
+\value{
+A data frame of predictions summaries.
+}
 \description{
 Create summary data frame for confidence predictions over 1 or several state files or a data frame.
 Columns in file or data frame should be confidence predictions for one class,
@@ -35,4 +38,5 @@ label_names <- paste0("class_", 1:3)
 df <- as.data.frame(m)
 pred_summary <- summarize_states(label_names = label_names, df = df)
 pred_summary
+
 }

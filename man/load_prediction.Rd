@@ -23,10 +23,14 @@ load_prediction(
 
 \item{get_seq}{Return nucleotide sequence if \code{TRUE}.}
 }
+\value{
+A list of data frames, containing model predictions and sequence positions.
+}
 \description{
 Reads h5 file created by  \code{\link{predict_model}} function.
 }
 \examples{
+\dontshow{if (reticulate::py_module_available("tensorflow")) (if (getRversion() >= "3.4") withAutoprint else force)(\{ # examplesIf}
 # make prediction for single sequence and write to h5 file
 model <- create_model_lstm_cnn(maxlen = 20, layer_lstm = 8, layer_dense = 2, verbose = FALSE)
 vocabulary <- c("a", "c", "g", "t")
@@ -35,4 +39,5 @@ output_file <- tempfile(fileext = ".h5")
 predict_model(output_format = "one_seq", model = model, step = 10,
               sequence = sequence, filename = output_file, mode = "label")
 load_prediction(h5_path = output_file)
+\dontshow{\}) # examplesIf}
 }

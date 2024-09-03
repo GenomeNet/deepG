@@ -12,12 +12,16 @@ heatmaps_integrated_grad(integrated_grads, input_seq)
 \item{input_seq}{Input sequence for model. Should be the same as \code{input_seq} input for corresponding
 \code{\link{integrated_gradients}} call that computed input for \code{integrated_grads} argument.}
 }
+\value{
+A list of heatmaps.
+}
 \description{
 Creates a heatmap from output of \code{\link{integrated_gradients}} function. The first row contains
 the column-wise absolute sums of IG scores and the second row the sums. Rows 3 to 6 contain the IG scores for each
 position and each nucleotide. The last row contains nucleotide information.
 }
 \examples{
+\dontshow{if (reticulate::py_module_available("tensorflow")  && requireNamespace("ComplexHeatmap", quietly = TRUE)) (if (getRversion() >= "3.4") withAutoprint else force)(\{ # examplesIf}
 model <- create_model_lstm_cnn(layer_lstm = 8, layer_dense = 3, maxlen = 20, verbose = FALSE)
 random_seq <- sample(0:3, 20, replace = TRUE)
 input_seq <- array(keras::to_categorical(random_seq), dim = c(1, 20, 4))
@@ -27,4 +31,6 @@ ig <- integrated_gradients(
   model = model)
 heatmaps_integrated_grad(integrated_grads = ig,
                          input_seq = input_seq)
+ 
+\dontshow{\}) # examplesIf}
 }

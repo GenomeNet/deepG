@@ -11,11 +11,16 @@ n_gram_of_matrix(input_matrix, n = 3)
 
 \item{n}{Length of one n-gram.}
 }
+\value{
+Matrix of one-hot encodings.
+}
 \description{
 One-hot encoding matrix to n-gram encoding matrix
 }
 \examples{
+\dontshow{if (reticulate::py_module_available("tensorflow")) (if (getRversion() >= "3.4") withAutoprint else force)(\{ # examplesIf}
 x <- c(0,0,1,3,3) 
 input_matrix <- keras::to_categorical(x, 4)
 n_gram_of_matrix(input_matrix, n = 2) 
+\dontshow{\}) # examplesIf}
 }

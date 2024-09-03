@@ -2,13 +2,14 @@
 #' 
 #' Compute the optimal length for Stride.
 #'
-#'@param maxlen Length of the input sequence.
-#'@param plen Length of a patch.
-#' @keywords internal
+#' @param maxlen Length of the input sequence.
+#' @param plen Length of a patch.
+#' @returns Numerical value.
+#' @noRd
 stridecalc <- function(maxlen, plen) {
   vec <- c()
   for (i in ceiling(plen / 3):(floor(plen / 2) - 1)) {
-    if ((len - plen) %% i == 0) {
+    if ((maxlen - plen) %% i == 0) {
       vec <- c(vec, i)
     }
   }
@@ -20,10 +21,11 @@ stridecalc <- function(maxlen, plen) {
 #' 
 #' Compute the Number of Patches.
 #'
-#'@param plen Length of a patch.
-#'@param maxlen Length of the input sequence.
-#'@param stride Stride.
-#' @keywords internal
+#' @param plen Length of a patch.
+#' @param maxlen Length of the input sequence.
+#' @param stride Stride.
+#' @returns Numerical value.
+#' @noRd
 nopatchescalc <- function(plen, maxlen, stride) {
   ((maxlen - plen)/stride) + 1
 }
@@ -35,17 +37,18 @@ maxlencalc <- function(plen, nopatches, stride) {
 
 #' Checkpoints saving function
 #'
-#'@param cp Type of the checkpoint.
-#'@param runname Name of the run. Name will be used to identify output from callbacks.
-#'@param model A keras model.
-#'@param optimizer A keras optimizer.
-#'@param history A keras history object.
-#' @keywords internal
-savechecks <- function(cp, runname, model, optimizer, history) {
-  np = import("numpy", convert = F)
+#' @param cp Type of the checkpoint.
+#' @param runname Name of the run. Name will be used to identify output from callbacks.
+#' @param model A keras model.
+#' @param optimizer A keras optimizer.
+#' @param history A keras history object.
+#' @returns None. Saves object to file.
+#' @noRd
+savechecks <- function(cp, runname, model, optimizer, history, path_checkpoint) {
+  
+  np = import("numpy", convert = FALSE)
   ## define path for saved objects
-  modpath <-
-    paste("model_results/models", runname, cp , sep = "/")
+  modpath <- file.path(path_checkpoint, runname, cp)
   ## save model object
   model %>% keras::save_model_hdf5(paste0(modpath, "mod_temp.h5"))
   file.rename(paste0(modpath, "mod_temp.h5"),
@@ -73,7 +76,8 @@ savechecks <- function(cp, runname, model, optimizer, history) {
 #' @param loss Computed loss for a given epoch.
 #' @param acc Computed accracy for a given epoch.
 #' @param epoch Epoch, for which the values shall be written to the tensorboard.
-#' @keywords internal
+#' @returns None. Saves object to file.
+#' @noRd
 TB_loss_acc <- function(writer, loss, acc, epoch) {
   with(writer$as_default(), {
     tensorflow::tf$summary$scalar('epoch_loss',
@@ -88,16 +92,16 @@ TB_loss_acc <- function(writer, loss, acc, epoch) {
 
 #' Step function 
 #'
-#'@param trainvaldat A data generator.
-#'@param model A keras model.
-#'@param train_type Either `"cpc"`, `"Self-GenomeNet"`.
-#'@param training Boolean. Whether this step is a training step.
-#' @keywords internal
+#' @param trainvaldat A data generator.
+#' @param model A keras model.
+#' @param train_type Either `"cpc"`, `"Self-GenomeNet"`.
+#' @param training Boolean. Whether this step is a training step.
+#' @noRd
 modelstep <-
   function(trainvaldat,
            model,
            train_type = "cpc",
-           training = F) {
+           training = FALSE) {
     ## get batch
     a <- trainvaldat$x %>% tensorflow::tf$convert_to_tensor()
     if (train_type == "Self-GenomeNet") {
@@ -113,8 +117,8 @@ modelstep <-
 
 #' Reading Pretrained Model function
 #'
-#'@param pretrained_model The path to a saved keras model.
-#' @keywords internal
+#' @param pretrained_model The path to a saved keras model.
+#' @noRd
 ReadOpt <- function(pretrained_model) {
   ## Read configuration
   optconf <-
@@ -137,7 +141,7 @@ ReadOpt <- function(pretrained_model) {
     np$load(paste(
       sub("/[^/]+$", "", pretrained_model),
       "/",
-      tail(str_remove(
+      utils::tail(stringr::str_remove(
         strsplit(pretrained_model, "/")[[1]], "mod.h5"
       ), 1),
       "opt.npy",
@@ -154,7 +158,7 @@ ReadOpt <- function(pretrained_model) {
 #' Checks, whether all necessary parameters for a defined learning rate schedule are given.
 #'
 #' @param lr_schedule The name of a learning rate schedule.
-#' @keywords internal
+#' @noRd
 LRstop <- function(lr_schedule) {
   # cosine annealing
   if ("cosine_annealing" %in% lr_schedule) {
@@ -186,9 +190,9 @@ LRstop <- function(lr_schedule) {
 #' 
 #' Computes the learning rate for a given epoch.
 #'
-#'@param lr_schedule The name of a learning rate schedule.
-#'@param epoch Epoch, for which the learning rate shall be calculated.
-#' @keywords internal
+#' @param lr_schedule The name of a learning rate schedule.
+#' @param epoch Epoch, for which the learning rate shall be calculated.
+#' @noRd
 getEpochLR <- function(lr_schedule, epoch) {
   if (lr_schedule$schedule == "cosine_annealing") {
     # cosine annealing
@@ -231,12 +235,12 @@ GenParams <- function(maxlen,
   checkmate::assertInt(maxlen, lower = 1)
   checkmate::assertInt(batch_size, lower = 1)
   checkmate::assertInt(step, lower = 1)
-  checkmate::assertInt(max_samples, lower = 1, null.ok = T)
+  checkmate::assertInt(max_samples, lower = 1, null.ok = TRUE)
   checkmate::assertNumber(
     proportion_per_seq,
     lower = 0,
     upper = 1,
-    null.ok = T
+    null.ok = TRUE
   )
   
   structure(
@@ -410,7 +414,6 @@ reorder_masked_lm_lists <- function(array_lists, include_sw = NULL) {
 }
 
 # stack 
-
 create_x_y_tensors_lm <- function(sequence_list, nuc_dist_list, target_middle,
                                   maxlen, vocabulary, ambiguous_nuc,
                                   start_index_list, quality_list, target_len,
@@ -709,6 +712,22 @@ to_time_dist <- function(x, samples_per_target) {
 }
 
 
+#' Plot confusion matrix
+#' 
+#' Plot confusion matrix, either with absolute numbers or percentages per column (true labels).
+#' 
+#' @param cm A confusion matrix
+#' @param perc Whether to use absolute numbers or percentages.
+#' @param cm_labels Labels corresponding to confusion matrix entries.
+#' @param round_dig How to round numbers.
+#' @param text_size Size of text annotations.
+#' @param highlight_diag Whether to highlight entries in diagonal.
+#' @examplesIf reticulate::py_module_available("tensorflow")
+#' cm <- matrix(c(90, 1, 0, 2, 7, 1, 8, 3, 1), nrow = 3, byrow = TRUE)
+#' plot_cm(cm, perc = TRUE, cm_labels = paste0('label_', 1:3), text_size = 8)
+#' 
+#' @returns A ggplot of a confusion matrix.
+#' @export
 plot_cm <- function(cm, perc = FALSE, cm_labels, round_dig = 2, text_size = 1, highlight_diag = TRUE) {
   
   if (perc) cm <- cm_perc(cm, round_dig)
@@ -722,10 +741,11 @@ plot_cm <- function(cm, perc = FALSE, cm_labels, round_dig = 2, text_size = 1, h
                      ggplot2::element_text(size = text_size))
   
   if (highlight_diag) {
-    diagonal_data <- data.frame(x = levels(y_true), y = levels(y_pred))
-    cm_plot <- cm_plot + geom_tile(data = diagonal_data, aes(x = x, y = y),
-                                   fill = "red", colour = "white", size = 1,
-                                   alpha = 0.000001) 
+    #diagonal_data <- data.frame(x = levels(y_true), y = levels(y_pred))
+    diagonal_data <- data.frame(x = cm_labels, y = cm_labels)
+    cm_plot <- cm_plot + ggplot2::geom_tile(data = diagonal_data, ggplot2::aes(x = x, y = y),
+                                            fill = "red", colour = "white", size = 1,
+                                            alpha = 0.000001) 
   }
   
   
@@ -745,7 +765,18 @@ plot_cm <- function(cm, perc = FALSE, cm_labels, round_dig = 2, text_size = 1, h
 #' @param metric Either `"acc"`, `"loss"` or `"last_ep"`. Condition which checkpoints to keep.
 #' @param best_n Number of checkpoints to keep.
 #' @param ask_before_remove Whether to show files to keep before deleting rest.
+#' @examplesIf reticulate::py_module_available("tensorflow")
+#' model <- create_model_lstm_cnn(layer_lstm = 8)
+#' checkpoint_folder <- tempfile()
+#' dir.create(checkpoint_folder)
+#' keras::save_model_hdf5(model, file.path(checkpoint_folder, 'Ep.007-val_loss11.07-val_acc0.6.hdf5'))
+#' keras::save_model_hdf5(model, file.path(checkpoint_folder, 'Ep.019-val_loss8.74-val_acc0.7.hdf5'))
+#' keras::save_model_hdf5(model, file.path(checkpoint_folder, 'Ep.025-val_loss0.03-val_acc0.8.hdf5'))
+#' remove_checkpoints(cp_dir = checkpoint_folder, metric = "acc", best_n = 2,
+#'                    ask_before_remove = FALSE)
+#' list.files(checkpoint_folder)
 #'  
+#' @returns None. Deletes certain files.
 #' @export 
 remove_checkpoints <- function(cp_dir, metric = "acc", best_n = 1, ask_before_remove = TRUE) {
   
@@ -790,7 +821,9 @@ remove_checkpoints <- function(cp_dir, metric = "acc", best_n = 1, ask_before_re
   if (ask_before_remove) {
     cat("Deleting", sum(!index), paste0(ifelse(sum(!index) == 1, "file", "files") , "."),
         "Only keep \n", paste0(basename(files[index]), collapse = ",\n "), "\n")
-    remove_cps <- askYesNo("")
+    remove_cps <- utils::askYesNo("")
+  } else {
+    remove_cps <- TRUE
   }
   
   if (is.na(remove_cps)) return(NULL)
@@ -962,3 +995,73 @@ get_pooling_flatten_layer <- function(global_pooling = NULL) {
   
   return(keras::layer_flatten())
 }
+
+
+f_reshape <- function(x, y, reshape_xy, reshape_x_bool, reshape_y_bool, reshape_sw_bool = FALSE, sw = NULL) {
+  
+  if (is.null(reshape_xy)) {
+    return(list(X = x, Y = y, SW = sw))
+  }
+  
+  if (reshape_sw_bool) {
+    
+    if (reshape_x_bool) {
+      x_new <- reshape_xy$x(x = x, y = y, sw = sw)
+    } else {
+      x_new <- x
+    }
+    
+    if (reshape_y_bool) {
+      y_new <- reshape_xy$y(x = x, y = y, sw = sw)
+    } else {
+      y_new <- y
+    }
+    
+    if (reshape_sw_bool) {
+      sw_new <- reshape_xy$sw(x = x, y = y, sw = sw)
+    } else {
+      sw_new <- sw
+    }
+    
+    return(list(X = x_new, Y = y_new, SW = sw_new))
+    
+  } else {
+    
+    
+    if (reshape_x_bool) {
+      x_new <- reshape_xy$x(x = x, y = y)
+    } else {
+      x_new <- x
+    }
+    
+    if (reshape_y_bool) {
+      y_new <- reshape_xy$y(x = x, y = y)
+    } else {
+      y_new <- y
+    }
+    #browser()
+    return(list(X = x_new, Y = y_new))
+    
+  }
+  
+}
+
+bal_acc_from_cm <- function(cm, verbose = TRUE) {
+  
+  class_acc <- list()
+  names_list <- list()
+  count <- 1
+  for (i in 1:ncol(cm)) {
+    v_col <- cm[,i]
+    if (sum(v_col) == 0) next
+    class_acc[count] <- v_col[i]/sum(v_col)
+    names_list[count] <- colnames(cm)[i]
+    count <- count + 1
+  }
+  class_acc <- unlist(class_acc)
+  names(class_acc) <- unlist(names_list)
+  if (verbose) print(class_acc)
+  return(mean(class_acc))
+} 
+
+

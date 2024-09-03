@@ -20,7 +20,24 @@ remove_checkpoints(
 
 \item{ask_before_remove}{Whether to show files to keep before deleting rest.}
 }
+\value{
+None. Deletes certain files.
+}
 \description{
 Remove all but n 'best' checkpoints, based on some condition. Condition can be
 accuracy, loss or epoch number.
+}
+\examples{
+\dontshow{if (reticulate::py_module_available("tensorflow")) (if (getRversion() >= "3.4") withAutoprint else force)(\{ # examplesIf}
+model <- create_model_lstm_cnn(layer_lstm = 8)
+checkpoint_folder <- tempfile()
+dir.create(checkpoint_folder)
+keras::save_model_hdf5(model, file.path(checkpoint_folder, 'Ep.007-val_loss11.07-val_acc0.6.hdf5'))
+keras::save_model_hdf5(model, file.path(checkpoint_folder, 'Ep.019-val_loss8.74-val_acc0.7.hdf5'))
+keras::save_model_hdf5(model, file.path(checkpoint_folder, 'Ep.025-val_loss0.03-val_acc0.8.hdf5'))
+remove_checkpoints(cp_dir = checkpoint_folder, metric = "acc", best_n = 2,
+                   ask_before_remove = FALSE)
+list.files(checkpoint_folder)
+ 
+\dontshow{\}) # examplesIf}
 }

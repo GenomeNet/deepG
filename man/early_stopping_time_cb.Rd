@@ -9,6 +9,14 @@ early_stopping_time_cb(stop_time = NULL)
 \arguments{
 \item{stop_time}{Time in seconds after which to stop training.}
 }
+\value{
+A Keras callback that stops training after specified time.
+}
 \description{
 Stop training after specified time.
+}
+\examples{
+\dontshow{if (reticulate::py_module_available("tensorflow")) (if (getRversion() >= "3.4") withAutoprint else force)(\{ # examplesIf}
+est <- early_stopping_time_cb(stop_time = 60)
+\dontshow{\}) # examplesIf}
 }

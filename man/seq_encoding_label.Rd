@@ -53,6 +53,16 @@ Coverage information must be contained in fasta header: there must be a string \
 \item{n_gram_stride}{Step size for n-gram encoding. For AACCGGTT with \code{n_gram = 4} and \code{n_gram_stride = 2}, generator encodes
 \verb{(AACC), (CCGG), (GGTT)}; for \code{n_gram_stride = 4} generator encodes \verb{(AACC), (GGTT)}.}
 
+\item{masked_lm}{If not \code{NULL}, input and target are equal except some parts of the input are masked or random.
+Must be list with the following arguments:
+\itemize{
+\item \code{mask_rate}: Rate of input to mask (rate of input to replace with mask token).
+\item \code{random_rate}: Rate of input to set to random token.
+\item \code{identity_rate}: Rate of input where sample weights are applied but input and output are identical.
+\item \code{include_sw}: Whether to include sample weights.
+\item \code{block_len} (optional): Masked/random/identity regions appear in blocks of size \code{block_len}.
+}}
+
 \item{char_sequence}{A character string.}
 
 \item{tokenizer}{A keras tokenizer.}
@@ -61,10 +71,14 @@ Coverage information must be contained in fasta header: there must be a string \
 
 \item{return_int}{Whether to return integer encoding or one-hot encoding.}
 }
+\value{
+A list of 2 tensors.
+}
 \description{
 Returns encoding for integer or character sequence.
 }
 \examples{
+\dontshow{if (reticulate::py_module_available("tensorflow")) (if (getRversion() >= "3.4") withAutoprint else force)(\{ # examplesIf}
 # use integer sequence as input
 x <- seq_encoding_label(sequence = c(1,0,5,1,3,4,3,1,4,1,2),
                         maxlen = 5,
@@ -86,4 +100,5 @@ x <- seq_encoding_label(maxlen = 5,
 x[1,,] # actaa
 
 x[2,,] # taatn
+\dontshow{\}) # examplesIf}
 }

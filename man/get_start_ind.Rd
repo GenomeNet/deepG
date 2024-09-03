@@ -29,6 +29,9 @@ get_start_ind(
 
 \item{vocabulary}{Vector of allowed characters. Characters outside vocabulary get encoded as specified in \code{ambiguous_nuc}.}
 }
+\value{
+A numeric vector.
+}
 \description{
 Helper function for data generators.
 Computes start positions in sequence where samples can be extracted, given maxlen, step size and ambiguous nucleotide constraints.
@@ -43,4 +46,5 @@ get_start_ind(
   train_mode = "label",
   discard_amb_nuc = TRUE,
   vocabulary = c("A", "C", "G", "T"))
+  
 }

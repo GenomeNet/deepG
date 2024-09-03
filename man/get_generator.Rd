@@ -45,10 +45,10 @@ get_generator(
   path_file_logVal = NULL,
   model = NULL,
   vocabulary_label = NULL,
-  new_batch_size = NULL,
   masked_lm = NULL,
   val = FALSE,
   return_int = FALSE,
+  verbose = TRUE,
   delete_used_files = FALSE,
   reshape_xy = NULL
 )
@@ -204,24 +204,31 @@ second entry contains the column named \code{"label_3"}.}
 \item{vocabulary_label}{Character vector of possible targets. Targets outside \code{vocabulary_label} will get discarded if
 \code{train_type = "label_header"}.}
 
-\item{new_batch_size}{Batch size after reshaping data for set learning.}
-
 \item{masked_lm}{If not \code{NULL}, input and target are equal except some parts of the input are masked or random.
 Must be list with the following arguments:
 \itemize{
 \item \code{mask_rate}: Rate of input to mask (rate of input to replace with mask token).
 \item \code{random_rate}: Rate of input to set to random token.
 \item \code{identity_rate}: Rate of input where sample weights are applied but input and output are identical.
-\item \code{include_sw}: Whether to include sample weigths.
+\item \code{include_sw}: Whether to include sample weights.
 \item \code{block_len} (optional): Masked/random/identity regions appear in blocks of size \code{block_len}.
 }}
 
 \item{val}{Logical, call initialized generator "genY" or "genValY" where Y is an integer between 1 and length of directories.}
 
+\item{return_int}{Whether to return integer encoding or one-hot encoding.}
+
+\item{verbose}{Whether to show messages.}
+
 \item{delete_used_files}{Whether to delete file once used. Only applies for rds files.}
 
 \item{reshape_xy}{Can be a list of functions to apply to input and/or target. List elements (containing the reshape functions)
-must be called x for input or y for target.}
+must be called x for input or y for target and each have arguments called x and y. For example:
+\code{reshape_xy = list(x = function(x, y) {return(x+1)}, y = function(x, y) {return(x+y)})} .
+For rds generator needs to have an additional argument called sw.}
+}
+\value{
+A generator function.
 }
 \description{
 For a detailed description see the data generator \href{https://deepg.de/articles/data_generator.html}{tutorial}.
@@ -232,6 +239,7 @@ Will choose one of the generators from \code{\link{generator_fasta_lm}},
 arguments.
 }
 \examples{
+\dontshow{if (reticulate::py_module_available("tensorflow")) (if (getRversion() >= "3.4") withAutoprint else force)(\{ # examplesIf}
 # create dummy fasta files
 fasta_path <- tempfile()
 dir.create(fasta_path)
@@ -250,5 +258,5 @@ x <- z[[1]]
 y <- z[[2]]
 dim(x)
 dim(y)
-
+\dontshow{\}) # examplesIf}
 }

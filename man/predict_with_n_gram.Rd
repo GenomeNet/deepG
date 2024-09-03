@@ -33,6 +33,9 @@ If \code{"random"} assign random prediction.}
 
 \item{step}{How often to take a sample.}
 }
+\value{
+List of prediction evaluations.
+}
 \description{
 Predict the next nucleotide using n-gram.
 }
@@ -57,4 +60,5 @@ predictions <- predict_with_n_gram(path_input = list.files(temp_dir, full.names 
 
 # show accuracy
 predictions[[1]]
+
 }

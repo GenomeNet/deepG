@@ -8,7 +8,21 @@ model_card_cb(model_card_path = NULL, run_name, argumentList)
 }
 \arguments{
 \item{model_card_path}{Directory for model card logs.}
+
+\item{run_name}{Name of training run.}
+
+\item{argumentList}{List of training arguments.}
+}
+\value{
+Keras callback writing model cards every epoch.
 }
 \description{
 Log information about model, hyperparameters, generator options, training data, scores etc
+}
+\examples{
+\dontshow{if (reticulate::py_module_available("tensorflow")) (if (getRversion() >= "3.4") withAutoprint else force)(\{ # examplesIf}
+model_card_cb <- function(model_card_path = NULL, run_name, argumentList)
+mc <- model_card_cb(model_card_path = tempdir(), run_name = 'run_1',
+                    argumentList = list(learning_rate = 0.01)) 
+\dontshow{\}) # examplesIf}
 }

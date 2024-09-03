@@ -73,7 +73,8 @@ train_model(
   shuffle_input = TRUE,
   vocabulary_label = NULL,
   delete_used_files = FALSE,
-  reshape_xy = NULL
+  reshape_xy = NULL,
+  return_gen = FALSE
 )
 }
 \arguments{
@@ -240,7 +241,7 @@ Must be list with the following arguments:
 \item \code{mask_rate}: Rate of input to mask (rate of input to replace with mask token).
 \item \code{random_rate}: Rate of input to set to random token.
 \item \code{identity_rate}: Rate of input where sample weights are applied but input and output are identical.
-\item \code{include_sw}: Whether to include sample weigths.
+\item \code{include_sw}: Whether to include sample weights.
 \item \code{block_len} (optional): Masked/random/identity regions appear in blocks of size \code{block_len}.
 }}
 
@@ -250,6 +251,8 @@ samples are taken from a consecutive subsequence.}
 \item{add_noise}{\code{NULL} or list of arguments. If not \code{NULL}, list must contain the following arguments: \code{noise_type} can be \code{"normal"} or \code{"uniform"};
 optional arguments \code{sd} or \code{mean} if noise_type is \code{"normal"} (default is \code{sd=1} and \code{mean=0}) or \verb{min, max} if \code{noise_type} is \code{"uniform"}
 (default is \verb{min=0, max=1}).}
+
+\item{return_int}{Whether to return integer encoding or one-hot encoding.}
 
 \item{maxlen}{Length of predictor sequence.}
 
@@ -305,8 +308,17 @@ second entry contains the column named \code{"label_3"}.}
 \item{vocabulary_label}{Character vector of possible targets. Targets outside \code{vocabulary_label} will get discarded if
 \code{train_type = "label_header"}.}
 
+\item{delete_used_files}{Whether to delete file once used. Only applies for rds files.}
+
 \item{reshape_xy}{Can be a list of functions to apply to input and/or target. List elements (containing the reshape functions)
-must be called x for input or y for target.}
+must be called x for input or y for target and each have arguments called x and y. For example:
+\code{reshape_xy = list(x = function(x, y) {return(x+1)}, y = function(x, y) {return(x+y)})} .
+For rds generator needs to have an additional argument called sw.}
+
+\item{return_gen}{Whether to return the train and validation generators (instead of training).}
+}
+\value{
+A list of training metrics.
 }
 \description{
 Train a neural network on genomic data. Data can be fasta/fastq files, rds files or a prepared data set.
@@ -315,6 +327,7 @@ from files. Function includes several options to determine the sampling strategy
 Training progress can be visualized in tensorboard. Model weights can be stored during training using checkpoints.
 }
 \examples{
+\dontshow{if (reticulate::py_module_available("tensorflow")) (if (getRversion() >= "3.4") withAutoprint else force)(\{ # examplesIf}
 # create dummy data
 path_train_1 <- tempfile()
 path_train_2 <- tempfile()
@@ -346,4 +359,5 @@ hist <- train_model(train_type = "label_folder",
                     format = "fasta",
                     vocabulary_label = c("label_1", "label_2"))
  
+\dontshow{\}) # examplesIf}
 }

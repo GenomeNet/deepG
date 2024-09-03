@@ -9,6 +9,14 @@ loss_cl(margin = 1)
 \arguments{
 \item{margin}{Integer, baseline for distance for which pairs should be classified as dissimilar.}
 }
+\value{
+A function implementing contrastive loss.
+}
 \description{
 Contrastive loss as used here: https://keras.io/examples/vision/siamese_contrastive/.
+}
+\examples{
+\dontshow{if (reticulate::py_module_available("tensorflow")) (if (getRversion() >= "3.4") withAutoprint else force)(\{ # examplesIf}
+cl <- loss_cl(margin=1)
+\dontshow{\}) # examplesIf}
 }

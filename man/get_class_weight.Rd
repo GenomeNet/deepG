@@ -50,6 +50,9 @@ with multiple inputs.
 
 \item{csv_path}{If \code{train_type = "label_csv"}, path to csv file containing labels.}
 }
+\value{
+A list of numeric values (class weights).
+}
 \description{
 Count number of nucleotides for each class and use as estimation for relation of class distribution.
 Outputs list of class relations. Can be used as input for \code{class_weigth} in \code{\link{train_model}} function.

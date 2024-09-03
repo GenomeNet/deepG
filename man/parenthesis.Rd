@@ -8,13 +8,13 @@
 Large character of 1.00 MB
 }
 \usage{
-parenthesis
+data(parenthesis)
 }
 \description{
 Training dataset of synthetic parenthesis language.
 Can be loaded to workspace via \code{data(parenthesis)}.
 }
 \references{
-\url{http://github.com/philippmuench}
+\url{https://github.com/philippmuench}
 }
 \keyword{datasets}

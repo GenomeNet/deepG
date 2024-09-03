@@ -11,6 +11,14 @@ reset_states_cb(path_file_log, path_file_logVal)
 
 \item{path_file_logVal}{Path to log of validation files.}
 }
+\value{
+A keras callback that resets states of LSTM layers.
+}
 \description{
 Reset states at start/end of validation and whenever file changes. Can be used for stateful LSTM.
+}
+\examples{
+\dontshow{if (reticulate::py_module_available("tensorflow")) (if (getRversion() >= "3.4") withAutoprint else force)(\{ # examplesIf}
+rs <- reset_states_cb(path_file_log = tempfile(), path_file_logVal = tempfile())
+\dontshow{\}) # examplesIf}
 }

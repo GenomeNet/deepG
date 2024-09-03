@@ -8,13 +8,13 @@
 character 326.73 kB
 }
 \usage{
-ecoli_small
+data(ecoli_small)
 }
 \description{
 Subset of the E. coli genome for evaluation.
 Can be loaded to workspace via \code{data(ecoli_small)}.
 }
 \references{
-\url{https://science.sciencemag.org/content/277/5331/1453.long}
+\url{https://www.science.org/doi/10.1126/science.277.5331.1453}
 }
 \keyword{datasets}

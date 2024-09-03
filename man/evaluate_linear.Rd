@@ -13,12 +13,17 @@ evaluate_linear(y_true, y_pred, label_names = NULL)
 
 \item{label_names}{Names of corresponding labels. Length must be equal to number of columns of \code{y}.}
 }
+\value{
+A list of evaluation results.
+}
 \description{
 Compute MAE and MSE, given predictions and
 true targets. Outputs columnwise average.
 }
 \examples{
+\dontshow{if (reticulate::py_module_available("tensorflow")) (if (getRversion() >= "3.4") withAutoprint else force)(\{ # examplesIf}
 y_true <- matrix(rnorm(n = 12), ncol = 3)
 y_pred <- matrix(rnorm(n = 12), ncol = 3)
 evaluate_linear(y_true, y_pred)
+\dontshow{\}) # examplesIf}
 }

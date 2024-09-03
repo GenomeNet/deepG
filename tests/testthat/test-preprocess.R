@@ -2,6 +2,9 @@ context("preprocess")
 
 test_that("Check preprocessing", {
   
+  #testthat::skip_if_not_installed("tensorflow")
+  testthat::skip_if_not(reticulate::py_module_available("tensorflow"))
+  
   z <- seq_encoding_lm(sequence = c(1,0,5,1,3,4,3,1,4,1,2),
                        maxlen = 5,
                        vocabulary = c("a", "c", "g", "t"),

@@ -41,6 +41,8 @@ See \code{\link{train_model}}. Note that \code{"discard"} option is not availabl
 
 \item{quality_vector}{Vector of quality probabilities.}
 
+\item{return_int}{Whether to return integer encoding or one-hot encoding.}
+
 \item{target_len}{Number of nucleotides to predict at once for language model.}
 
 \item{use_coverage}{Integer or \code{NULL}. If not \code{NULL}, use coverage as encoding rather than one-hot encoding and normalize.
@@ -72,11 +74,15 @@ Assume a sequence \code{"AACCGTA"}. Output correspond as follows
 
 \item{tokenizer}{A keras tokenizer.}
 }
+\value{
+A list of 2 tensors.
+}
 \description{
 Helper function for \code{\link{generator_fasta_lm}}.
 Encodes integer sequence to input/target list according to \code{output_format} argument.
 }
 \examples{
+\dontshow{if (reticulate::py_module_available("tensorflow")) (if (getRversion() >= "3.4") withAutoprint else force)(\{ # examplesIf}
 # use integer sequence as input 
 
 z <- seq_encoding_lm(sequence = c(1,0,5,1,3,4,3,1,4,1,2),
@@ -115,4 +121,5 @@ y[1,] # t
 
 x[2,,] # taatn
 y[2,] # t
+\dontshow{\}) # examplesIf}
 }

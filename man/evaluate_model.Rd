@@ -107,7 +107,7 @@ activation and multiple targets.}
 to evaluate a data set exactly ones and know the number of samples already. Should be a vector if \code{mode = "label_folder"} (with same length as \code{vocabulary_label})
 and else an integer.}
 
-\item{activations}{List containing output formats for output layers (\verb{softmax, sigmoid} or \code{linear}). If \code{ǸULL}, will be estimated from model.}
+\item{activations}{List containing output formats for output layers (\verb{softmax, sigmoid} or \code{linear}). If \code{NULL}, will be estimated from model.}
 
 \item{shuffle_file_order}{Logical, whether to go through files randomly or sequentially.}
 
@@ -115,10 +115,14 @@ and else an integer.}
 
 \item{...}{Further generator options. See \code{\link{get_generator}}.}
 }
+\value{
+A list of evaluation results. Each list element corresponds to an output layer of the model.
+}
 \description{
 Returns evaluation metric like confusion matrix, loss, AUC, AUPRC, MAE, MSE (depending on output layer).
 }
 \examples{
+\dontshow{if (reticulate::py_module_available("tensorflow")) (if (getRversion() >= "3.4") withAutoprint else force)(\{ # examplesIf}
 # create dummy data
 path_input <- tempfile()
 dir.create(path_input)
@@ -139,4 +143,6 @@ evaluate_model(path_input = path_input,
   output_format = "target_right",
   evaluate_all_files = TRUE,
   verbose = FALSE)
+  
+\dontshow{\}) # examplesIf}
 }

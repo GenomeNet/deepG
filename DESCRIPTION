@@ -9,11 +9,11 @@ Authors@R: c(
               email = "philipp.muench@helmholtz-hzi.de"),
        person(given = "René",
               family = "Mreches",
-              role = "aut",
+              role = c("aut", "cre"),
               email = "rene.mreches@helmholtz-hzi.de"),
        person(given = "Martin",
               family = "Binder",
-              role = c("aut", "cre"),
+              role = c("aut"),
               email = "developer.mb706@mb706.com"),
        person(given = "Hüseyin Anil",
               family = "Gündüz",
@@ -28,12 +28,12 @@ Authors@R: c(
               role = "aut",
               email = "alice.mchardy@helmholtz-hzi.de")
      )
-Description: 'deepG' is a toolbox for training and applying deep learning models for genomic sequence data.
+Description: Toolbox for training and applying deep learning models for genomic sequence data.
   Applications include data preprocessing, model fitting, model evaluation, model optimization and inference.
   A few genomic datasets for testing are provided, as is the possibility to extract deep representations.
-License: AGPL-3 + file LICENSE
+License: LGPL (>= 3) + file LICENSE
 URL: https://github.com/GenomeNet/deepG,
-    https://genomenet.github.io/deepG/
+    https://deepg.de/
 BugReports: https://github.com/GenomeNet/deepG/issues
 Roxygen: list(markdown = TRUE)
 Depends:
@@ -53,14 +53,23 @@ Imports:
     yardstick,
     jpeg,
     png,
-    microseq
+    microseq,
+    checkmate,
+    readr
 Remotes: r-tensorflow/wavenet
 NeedsCompilation: yes
-RoxygenNote: 7.2.3
+RoxygenNote: 7.3.1
 Suggests: 
     testthat,
     circlize,
     pROC,
     PRROC,
     ComplexHeatmap,
-    checkmate
+    wavenet,
+    knitr,
+    rmarkdown,
+    devtools,
+    spelling
+VignetteBuilder: 
+    knitr
+Language: en-US

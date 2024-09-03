@@ -11,12 +11,17 @@ f1_wrapper(num_targets = 2, loss = "binary_crossentropy")
 
 \item{loss}{Loss function of model.}
 }
+\value{
+A keras metric.
+}
 \description{
 Compute F1 metric. If loss is \code{"categorical_crossentropy"}, number of targets must be 2. If
 loss is \code{"binary_crossentropy"} and number of targets > 1, will flatten \code{y_true} and \code{y_pred} matrices
 to a single vector (rather than computing separate F1 scores for each class).
 }
 \examples{
+\dontshow{if (reticulate::py_module_available("tensorflow")) (if (getRversion() >= "3.4") withAutoprint else force)(\{ # examplesIf}
+
 y_true <- c(1,0,0,1,1,0,1,0,0)  
 y_pred <-  c(0.9,0.05,0.05,0.9,0.05,0.05,0.9,0.05,0.05)
 
@@ -38,4 +43,5 @@ f1_metric <- f1_wrapper(num_targets, loss = model$loss)
 model \%>\% keras::compile(loss = model$loss, 
                          optimizer = model$optimizer,
                          metrics = c(model$metrics, f1_metric))
+\dontshow{\}) # examplesIf}
 }

@@ -28,7 +28,7 @@
 #' @param activations List containing output formats for output layers (`softmax, sigmoid` or `linear`). If `NULL`, will be estimated from model.   
 #' @param include_seq Whether to store input. Only applies if `path_pred_list` is not `NULL`.
 #' @param ... Further generator options. See \code{\link{get_generator}}.
-#' @examples
+#' @examplesIf reticulate::py_module_available("tensorflow")
 #' # create dummy data
 #' path_input <- tempfile()
 #' dir.create(path_input)
@@ -49,6 +49,8 @@
 #'   output_format = "target_right",
 #'   evaluate_all_files = TRUE,
 #'   verbose = FALSE)
+#'   
+#' @returns A list of evaluation results. Each list element corresponds to an output layer of the model.   
 #' @export
 evaluate_model <- function(path_input,
                            model = NULL,
@@ -128,9 +130,9 @@ evaluate_model <- function(path_input,
       
       # remove files not in csv table
       if (mode == "label_csv") {
-        csv_file <- read.csv2(target_from_csv, header = TRUE, stringsAsFactors = FALSE)
+        csv_file <- utils::read.csv2(target_from_csv, header = TRUE, stringsAsFactors = FALSE)
         if (dim(csv_file)[2] == 1) {
-          csv_file <- read.csv(target_from_csv, header = TRUE, stringsAsFactors = FALSE)
+          csv_file <- utils::read.csv(target_from_csv, header = TRUE, stringsAsFactors = FALSE)
         }
         index <- basename(files) %in% csv_file$file
         files <- files[index]
@@ -217,7 +219,7 @@ evaluate_model <- function(path_input,
   }
   
   if (evaluate_all_files & format == "rds") {
-    rds_files <- list_fasta_files(path_corpus = file_path,
+    rds_files <- list_fasta_files(path_corpus = path_input,
                                   format = "rds",
                                   file_filter = NULL)
     num_samples <- 0
@@ -472,10 +474,12 @@ reshape_y_list <- function(y, num_out_layers, tf_format = TRUE) {
 #' @param auc Whether to include AUC metric. Only possible for 2 targets. 
 #' @param auprc Whether to include AUPRC metric. Only possible for 2 targets. 
 #' @param label_names Names of corresponding labels. Length must be equal to number of columns of \code{y}.
-#' @examples
+#' @examplesIf reticulate::py_module_available("tensorflow")
 #' y <- matrix(c(1, 0, 0, 0, 1, 1), ncol = 2)
 #' y_conf <- matrix(c(0.3, 0.5, 0.1, 0.7, 0.5, 0.9), ncol = 2)
 #' evaluate_softmax(y, y_conf, auc = TRUE, auprc = TRUE, label_names = c("A", "B")) 
+#' 
+#' @returns A list of evaluation results. 
 #' @export    
 evaluate_softmax <- function(y, y_conf, auc = FALSE, auprc = FALSE, label_names = NULL) {
   
@@ -563,11 +567,12 @@ evaluate_softmax <- function(y, y_conf, auc = FALSE, auprc = FALSE, label_names 
 #' @inheritParams evaluate_softmax
 #' @param auc Whether to include AUC metric.
 #' @param auprc Whether to include AUPRC metric. 
-#' @examples
+#' @examplesIf reticulate::py_module_available("tensorflow")
 #' y <- matrix(sample(c(0, 1), 30, replace = TRUE), ncol = 3)
 #' y_conf <- matrix(runif(n = 30), ncol = 3)
 #' evaluate_sigmoid(y, y_conf, auc = TRUE, auprc = TRUE)
 #' 
+#' @returns A list of evaluation results. 
 #' @export    
 evaluate_sigmoid <- function(y, y_conf, auc = FALSE, auprc = FALSE, label_names = NULL) {
   
@@ -641,10 +646,12 @@ evaluate_sigmoid <- function(y, y_conf, auc = FALSE, auprc = FALSE, label_names 
 #' @inheritParams evaluate_softmax
 #' @param y_true Matrix of true labels.
 #' @param y_pred Matrix of predictions.
-#' @examples 
+#' @examplesIf reticulate::py_module_available("tensorflow")
 #' y_true <- matrix(rnorm(n = 12), ncol = 3)
 #' y_pred <- matrix(rnorm(n = 12), ncol = 3)
 #' evaluate_linear(y_true, y_pred)
+#' 
+#' @returns A list of evaluation results. 
 #' @export    
 evaluate_linear <- function(y_true, y_pred, label_names = NULL) {
   
@@ -677,6 +684,8 @@ evaluate_linear <- function(y_true, y_pred, label_names = NULL) {
 #' y_conf <- matrix(runif(n = nrow(y_true)), ncol = 1)
 #' p <- plot_roc(y_true, y_conf, return_plot = TRUE)
 #' p
+#' 
+#' @returns A ggplot of ROC curve.
 #' @export    
 plot_roc <- function(y_true, y_conf, path_roc_plot = NULL,
                      return_plot = TRUE) {
@@ -694,7 +703,7 @@ plot_roc <- function(y_true, y_conf, path_roc_plot = NULL,
     y_conf <- y_conf[ , 2]
   }
   
-  if (var(y_true) == 0) {
+  if (stats::var(y_true) == 0) {
     stop("y_true contains just one label")
   }
   

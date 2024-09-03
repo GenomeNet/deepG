@@ -11,6 +11,17 @@ validation_after_training_cb(gen.val, validation_steps)
 
 \item{validation_steps}{Number of validation steps.}
 }
+\value{
+Keras callback, apply validation only after training.
+}
 \description{
 Do validation only once at end of training.
+}
+\examples{
+\dontshow{if (reticulate::py_module_available("tensorflow")) (if (getRversion() >= "3.4") withAutoprint else force)(\{ # examplesIf}
+maxlen <- 20
+model <- create_model_lstm_cnn(layer_lstm = 8, maxlen = maxlen)
+gen <- get_generator(train_type = 'dummy_gen', model = model, batch_size = 4, maxlen = maxlen)
+vat <- validation_after_training_cb(gen.val = gen, validation_steps = 10)
+\dontshow{\}) # examplesIf}
 }

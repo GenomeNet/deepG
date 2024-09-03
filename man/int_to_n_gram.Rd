@@ -13,6 +13,9 @@ int_to_n_gram(int_seq, n, voc_size = 4)
 
 \item{voc_size}{Size of vocabulary.}
 }
+\value{
+A numeric vector.
+}
 \description{
 Input is sequence of integers from vocabulary of size \code{voc_size}.
 Returns vector of integers corresponding to n-gram encoding.
@@ -20,4 +23,5 @@ Integers greater than \code{voc_size} get encoded as \code{voc_size^n + 1}.
 }
 \examples{
 int_to_n_gram(int_seq = c(1,1,2,4,4), n = 2, voc_size = 4)
+
 }

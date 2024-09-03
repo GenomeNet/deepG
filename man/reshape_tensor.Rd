@@ -36,10 +36,14 @@ new maxlen: (\code{maxlen} \eqn{*} \code{samples_per_target}) + \code{buffer_len
 
 \item{check_y}{Check if entries in \code{y} are consistent with reshape strategy (same label when aggregating).}
 }
+\value{
+A list of 2 tensors.
+}
 \description{
 Reshape input x and target y. Aggregates multiple samples from x and y into single input/target batches.
 }
 \examples{
+\dontshow{if (reticulate::py_module_available("tensorflow")) (if (getRversion() >= "3.4") withAutoprint else force)(\{ # examplesIf}
 # create dummy data
 batch_size <- 8
 maxlen <- 11
@@ -62,4 +66,5 @@ reshaped_data <- reshape_tensor(
 length(reshaped_data[[1]])
 dim(reshaped_data[[1]][[1]])
 reshaped_data[[2]]
+\dontshow{\}) # examplesIf}
 }
