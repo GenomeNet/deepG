@@ -31,7 +31,7 @@ create_model_twin_network <- function(
     filters = NULL,
     strides = NULL,
     pool_size = NULL,
-    pool_method == 'max',
+    pool_method = 'max',
     solver = "adam",
     learning_rate = 0.001,
     vocabulary_size = 4,
