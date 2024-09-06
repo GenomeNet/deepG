@@ -87,7 +87,7 @@ create_model_twin_network <- function(
     filters = filters,
     strides = strides,
     pool_size = pool_size,
-    pool_method == pool_method,
+    pool_method = pool_method,
     padding = padding,
     dilation_rate = dilation_rate,
     gap_inputs = gap_inputs,
