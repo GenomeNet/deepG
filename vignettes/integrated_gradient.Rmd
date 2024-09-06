@@ -1,5 +1,6 @@
 ---
 title: "Integrated Gradient"
+output: rmarkdown::html_vignette
 vignette: >
   %\VignetteIndexEntry{Integrated Gradient}
   %\VignetteEngine{knitr::rmarkdown}
