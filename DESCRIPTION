@@ -1,6 +1,6 @@
 Package: deepG
 Title: Deep Learning for Genome Sequence Data
-Version: 0.2.1-9000
+Version: 0.3.0
 Encoding: UTF-8
 Authors@R: c(
        person(given = "Philipp",
