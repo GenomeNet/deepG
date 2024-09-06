@@ -29,7 +29,7 @@ Authors@R: c(
               email = "alice.mchardy@helmholtz-hzi.de")
      )
 Description: Toolbox for training and applying deep learning models to genome sequence data.
-  Applications include data pre-processing, model fitting, model evaluation, model optimization and inference.
+  Applications include data processing, model fitting, model evaluation, model optimization and inference.
   A few genome datasets for testing are provided, as is the possibility to extract deep representations.
 License: LGPL (>= 3)
 URL: https://github.com/GenomeNet/deepG,
