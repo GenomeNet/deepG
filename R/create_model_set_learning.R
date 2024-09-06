@@ -383,6 +383,7 @@ create_model_lstm_cnn_multi_input <- function(
     filters = NULL,
     strides = NULL,
     pool_size = NULL,
+    pool_method == 'max',
     padding = "same",
     dilation_rate = NULL,
     gap_inputs = NULL,
@@ -469,7 +470,13 @@ create_model_lstm_cnn_multi_input <- function(
             use_bias = use_bias
           )
         if (!is.null(pool_size) && pool_size[i] > 1) {
-          output_tensor <- output_tensor %>% keras::layer_max_pooling_1d(pool_size = pool_size[i])
+          if (pool_method == 'max') {
+            output_tensor <- output_tensor %>% keras::layer_max_pooling_1d(pool_size = pool_size[i])
+            
+          }
+          if (pool_method == 'average') {
+            output_tensor <- output_tensor %>% keras::layer_average_pooling_1d(pool_size = pool_size[i])
+          }
         }
         output_tensor <- output_tensor %>% keras::layer_batch_normalization(momentum = batch_norm_momentum)
       } else {
@@ -488,7 +495,13 @@ create_model_lstm_cnn_multi_input <- function(
         output_tensor <- output_tensor %>% keras::layer_batch_normalization(momentum = batch_norm_momentum)
         
         if (!is.null(pool_size) && pool_size[i] > 1) {
-          output_tensor <- output_tensor %>% keras::layer_max_pooling_1d(pool_size = pool_size[i])
+          if (pool_method == 'max') {
+            output_tensor <- output_tensor %>% keras::layer_max_pooling_1d(pool_size = pool_size[i])
+            
+          }
+          if (pool_method == 'average') {
+            output_tensor <- output_tensor %>% keras::layer_average_pooling_1d(pool_size = pool_size[i])
+          }
         }
         
       }
