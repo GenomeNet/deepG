@@ -383,7 +383,7 @@ create_model_lstm_cnn_multi_input <- function(
     filters = NULL,
     strides = NULL,
     pool_size = NULL,
-    pool_method == 'max',
+    pool_method = 'max',
     padding = "same",
     dilation_rate = NULL,
     gap_inputs = NULL,
