@@ -24,3 +24,4 @@ __pycache__/
 ^LICENSE\.md$
 vignettes/using_tb.Rmd
 vignettes/tb_images
+^CRAN-SUBMISSION$
