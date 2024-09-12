@@ -128,7 +128,7 @@ compile_model <- function(model, solver, learning_rate, loss_fn, label_smoothing
 #' @param cp_path A directory containing checkpoints or a single checkpoint file. 
 #' If a directory, choose checkpoint based on `cp_filter` or `ep_index`.
 #' @param cp_filter Condition to choose checkpoint if `cp_path` is a directory.
-#' Either "acc" for bast validation accuracy, "loss" for best validation loss or "last_ep" for last epoch.
+#' Either "acc" for best validation accuracy, "loss" for best validation loss or "last_ep" for last epoch.
 #' @param ep_index Load checkpoint from specific epoch number. If not `NULL`, has priority over `cp_filter`.
 #' @param compile Whether to load compiled model.
 #' @param re_compile Whether to compile model with parameters from `learning_rate`,
