@@ -19,7 +19,7 @@ A keras metric.
 Compute AUC score as additional metric. If model has several output neurons with binary crossentropy loss, will use the average score.
 }
 \examples{
-\dontshow{if (.globals$tf_initialized) (if (getRversion() >= "3.4") withAutoprint else force)(\{ # examplesIf}
+\dontshow{if (reticulate::py_module_available("tensorflow")) (if (getRversion() >= "3.4") withAutoprint else force)(\{ # examplesIf}
 
 y_true <- c(1,0,0,1,1,0,1,0,0) \%>\% matrix(ncol = 3)
 y_pred <- c(0.9,0.05,0.05,0.9,0.05,0.05,0.9,0.05,0.05) \%>\% matrix(ncol = 3)

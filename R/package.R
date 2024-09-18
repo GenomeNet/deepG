@@ -26,6 +26,8 @@
   h5_file$close_all()
   file.remove(temp_file)
   
+  Sys.setenv(TF_CPP_MIN_LOG_LEVEL = 3)
+  
   # # Set TensorFlow log level to suppress excessive logs
   # if (!exists("tf_initialized", envir = .globals)) {
   #   Sys.setenv(TF_CPP_MIN_LOG_LEVEL = 3)
@@ -62,8 +64,8 @@
   # Check if TensorFlow is available globally and store the result
   .globals$tf_available <- reticulate::py_module_available("tensorflow")
   
-  if (!.globals$tf_available) {
-    packageStartupMessage("TensorFlow is not available. Some examples will be skipped.")
-  }
+  # if (!.globals$tf_available) {
+  #   packageStartupMessage("TensorFlow is not available. Some examples will be skipped.")
+  # }
 }
 
