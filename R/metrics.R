@@ -194,7 +194,7 @@ balanced_acc_wrapper <- function(num_targets, cm_dir) {
 #' @param model_output_size Number of neurons in model output layer.
 #' @param loss Loss function of model, for which metric will be applied to; must be `"binary_crossentropy"`
 #' or `"categorical_crossentropy"`.
-#' @examplesIf reticulate::py_module_available("tensorflow")
+#' @examplesIf .globals$tf_initialized
 #' 
 #' y_true <- c(1,0,0,1,1,0,1,0,0) %>% matrix(ncol = 3)
 #' y_pred <- c(0.9,0.05,0.05,0.9,0.05,0.05,0.9,0.05,0.05) %>% matrix(ncol = 3)
