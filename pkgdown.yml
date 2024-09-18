@@ -1,5 +1,5 @@
 pandoc: 3.1.11
-pkgdown: 2.1.0
+pkgdown: 2.1.1
 pkgdown_sha: ~
 articles:
   data_generator: data_generator.html
@@ -7,7 +7,7 @@ articles:
   integrated_gradient: integrated_gradient.html
   training_types: training_types.html
   using_tb: using_tb.html
-last_built: 2024-09-09T11:13Z
+last_built: 2024-09-18T12:11Z
 urls:
   reference: https://genomenet.github.io/deepG/reference
   article: https://genomenet.github.io/deepG/articles
