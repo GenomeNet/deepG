@@ -6,8 +6,8 @@
 \alias{deepG-package}
 \title{deepG for GenomeNet}
 \description{
-deepG is a is an open source software library for building deep neuronal
-networks for genomic modeling
+deepG is an open source software library for building deep neural
+networks for genomic modeling.
 }
 \details{
 This package generates \href{https://deepg.de}{deepG}
