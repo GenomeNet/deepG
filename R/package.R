@@ -1,8 +1,8 @@
 #' deepG for GenomeNet
 #'
-#' deepG is a is an open source software library for building deep neuronal 
-#' networks for genomic modeling
-#' 
+#' deepG is an open source software library for building deep neural
+#' networks for genomic modeling.
+#'
 #' This package generates \href{https://deepg.de}{deepG}
 #'
 #' For additional documentation on the deepG package see
@@ -17,22 +17,53 @@
 
 # globals
 .globals <- new.env(parent = emptyenv())
-.globals$tensorboard <- NULL
 
-.onLoad <- function(libname, pkgname) {  
+.onLoad <- function(libname, pkgname) {
   
-  # call hdf5r function to avoid error message 
+  # Minimal HDF5 operation to prevent errors from hdf5r package
   temp_file <- tempfile(fileext = ".h5")
-  h5_file <- hdf5r::H5File$new(temp_file, mode = "w") 
+  h5_file <- hdf5r::H5File$new(temp_file, mode = "w")
   h5_file$close_all()
   file.remove(temp_file)
   
-  # call tensorflow
-  Sys.setenv(TF_CPP_MIN_LOG_LEVEL = 3)
-  if (reticulate::py_module_available("tensorflow")) {
-    tensorflow::tf$constant(1)
-  }
+  # # Set TensorFlow log level to suppress excessive logs
+  # if (!exists("tf_initialized", envir = .globals)) {
+  #   Sys.setenv(TF_CPP_MIN_LOG_LEVEL = 3)
+  #   if (reticulate::py_module_available("tensorflow")) {
+  #     .globals$tf_initialized <- TRUE
+  #     tensorflow::tf$constant(1)
+  #   } else {
+  #     .globals$tf_initialized <- FALSE
+  #   }
+  # }
   
-  #usethis::use_pipe(export = TRUE)
-  #packageStartupMessage("The deepG package has been successfully loaded.")
+  
+  # if (!exists("tf_initialized", envir = .globals)) {
+  #   Sys.setenv(TF_CPP_MIN_LOG_LEVEL = 3)
+  # 
+  #   tryCatch({
+  #     if (requireNamespace('tensorflow')) {
+  #       # Perform a minimal TensorFlow operation to ensure it's working
+  #       tensorflow::tf$constant(1)
+  #       .globals$tf_initialized <- TRUE  # Mark TensorFlow as initialized
+  #     }
+  # 
+  #   }, error = function(e) {
+  #     .globals$tf_initialized <- FALSE
+  #   })
+  # 
+  # }
+  
+  return(NULL)
+  
 }
+
+.onAttach <- function(libname, pkgname) {
+  # Check if TensorFlow is available globally and store the result
+  .globals$tf_available <- reticulate::py_module_available("tensorflow")
+  
+  if (!.globals$tf_available) {
+    packageStartupMessage("TensorFlow is not available. Some examples will be skipped.")
+  }
+}
+
