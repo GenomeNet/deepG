@@ -8,10 +8,10 @@ vignette: >
 ---
   
 ```{r, eval=FALSE, message=FALSE}
-devtools::install_github("GenomeNet/deepG")
-library(deepG)
-library(magrittr)
-library(ggplot2)
+# devtools::install_github("GenomeNet/deepG")
+# library(deepG)
+# library(magrittr)
+# library(ggplot2)
 ```
 
 ```{r, echo=FALSE, warning=FALSE, message=FALSE}
