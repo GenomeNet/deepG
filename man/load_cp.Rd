@@ -24,7 +24,7 @@ load_cp(
 If a directory, choose checkpoint based on \code{cp_filter} or \code{ep_index}.}
 
 \item{cp_filter}{Condition to choose checkpoint if \code{cp_path} is a directory.
-Either "acc" for bast validation accuracy, "loss" for best validation loss or "last_ep" for last epoch.}
+Either "acc" for best validation accuracy, "loss" for best validation loss or "last_ep" for last epoch.}
 
 \item{ep_index}{Load checkpoint from specific epoch number. If not \code{NULL}, has priority over \code{cp_filter}.}
 
