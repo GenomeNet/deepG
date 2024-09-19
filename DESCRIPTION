@@ -28,7 +28,7 @@ Authors@R: c(
               role = "aut",
               email = "alice.mchardy@helmholtz-hzi.de")
      )
-Description: Toolbox for training and applying deep learning models to genome sequence data.
+Description: Training and applying deep learning models to genome sequence data.
   Applications include data processing, model fitting, model evaluation, model optimization and inference.
   A few genome datasets for testing are provided, as is the possibility to extract deep representations.
 License: LGPL (>= 3)
