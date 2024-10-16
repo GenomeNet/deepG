@@ -81,6 +81,16 @@
 <span><span class="co"># library(deepG)</span></span>
 <span><span class="co"># library(magrittr)</span></span>
 <span><span class="co"># library(ggplot2)</span></span></code></pre></div>
+<pre><code><span><span class="co">## cpp11    (NA -&gt; 0.5.0) [CRAN]</span></span>
+<span><span class="co">## progress (NA -&gt; 1.2.3) [CRAN]</span></span></code></pre>
+<pre><code><span><span class="co">## <span style="color: #00BBBB;">──</span> <span style="color: #00BBBB;">R CMD build</span> <span style="color: #00BBBB;">─────────────────────────────────────────────────────────────────</span></span></span>
+<span><span class="co">## * checking for file ‘/tmp/Rtmp3jrazi/remotes25185b2bd22a/GenomeNet-deepG-e728413/DESCRIPTION’ ... OK</span></span>
+<span><span class="co">## * preparing ‘deepG’:</span></span>
+<span><span class="co">## * checking DESCRIPTION meta-information ... OK</span></span>
+<span><span class="co">## * checking for LF line-endings in source and make files and shell scripts</span></span>
+<span><span class="co">## * checking for empty or unneeded directories</span></span>
+<span><span class="co">## * looking to see if a ‘data/datalist’ file should be added</span></span>
+<span><span class="co">## * building ‘deepG_0.3.0.tar.gz’</span></span></code></pre>
 <div class="section level2">
 <h2 id="introduction">Introduction<a class="anchor" aria-label="anchor" href="#introduction"></a>
 </h2>
@@ -90,7 +100,7 @@
 <h2 id="model-training">Model Training<a class="anchor" aria-label="anchor" href="#model-training"></a>
 </h2>
 <p>We create two simple dummy training and validation data sets. Both consist of random <tt>ACGT</tt> sequences but the first category has a probability of 40% each for drawing <tt>G</tt> or <tt>C</tt> and the second has equal probability for each nucleotide (first category has around 80% <tt>GC</tt> content and second one around 50%).</p>
-<div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/Random.html" class="external-link">set.seed</a></span><span class="op">(</span><span class="fl">123</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># Create data </span></span>
@@ -151,7 +161,7 @@
 <h2 id="integrated-gradient">Integrated Gradient<a class="anchor" aria-label="anchor" href="#integrated-gradient"></a>
 </h2>
 <p>We can try to visualize what parts of an input sequence is important for the models decision, using Integrated Gradient. Let’s create a sequence with a high GC content. We use same number of Cs as Gs and of As as Ts.</p>
-<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/Random.html" class="external-link">set.seed</a></span><span class="op">(</span><span class="fl">321</span><span class="op">)</span></span>
 <span><span class="va">g_count</span> <span class="op">&lt;-</span> <span class="fl">17</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/stopifnot.html" class="external-link">stopifnot</a></span><span class="op">(</span><span class="va">g_count</span> <span class="op">&lt;</span> <span class="fl">25</span><span class="op">)</span></span>
@@ -160,19 +170,19 @@
 <span><span class="va">high_gc_seq</span> <span class="op">&lt;-</span> <span class="va">high_gc_seq</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/r/base/sample.html" class="external-link">sample</a></span><span class="op">(</span><span class="va">maxlen</span><span class="op">)</span><span class="op">]</span> <span class="op"><a href="../reference/pipe.html">%&gt;%</a></span> <span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste</a></span><span class="op">(</span>collapse <span class="op">=</span> <span class="st">""</span><span class="op">)</span> <span class="co"># shuffle nt order</span></span>
 <span><span class="va">high_gc_seq</span></span></code></pre></div>
 <p>We need to one-hot encode the sequence before applying Integrated Gradient.</p>
-<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">high_gc_seq_one_hot</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/seq_encoding_label.html">seq_encoding_label</a></span><span class="op">(</span>char_sequence <span class="op">=</span> <span class="va">high_gc_seq</span>,</span>
 <span>                                          maxlen <span class="op">=</span> <span class="fl">50</span>,</span>
 <span>                                          start_ind <span class="op">=</span> <span class="fl">1</span>,</span>
 <span>                                          vocabulary <span class="op">=</span> <span class="va">vocabulary</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">high_gc_seq_one_hot</span><span class="op">[</span><span class="fl">1</span>,,<span class="op">]</span><span class="op">)</span></span></code></pre></div>
 <p>Our model should be confident, this sequences belongs to the first class</p>
-<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">pred</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/predict.html" class="external-link">predict</a></span><span class="op">(</span><span class="va">model</span>, <span class="va">high_gc_seq_one_hot</span>, verbose <span class="op">=</span> <span class="fl">0</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/colnames.html" class="external-link">colnames</a></span><span class="op">(</span><span class="va">pred</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"high_gc"</span>, <span class="st">"equal_dist"</span><span class="op">)</span></span>
 <span><span class="va">pred</span></span></code></pre></div>
 <p>We can visualize what parts where important for the prediction.</p>
-<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">ig</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/integrated_gradients.html">integrated_gradients</a></span><span class="op">(</span></span>
 <span>  input_seq <span class="op">=</span> <span class="va">high_gc_seq_one_hot</span>,</span>
 <span>  target_class_idx <span class="op">=</span> <span class="fl">1</span>,</span>
@@ -185,12 +195,12 @@
 <span>  <span class="fu"><a href="https://rdrr.io/r/base/message.html" class="external-link">message</a></span><span class="op">(</span><span class="st">"Skipping ComplexHeatmap-related code because the package is not installed."</span><span class="op">)</span></span>
 <span><span class="op">}</span></span></code></pre></div>
 <p>We may test how our models prediction changes if we exchange certain nucleotides in the input sequence. First, we look for the positions with the smallest IG score.</p>
-<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">ig</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/array.html" class="external-link">as.array</a></span><span class="op">(</span><span class="va">ig</span><span class="op">)</span></span>
 <span><span class="va">smallest_index</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/which.html" class="external-link">which</a></span><span class="op">(</span><span class="va">ig</span> <span class="op">==</span> <span class="fu"><a href="https://rdrr.io/r/base/Extremes.html" class="external-link">min</a></span><span class="op">(</span><span class="va">ig</span><span class="op">)</span>, arr.ind <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
 <span><span class="va">smallest_index</span></span></code></pre></div>
 <p>We may change the nucleotide with the lowest score and observe the change in prediction confidence</p>
-<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># copy original sequence</span></span>
 <span><span class="va">high_gc_seq_one_hot_changed</span> <span class="op">&lt;-</span> <span class="va">high_gc_seq_one_hot</span> </span>
 <span></span>
@@ -212,7 +222,7 @@
 <span><span class="va">pred</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/predict.html" class="external-link">predict</a></span><span class="op">(</span><span class="va">model</span>, <span class="va">high_gc_seq_one_hot_changed</span>, verbose <span class="op">=</span> <span class="fl">0</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">pred</span><span class="op">)</span></span></code></pre></div>
 <p>Let’s repeatedly apply the previous step and change the sequence after each iteration.</p>
-<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># copy original sequence</span></span>
 <span><span class="va">high_gc_seq_one_hot_changed</span> <span class="op">&lt;-</span> <span class="va">high_gc_seq_one_hot</span> </span>
 <span></span>
@@ -249,7 +259,7 @@
 <span><span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">pred_df</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"high_gc"</span>, <span class="st">"equal_dist"</span>, <span class="st">"iteration"</span><span class="op">)</span></span>
 <span><span class="fu">ggplot</span><span class="op">(</span><span class="va">pred_df</span>, <span class="fu">aes</span><span class="op">(</span>x <span class="op">=</span> <span class="va">iteration</span>, y <span class="op">=</span> <span class="va">high_gc</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span> <span class="fu">geom_line</span><span class="op">(</span><span class="op">)</span> <span class="op">+</span> <span class="fu">ylab</span><span class="op">(</span><span class="st">"high GC confidence"</span><span class="op">)</span></span></code></pre></div>
 <p>We can try the same in the opposite direction, i.e. replace big IG scores.</p>
-<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># copy original sequence</span></span>
 <span><span class="va">high_gc_seq_one_hot_changed</span> <span class="op">&lt;-</span> <span class="va">high_gc_seq_one_hot</span> </span>
 <span></span>
