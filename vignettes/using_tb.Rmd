@@ -8,13 +8,14 @@ vignette: >
 ---
 
 ```{r, eval=FALSE, message=FALSE}
-devtools::install_github("GenomeNet/deepG")
-library(deepG)
-library(magrittr)
+# devtools::install_github("GenomeNet/deepG")
+# library(deepG)
+# library(magrittr)
 ```
 
 ```{r, echo=FALSE, warning=FALSE, message=FALSE}
-devtools::load_all(path = "~/deepGdev")
+#devtools::load_all(path = "~/deepGdev")
+devtools::install_github("GenomeNet/deepG")
 library(deepG)
 library(magrittr)
 
@@ -113,7 +114,7 @@ model <- create_model_lstm_cnn(maxlen = maxlen,
 
 Finally we can train the model.
 
-```{r warning = FALSE}
+```{r warning = FALSE, eval=FALSE}
 hist <- train_model(model,
                     train_type = "label_header",
                     run_name = "gc_model_1",
@@ -124,7 +125,7 @@ hist <- train_model(model,
                     batch_size = 64,
                     step = 50, 
                     path_tensorboard = tb_dir, # path to tensorboard logs
-                    tb_images = TRUE, # show confusion matrix in tensorboard
+                    tb_images = F, # show confusion matrix in tensorboard
                     vocabulary_label = c("high_gc", "equal_dist"))
                     
 plot(hist)
@@ -132,7 +133,7 @@ plot(hist)
 
 Use the following command to open tensorboard in a browser:
 
-```{r warning = FALSE}
+```{r warning = FALSE, eval=FALSE}
 keras::tensorboard(tb_dir)
 ```
 

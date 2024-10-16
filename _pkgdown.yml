@@ -39,15 +39,15 @@ navbar:
       text: Tutorials
       menu:
       - text: Getting Started
-        href: docs/articles/getting_started.html
+        href: articles/getting_started.html
       - text: Training types
-        href: docs/articles/training_types.html
+        href: articles/training_types.html
       - text: Data generator
-        href: docs/articles/data_generator.html
+        href: articles/data_generator.html
       - text: Using tensorboard
-        href: docs/articles/using_tb.html
+        href: articles/using_tb.html
       - text: Integrated Gradient
-        href: docs/articles/integrated_gradient.html
+        href: articles/integrated_gradient.html
 reference:
 - title: Training
   contents: 
