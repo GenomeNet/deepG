@@ -25,3 +25,4 @@ __pycache__/
 vignettes/using_tb.Rmd
 vignettes/tb_images
 ^CRAN-SUBMISSION$
+^vignettes/articles$
