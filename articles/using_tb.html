@@ -77,9 +77,9 @@
     
     
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu">devtools</span><span class="fu">::</span><span class="fu"><a href="https://remotes.r-lib.org/reference/install_github.html" class="external-link">install_github</a></span><span class="op">(</span><span class="st">"GenomeNet/deepG"</span><span class="op">)</span></span>
-<span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/GenomeNet/deepG" class="external-link">deepG</a></span><span class="op">)</span></span>
-<span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://magrittr.tidyverse.org" class="external-link">magrittr</a></span><span class="op">)</span></span></code></pre></div>
+<code class="sourceCode R"><span><span class="co"># devtools::install_github("GenomeNet/deepG")</span></span>
+<span><span class="co"># library(deepG)</span></span>
+<span><span class="co"># library(magrittr)</span></span></code></pre></div>
 <p>Tensorflow offers the <a href="https://www.tensorflow.org/tensorboard" class="external-link">Tensorboard</a> application to visualize the training process of our networks. DeepG expands on some of the default Tensorboard options and implements some custom settings. We train again a model that can differentiate sequences based on the GC content, as described in the <a href="getting_started.html">Getting started tutorial</a>.</p>
 <p>We start by creating our data. To show the difference between accuracy and balanced accuracy, we create 3 times more data with high GC content.</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
@@ -149,7 +149,7 @@
 <span>                    batch_size <span class="op">=</span> <span class="fl">64</span>,</span>
 <span>                    step <span class="op">=</span> <span class="fl">50</span>, </span>
 <span>                    path_tensorboard <span class="op">=</span> <span class="va">tb_dir</span>, <span class="co"># path to tensorboard logs</span></span>
-<span>                    tb_images <span class="op">=</span> <span class="cn">TRUE</span>, <span class="co"># show confusion matrix in tensorboard</span></span>
+<span>                    tb_images <span class="op">=</span> <span class="cn">F</span>, <span class="co"># show confusion matrix in tensorboard</span></span>
 <span>                    vocabulary_label <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"high_gc"</span>, <span class="st">"equal_dist"</span><span class="op">)</span><span class="op">)</span></span>
 <span>                    </span>
 <span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">hist</span><span class="op">)</span></span></code></pre></div>
