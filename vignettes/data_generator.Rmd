@@ -14,7 +14,7 @@ vignette: >
 ```
 
 ```{r, echo=FALSE, warning=FALSE, message=FALSE}
-#devtools::load_all(path = "~/deepGdev")
+devtools::load_all(path = "~/deepGdev")
 library(deepG)
 library(magrittr)
 
