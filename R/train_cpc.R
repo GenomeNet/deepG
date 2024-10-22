@@ -307,7 +307,7 @@ train_model_cpc <-
     }
     
     ####~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Creation of generators ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~####
-    cat(format(Sys.time(), "%F %R"), ": Preparing the data\n")
+    message(format(Sys.time(), "%F %R"), ": Preparing the data\n")
     ####~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Training Generator ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~####
     fastrain <-
       do.call(generator_fasta_lm,
@@ -326,7 +326,7 @@ train_model_cpc <-
           )
         )
     ####~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Creation of metrics ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~####
-    cat(format(Sys.time(), "%F %R"), ": Preparing the metrics\n")
+    message(format(Sys.time(), "%F %R"), ": Preparing the metrics\n")
     train_loss <- tensorflow::tf$keras$metrics$Mean(name = 'train_loss')
     val_loss <- tensorflow::tf$keras$metrics$Mean(name = 'val_loss')
     train_acc <- tensorflow::tf$keras$metrics$Mean(name = 'train_acc')
@@ -362,7 +362,7 @@ train_model_cpc <-
     ########################################################################################################
     if (is.null(pretrained_model)) {
       ####~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Unsupervised Build from scratch ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~####
-      cat(format(Sys.time(), "%F %R"), ": Creating the model\n")
+      message(format(Sys.time(), "%F %R"), ": Creating the model\n")
       ## Build encoder
       enc <-
         encoder(maxlen = maxlen,
@@ -397,7 +397,7 @@ train_model_cpc <-
       ####~~~~~~~~~~~~~~~~~~~~~~~~~~ Unsupervised Read if pretrained model given ~~~~~~~~~~~~~~~~~~~~~~~~~####
       
     } else {
-      cat(format(Sys.time(), "%F %R"), ": Loading the trained model.\n")
+      message(format(Sys.time(), "%F %R"), ": Loading the trained model.\n")
       ## Read model
       model <- keras::load_model_hdf5(pretrained_model, compile = FALSE)
       optimizer <- ReadOpt(pretrained_model)
@@ -518,7 +518,7 @@ train_model_cpc <-
             
             ## Print status of epoch
             if (b %in% seq(0, batches, by = batches / 10)) {
-              cat("-")
+              message("-")
             }
           }
           
@@ -600,11 +600,11 @@ train_model_cpc <-
     ########################################################################################################
     
     
-    cat(format(Sys.time(), "%F %R"), ": Starting Training\n")
+    message(format(Sys.time(), "%F %R"), ": Starting Training\n")
     
     ## Training loop
     for (i in seq(initial_epoch, (epochs + initial_epoch - 1))) {
-      cat(format(Sys.time(), "%F %R"), ": EPOCH", i, " \n")
+      message(format(Sys.time(), "%F %R"), ": EPOCH", i, " \n")
       
       ## Epoch loop
       train_val_loop(epoch = i, train_val_ratio = train_val_ratio)
