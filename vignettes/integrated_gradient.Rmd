@@ -9,9 +9,9 @@ vignette: >
   
 ```{r, eval=FALSE, message=FALSE}
 # devtools::install_github("GenomeNet/deepG")
-# library(deepG)
-# library(magrittr)
-# library(ggplot2)
+library(deepG)
+library(magrittr)
+library(ggplot2)
 ```
 
 ```{r, echo=FALSE, warning=FALSE, message=FALSE}
@@ -246,7 +246,8 @@ We can try the same in the opposite direction, i.e. replace big IG scores.
 high_gc_seq_one_hot_changed <- high_gc_seq_one_hot 
 
 pred_list <- list()
-pred_list[[1]] <- pred <- predict(model, high_gc_seq_one_hot, verbose = 0)
+pred <- predict(model, high_gc_seq_one_hot, verbose = 0)
+pred_list[[1]] <- pred
 
 # change nts
 for (i in 1:20) {

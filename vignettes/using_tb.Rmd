@@ -9,8 +9,8 @@ vignette: >
 
 ```{r, eval=FALSE, message=FALSE}
 # devtools::install_github("GenomeNet/deepG")
-# library(deepG)
-# library(magrittr)
+library(deepG)
+library(magrittr)
 ```
 
 ```{r, echo=FALSE, warning=FALSE, message=FALSE}
