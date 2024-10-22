@@ -264,4 +264,22 @@
   <url>
     <loc>https://genomenet.github.io/deepG/reference/validation_after_training_cb.html</loc>
   </url>
+  <url>
+    <loc>https://genomenet.github.io/deepG/tutorial_html/data_generator.html</loc>
+  </url>
+  <url>
+    <loc>https://genomenet.github.io/deepG/tutorial_html/getting_started.html</loc>
+  </url>
+  <url>
+    <loc>https://genomenet.github.io/deepG/tutorial_html/index.html</loc>
+  </url>
+  <url>
+    <loc>https://genomenet.github.io/deepG/tutorial_html/integrated_gradient.html</loc>
+  </url>
+  <url>
+    <loc>https://genomenet.github.io/deepG/tutorial_html/training_types.html</loc>
+  </url>
+  <url>
+    <loc>https://genomenet.github.io/deepG/tutorial_html/using_tb.html</loc>
+  </url>
 </urlset>
