@@ -80,15 +80,6 @@
 <code class="sourceCode R"><span><span class="co">#devtools::install_github("GenomeNet/deepG")</span></span>
 <span><span class="co">#library(deepG)</span></span>
 <span><span class="co">#library(magrittr)</span></span></code></pre></div>
-<pre><code><span><span class="co">## </span></span>
-<span><span class="co">## <span style="color: #00BBBB;">──</span> <span style="color: #00BBBB;">R CMD build</span> <span style="color: #00BBBB;">─────────────────────────────────────────────────────────────────</span></span></span>
-<span><span class="co">## * checking for file ‘/tmp/RtmpVIB3qz/remotes1ca34a7218fd/GenomeNet-deepG-d89d2a4/DESCRIPTION’ ... OK</span></span>
-<span><span class="co">## * preparing ‘deepG’:</span></span>
-<span><span class="co">## * checking DESCRIPTION meta-information ... OK</span></span>
-<span><span class="co">## * checking for LF line-endings in source and make files and shell scripts</span></span>
-<span><span class="co">## * checking for empty or unneeded directories</span></span>
-<span><span class="co">## * looking to see if a ‘data/datalist’ file should be added</span></span>
-<span><span class="co">## * building ‘deepG_0.3.0.tar.gz’</span></span></code></pre>
 <div class="section level2">
 <h2 id="introduction">Introduction<a class="anchor" aria-label="anchor" href="#introduction"></a>
 </h2>
@@ -197,11 +188,11 @@
 <h2 id="data-generator-options">Data generator options<a class="anchor" aria-label="anchor" href="#data-generator-options"></a>
 </h2>
 <p>In the following code examples, we will mostly use the sequence <tt> <strong>abcdefghiiii</strong> </tt> to demonstrate some of the deepG data generator options. (In real world application you would usually have sequences from the <tt>ACGT</tt> vocabulary.)</p>
-<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">sequence</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste0</a></span><span class="op">(</span><span class="st">"a"</span>, <span class="st">"b"</span>, <span class="st">"c"</span>, <span class="st">"d"</span>, <span class="st">"e"</span>, <span class="st">"f"</span>, <span class="st">"g"</span>, <span class="st">"h"</span>, <span class="st">"i"</span>, <span class="st">"i"</span>, <span class="st">"i"</span>, <span class="st">"i"</span><span class="op">)</span></span>
 <span><span class="va">vocabulary</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"a"</span>, <span class="st">"b"</span>, <span class="st">"c"</span>, <span class="st">"d"</span>, <span class="st">"e"</span>, <span class="st">"f"</span>, <span class="st">"g"</span>, <span class="st">"h"</span>, <span class="st">"i"</span><span class="op">)</span>  </span></code></pre></div>
 <p>We may store this sequence in a fasta file</p>
-<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">temp_dir</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/tempfile.html" class="external-link">tempfile</a></span><span class="op">(</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/files2.html" class="external-link">dir.create</a></span><span class="op">(</span><span class="va">temp_dir</span><span class="op">)</span></span>
 <span><span class="va">dir_path</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste0</a></span><span class="op">(</span><span class="va">temp_dir</span>, <span class="st">"/dummy_data"</span><span class="op">)</span></span>
@@ -211,7 +202,7 @@
 <span><span class="co"># sequence as fasta file</span></span>
 <span><span class="fu">microseq</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/microseq/man/readFasta.html" class="external-link">writeFasta</a></span><span class="op">(</span>fdta <span class="op">=</span> <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://tibble.tidyverse.org/reference/as_tibble.html" class="external-link">as_tibble</a></span><span class="op">(</span><span class="va">df</span><span class="op">)</span>, out.file <span class="op">=</span> <span class="va">file_path</span><span class="op">)</span></span></code></pre></div>
 <p>Since neural networks can only work with numeric data, we have to encode sequences of characters with numeric data. Usually this is achieved by one-hot-encoding; there are some other approaches implemented: see <code>use_coverage</code>, <code>use_quality_score</code> and <code>ambiguous_nuc</code> sections.</p>
-<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># one-hot encoding example</span></span>
 <span><span class="va">s</span> <span class="op">&lt;-</span>  <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"a"</span>, <span class="st">"c"</span>, <span class="st">"a"</span>, <span class="st">"f"</span>, <span class="st">"i"</span>, <span class="st">"b"</span><span class="op">)</span></span>
 <span><span class="va">s_as_int_seq</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/vector.html" class="external-link">vector</a></span><span class="op">(</span><span class="st">"integer"</span>, <span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="va">s</span><span class="op">)</span><span class="op">)</span></span>
@@ -262,7 +253,7 @@
 </ul>
 <p>Another option is <strong>“dummy_gen”</strong>: generator creates random data once and repeatedly returns them.</p>
 <p>Extract target from fasta header (fasta header is “label_1” in example file):</p>
-<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># get target from header</span></span>
 <span><span class="va">vocabulary_label</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste0</a></span><span class="op">(</span><span class="st">"label_"</span>, <span class="fl">1</span><span class="op">:</span><span class="fl">5</span><span class="op">)</span></span>
 <span><span class="va">gen</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/get_generator.html">get_generator</a></span><span class="op">(</span>path <span class="op">=</span> <span class="va">file_path</span>,</span>
@@ -280,7 +271,7 @@
 <span><span class="va">x</span> <span class="co"># abcdef</span></span>
 <span><span class="va">y</span> <span class="co"># label_1 </span></span></code></pre></div>
 <p>Extract target from fasta folder:</p>
-<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># create data for second class</span></span>
 <span><span class="va">df</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span>Sequence <span class="op">=</span> <span class="st">"AABAACAADAAE"</span>, Header <span class="op">=</span> <span class="st">"header_1"</span><span class="op">)</span></span>
 <span><span class="va">file_path_2</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/tempfile.html" class="external-link">tempfile</a></span><span class="op">(</span>fileext <span class="op">=</span> <span class="st">".fasta"</span><span class="op">)</span></span>
@@ -307,7 +298,7 @@
 <span><span class="fu"><a href="https://rdrr.io/r/base/colnames.html" class="external-link">colnames</a></span><span class="op">(</span><span class="va">y</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="va">vocabulary_label</span> </span>
 <span><span class="va">y</span> <span class="co"># 4 samples from each class  </span></span></code></pre></div>
 <p>Extract target from csv file:</p>
-<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># get target from csv</span></span>
 <span><span class="va">file</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/basename.html" class="external-link">basename</a></span><span class="op">(</span><span class="va">file_path</span><span class="op">)</span>, <span class="st">"xyz.fasta"</span>, <span class="st">"abc.fasta"</span>, <span class="st">"x_123.fasta"</span><span class="op">)</span></span>
 <span><span class="va">vocabulary_label</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste0</a></span><span class="op">(</span><span class="st">"label"</span>, <span class="fl">1</span><span class="op">:</span><span class="fl">4</span><span class="op">)</span></span>
@@ -345,7 +336,7 @@
 <p><strong>“target_middle_lstm”</strong>: <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>X</mi><mo>=</mo></mrow><annotation encoding="application/x-tex">X =</annotation></semantics></math> (<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>X</mi><mn>1</mn></msub><mo>=</mo></mrow><annotation encoding="application/x-tex">X_1 =</annotation></semantics></math><tt>abc</tt>, <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>X</mi><mn>2</mn></msub><mo>=</mo></mrow><annotation encoding="application/x-tex">X_2 =</annotation></semantics></math><tt>gfe</tt>), <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>Y</mi><mo>=</mo></mrow><annotation encoding="application/x-tex">Y=</annotation></semantics></math><tt>d</tt> (note reversed order of <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>X</mi><mn>2</mn></msub><annotation encoding="application/x-tex">X_2</annotation></semantics></math>)</p>
 <p><strong>“target_middle_cnn”</strong>: <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>X</mi><mo>=</mo></mrow><annotation encoding="application/x-tex">X =</annotation></semantics></math><tt>abcefg</tt>, <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>Y</mi><mo>=</mo></mrow><annotation encoding="application/x-tex">Y =</annotation></semantics></math><tt>d</tt></p>
 <p><strong>“wavenet”</strong>: <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>X</mi><mo>=</mo></mrow><annotation encoding="application/x-tex">X =</annotation></semantics></math><tt>abcdef</tt>, <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>Y</mi><mo>=</mo></mrow><annotation encoding="application/x-tex">Y =</annotation></semantics></math><tt>bcdefg</tt></p>
-<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># target_right</span></span>
 <span><span class="va">gen</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/get_generator.html">get_generator</a></span><span class="op">(</span>path <span class="op">=</span> <span class="va">file_path</span>,</span>
 <span>                     train_type <span class="op">=</span> <span class="st">"lm"</span>,</span>
@@ -361,7 +352,7 @@
 <span><span class="fu"><a href="https://rdrr.io/r/base/colnames.html" class="external-link">colnames</a></span><span class="op">(</span><span class="va">y</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="va">vocabulary</span></span>
 <span><span class="va">x</span> <span class="co"># abcdef</span></span>
 <span><span class="va">y</span> <span class="co"># g </span></span></code></pre></div>
-<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># target_middle_lstm</span></span>
 <span><span class="va">gen</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/get_generator.html">get_generator</a></span><span class="op">(</span>path <span class="op">=</span> <span class="va">file_path</span>,</span>
 <span>                     train_type <span class="op">=</span> <span class="st">"lm"</span>,</span>
@@ -380,7 +371,7 @@
 <span><span class="va">x_1</span> <span class="co"># abc</span></span>
 <span><span class="va">x_2</span> <span class="co"># gfe</span></span>
 <span><span class="va">y</span> <span class="co"># d </span></span></code></pre></div>
-<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># target_middle_cnn</span></span>
 <span><span class="va">gen</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/get_generator.html">get_generator</a></span><span class="op">(</span>path <span class="op">=</span> <span class="va">file_path</span>,</span>
 <span>                     train_type <span class="op">=</span> <span class="st">"lm"</span>,</span>
@@ -396,7 +387,7 @@
 <span><span class="fu"><a href="https://rdrr.io/r/base/colnames.html" class="external-link">colnames</a></span><span class="op">(</span><span class="va">y</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="va">vocabulary</span></span>
 <span><span class="va">x</span> <span class="co"># abcefg</span></span>
 <span><span class="va">y</span> <span class="co"># d</span></span></code></pre></div>
-<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># wavenet</span></span>
 <span><span class="va">gen</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/get_generator.html">get_generator</a></span><span class="op">(</span>path <span class="op">=</span> <span class="va">file_path</span>,</span>
 <span>                     train_type <span class="op">=</span> <span class="st">"lm"</span>,</span>
@@ -417,7 +408,7 @@
 <h3 id="batch_size">batch_size<a class="anchor" aria-label="anchor" href="#batch_size"></a>
 </h3>
 <p>Number of samples in one batch.</p>
-<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># target_right</span></span>
 <span><span class="va">gen</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/get_generator.html">get_generator</a></span><span class="op">(</span>path <span class="op">=</span> <span class="va">file_path</span>,</span>
 <span>                     train_type <span class="op">=</span> <span class="st">"lm"</span>,</span>
@@ -447,7 +438,7 @@
 <li><p>sample: <tt>abc<mark class="in">def</mark><mark class="out">g</mark>hiiii</tt></p></li>
 <li><p>sample: <tt>abcdef<mark class="in">ghi</mark><mark class="out">i</mark>ii</tt></p></li>
 </ol>
-<div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">gen</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/get_generator.html">get_generator</a></span><span class="op">(</span>path <span class="op">=</span> <span class="va">file_path</span>,</span>
 <span>                     train_type <span class="op">=</span> <span class="st">"lm"</span>,</span>
 <span>                     batch_size <span class="op">=</span> <span class="fl">1</span>,</span>
@@ -476,7 +467,7 @@
 <h3 id="padding">padding<a class="anchor" aria-label="anchor" href="#padding"></a>
 </h3>
 <p>If the sequence is too short to create a single sample, we can pad the sequence with zero-vectors. If <code>padding = FALSE</code> the generator will go to next file/ fasta entry until it finds a sequence long enough for a sample.</p>
-<div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">gen</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/get_generator.html">get_generator</a></span><span class="op">(</span>path <span class="op">=</span> <span class="va">file_path</span>,</span>
 <span>                     train_type <span class="op">=</span> <span class="st">"lm"</span>,</span>
 <span>                     batch_size <span class="op">=</span> <span class="fl">1</span>,</span>
@@ -501,7 +492,7 @@
 <ol style="list-style-type: decimal">
 <li>encode as zero vector</li>
 </ol>
-<div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">vocabulary_2</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"a"</span>, <span class="st">"b"</span>, <span class="st">"c"</span>, <span class="st">"d"</span>, <span class="st">"f"</span>, <span class="st">"g"</span>, <span class="st">"h"</span>, <span class="st">"i"</span><span class="op">)</span> <span class="co"># exclude "e" from vocabulary</span></span>
 <span></span>
 <span><span class="co"># zero</span></span>
@@ -519,7 +510,7 @@
 <ol start="2" style="list-style-type: decimal">
 <li>equal probability</li>
 </ol>
-<div class="sourceCode" id="cb17"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># equal</span></span>
 <span><span class="va">gen</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/get_generator.html">get_generator</a></span><span class="op">(</span>path <span class="op">=</span> <span class="va">file_path</span>,</span>
 <span>                    train_type <span class="op">=</span> <span class="st">"lm"</span>,</span>
@@ -536,7 +527,7 @@
 <ol start="3" style="list-style-type: decimal">
 <li>use distribution of current file</li>
 </ol>
-<div class="sourceCode" id="cb18"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb17"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># empirical</span></span>
 <span><span class="va">gen</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/get_generator.html">get_generator</a></span><span class="op">(</span>path <span class="op">=</span> <span class="va">file_path</span>,</span>
 <span>                     train_type <span class="op">=</span> <span class="st">"lm"</span>,</span>
@@ -553,7 +544,7 @@
 <ol start="4" style="list-style-type: decimal">
 <li>discard</li>
 </ol>
-<div class="sourceCode" id="cb19"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb18"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># discard</span></span>
 <span><span class="va">gen</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/get_generator.html">get_generator</a></span><span class="op">(</span>path <span class="op">=</span> <span class="va">file_path</span>,</span>
 <span>                     train_type <span class="op">=</span> <span class="st">"lm"</span>,</span>
@@ -572,7 +563,7 @@
 <h3 id="proportion_per_seq">proportion_per_seq<a class="anchor" aria-label="anchor" href="#proportion_per_seq"></a>
 </h3>
 <p>The <code>proportion_per_seq</code> argument gives the option to use a random subset instead of the full sequence.</p>
-<div class="sourceCode" id="cb20"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb19"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span><span class="st">"sequence is "</span>, <span class="fu"><a href="https://rdrr.io/r/base/nchar.html" class="external-link">nchar</a></span><span class="op">(</span><span class="va">sequence</span><span class="op">)</span>, <span class="st">"characters long \n"</span><span class="op">)</span></span>
 <span><span class="va">gen</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/get_generator.html">get_generator</a></span><span class="op">(</span>path <span class="op">=</span> <span class="va">file_path</span>,</span>
 <span>                     train_type <span class="op">=</span> <span class="st">"lm"</span>,</span>
@@ -601,7 +592,7 @@
 <h3 id="delete_used_files">delete_used_files<a class="anchor" aria-label="anchor" href="#delete_used_files"></a>
 </h3>
 <p>If true, delete file once used. Only applies for rds files.</p>
-<div class="sourceCode" id="cb21"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb20"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">x</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/array.html" class="external-link">array</a></span><span class="op">(</span><span class="fl">0</span>, dim <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>,<span class="fl">5</span>,<span class="fl">4</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="va">y</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/matrix.html" class="external-link">matrix</a></span><span class="op">(</span><span class="fl">0</span>, ncol <span class="op">=</span> <span class="fl">1</span><span class="op">)</span></span>
 <span><span class="va">rds_path</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/tempfile.html" class="external-link">tempfile</a></span><span class="op">(</span>fileext <span class="op">=</span> <span class="st">".rds"</span><span class="op">)</span></span>
@@ -623,7 +614,7 @@
 <h3 id="max_samples">max_samples<a class="anchor" aria-label="anchor" href="#max_samples"></a>
 </h3>
 <p>Only use fixed number of samples per file. Randomly choose which samples to use. (If <code>random_sampling = FALSE</code>, samples are consecutive.)</p>
-<div class="sourceCode" id="cb22"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb21"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">gen</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/get_generator.html">get_generator</a></span><span class="op">(</span>path <span class="op">=</span> <span class="va">file_path</span>,</span>
 <span>                     train_type <span class="op">=</span> <span class="st">"lm"</span>,</span>
 <span>                     batch_size <span class="op">=</span> <span class="fl">2</span>,</span>
@@ -646,7 +637,7 @@
 <h3 id="random_sampling">random_sampling<a class="anchor" aria-label="anchor" href="#random_sampling"></a>
 </h3>
 <p>If you use <code>max_samples</code>, generator will randomly choose subset from all possible samples, but those samples are consecutive. With <code>random_sampling = TRUE</code>, samples are completely random.</p>
-<div class="sourceCode" id="cb23"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb22"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">gen</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/get_generator.html">get_generator</a></span><span class="op">(</span>path <span class="op">=</span> <span class="va">file_path</span>,</span>
 <span>                     train_type <span class="op">=</span> <span class="st">"lm"</span>,</span>
 <span>                     batch_size <span class="op">=</span> <span class="fl">2</span>,</span>
@@ -669,7 +660,7 @@
 <h3 id="target_len">target_len<a class="anchor" aria-label="anchor" href="#target_len"></a>
 </h3>
 <p>Target length for language model.</p>
-<div class="sourceCode" id="cb24"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb23"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">gen</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/get_generator.html">get_generator</a></span><span class="op">(</span>path <span class="op">=</span> <span class="va">file_path</span>,</span>
 <span>                     train_type <span class="op">=</span> <span class="st">"lm"</span>,</span>
 <span>                     batch_size <span class="op">=</span> <span class="fl">1</span>,</span>
@@ -696,7 +687,7 @@
 <h3 id="n_gram-n_gram_stride">n_gram / n_gram_stride<a class="anchor" aria-label="anchor" href="#n_gram-n_gram_stride"></a>
 </h3>
 <p>Encode target in language model not character wise but combine n characters to one target. <code>n_gram_stride</code> determines the frequency of the n-gram encoding.</p>
-<div class="sourceCode" id="cb25"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb24"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">gen</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/get_generator.html">get_generator</a></span><span class="op">(</span>path <span class="op">=</span> <span class="va">file_path</span>,</span>
 <span>                     train_type <span class="op">=</span> <span class="st">"lm"</span>,</span>
 <span>                     batch_size <span class="op">=</span> <span class="fl">1</span>,</span>
@@ -721,7 +712,7 @@
 <h3 id="add_noise">add_noise<a class="anchor" aria-label="anchor" href="#add_noise"></a>
 </h3>
 <p>Add noise to input. Must be a list that specifies noise distribution or NULL (no noise). List contains arguments <code>noise_type</code>: either <code>"normal"</code> or <code>"uniform"</code>. Optional arguments <code>sd</code> or <code>mean</code> if <code>noise_type</code> is <code>"normal"</code> (default is <code>sd=1</code> and <code>mean=0</code>) or <code>min</code>, <code>max</code> if <code>noise_type</code> is <code>"uniform"</code> (default is <code>min=0</code>, <code>max=1</code>).</p>
-<div class="sourceCode" id="cb26"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb25"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">gen</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/get_generator.html">get_generator</a></span><span class="op">(</span>path <span class="op">=</span> <span class="va">file_path</span>,</span>
 <span>                     train_type <span class="op">=</span> <span class="st">"lm"</span>,</span>
 <span>                     batch_size <span class="op">=</span> <span class="fl">1</span>,</span>
@@ -768,7 +759,7 @@
 <h3 id="concat_seq">concat_seq<a class="anchor" aria-label="anchor" href="#concat_seq"></a>
 </h3>
 <p>Character string or <code>NULL</code>. If not <code>NULL</code> all entries from file get concatenated to one sequence with <code>concat_seq</code> string between them. Use <code>concat_seq = ""</code> if you don’t want to add a new token.</p>
-<div class="sourceCode" id="cb27"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb26"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">df</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span>Sequence <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"AC"</span>, <span class="st">"AG"</span>, <span class="st">"AT"</span><span class="op">)</span>, Header <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste0</a></span><span class="op">(</span><span class="st">"header"</span>, <span class="fl">1</span><span class="op">:</span><span class="fl">3</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="va">fasta_path</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/tempfile.html" class="external-link">tempfile</a></span><span class="op">(</span>fileext <span class="op">=</span> <span class="st">".fasta"</span><span class="op">)</span></span>
 <span><span class="va">fasta_file</span> <span class="op">&lt;-</span> <span class="fu">microseq</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/microseq/man/readFasta.html" class="external-link">writeFasta</a></span><span class="op">(</span><span class="va">df</span>, <span class="va">fasta_path</span><span class="op">)</span></span>
@@ -813,7 +804,7 @@
 </ul>
 </li>
 </ul>
-<div class="sourceCode" id="cb28"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb27"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># create data for second label</span></span>
 <span><span class="va">df</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span>Sequence <span class="op">=</span> <span class="st">"AABAACAADAAE"</span>, Header <span class="op">=</span> <span class="st">"header_1"</span><span class="op">)</span></span>
 <span><span class="va">file_path_2</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/tempfile.html" class="external-link">tempfile</a></span><span class="op">(</span>fileext <span class="op">=</span> <span class="st">".fasta"</span><span class="op">)</span></span>
@@ -852,7 +843,7 @@
 <span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/colnames.html" class="external-link">colnames</a></span><span class="op">(</span><span class="va">y</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"label_1"</span>, <span class="st">"label_2"</span><span class="op">)</span></span>
 <span><span class="va">y</span> </span></code></pre></div>
-<div class="sourceCode" id="cb29"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb28"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># concat </span></span>
 <span><span class="va">set_learning</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>reshape_mode <span class="op">=</span> <span class="st">"concat"</span>,</span>
 <span>                     maxlen <span class="op">=</span> <span class="fl">4</span>,</span>
@@ -884,7 +875,7 @@
 <h3 id="use_quality_score">use_quality_score<a class="anchor" aria-label="anchor" href="#use_quality_score"></a>
 </h3>
 <p>If <code>TRUE</code>, instead of one-hot encoding, use quality score of fastq file.</p>
-<div class="sourceCode" id="cb30"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb29"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">df</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span>Sequence <span class="op">=</span> <span class="st">"ACAGAT"</span>, Header <span class="op">=</span> <span class="st">"header_1"</span>, Quality <span class="op">=</span> <span class="st">"!#*=?I"</span><span class="op">)</span></span>
 <span><span class="va">fastq_path</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/tempfile.html" class="external-link">tempfile</a></span><span class="op">(</span>fileext <span class="op">=</span> <span class="st">".fastq"</span><span class="op">)</span></span>
 <span><span class="va">fastq_file</span> <span class="op">&lt;-</span> <span class="fu">microseq</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/microseq/man/readFastq.html" class="external-link">writeFastq</a></span><span class="op">(</span><span class="va">df</span>, <span class="va">fastq_path</span><span class="op">)</span></span>
@@ -910,7 +901,7 @@
 <h3 id="use_coverage">use_coverage<a class="anchor" aria-label="anchor" href="#use_coverage"></a>
 </h3>
 <p>Integer or <code>NULL</code>. If not <code>NULL</code>, use coverage as encoding rather than one-hot encoding. Coverage information must be contained in fasta header: there must be a string “cov_n” in the header, where n is some integer.</p>
-<div class="sourceCode" id="cb31"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb30"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">df</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span>Sequence <span class="op">=</span> <span class="st">"ACAGAT"</span>, Header <span class="op">=</span> <span class="st">"header_1_cov_8"</span><span class="op">)</span></span>
 <span><span class="va">fasta_path</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/tempfile.html" class="external-link">tempfile</a></span><span class="op">(</span>fileext <span class="op">=</span> <span class="st">".fasta"</span><span class="op">)</span></span>
 <span><span class="va">fasta_file</span> <span class="op">&lt;-</span> <span class="fu">microseq</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/microseq/man/readFasta.html" class="external-link">writeFasta</a></span><span class="op">(</span><span class="va">df</span>, <span class="va">fasta_path</span><span class="op">)</span></span>
@@ -936,14 +927,14 @@
 </h3>
 <p>It is possible to feed a network additional information associated to a sequence. This information needs to be in a csv file. If all sequences in one file share the same label, the csv file should have one column named “file”.</p>
 <p>We may add some additional input to our dummy data</p>
-<div class="sourceCode" id="cb32"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb31"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">file</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/basename.html" class="external-link">basename</a></span><span class="op">(</span><span class="va">file_path</span><span class="op">)</span>, <span class="st">"some_file_name.fasta"</span><span class="op">)</span></span>
 <span><span class="va">df</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span>file <span class="op">=</span> <span class="va">file</span>,</span>
 <span>                 label_1 <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fl">1</span><span class="op">)</span>, label_2 <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>, <span class="fl">0</span><span class="op">)</span>, label_3 <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>, <span class="fl">0</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="va">df</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/utils/write.table.html" class="external-link">write.csv</a></span><span class="op">(</span>x <span class="op">=</span> <span class="va">df</span>, file <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/file.path.html" class="external-link">file.path</a></span><span class="op">(</span><span class="va">dir_path</span>, <span class="st">"add_input.csv"</span><span class="op">)</span>, row.names <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span></code></pre></div>
 <p>If we add the path to the csv file, the generator will map additional input to sequences:</p>
-<div class="sourceCode" id="cb33"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb32"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">gen</span> <span class="op">&lt;-</span>  <span class="fu"><a href="../reference/get_generator.html">get_generator</a></span><span class="op">(</span>path <span class="op">=</span> <span class="va">dir_path</span>,</span>
 <span>                      train_type <span class="op">=</span> <span class="st">"lm"</span>, </span>
 <span>                      batch_size <span class="op">=</span> <span class="fl">1</span>,</span>
@@ -961,7 +952,7 @@
 <span><span class="va">y</span> <span class="op">&lt;-</span> <span class="va">z</span><span class="op">[[</span><span class="fl">2</span><span class="op">]</span><span class="op">]</span> </span>
 <span><span class="va">y</span></span></code></pre></div>
 <p>If we want to train a network with additional labels, we have to add an additional input layer.</p>
-<div class="sourceCode" id="cb34"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb33"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">model</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/create_model_lstm_cnn.html">create_model_lstm_cnn</a></span><span class="op">(</span></span>
 <span>  maxlen <span class="op">=</span> <span class="fl">5</span>,</span>
 <span>  layer_lstm <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">8</span>, <span class="fl">8</span><span class="op">)</span>,</span>
@@ -982,7 +973,7 @@
 <h3 id="return_int">return_int<a class="anchor" aria-label="anchor" href="#return_int"></a>
 </h3>
 <p>Whether to return integer encoding rather than one-hot encoding.</p>
-<div class="sourceCode" id="cb35"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb34"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">df</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span>Sequence <span class="op">=</span> <span class="st">"ATCGC"</span>, Header <span class="op">=</span> <span class="st">"seq_1"</span><span class="op">)</span></span>
 <span><span class="va">fasta_path</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/tempfile.html" class="external-link">tempfile</a></span><span class="op">(</span>fileext <span class="op">=</span> <span class="st">".fasta"</span><span class="op">)</span></span>
 <span><span class="va">fasta_file</span> <span class="op">&lt;-</span> <span class="fu">microseq</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/microseq/man/readFasta.html" class="external-link">writeFasta</a></span><span class="op">(</span><span class="va">df</span>, <span class="va">fasta_path</span><span class="op">)</span></span>
@@ -1003,7 +994,7 @@
 <span><span class="fu"><a href="https://rdrr.io/r/base/colnames.html" class="external-link">colnames</a></span><span class="op">(</span><span class="va">y</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="st">"C"</span></span>
 <span><span class="va">y</span></span></code></pre></div>
 <p>Can also be combined with n-gram encoding:</p>
-<div class="sourceCode" id="cb36"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb35"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">df</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span>Sequence <span class="op">=</span> <span class="st">"AAACCCTTT"</span>, Header <span class="op">=</span> <span class="st">"seq_1"</span><span class="op">)</span></span>
 <span><span class="va">fasta_path</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/tempfile.html" class="external-link">tempfile</a></span><span class="op">(</span>fileext <span class="op">=</span> <span class="st">".fasta"</span><span class="op">)</span></span>
 <span><span class="va">fasta_file</span> <span class="op">&lt;-</span> <span class="fu">microseq</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/microseq/man/readFasta.html" class="external-link">writeFasta</a></span><span class="op">(</span><span class="va">df</span>, <span class="va">fasta_path</span><span class="op">)</span></span>
@@ -1030,7 +1021,7 @@
 <h3 id="reshape_xy">reshape_xy<a class="anchor" aria-label="anchor" href="#reshape_xy"></a>
 </h3>
 <p>Apply some function to the output of a generator call.</p>
-<div class="sourceCode" id="cb37"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb36"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">df</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span>Sequence <span class="op">=</span> <span class="st">"AAAATTTT"</span>, Header <span class="op">=</span> <span class="st">"header_1"</span><span class="op">)</span></span>
 <span><span class="va">fasta_path</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/tempfile.html" class="external-link">tempfile</a></span><span class="op">(</span>fileext <span class="op">=</span> <span class="st">".fasta"</span><span class="op">)</span></span>
 <span><span class="va">fasta_file</span> <span class="op">&lt;-</span> <span class="fu">microseq</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/microseq/man/readFasta.html" class="external-link">writeFasta</a></span><span class="op">(</span><span class="va">df</span>, <span class="va">fasta_path</span><span class="op">)</span></span>
@@ -1057,7 +1048,7 @@
 <h3 id="masked_lm">masked_lm<a class="anchor" aria-label="anchor" href="#masked_lm"></a>
 </h3>
 <p>Masks some parts of input sequence. Can be used for training BERT-like models.</p>
-<div class="sourceCode" id="cb38"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb37"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">nt_seq</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"A"</span>, <span class="st">"C"</span>, <span class="st">"G"</span>, <span class="st">"T"</span><span class="op">)</span>, each <span class="op">=</span> <span class="fl">25</span><span class="op">)</span> <span class="op"><a href="../reference/pipe.html">%&gt;%</a></span> <span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste</a></span><span class="op">(</span>collapse <span class="op">=</span> <span class="st">""</span><span class="op">)</span></span>
 <span><span class="va">df</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span>Sequence <span class="op">=</span> <span class="va">nt_seq</span>, Header <span class="op">=</span> <span class="st">"seq_1"</span><span class="op">)</span></span>
 <span><span class="va">fasta_path</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/tempfile.html" class="external-link">tempfile</a></span><span class="op">(</span>fileext <span class="op">=</span> <span class="st">".fasta"</span><span class="op">)</span></span>
@@ -1083,14 +1074,14 @@
 <span><span class="va">df</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span>x <span class="op">=</span> <span class="va">x</span><span class="op">[</span><span class="fl">1</span>, <span class="op">]</span>, y <span class="op">=</span> <span class="va">y</span><span class="op">[</span><span class="fl">1</span>, <span class="op">]</span>, sw <span class="op">=</span> <span class="va">sw</span><span class="op">[</span><span class="fl">1</span>, <span class="op">]</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">df</span><span class="op">)</span></span></code></pre></div>
 <p>Whenever sw (sample weight) column is 0, x and y columns are identical. Let’s look at rows where sw is 1:</p>
-<div class="sourceCode" id="cb39"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb38"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">df</span> <span class="op"><a href="../reference/pipe.html">%&gt;%</a></span> <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">sw</span> <span class="op">==</span> <span class="fl">1</span><span class="op">)</span></span></code></pre></div>
 <p>Here 5 is the mask token, this is always the size of the vocabulary + 1.</p>
-<div class="sourceCode" id="cb40"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb39"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">df</span> <span class="op"><a href="../reference/pipe.html">%&gt;%</a></span> <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">sw</span> <span class="op">==</span> <span class="fl">1</span> <span class="op">&amp;</span> <span class="va">x</span> <span class="op">==</span> <span class="fl">5</span><span class="op">)</span> <span class="co"># 10% masked part</span></span>
 <span><span class="va">df</span> <span class="op"><a href="../reference/pipe.html">%&gt;%</a></span> <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">sw</span> <span class="op">==</span> <span class="fl">1</span> <span class="op">&amp;</span> <span class="va">x</span> <span class="op">!=</span> <span class="fl">5</span><span class="op">)</span> <span class="co"># 5% identity part and 2.5% random part (can randomly be the true value)</span></span></code></pre></div>
 <p>Can be combined with n-gram encoding and masking of fixed block size:</p>
-<div class="sourceCode" id="cb41"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb40"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">nt_seq</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"A"</span>, <span class="st">"C"</span>, <span class="st">"G"</span>, <span class="st">"T"</span><span class="op">)</span>, each <span class="op">=</span> <span class="fl">25</span><span class="op">)</span> <span class="op"><a href="../reference/pipe.html">%&gt;%</a></span> <span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste</a></span><span class="op">(</span>collapse <span class="op">=</span> <span class="st">""</span><span class="op">)</span></span>
 <span><span class="va">df</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span>Sequence <span class="op">=</span> <span class="va">nt_seq</span>, Header <span class="op">=</span> <span class="st">"seq_1"</span><span class="op">)</span></span>
 <span><span class="va">fasta_path</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/tempfile.html" class="external-link">tempfile</a></span><span class="op">(</span>fileext <span class="op">=</span> <span class="st">".fasta"</span><span class="op">)</span></span>
@@ -1119,10 +1110,10 @@
 <span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">df</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">tail</a></span><span class="op">(</span><span class="va">df</span><span class="op">)</span></span></code></pre></div>
 <p>We can check that sample weights appear only in blocks.</p>
-<div class="sourceCode" id="cb42"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb41"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/which.html" class="external-link">which</a></span><span class="op">(</span><span class="va">sw</span> <span class="op">==</span> <span class="fl">1</span><span class="op">)</span></span></code></pre></div>
 <p>Here 65 is the mask token (4^3 + 1 = size of the vocabulary + 1).</p>
-<div class="sourceCode" id="cb43"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb42"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">df</span> <span class="op"><a href="../reference/pipe.html">%&gt;%</a></span> <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">sw</span> <span class="op">==</span> <span class="fl">1</span> <span class="op">&amp;</span> <span class="va">x</span> <span class="op">==</span> <span class="fl">65</span><span class="op">)</span> <span class="co"># 10% masked part</span></span>
 <span><span class="va">df</span> <span class="op"><a href="../reference/pipe.html">%&gt;%</a></span> <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">sw</span> <span class="op">==</span> <span class="fl">1</span> <span class="op">&amp;</span> <span class="va">x</span> <span class="op">!=</span> <span class="fl">65</span><span class="op">)</span> <span class="co"># 5% identity part and 5% random part (can randomly be the true value)</span></span></code></pre></div>
 </div>
