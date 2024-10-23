@@ -65,7 +65,7 @@ savechecks <- function(cp, runname, model, optimizer, history, path_checkpoint) 
   file.rename(paste0(modpath, "history_temp.rds"),
               paste0(modpath, "history.rds"))
   ## print when finished
-  cat(paste0("---------- New ", cp, " model saved\n"))
+  message(paste0("---------- New ", cp, " model saved\n"))
 }
 
 #' Tensorboard Writer
@@ -819,8 +819,8 @@ remove_checkpoints <- function(cp_dir, metric = "acc", best_n = 1, ask_before_re
   }
   
   if (ask_before_remove) {
-    cat("Deleting", sum(!index), paste0(ifelse(sum(!index) == 1, "file", "files") , "."),
-        "Only keep \n", paste0(basename(files[index]), collapse = ",\n "), "\n")
+    message("Deleting", sum(!index), paste0(ifelse(sum(!index) == 1, "file", "files") , "."),
+            "Only keep \n", paste0(basename(files[index]), collapse = ",\n "), "\n")
     remove_cps <- utils::askYesNo("")
   } else {
     remove_cps <- TRUE
@@ -1063,5 +1063,3 @@ bal_acc_from_cm <- function(cm, verbose = TRUE) {
   if (verbose) print(class_acc)
   return(mean(class_acc))
 } 
-
-

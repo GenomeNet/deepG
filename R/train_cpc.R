@@ -242,7 +242,7 @@ train_model_cpc <-
     if (!is.null(path_checkpoint)) {
       dir.create(paste(path_checkpoint, runname, sep = "/"))
       dir <- paste(path_checkpoint, runname, sep = "/")
-    ## Create folder for filelog
+      ## Create folder for filelog
       path_file_log <-
         paste(path_checkpoint, runname, "filelog.csv", sep = "/")
     } else {
@@ -307,7 +307,7 @@ train_model_cpc <-
     }
     
     ####~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Creation of generators ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~####
-    cat(format(Sys.time(), "%F %R"), ": Preparing the data\n")
+    message(format(Sys.time(), "%F %R"), ": Preparing the data\n")
     ####~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Training Generator ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~####
     fastrain <-
       do.call(generator_fasta_lm,
@@ -316,17 +316,17 @@ train_model_cpc <-
     
     ####~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Validation Generator ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~####
     fasval <-
-        do.call(
-          generator_fasta_lm,
-          c(
-            GenConfig,
-            GenVConfig,
-            seed = seed,
-            file_filter = file_filter[2]
-          )
+      do.call(
+        generator_fasta_lm,
+        c(
+          GenConfig,
+          GenVConfig,
+          seed = seed,
+          file_filter = file_filter[2]
         )
+      )
     ####~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Creation of metrics ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~####
-    cat(format(Sys.time(), "%F %R"), ": Preparing the metrics\n")
+    message(format(Sys.time(), "%F %R"), ": Preparing the metrics\n")
     train_loss <- tensorflow::tf$keras$metrics$Mean(name = 'train_loss')
     val_loss <- tensorflow::tf$keras$metrics$Mean(name = 'val_loss')
     train_acc <- tensorflow::tf$keras$metrics$Mean(name = 'train_acc')
@@ -336,7 +336,7 @@ train_model_cpc <-
     ###################################### History object preparation ######################################
     ########################################################################################################
     
-    .GlobalEnv$history <- list(
+    history <- list(
       params = list(
         batch_size = batch_size,
         epochs = 0,
@@ -354,15 +354,18 @@ train_model_cpc <-
       )
     )
     
+    eploss <- list()
+    epacc <- list()
+    
     ####~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Reformat to S3 object ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~####
-    class(.GlobalEnv$history) <- "keras_training_history"
+    class(history) <- "keras_training_history"
     
     ########################################################################################################
     ############################################ Model creation ############################################
     ########################################################################################################
     if (is.null(pretrained_model)) {
       ####~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Unsupervised Build from scratch ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~####
-      cat(format(Sys.time(), "%F %R"), ": Creating the model\n")
+      message(format(Sys.time(), "%F %R"), ": Creating the model\n")
       ## Build encoder
       enc <-
         encoder(maxlen = maxlen,
@@ -388,16 +391,16 @@ train_model_cpc <-
       ## Build optimizer
       optimizer <- # keras::optimizer_adam(
         tensorflow::tf$keras$optimizers$legacy$Adam(
-        learning_rate = learningrate,
-        beta_1 = 0.8,
-        epsilon = 10 ^ -8,
-        decay = 0.999,
-        clipnorm = 0.01
-      )
+          learning_rate = learningrate,
+          beta_1 = 0.8,
+          epsilon = 10 ^ -8,
+          decay = 0.999,
+          clipnorm = 0.01
+        )
       ####~~~~~~~~~~~~~~~~~~~~~~~~~~ Unsupervised Read if pretrained model given ~~~~~~~~~~~~~~~~~~~~~~~~~####
       
     } else {
-      cat(format(Sys.time(), "%F %R"), ": Loading the trained model.\n")
+      message(format(Sys.time(), "%F %R"), ": Loading the trained model.\n")
       ## Read model
       model <- keras::load_model_hdf5(pretrained_model, compile = FALSE)
       optimizer <- ReadOpt(pretrained_model)
@@ -518,7 +521,7 @@ train_model_cpc <-
             
             ## Print status of epoch
             if (b %in% seq(0, batches, by = batches / 10)) {
-              cat("-")
+              message("-")
             }
           }
           
@@ -552,10 +555,10 @@ train_model_cpc <-
                                  train_acc$result())
             
             # Save epoch result metric values to history object
-            .GlobalEnv$history$params$epochs <- epoch
-            .GlobalEnv$history$metrics$loss[epoch] <-
+            history$params$epochs <- epoch
+            history$metrics$loss[epoch] <-
               as.double(train_loss$result())
-            .GlobalEnv$history$metrics$accuracy[epoch]  <-
+            history$metrics$accuracy[epoch]  <-
               as.double(train_acc$result())
             
             # Reset states
@@ -575,17 +578,17 @@ train_model_cpc <-
                                  ", Validation Acc",
                                  val_acc$result())
             
-            # save results globally for best model saving condition
+            # save results for best model saving condition
             if (b == max(seq(batches))) {
-              .GlobalEnv$eploss[[epoch]] <- as.double(val_loss$result())
-              .GlobalEnv$epacc[[epoch]] <-
+              eploss[[epoch]] <- as.double(val_loss$result())
+              epacc[[epoch]] <-
                 as.double(val_acc$result())
             }
             
             # Save epoch result metric values to history object
-            .GlobalEnv$history$metrics$val_loss[epoch] <-
+            history$metrics$val_loss[epoch] <-
               as.double(val_loss$result())
-            .GlobalEnv$history$metrics$val_accuracy[epoch]  <-
+            history$metrics$val_accuracy[epoch]  <-
               as.double(val_acc$result())
             
             # Reset states
@@ -593,6 +596,7 @@ train_model_cpc <-
             val_acc$reset_states()
           }
         }
+        return(list(history,eploss,epacc))
       }
     
     ########################################################################################################
@@ -600,23 +604,25 @@ train_model_cpc <-
     ########################################################################################################
     
     
-    cat(format(Sys.time(), "%F %R"), ": Starting Training\n")
+    message(format(Sys.time(), "%F %R"), ": Starting Training\n")
     
     ## Training loop
     for (i in seq(initial_epoch, (epochs + initial_epoch - 1))) {
-      cat(format(Sys.time(), "%F %R"), ": EPOCH", i, " \n")
+      message(format(Sys.time(), "%F %R"), ": EPOCH ", i, " \n")
       
       ## Epoch loop
-      train_val_loop(epoch = i, train_val_ratio = train_val_ratio)
-      
+      out <- train_val_loop(epoch = i, train_val_ratio = train_val_ratio)
+      history <- out[[1]]
+      eploss <- out[[2]]
+      epacc <- out[[3]]
       ## Save checkpoints
       # best model (smallest loss)
-      if (.GlobalEnv$eploss[[i]] == min(unlist(.GlobalEnv$eploss))) {
-        savechecks("best", runname, model, optimizer, .GlobalEnv$history, path_checkpoint)
+      if (eploss[[i]] == min(unlist(eploss))) {
+        savechecks("best", runname, model, optimizer, history, path_checkpoint)
       }
       # backup model every 10 epochs
       if (i %% 2 == 0) {
-        savechecks("backup", runname, model, optimizer, .GlobalEnv$history, path_checkpoint)
+        savechecks("backup", runname, model, optimizer, history, path_checkpoint)
       }
     }
     
@@ -624,7 +630,7 @@ train_model_cpc <-
     ############################################# Final saves ##############################################
     ########################################################################################################
     
-    savechecks(cp = "FINAL", runname, model, optimizer, .GlobalEnv$history, path_checkpoint)
+    savechecks(cp = "FINAL", runname, model, optimizer, history, path_checkpoint)
     if (!is.null(path_tensorboard)) {
       writegraph <-
         tensorflow::tf$keras$callbacks$TensorBoard(file.path(logdir, runname))
