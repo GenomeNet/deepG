@@ -336,7 +336,7 @@ train_model_cpc <-
     ###################################### History object preparation ######################################
     ########################################################################################################
     
-    .GlobalEnv$history <- list(
+    history <- list(
       params = list(
         batch_size = batch_size,
         epochs = 0,
@@ -355,7 +355,7 @@ train_model_cpc <-
     )
     
     ####~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Reformat to S3 object ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~####
-    class(.GlobalEnv$history) <- "keras_training_history"
+    class(history) <- "keras_training_history"
     
     ########################################################################################################
     ############################################ Model creation ############################################
@@ -552,10 +552,10 @@ train_model_cpc <-
                                  train_acc$result())
             
             # Save epoch result metric values to history object
-            .GlobalEnv$history$params$epochs <- epoch
-            .GlobalEnv$history$metrics$loss[epoch] <-
+            history$params$epochs <- epoch
+            history$metrics$loss[epoch] <-
               as.double(train_loss$result())
-            .GlobalEnv$history$metrics$accuracy[epoch]  <-
+            history$metrics$accuracy[epoch]  <-
               as.double(train_acc$result())
             
             # Reset states
@@ -575,17 +575,17 @@ train_model_cpc <-
                                  ", Validation Acc",
                                  val_acc$result())
             
-            # save results globally for best model saving condition
+            # save results for best model saving condition
             if (b == max(seq(batches))) {
-              .GlobalEnv$eploss[[epoch]] <- as.double(val_loss$result())
-              .GlobalEnv$epacc[[epoch]] <-
+              eploss[[epoch]] <- as.double(val_loss$result())
+              epacc[[epoch]] <-
                 as.double(val_acc$result())
             }
             
             # Save epoch result metric values to history object
-            .GlobalEnv$history$metrics$val_loss[epoch] <-
+            history$metrics$val_loss[epoch] <-
               as.double(val_loss$result())
-            .GlobalEnv$history$metrics$val_accuracy[epoch]  <-
+            history$metrics$val_accuracy[epoch]  <-
               as.double(val_acc$result())
             
             # Reset states
@@ -593,6 +593,7 @@ train_model_cpc <-
             val_acc$reset_states()
           }
         }
+        return(list(history,eploss,epacc))
       }
     
     ########################################################################################################
@@ -607,16 +608,18 @@ train_model_cpc <-
       message(format(Sys.time(), "%F %R"), ": EPOCH", i, " \n")
       
       ## Epoch loop
-      train_val_loop(epoch = i, train_val_ratio = train_val_ratio)
-      
+      out <- train_val_loop(epoch = i, train_val_ratio = train_val_ratio)
+      history <- out[[1]]
+      eploss <- out[[2]]
+      epacc <- out[[3]]
       ## Save checkpoints
       # best model (smallest loss)
-      if (.GlobalEnv$eploss[[i]] == min(unlist(.GlobalEnv$eploss))) {
-        savechecks("best", runname, model, optimizer, .GlobalEnv$history, path_checkpoint)
+      if (eploss[[i]] == min(unlist(eploss))) {
+        savechecks("best", runname, model, optimizer, history, path_checkpoint)
       }
       # backup model every 10 epochs
       if (i %% 2 == 0) {
-        savechecks("backup", runname, model, optimizer, .GlobalEnv$history, path_checkpoint)
+        savechecks("backup", runname, model, optimizer, history, path_checkpoint)
       }
     }
     
@@ -624,7 +627,7 @@ train_model_cpc <-
     ############################################# Final saves ##############################################
     ########################################################################################################
     
-    savechecks(cp = "FINAL", runname, model, optimizer, .GlobalEnv$history, path_checkpoint)
+    savechecks(cp = "FINAL", runname, model, optimizer, history, path_checkpoint)
     if (!is.null(path_tensorboard)) {
       writegraph <-
         tensorflow::tf$keras$callbacks$TensorBoard(file.path(logdir, runname))
