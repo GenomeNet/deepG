@@ -354,6 +354,9 @@ train_model_cpc <-
       )
     )
     
+    eploss <- list()
+    epacc <- list()
+    
     ####~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Reformat to S3 object ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~####
     class(history) <- "keras_training_history"
     
@@ -605,7 +608,7 @@ train_model_cpc <-
     
     ## Training loop
     for (i in seq(initial_epoch, (epochs + initial_epoch - 1))) {
-      message(format(Sys.time(), "%F %R"), ": EPOCH", i, " \n")
+      message(format(Sys.time(), "%F %R"), ": EPOCH ", i, " \n")
       
       ## Epoch loop
       out <- train_val_loop(epoch = i, train_val_ratio = train_val_ratio)
