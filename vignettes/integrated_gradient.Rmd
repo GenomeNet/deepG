@@ -261,6 +261,7 @@ for (i in 1:20) {
   biggest_index <- which(ig == max(ig), arr.ind = TRUE)
   biggest_index
   row_index <- biggest_index[ , "row"]
+  row_index <- row_index[1]
   col_index <- biggest_index[ , "col"]               
   new_row <- rep(0, 4)
   nt_index_old <- col_index
