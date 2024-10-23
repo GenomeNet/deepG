@@ -106,9 +106,9 @@
     
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># devtools::install_github("GenomeNet/deepG")</span></span>
-<span><span class="co"># library(deepG)</span></span>
-<span><span class="co"># library(magrittr)</span></span>
-<span><span class="co"># library(ggplot2)</span></span></code></pre></div>
+<span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/GenomeNet/deepG" class="external-link">deepG</a></span><span class="op">)</span></span>
+<span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://magrittr.tidyverse.org" class="external-link">magrittr</a></span><span class="op">)</span></span>
+<span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://ggplot2.tidyverse.org" class="external-link">ggplot2</a></span><span class="op">)</span></span></code></pre></div>
 <style type="text/css">
 mark.in {
 background-color: CornflowerBlue;
@@ -225,17 +225,17 @@ around 80% <tt>GC</tt> content and second one around 50%).</p>
 <span>                    step <span class="op">=</span> <span class="fl">50</span>, </span>
 <span>                    vocabulary_label <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"high_gc"</span>, <span class="st">"equal_dist"</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
 <pre><code><span><span class="co">## Epoch 1/6</span></span>
-<span><span class="co">##  1/50 [..............................] - ETA: 1:01 - loss: 0.7251 - acc: 0.5156 6/50 [==&gt;...........................] - ETA: 0s - loss: 0.6967 - acc: 0.5208  10/50 [=====&gt;........................] - ETA: 0s - loss: 0.6735 - acc: 0.546915/50 [========&gt;.....................] - ETA: 0s - loss: 0.6506 - acc: 0.600020/50 [===========&gt;..................] - ETA: 0s - loss: 0.6292 - acc: 0.648424/50 [=============&gt;................] - ETA: 0s - loss: 0.6143 - acc: 0.681629/50 [================&gt;.............] - ETA: 0s - loss: 0.5939 - acc: 0.720935/50 [====================&gt;.........] - ETA: 0s - loss: 0.5730 - acc: 0.751840/50 [=======================&gt;......] - ETA: 0s - loss: 0.5556 - acc: 0.775845/50 [==========================&gt;...] - ETA: 0s - loss: 0.5406 - acc: 0.794149/50 [============================&gt;.] - ETA: 0s - loss: 0.5298 - acc: 0.804850/50 [==============================] - 2s 19ms/step - loss: 0.5264 - acc: 0.8084 - val_loss: 0.8114 - val_acc: 0.5000 - lr: 0.0010</span></span>
+<span><span class="co">##  1/50 [..............................] - ETA: 1:00 - loss: 0.7005 - acc: 0.3906 6/50 [==&gt;...........................] - ETA: 0s - loss: 0.6881 - acc: 0.5417  10/50 [=====&gt;........................] - ETA: 0s - loss: 0.6825 - acc: 0.578115/50 [========&gt;.....................] - ETA: 0s - loss: 0.6681 - acc: 0.676021/50 [===========&gt;..................] - ETA: 0s - loss: 0.6466 - acc: 0.746325/50 [==============&gt;...............] - ETA: 0s - loss: 0.6319 - acc: 0.777529/50 [================&gt;.............] - ETA: 0s - loss: 0.6159 - acc: 0.805034/50 [===================&gt;..........] - ETA: 0s - loss: 0.5983 - acc: 0.826738/50 [=====================&gt;........] - ETA: 0s - loss: 0.5831 - acc: 0.842543/50 [========================&gt;.....] - ETA: 0s - loss: 0.5637 - acc: 0.858347/50 [===========================&gt;..] - ETA: 0s - loss: 0.5501 - acc: 0.867450/50 [==============================] - ETA: 0s - loss: 0.5391 - acc: 0.874750/50 [==============================] - 2s 20ms/step - loss: 0.5391 - acc: 0.8747 - val_loss: 0.5296 - val_acc: 0.9578 - lr: 0.0010</span></span>
 <span><span class="co">## Epoch 2/6</span></span>
-<span><span class="co">##  1/50 [..............................] - ETA: 0s - loss: 0.3881 - acc: 0.9531 5/50 [==&gt;...........................] - ETA: 0s - loss: 0.3797 - acc: 0.959410/50 [=====&gt;........................] - ETA: 0s - loss: 0.3816 - acc: 0.956315/50 [========&gt;.....................] - ETA: 0s - loss: 0.3734 - acc: 0.961519/50 [==========&gt;...................] - ETA: 0s - loss: 0.3717 - acc: 0.962224/50 [=============&gt;................] - ETA: 0s - loss: 0.3673 - acc: 0.962229/50 [================&gt;.............] - ETA: 0s - loss: 0.3605 - acc: 0.967134/50 [===================&gt;..........] - ETA: 0s - loss: 0.3580 - acc: 0.966938/50 [=====================&gt;........] - ETA: 0s - loss: 0.3538 - acc: 0.968843/50 [========================&gt;.....] - ETA: 0s - loss: 0.3489 - acc: 0.970648/50 [===========================&gt;..] - ETA: 0s - loss: 0.3441 - acc: 0.971450/50 [==============================] - 1s 15ms/step - loss: 0.3420 - acc: 0.9719 - val_loss: 0.5117 - val_acc: 0.7109 - lr: 0.0010</span></span>
+<span><span class="co">##  1/50 [..............................] - ETA: 0s - loss: 0.3424 - acc: 0.9844 6/50 [==&gt;...........................] - ETA: 0s - loss: 0.3381 - acc: 0.981811/50 [=====&gt;........................] - ETA: 0s - loss: 0.3287 - acc: 0.984417/50 [=========&gt;....................] - ETA: 0s - loss: 0.3093 - acc: 0.985320/50 [===========&gt;..................] - ETA: 0s - loss: 0.3038 - acc: 0.985225/50 [==============&gt;...............] - ETA: 0s - loss: 0.2914 - acc: 0.986231/50 [=================&gt;............] - ETA: 0s - loss: 0.2775 - acc: 0.985936/50 [====================&gt;.........] - ETA: 0s - loss: 0.2672 - acc: 0.987039/50 [======================&gt;.......] - ETA: 0s - loss: 0.2604 - acc: 0.987242/50 [========================&gt;.....] - ETA: 0s - loss: 0.2541 - acc: 0.987746/50 [==========================&gt;...] - ETA: 0s - loss: 0.2471 - acc: 0.987849/50 [============================&gt;.] - ETA: 0s - loss: 0.2413 - acc: 0.988250/50 [==============================] - 1s 16ms/step - loss: 0.2392 - acc: 0.9884 - val_loss: 0.3314 - val_acc: 0.9406 - lr: 0.0010</span></span>
 <span><span class="co">## Epoch 3/6</span></span>
-<span><span class="co">##  1/50 [..............................] - ETA: 0s - loss: 0.2863 - acc: 0.9844 6/50 [==&gt;...........................] - ETA: 0s - loss: 0.2836 - acc: 0.981811/50 [=====&gt;........................] - ETA: 0s - loss: 0.2759 - acc: 0.987216/50 [========&gt;.....................] - ETA: 0s - loss: 0.2648 - acc: 0.988321/50 [===========&gt;..................] - ETA: 0s - loss: 0.2607 - acc: 0.985925/50 [==============&gt;...............] - ETA: 0s - loss: 0.2536 - acc: 0.987530/50 [=================&gt;............] - ETA: 0s - loss: 0.2452 - acc: 0.987535/50 [====================&gt;.........] - ETA: 0s - loss: 0.2395 - acc: 0.987940/50 [=======================&gt;......] - ETA: 0s - loss: 0.2317 - acc: 0.989546/50 [==========================&gt;...] - ETA: 0s - loss: 0.2245 - acc: 0.989150/50 [==============================] - ETA: 0s - loss: 0.2187 - acc: 0.990050/50 [==============================] - 1s 14ms/step - loss: 0.2187 - acc: 0.9900 - val_loss: 0.2861 - val_acc: 0.9156 - lr: 0.0010</span></span>
+<span><span class="co">##  1/50 [..............................] - ETA: 0s - loss: 0.1552 - acc: 0.9844 6/50 [==&gt;...........................] - ETA: 0s - loss: 0.1424 - acc: 0.992211/50 [=====&gt;........................] - ETA: 0s - loss: 0.1349 - acc: 0.994316/50 [========&gt;.....................] - ETA: 0s - loss: 0.1275 - acc: 0.995122/50 [============&gt;.................] - ETA: 0s - loss: 0.1222 - acc: 0.995026/50 [==============&gt;...............] - ETA: 0s - loss: 0.1183 - acc: 0.995232/50 [==================&gt;...........] - ETA: 0s - loss: 0.1130 - acc: 0.995136/50 [====================&gt;.........] - ETA: 0s - loss: 0.1090 - acc: 0.995741/50 [=======================&gt;......] - ETA: 0s - loss: 0.1045 - acc: 0.995846/50 [==========================&gt;...] - ETA: 0s - loss: 0.1011 - acc: 0.995650/50 [==============================] - 1s 14ms/step - loss: 0.0977 - acc: 0.9959 - val_loss: 0.1857 - val_acc: 0.9594 - lr: 0.0010</span></span>
 <span><span class="co">## Epoch 4/6</span></span>
-<span><span class="co">##  1/50 [..............................] - ETA: 0s - loss: 0.1496 - acc: 0.9844 6/50 [==&gt;...........................] - ETA: 0s - loss: 0.1498 - acc: 0.989610/50 [=====&gt;........................] - ETA: 0s - loss: 0.1427 - acc: 0.992215/50 [========&gt;.....................] - ETA: 0s - loss: 0.1355 - acc: 0.994819/50 [==========&gt;...................] - ETA: 0s - loss: 0.1335 - acc: 0.994223/50 [============&gt;.................] - ETA: 0s - loss: 0.1288 - acc: 0.995228/50 [===============&gt;..............] - ETA: 0s - loss: 0.1234 - acc: 0.996133/50 [==================&gt;...........] - ETA: 0s - loss: 0.1200 - acc: 0.996237/50 [=====================&gt;........] - ETA: 0s - loss: 0.1159 - acc: 0.996642/50 [========================&gt;.....] - ETA: 0s - loss: 0.1110 - acc: 0.997048/50 [===========================&gt;..] - ETA: 0s - loss: 0.1066 - acc: 0.997150/50 [==============================] - 1s 15ms/step - loss: 0.1051 - acc: 0.9972 - val_loss: 0.1370 - val_acc: 0.9719 - lr: 0.0010</span></span>
+<span><span class="co">##  1/50 [..............................] - ETA: 0s - loss: 0.0734 - acc: 0.9844 7/50 [===&gt;..........................] - ETA: 0s - loss: 0.0624 - acc: 0.995511/50 [=====&gt;........................] - ETA: 0s - loss: 0.0580 - acc: 0.997217/50 [=========&gt;....................] - ETA: 0s - loss: 0.0545 - acc: 0.997223/50 [============&gt;.................] - ETA: 0s - loss: 0.0528 - acc: 0.997329/50 [================&gt;.............] - ETA: 0s - loss: 0.0503 - acc: 0.997335/50 [====================&gt;.........] - ETA: 0s - loss: 0.0488 - acc: 0.997340/50 [=======================&gt;......] - ETA: 0s - loss: 0.0468 - acc: 0.997746/50 [==========================&gt;...] - ETA: 0s - loss: 0.0454 - acc: 0.997650/50 [==============================] - 1s 14ms/step - loss: 0.0441 - acc: 0.9978 - val_loss: 0.1155 - val_acc: 0.9656 - lr: 0.0010</span></span>
 <span><span class="co">## Epoch 5/6</span></span>
-<span><span class="co">##  1/50 [..............................] - ETA: 0s - loss: 0.0634 - acc: 1.0000 6/50 [==&gt;...........................] - ETA: 0s - loss: 0.0640 - acc: 0.997410/50 [=====&gt;........................] - ETA: 0s - loss: 0.0601 - acc: 0.998415/50 [========&gt;.....................] - ETA: 0s - loss: 0.0566 - acc: 0.999020/50 [===========&gt;..................] - ETA: 0s - loss: 0.0553 - acc: 0.998424/50 [=============&gt;................] - ETA: 0s - loss: 0.0533 - acc: 0.998729/50 [================&gt;.............] - ETA: 0s - loss: 0.0507 - acc: 0.998933/50 [==================&gt;...........] - ETA: 0s - loss: 0.0497 - acc: 0.998637/50 [=====================&gt;........] - ETA: 0s - loss: 0.0480 - acc: 0.998742/50 [========================&gt;.....] - ETA: 0s - loss: 0.0461 - acc: 0.998947/50 [===========================&gt;..] - ETA: 0s - loss: 0.0447 - acc: 0.998750/50 [==============================] - 1s 15ms/step - loss: 0.0437 - acc: 0.9987 - val_loss: 0.0898 - val_acc: 0.9812 - lr: 0.0010</span></span>
+<span><span class="co">##  1/50 [..............................] - ETA: 0s - loss: 0.0293 - acc: 1.0000 7/50 [===&gt;..........................] - ETA: 0s - loss: 0.0305 - acc: 0.997811/50 [=====&gt;........................] - ETA: 0s - loss: 0.0288 - acc: 0.998616/50 [========&gt;.....................] - ETA: 0s - loss: 0.0272 - acc: 0.999021/50 [===========&gt;..................] - ETA: 0s - loss: 0.0266 - acc: 0.999325/50 [==============&gt;...............] - ETA: 0s - loss: 0.0258 - acc: 0.999431/50 [=================&gt;............] - ETA: 0s - loss: 0.0249 - acc: 0.999536/50 [====================&gt;.........] - ETA: 0s - loss: 0.0242 - acc: 0.999641/50 [=======================&gt;......] - ETA: 0s - loss: 0.0235 - acc: 0.999646/50 [==========================&gt;...] - ETA: 0s - loss: 0.0229 - acc: 0.999750/50 [==============================] - ETA: 0s - loss: 0.0224 - acc: 0.999750/50 [==============================] - 1s 16ms/step - loss: 0.0224 - acc: 0.9997 - val_loss: 0.0869 - val_acc: 0.9750 - lr: 0.0010</span></span>
 <span><span class="co">## Epoch 6/6</span></span>
-<span><span class="co">##  1/50 [..............................] - ETA: 0s - loss: 0.0277 - acc: 1.0000 6/50 [==&gt;...........................] - ETA: 0s - loss: 0.0282 - acc: 1.000010/50 [=====&gt;........................] - ETA: 0s - loss: 0.0270 - acc: 1.000015/50 [========&gt;.....................] - ETA: 0s - loss: 0.0257 - acc: 1.000019/50 [==========&gt;...................] - ETA: 0s - loss: 0.0254 - acc: 1.000023/50 [============&gt;.................] - ETA: 0s - loss: 0.0247 - acc: 1.000028/50 [===============&gt;..............] - ETA: 0s - loss: 0.0239 - acc: 1.000033/50 [==================&gt;...........] - ETA: 0s - loss: 0.0235 - acc: 1.000037/50 [=====================&gt;........] - ETA: 0s - loss: 0.0228 - acc: 1.000042/50 [========================&gt;.....] - ETA: 0s - loss: 0.0221 - acc: 1.000047/50 [===========================&gt;..] - ETA: 0s - loss: 0.0217 - acc: 1.000050/50 [==============================] - ETA: 0s - loss: 0.0213 - acc: 1.000050/50 [==============================] - 1s 15ms/step - loss: 0.0213 - acc: 1.0000 - val_loss: 0.0825 - val_acc: 0.9828 - lr: 0.0010</span></span></code></pre>
+<span><span class="co">##  1/50 [..............................] - ETA: 0s - loss: 0.0164 - acc: 1.0000 7/50 [===&gt;..........................] - ETA: 0s - loss: 0.0161 - acc: 1.000011/50 [=====&gt;........................] - ETA: 0s - loss: 0.0159 - acc: 1.000016/50 [========&gt;.....................] - ETA: 0s - loss: 0.0154 - acc: 1.000022/50 [============&gt;.................] - ETA: 0s - loss: 0.0151 - acc: 1.000026/50 [==============&gt;...............] - ETA: 0s - loss: 0.0148 - acc: 1.000032/50 [==================&gt;...........] - ETA: 0s - loss: 0.0145 - acc: 1.000037/50 [=====================&gt;........] - ETA: 0s - loss: 0.0142 - acc: 1.000043/50 [========================&gt;.....] - ETA: 0s - loss: 0.0138 - acc: 1.000048/50 [===========================&gt;..] - ETA: 0s - loss: 0.0136 - acc: 1.000050/50 [==============================] - 1s 13ms/step - loss: 0.0135 - acc: 1.0000 - val_loss: 0.0858 - val_acc: 0.9766 - lr: 0.0010</span></span></code></pre>
 <pre><code><span><span class="co">## Training done.</span></span></code></pre>
 <div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">hist</span><span class="op">)</span></span></code></pre></div>
@@ -279,7 +279,7 @@ class</p>
 <span><span class="fu"><a href="https://rdrr.io/r/base/colnames.html" class="external-link">colnames</a></span><span class="op">(</span><span class="va">pred</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"high_gc"</span>, <span class="st">"equal_dist"</span><span class="op">)</span></span>
 <span><span class="va">pred</span></span></code></pre></div>
 <pre><code><span><span class="co">##        high_gc equal_dist</span></span>
-<span><span class="co">## [1,] 0.9984785 0.00152153</span></span></code></pre>
+<span><span class="co">## [1,] 0.9657075  0.0342925</span></span></code></pre>
 <p>We can visualize what parts where important for the prediction.</p>
 <div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">ig</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/integrated_gradients.html">integrated_gradients</a></span><span class="op">(</span></span>
@@ -303,7 +303,7 @@ the smallest IG score.</p>
 <span><span class="va">smallest_index</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/which.html" class="external-link">which</a></span><span class="op">(</span><span class="va">ig</span> <span class="op">==</span> <span class="fu"><a href="https://rdrr.io/r/base/Extremes.html" class="external-link">min</a></span><span class="op">(</span><span class="va">ig</span><span class="op">)</span>, arr.ind <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
 <span><span class="va">smallest_index</span></span></code></pre></div>
 <pre><code><span><span class="co">##      row col</span></span>
-<span><span class="co">## [1,]  17   1</span></span></code></pre>
+<span><span class="co">## [1,]  33   4</span></span></code></pre>
 <p>We may change the nucleotide with the lowest score and observe the
 change in prediction confidence</p>
 <div class="sourceCode" id="cb18"><pre class="downlit sourceCode r">
@@ -312,14 +312,14 @@ change in prediction confidence</p>
 <span></span>
 <span><span class="co"># prediction for original sequence</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/stats/predict.html" class="external-link">predict</a></span><span class="op">(</span><span class="va">model</span>, <span class="va">high_gc_seq_one_hot</span>, verbose <span class="op">=</span> <span class="fl">0</span><span class="op">)</span></span></code></pre></div>
-<pre><code><span><span class="co">##           [,1]       [,2]</span></span>
-<span><span class="co">## [1,] 0.9984785 0.00152153</span></span></code></pre>
+<pre><code><span><span class="co">##           [,1]      [,2]</span></span>
+<span><span class="co">## [1,] 0.9657075 0.0342925</span></span></code></pre>
 <div class="sourceCode" id="cb20"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># change nt</span></span>
 <span><span class="va">smallest_index</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/which.html" class="external-link">which</a></span><span class="op">(</span><span class="va">ig</span> <span class="op">==</span> <span class="fu"><a href="https://rdrr.io/r/base/Extremes.html" class="external-link">min</a></span><span class="op">(</span><span class="va">ig</span><span class="op">)</span>, arr.ind <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
 <span><span class="va">smallest_index</span></span></code></pre></div>
 <pre><code><span><span class="co">##      row col</span></span>
-<span><span class="co">## [1,]  17   1</span></span></code></pre>
+<span><span class="co">## [1,]  33   4</span></span></code></pre>
 <div class="sourceCode" id="cb22"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">row_index</span> <span class="op">&lt;-</span> <span class="va">smallest_index</span><span class="op">[</span> , <span class="st">"row"</span><span class="op">]</span></span>
 <span><span class="va">col_index</span> <span class="op">&lt;-</span> <span class="va">smallest_index</span><span class="op">[</span> , <span class="st">"col"</span><span class="op">]</span>               </span>
@@ -329,12 +329,12 @@ change in prediction confidence</p>
 <span><span class="va">new_row</span><span class="op">[</span><span class="va">nt_index_new</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="fl">1</span></span>
 <span><span class="va">high_gc_seq_one_hot_changed</span><span class="op">[</span><span class="fl">1</span>, <span class="va">row_index</span>, <span class="op">]</span> <span class="op">&lt;-</span> <span class="va">new_row</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span><span class="st">"At position"</span>, <span class="va">row_index</span>, <span class="st">"changing"</span>, <span class="va">vocabulary</span><span class="op">[</span><span class="va">nt_index_old</span><span class="op">]</span>, <span class="st">"to"</span>, <span class="va">vocabulary</span><span class="op">[</span><span class="va">nt_index_new</span><span class="op">]</span>, <span class="st">"\n"</span><span class="op">)</span></span></code></pre></div>
-<pre><code><span><span class="co">## At position 17 changing A to C</span></span></code></pre>
+<pre><code><span><span class="co">## At position 33 changing T to A</span></span></code></pre>
 <div class="sourceCode" id="cb24"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">pred</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/predict.html" class="external-link">predict</a></span><span class="op">(</span><span class="va">model</span>, <span class="va">high_gc_seq_one_hot_changed</span>, verbose <span class="op">=</span> <span class="fl">0</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">pred</span><span class="op">)</span></span></code></pre></div>
 <pre><code><span><span class="co">##           [,1]       [,2]</span></span>
-<span><span class="co">## [1,] 0.9988175 0.00118241</span></span></code></pre>
+<span><span class="co">## [1,] 0.9255649 0.07443508</span></span></code></pre>
 <p>Let’s repeatedly apply the previous step and change the sequence
 after each iteration.</p>
 <div class="sourceCode" id="cb26"><pre class="downlit sourceCode r">
@@ -368,31 +368,31 @@ after each iteration.</p>
 <span>  <span class="va">pred_list</span><span class="op">[[</span><span class="va">i</span> <span class="op">+</span> <span class="fl">1</span><span class="op">]</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="va">pred</span> </span>
 <span>  </span>
 <span><span class="op">}</span></span></code></pre></div>
-<pre><code><span><span class="co">## At position 17 changing A to C </span></span>
+<pre><code><span><span class="co">## At position 33 changing T to A </span></span>
 <span><span class="co">## At position 15 changing T to A </span></span>
-<span><span class="co">## At position 33 changing T to A </span></span>
-<span><span class="co">## At position 33 changing A to C </span></span>
-<span><span class="co">## At position 29 changing A to C </span></span>
-<span><span class="co">## At position 44 changing T to A </span></span>
-<span><span class="co">## At position 44 changing A to C </span></span>
-<span><span class="co">## At position 43 changing A to C </span></span>
-<span><span class="co">## At position 15 changing A to C </span></span>
-<span><span class="co">## At position 1 changing T to A </span></span>
-<span><span class="co">## At position 7 changing A to C </span></span>
-<span><span class="co">## At position 28 changing T to A </span></span>
-<span><span class="co">## At position 28 changing A to C </span></span>
+<span><span class="co">## At position 46 changing A to C </span></span>
 <span><span class="co">## At position 11 changing C to A </span></span>
-<span><span class="co">## At position 11 changing A to C </span></span>
-<span><span class="co">## At position 11 changing C to A </span></span>
-<span><span class="co">## At position 11 changing A to C </span></span>
-<span><span class="co">## At position 11 changing C to A </span></span>
-<span><span class="co">## At position 11 changing A to C </span></span>
-<span><span class="co">## At position 11 changing C to A</span></span></code></pre>
+<span><span class="co">## At position 19 changing C to A </span></span>
+<span><span class="co">## At position 19 changing A to C </span></span>
+<span><span class="co">## At position 19 changing C to A </span></span>
+<span><span class="co">## At position 19 changing A to C </span></span>
+<span><span class="co">## At position 19 changing C to A </span></span>
+<span><span class="co">## At position 19 changing A to C </span></span>
+<span><span class="co">## At position 19 changing C to A </span></span>
+<span><span class="co">## At position 19 changing A to C </span></span>
+<span><span class="co">## At position 19 changing C to A </span></span>
+<span><span class="co">## At position 19 changing A to C </span></span>
+<span><span class="co">## At position 19 changing C to A </span></span>
+<span><span class="co">## At position 19 changing A to C </span></span>
+<span><span class="co">## At position 19 changing C to A </span></span>
+<span><span class="co">## At position 19 changing A to C </span></span>
+<span><span class="co">## At position 19 changing C to A </span></span>
+<span><span class="co">## At position 19 changing A to C</span></span></code></pre>
 <div class="sourceCode" id="cb28"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">pred_df</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/do.call.html" class="external-link">do.call</a></span><span class="op">(</span><span class="va">rbind</span>, <span class="va">pred_list</span><span class="op">)</span></span>
 <span><span class="va">pred_df</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span><span class="va">pred_df</span>, iteration <span class="op">=</span> <span class="fl">0</span><span class="op">:</span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">nrow</a></span><span class="op">(</span><span class="va">pred_df</span><span class="op">)</span> <span class="op">-</span> <span class="fl">1</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">pred_df</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"high_gc"</span>, <span class="st">"equal_dist"</span>, <span class="st">"iteration"</span><span class="op">)</span></span>
-<span><span class="fu">ggplot</span><span class="op">(</span><span class="va">pred_df</span>, <span class="fu">aes</span><span class="op">(</span>x <span class="op">=</span> <span class="va">iteration</span>, y <span class="op">=</span> <span class="va">high_gc</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span> <span class="fu">geom_line</span><span class="op">(</span><span class="op">)</span> <span class="op">+</span> <span class="fu">ylab</span><span class="op">(</span><span class="st">"high GC confidence"</span><span class="op">)</span></span></code></pre></div>
+<span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html" class="external-link">ggplot</a></span><span class="op">(</span><span class="va">pred_df</span>, <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html" class="external-link">aes</a></span><span class="op">(</span>x <span class="op">=</span> <span class="va">iteration</span>, y <span class="op">=</span> <span class="va">high_gc</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_path.html" class="external-link">geom_line</a></span><span class="op">(</span><span class="op">)</span> <span class="op">+</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html" class="external-link">ylab</a></span><span class="op">(</span><span class="st">"high GC confidence"</span><span class="op">)</span></span></code></pre></div>
 <p><img src="integrated_gradient_files/figure-html/unnamed-chunk-12-1.png" width="700"></p>
 <p>We can try the same in the opposite direction, i.e. replace big IG
 scores.</p>
@@ -401,7 +401,8 @@ scores.</p>
 <span><span class="va">high_gc_seq_one_hot_changed</span> <span class="op">&lt;-</span> <span class="va">high_gc_seq_one_hot</span> </span>
 <span></span>
 <span><span class="va">pred_list</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="op">)</span></span>
-<span><span class="va">pred_list</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="va">pred</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/predict.html" class="external-link">predict</a></span><span class="op">(</span><span class="va">model</span>, <span class="va">high_gc_seq_one_hot</span>, verbose <span class="op">=</span> <span class="fl">0</span><span class="op">)</span></span>
+<span><span class="va">pred</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/predict.html" class="external-link">predict</a></span><span class="op">(</span><span class="va">model</span>, <span class="va">high_gc_seq_one_hot</span>, verbose <span class="op">=</span> <span class="fl">0</span><span class="op">)</span></span>
+<span><span class="va">pred_list</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="va">pred</span></span>
 <span></span>
 <span><span class="co"># change nts</span></span>
 <span><span class="kw">for</span> <span class="op">(</span><span class="va">i</span> <span class="kw">in</span> <span class="fl">1</span><span class="op">:</span><span class="fl">20</span><span class="op">)</span> <span class="op">{</span></span>
@@ -427,31 +428,31 @@ scores.</p>
 <span>  <span class="va">pred_list</span><span class="op">[[</span><span class="va">i</span> <span class="op">+</span> <span class="fl">1</span><span class="op">]</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="va">pred</span> </span>
 <span>  </span>
 <span><span class="op">}</span></span></code></pre></div>
-<pre><code><span><span class="co">## At position 14 changing C to A </span></span>
-<span><span class="co">## At position 19 changing C to A </span></span>
-<span><span class="co">## At position 25 changing C to A </span></span>
+<pre><code><span><span class="co">## At position 30 changing G to A </span></span>
+<span><span class="co">## At position 20 changing G to A </span></span>
+<span><span class="co">## At position 34 changing G to A </span></span>
+<span><span class="co">## At position 38 changing G to A </span></span>
 <span><span class="co">## At position 32 changing C to A </span></span>
-<span><span class="co">## At position 31 changing G to A </span></span>
-<span><span class="co">## At position 45 changing C to A </span></span>
+<span><span class="co">## At position 18 changing G to A </span></span>
+<span><span class="co">## At position 19 changing C to A </span></span>
+<span><span class="co">## At position 23 changing C to A </span></span>
+<span><span class="co">## At position 25 changing C to A </span></span>
+<span><span class="co">## At position 48 changing C to A </span></span>
+<span><span class="co">## At position 41 changing G to A </span></span>
+<span><span class="co">## At position 10 changing C to A </span></span>
 <span><span class="co">## At position 40 changing G to A </span></span>
-<span><span class="co">## At position 40 changing A to C </span></span>
-<span><span class="co">## At position 40 changing C to A </span></span>
-<span><span class="co">## At position 40 changing A to C </span></span>
-<span><span class="co">## At position 40 changing C to A </span></span>
-<span><span class="co">## At position 40 changing A to C </span></span>
-<span><span class="co">## At position 40 changing C to A </span></span>
-<span><span class="co">## At position 40 changing A to C </span></span>
-<span><span class="co">## At position 40 changing C to A </span></span>
-<span><span class="co">## At position 40 changing A to C </span></span>
-<span><span class="co">## At position 40 changing C to A </span></span>
-<span><span class="co">## At position 40 changing A to C </span></span>
-<span><span class="co">## At position 40 changing C to A </span></span>
-<span><span class="co">## At position 40 changing A to C</span></span></code></pre>
+<span><span class="co">## At position 37 changing G to A </span></span>
+<span><span class="co">## At position 42 changing G to A </span></span>
+<span><span class="co">## At position 35 changing C to A </span></span>
+<span><span class="co">## At position 6 changing G to A </span></span>
+<span><span class="co">## At position 36 changing C to A </span></span>
+<span><span class="co">## At position 45 changing C to A </span></span>
+<span><span class="co">## At position 13 changing G to A</span></span></code></pre>
 <div class="sourceCode" id="cb31"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">pred_df</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/do.call.html" class="external-link">do.call</a></span><span class="op">(</span><span class="va">rbind</span>, <span class="va">pred_list</span><span class="op">)</span></span>
 <span><span class="va">pred_df</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span><span class="va">pred_df</span>, iteration <span class="op">=</span> <span class="fl">0</span><span class="op">:</span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">nrow</a></span><span class="op">(</span><span class="va">pred_df</span><span class="op">)</span> <span class="op">-</span> <span class="fl">1</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">pred_df</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"high_gc"</span>, <span class="st">"equal_dist"</span>, <span class="st">"iteration"</span><span class="op">)</span></span>
-<span><span class="fu">ggplot</span><span class="op">(</span><span class="va">pred_df</span>, <span class="fu">aes</span><span class="op">(</span>x <span class="op">=</span> <span class="va">iteration</span>, y <span class="op">=</span> <span class="va">high_gc</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span> <span class="fu">geom_line</span><span class="op">(</span><span class="op">)</span> <span class="op">+</span> <span class="fu">ylab</span><span class="op">(</span><span class="st">"high GC confidence"</span><span class="op">)</span></span></code></pre></div>
+<span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html" class="external-link">ggplot</a></span><span class="op">(</span><span class="va">pred_df</span>, <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html" class="external-link">aes</a></span><span class="op">(</span>x <span class="op">=</span> <span class="va">iteration</span>, y <span class="op">=</span> <span class="va">high_gc</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_path.html" class="external-link">geom_line</a></span><span class="op">(</span><span class="op">)</span> <span class="op">+</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html" class="external-link">ylab</a></span><span class="op">(</span><span class="st">"high GC confidence"</span><span class="op">)</span></span></code></pre></div>
 <p><img src="integrated_gradient_files/figure-html/unnamed-chunk-13-1.png" width="700"></p>
 </div>
   </main><aside class="col-md-3"><nav id="toc"><h2>On this page</h2>
