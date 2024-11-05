@@ -486,7 +486,9 @@ train_model_cpc <-
               }
               ####~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Optimization step ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~####
               
-              with(tensorflow::tf$GradientTape() %as% tape, {
+              #with(tensorflow::tf$GradientTape() %as% tape, {
+              with(reticulate::`%as%`(tensorflow::tf$GradientTape(), tape), {
+                
                 out <-
                   modelstep(fastrain(),
                             model,

@@ -46,7 +46,7 @@ maxlencalc <- function(plen, nopatches, stride) {
 #' @noRd
 savechecks <- function(cp, runname, model, optimizer, history, path_checkpoint) {
   
-  np = import("numpy", convert = FALSE)
+  np = reticulate::import("numpy", convert = FALSE)
   ## define path for saved objects
   modpath <- file.path(path_checkpoint, runname, cp)
   ## save model object
@@ -129,7 +129,7 @@ ReadOpt <- function(pretrained_model) {
   optimizer <- tensorflow::tf$optimizers$Adam$from_config(optconf)
   # Initialize optimizer
   with(
-    backend()$name_scope(optimizer$`_name`),
+    keras::backend()$name_scope(optimizer$`_name`),
     with(tensorflow::tf$python$framework$ops$init_scope(), {
       optimizer$iterations
       optimizer$`_create_hypers`()

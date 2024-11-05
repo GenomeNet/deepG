@@ -121,6 +121,7 @@ integral_approximation <- function(gradients) {
 #' @param num_baseline_repeats Number of different baseline estimations if baseline_type is `"shuffle"` (estimate integrated
 #' gradient repeatedly for different shuffles). Final result is average of \code{num_baseline} single calculations.
 #' @examplesIf reticulate::py_module_available("tensorflow")
+#' library(reticulate)
 #' model <- create_model_lstm_cnn(layer_lstm = 8, layer_dense = 3, maxlen = 20, verbose = FALSE)
 #' random_seq <- sample(0:3, 20, replace = TRUE)
 #' input_seq <- array(keras::to_categorical(random_seq), dim = c(1, 20, 4))
@@ -290,6 +291,7 @@ gradients_stepwise <- function(model = model, baseline_seq, target_class_idx,
 #' @param input_seq Input sequence for model. Should be the same as \code{input_seq} input for corresponding
 #' \code{\link{integrated_gradients}} call that computed input for \code{integrated_grads} argument.
 #' @examplesIf reticulate::py_module_available("tensorflow")  && requireNamespace("ComplexHeatmap", quietly = TRUE)
+#' library(reticulate)
 #' model <- create_model_lstm_cnn(layer_lstm = 8, layer_dense = 3, maxlen = 20, verbose = FALSE)
 #' random_seq <- sample(0:3, 20, replace = TRUE)
 #' input_seq <- array(keras::to_categorical(random_seq), dim = c(1, 20, 4))

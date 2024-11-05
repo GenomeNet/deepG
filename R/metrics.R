@@ -304,7 +304,7 @@ cpcloss <- function(latents,
       target_dim <- ctx$shape[[3]]
       ctx_conv <-
         ctx %>% keras::layer_conv_1d(kernel_size = 1, filters = target_dim)
-      logits <- tf$zeros(list(0L,as.integer(batch_size*2)))
+      logits <- tensorflow::tf$zeros(list(0L,as.integer(batch_size*2)))
       for (j in seq_len(c_dim - (i + 1))) {
         basepos <- ctx_conv[, j,] %>% keras::k_reshape(c(-1, target_dim))
         targetpos <-

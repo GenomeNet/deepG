@@ -31,7 +31,7 @@ compile_model <- function(model, solver, learning_rate, loss_fn, label_smoothing
   
   #add metrics
   if (loss_fn == "binary_crossentropy") {
-    model_metrics <- c(tf$keras$metrics$BinaryAccuracy(name = "acc"))
+    model_metrics <- c(tensorflow::tf$keras$metrics$BinaryAccuracy(name = "acc"))
   } else if (loss_fn == "sparse_categorical_crossentropy") {
     model_metrics <- tensorflow::tf$keras$metrics$SparseCategoricalAccuracy(name = "acc")
   } else {
@@ -405,7 +405,7 @@ get_optimizer <- function(model) {
 #' @export
 reshape_input <- function(model, input_shape) {
   
-  in_layer <- layer_input(shape = input_shape)
+  in_layer <- keras::layer_input(shape = input_shape)
   for (i in 2:length(model$layers)) {
     layer_name <- model$layers[[i]]$name
     if (i == 2) {

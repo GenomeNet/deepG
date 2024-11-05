@@ -7,11 +7,8 @@
 #'
 #' For additional documentation on the deepG package see
 #' \href{https://genomenet.de}{https://genomenet.de}
-#'
-#' @import reticulate
+#' 
 #' @import keras
-#' @import tensorflow
-#' @import dplyr
 #'
 "_PACKAGE"
 
@@ -25,47 +22,31 @@
   h5_file <- hdf5r::H5File$new(temp_file, mode = "w")
   h5_file$close_all()
   file.remove(temp_file)
-  
+
   Sys.setenv(TF_CPP_MIN_LOG_LEVEL = 3)
-  
-  # # Set TensorFlow log level to suppress excessive logs
-  # if (!exists("tf_initialized", envir = .globals)) {
-  #   Sys.setenv(TF_CPP_MIN_LOG_LEVEL = 3)
-  #   if (reticulate::py_module_available("tensorflow")) {
-  #     .globals$tf_initialized <- TRUE
-  #     tensorflow::tf$constant(1)
-  #   } else {
-  #     .globals$tf_initialized <- FALSE
-  #   }
-  # }
-  
-  
-  # if (!exists("tf_initialized", envir = .globals)) {
-  #   Sys.setenv(TF_CPP_MIN_LOG_LEVEL = 3)
-  # 
-  #   tryCatch({
-  #     if (requireNamespace('tensorflow')) {
-  #       # Perform a minimal TensorFlow operation to ensure it's working
-  #       tensorflow::tf$constant(1)
-  #       .globals$tf_initialized <- TRUE  # Mark TensorFlow as initialized
-  #     }
-  # 
-  #   }, error = function(e) {
-  #     .globals$tf_initialized <- FALSE
-  #   })
-  # 
-  # }
-  
+
   return(NULL)
-  
+
 }
 
-.onAttach <- function(libname, pkgname) {
-  # Check if TensorFlow is available globally and store the result
-  tf_available <- reticulate::py_module_available("tensorflow")
-  
-  # if (!.globals$tf_available) {
-  #   packageStartupMessage("TensorFlow is not available. Some examples will be skipped.")
-  # }
-}
+# # Define a package-specific environment
+# deepG_env <- new.env(parent = emptyenv())
+#
+# check_tensorflow <- function() {
+#   # Check if TensorFlow availability has already been stored in the package environment
+#   if (!exists(".tensorflow_checked", envir = deepG_env)) {
+#     deepG_env$.tensorflow_checked <- reticulate::py_module_available("tensorflow")
+#   }
+#   return(deepG_env$.tensorflow_checked)
+# }
+
+# .onAttach <- function(libname, pkgname) {
+# 
+#   #requireNamespace('keras')
+# 
+#   #tf_available <- reticulate::py_module_available("tensorflow")
+#   # if (!.globals$tf_available) {
+#   #   packageStartupMessage("TensorFlow is not available. Some examples will be skipped.")
+#   # }
+# }
 

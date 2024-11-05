@@ -466,7 +466,6 @@ create_model_lstm_cnn <- function(
 }
 
 
-
 #' @title Create LSTM/CNN network to predict middle part of a sequence
 #'
 #' @description
