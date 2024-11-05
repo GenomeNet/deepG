@@ -22,6 +22,7 @@ position and each nucleotide. The last row contains nucleotide information.
 }
 \examples{
 \dontshow{if (reticulate::py_module_available("tensorflow")  && requireNamespace("ComplexHeatmap", quietly = TRUE)) (if (getRversion() >= "3.4") withAutoprint else force)(\{ # examplesIf}
+library(reticulate)
 model <- create_model_lstm_cnn(layer_lstm = 8, layer_dense = 3, maxlen = 20, verbose = FALSE)
 random_seq <- sample(0:3, 20, replace = TRUE)
 input_seq <- array(keras::to_categorical(random_seq), dim = c(1, 20, 4))

@@ -7,19 +7,14 @@ vignette: >
   %\VignetteEncoding{UTF-8}
 ---
   
-```{r, eval=FALSE, message=FALSE}
-# devtools::install_github("GenomeNet/deepG")
+```{r, message=FALSE}
 library(deepG)
 library(magrittr)
 library(ggplot2)
+library(reticulate)
 ```
 
 ```{r, echo=FALSE, warning=FALSE, message=FALSE}
-#devtools::load_all(path = "~/deepGdev")
-#devtools::install_github("GenomeNet/deepG")
-library(deepG)
-library(magrittr)
-library(ggplot2)
 
 if (!reticulate::py_module_available("tensorflow")) {
   knitr::opts_chunk$set(eval = FALSE)
