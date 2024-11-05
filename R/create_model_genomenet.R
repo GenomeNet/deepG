@@ -344,7 +344,7 @@ create_model_genomenet <- function(
   
   #add metrics
   if (loss_fn == "binary_crossentropy") {
-    model_metrics <- c(tf$keras$metrics$BinaryAccuracy(name = "acc"))
+    model_metrics <- c(tensorflow::tf$keras$metrics$BinaryAccuracy(name = "acc"))
   } else {
     model_metrics <- c("acc")
   } 
@@ -372,7 +372,7 @@ create_model_genomenet <- function(
   
   if (auc_metric) {
     auc <-
-      auc_wrapper(model_output_size = layer_dense[length(layer_dense)],
+      auc_wrapper(model_output_size = dense_layer_units[length(dense_layer_units)],
                   loss = loss_fn)
     model_metrics <- c(model_metrics, auc)
   }
