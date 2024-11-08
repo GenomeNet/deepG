@@ -129,7 +129,9 @@ Can be used to make single prediction for combination of multiple input sequence
 Implements approach as described \href{https://arxiv.org/abs/1703.06114}{here}
 }
 \examples{
-\dontshow{if (reticulate::py_module_available("tensorflow")) (if (getRversion() >= "3.4") withAutoprint else force)(\{ # examplesIf}
+
+\donttest{
+library(keras)
 create_model_lstm_cnn_multi_input(
   maxlen = 50,
   vocabulary_size = 4,
@@ -141,6 +143,5 @@ create_model_lstm_cnn_multi_input(
   layer_dense = c(64, 2),
   aggregation_method = c("max"),
   learning_rate = 0.001)
-  
-\dontshow{\}) # examplesIf}
+ }  
 }

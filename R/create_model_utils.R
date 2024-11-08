@@ -13,10 +13,11 @@ get_layer_names <- function(model) {
 #' @inheritParams create_model_lstm_cnn
 #' @param model A keras model.
 #' @examplesIf reticulate::py_module_available("tensorflow")
+#' 
 #' model <- create_model_lstm_cnn(layer_lstm = 8, compile = FALSE)
 #' model <- compile_model(model = model,
 #'                        solver = 'adam',
-#'                        learning_rate = 0.01,
+#'                       learning_rate = 0.01,
 #'                        loss_fn = 'categorical_crossentropy')
 #' 
 #' @returns A compiled keras model.
@@ -137,7 +138,9 @@ compile_model <- function(model, solver, learning_rate, loss_fn, label_smoothing
 #' @param verbose Whether to print chosen checkpoint path.
 #' @param loss Loss function. Only used if model gets compiled.
 #' @param margin Margin for contrastive loss, see \link{loss_cl}.
-#' @examplesIf reticulate::py_module_available("tensorflow")
+#' @examples
+#' \donttest{
+#' library(keras)
 #' model <- create_model_lstm_cnn(layer_lstm = 8)
 #' checkpoint_folder <- tempfile()
 #' dir.create(checkpoint_folder)
@@ -145,7 +148,7 @@ compile_model <- function(model, solver, learning_rate, loss_fn, label_smoothing
 #' keras::save_model_hdf5(model, file.path(checkpoint_folder, 'Ep.019-val_loss8.74-val_acc0.7.hdf5'))
 #' keras::save_model_hdf5(model, file.path(checkpoint_folder, 'Ep.025-val_loss0.03-val_acc0.8.hdf5'))
 #' model <- load_cp(cp_path = checkpoint_folder, cp_filter = "last_ep")
-#' 
+#' }
 #' @returns A keras model loaded from a checkpoint.
 #' @export
 load_cp <- function(cp_path, cp_filter = "last_ep", ep_index = NULL, compile = FALSE,

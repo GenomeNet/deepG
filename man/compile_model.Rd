@@ -54,10 +54,11 @@ Compile model
 }
 \examples{
 \dontshow{if (reticulate::py_module_available("tensorflow")) (if (getRversion() >= "3.4") withAutoprint else force)(\{ # examplesIf}
+
 model <- create_model_lstm_cnn(layer_lstm = 8, compile = FALSE)
 model <- compile_model(model = model,
                        solver = 'adam',
-                       learning_rate = 0.01,
+                      learning_rate = 0.01,
                        loss_fn = 'categorical_crossentropy')
 \dontshow{\}) # examplesIf}
 }

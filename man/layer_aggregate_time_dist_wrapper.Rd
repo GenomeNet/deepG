@@ -24,7 +24,8 @@ A keras layer applying pooling operation(s).
 Aggregate output of time distribution representations using sum, max and/or mean function.
 }
 \examples{
-\dontshow{if (reticulate::py_module_available("tensorflow")) (if (getRversion() >= "3.4") withAutoprint else force)(\{ # examplesIf}
+\donttest{
+library(keras)
 l <- layer_aggregate_time_dist_wrapper() 
-\dontshow{\}) # examplesIf}
+}
 }

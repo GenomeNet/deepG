@@ -10,6 +10,7 @@ vignette: >
 ```{r, message=FALSE}
 library(deepG)
 library(magrittr)
+library(keras)
 ```
 
 ```{r, echo=FALSE, warning=FALSE, message=FALSE}

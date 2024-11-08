@@ -8,7 +8,6 @@
 #' For additional documentation on the deepG package see
 #' \href{https://genomenet.de}{https://genomenet.de}
 #' 
-#' @import keras
 #'
 "_PACKAGE"
 
@@ -40,13 +39,13 @@
 #   return(deepG_env$.tensorflow_checked)
 # }
 
-# .onAttach <- function(libname, pkgname) {
-# 
-#   #requireNamespace('keras')
-# 
-#   #tf_available <- reticulate::py_module_available("tensorflow")
-#   # if (!.globals$tf_available) {
-#   #   packageStartupMessage("TensorFlow is not available. Some examples will be skipped.")
-#   # }
-# }
+.onAttach <- function(libname, pkgname) {
+  
+  #b <- reticulate::py_module_available("tensorflow")
+
+  #tf_available <- reticulate::py_module_available("tensorflow")
+  # if (!.globals$tf_available) {
+  #   packageStartupMessage("TensorFlow is not available. Some examples will be skipped.")
+  # }
+}
 

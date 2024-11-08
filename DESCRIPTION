@@ -40,9 +40,9 @@ Depends:
     R (>= 3.5.0)
 Imports:
     hdf5r,
+    keras,
     tensorflow,
     reticulate,
-    keras,
     data.table,
     abind,
     stringr,

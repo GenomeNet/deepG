@@ -46,7 +46,8 @@ A list of training metrics.
 Use information from model card to resume from the corresponding checkpoint using the same training arguments.
 }
 \examples{
-\dontshow{if (reticulate::py_module_available("tensorflow")) (if (getRversion() >= "3.4") withAutoprint else force)(\{ # examplesIf}
+\donttest{
+library(keras)
 # create dummy data and temp directories
 path_train_1 <- tempfile()
 path_train_2 <- tempfile()
@@ -86,5 +87,5 @@ hist <- train_model(train_type = "label_folder",
 
 # resume training
 resume_training_from_model_card(path_model_card = file.path(path_model_card, run_name))
-\dontshow{\}) # examplesIf}
+}
 }

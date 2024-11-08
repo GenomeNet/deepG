@@ -672,7 +672,9 @@ get_run_name <- function(run_name = NULL, path_tensorboard, path_checkpoint, pat
 #' If NULL, will use distributed mirrored strategy only if >1 GPU available.   
 #' @param unfreeze If `TRUE`, set trainable attribute of model to `TRUE` (unfreeze weights). 
 #' @param verbose Whether to print all training arguments. 
-#' @examplesIf reticulate::py_module_available("tensorflow")
+#' @examples
+#' \donttest{
+#' library(keras)
 #' # create dummy data and temp directories
 #' path_train_1 <- tempfile()
 #' path_train_2 <- tempfile()
@@ -712,7 +714,7 @@ get_run_name <- function(run_name = NULL, path_tensorboard, path_checkpoint, pat
 #' 
 #' # resume training
 #' resume_training_from_model_card(path_model_card = file.path(path_model_card, run_name))
-#' 
+#' }
 #' @returns A list of training metrics.  
 #' @export
 resume_training_from_model_card <- function(path_model_card,

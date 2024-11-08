@@ -55,7 +55,8 @@ Load checkpoint from directory. Chooses best checkpoint based on some condition.
 can be best accuracy, best loss, last epoch number or a specified epoch number.
 }
 \examples{
-\dontshow{if (reticulate::py_module_available("tensorflow")) (if (getRversion() >= "3.4") withAutoprint else force)(\{ # examplesIf}
+\donttest{
+library(keras)
 model <- create_model_lstm_cnn(layer_lstm = 8)
 checkpoint_folder <- tempfile()
 dir.create(checkpoint_folder)
@@ -63,5 +64,5 @@ keras::save_model_hdf5(model, file.path(checkpoint_folder, 'Ep.007-val_loss11.07
 keras::save_model_hdf5(model, file.path(checkpoint_folder, 'Ep.019-val_loss8.74-val_acc0.7.hdf5'))
 keras::save_model_hdf5(model, file.path(checkpoint_folder, 'Ep.025-val_loss0.03-val_acc0.8.hdf5'))
 model <- load_cp(cp_path = checkpoint_folder, cp_filter = "last_ep")
-\dontshow{\}) # examplesIf}
+}
 }

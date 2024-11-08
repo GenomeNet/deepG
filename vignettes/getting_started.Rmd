@@ -9,6 +9,7 @@ vignette: >
 
 ```{r, message=FALSE}
 library(deepG)
+library(keras)
 library(magrittr)
 library(ggplot2)
 ```

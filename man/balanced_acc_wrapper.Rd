@@ -30,9 +30,11 @@ y_pred <- c(0.9,0.1,0.2,0.1,
 
 cm_dir <- tempfile() 
 dir.create(cm_dir)
+\donttest{
 bal_acc_metric <- balanced_acc_wrapper(num_targets = 3L, cm_dir = cm_dir)
 bal_acc_metric$update_state(y_true, y_pred)
 bal_acc_metric$result()
 as.array(bal_acc_metric$cm)
+}
 \dontshow{\}) # examplesIf}
 }

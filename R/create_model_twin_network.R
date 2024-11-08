@@ -9,7 +9,9 @@
 #' @param metrics Vector or list of metrics.
 #' @inheritParams create_model_lstm_cnn
 #' @inheritParams create_model_lstm_cnn_multi_input
-#' @examplesIf reticulate::py_module_available("tensorflow")
+#' @examples
+#' \donttest{
+#' library(keras)
 #' model <- create_model_twin_network(
 #'   maxlen = 50,
 #'   layer_dense = 16,
@@ -17,7 +19,7 @@
 #'   filters = 4,
 #'   pool_size = 3,
 #'   learning_rate = 0.001)
-#'   
+#' }   
 #' @returns A keras model implementing twin network architecture.   
 #' @export
 create_model_twin_network <- function(

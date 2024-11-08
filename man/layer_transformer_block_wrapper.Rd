@@ -37,7 +37,8 @@ A keras layer implementing a transformer block.
 Create transformer block. Consists of self attention, dense layers, layer normalization, recurrent connection and dropout.
 }
 \examples{
-\dontshow{if (reticulate::py_module_available("tensorflow")) (if (getRversion() >= "3.4") withAutoprint else force)(\{ # examplesIf}
+\donttest{
+library(keras)
 l <- layer_transformer_block_wrapper()
-\dontshow{\}) # examplesIf}
+}
 }

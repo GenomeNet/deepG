@@ -28,7 +28,8 @@ A keras layer implementing positional embedding.
 Positional encoding layer with learned embedding.
 }
 \examples{
-\dontshow{if (reticulate::py_module_available("tensorflow")) (if (getRversion() >= "3.4") withAutoprint else force)(\{ # examplesIf}
+\donttest{
+library(keras)
 l <- layer_pos_embedding_wrapper()
-\dontshow{\}) # examplesIf}
+}
 }
