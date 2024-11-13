@@ -27,7 +27,7 @@
 #' model <- create_model_transformer(maxlen = maxlen,
 #'                                   head_size=c(10,12),
 #'                                   num_heads=c(7,8),
-#'                                   ff_dim=c(5,9), 
+#'                                   ff_dim=c(5,9),
 #'                                   dropout=c(0.3, 0.5))
 #' }
 #' @returns A keras model implementing transformer architecture.
