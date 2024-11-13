@@ -10,6 +10,7 @@
 #' 
 #' y_true <- c(1,0,0,1,1,0,1,0,0)  
 #' y_pred <-  c(0.9,0.05,0.05,0.9,0.05,0.05,0.9,0.05,0.05) 
+#' \donttest{
 #' f1_metric <- f1_wrapper(3L, "binary_crossentropy")
 #' f1_metric$update_state(y_true, y_pred)
 #' f1_metric$result()  
@@ -29,7 +30,7 @@
 #' model %>% keras::compile(loss = model$loss, 
 #'                          optimizer = model$optimizer,
 #'                          metrics = c(model$metrics, f1_metric))
-#'                    
+#' }                    
 #' @returns A keras metric.                          
 #' @export
 f1_wrapper <- function(num_targets = 2, loss = "binary_crossentropy") {
