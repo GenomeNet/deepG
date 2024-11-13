@@ -145,11 +145,14 @@ is equivalent to \link{create_model_lstm_cnn_multi_input} but instead of multipl
 input here in one 4D tensor.
 }
 \examples{
+\dontshow{if (reticulate::py_module_available("tensorflow")) (if (getRversion() >= "3.4") withAutoprint else force)(\{ # examplesIf}
 
+# Examples needs keras attached to run 
+maxlen <- 50
 \donttest{
 library(keras)
 create_model_lstm_cnn_time_dist(
-  maxlen = 50,
+  maxlen = maxlen,
   vocabulary_size = 4,
   samples_per_target = 7,
   kernel_size = c(10, 10),
@@ -160,4 +163,6 @@ create_model_lstm_cnn_time_dist(
   layer_dense = c(64, 2),
   learning_rate = 0.001)
  }
+ 
+\dontshow{\}) # examplesIf}
 }
