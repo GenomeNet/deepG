@@ -9,11 +9,13 @@
 #' @param metrics Vector or list of metrics.
 #' @inheritParams create_model_lstm_cnn
 #' @inheritParams create_model_lstm_cnn_multi_input
-#' @examples
+#' @examplesIf reticulate::py_module_available("tensorflow")
+#' 
+#' maxlen <- 50
 #' \donttest{
 #' library(keras)
 #' model <- create_model_twin_network(
-#'   maxlen = 50,
+#'   maxlen = maxlen,
 #'   layer_dense = 16,
 #'   kernel_size = 12,
 #'   filters = 4,

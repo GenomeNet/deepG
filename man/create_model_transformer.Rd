@@ -102,9 +102,11 @@ A keras model implementing transformer architecture.
 Creates transformer network for classification. Model can consist of several stacked attention blocks.
 }
 \examples{
+
+maxlen <- 50
 \donttest{
 library(keras)
-model <- create_model_transformer(maxlen = 50,
+model <- create_model_transformer(maxlen = maxlen,
                                   head_size=c(10,12),
                                   num_heads=c(7,8),
                                   ff_dim=c(5,9), 

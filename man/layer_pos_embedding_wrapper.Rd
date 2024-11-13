@@ -28,6 +28,7 @@ A keras layer implementing positional embedding.
 Positional encoding layer with learned embedding.
 }
 \examples{
+
 \donttest{
 library(keras)
 l <- layer_pos_embedding_wrapper()

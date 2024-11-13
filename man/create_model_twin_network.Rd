@@ -114,14 +114,18 @@ between embeddings of inputs.
 Implements approach as described \href{https://keras.io/examples/vision/siamese_contrastive/}{here}.
 }
 \examples{
+\dontshow{if (reticulate::py_module_available("tensorflow")) (if (getRversion() >= "3.4") withAutoprint else force)(\{ # examplesIf}
+
+maxlen <- 50
 \donttest{
 library(keras)
 model <- create_model_twin_network(
-  maxlen = 50,
+  maxlen = maxlen,
   layer_dense = 16,
   kernel_size = 12,
   filters = 4,
   pool_size = 3,
   learning_rate = 0.001)
 }   
+\dontshow{\}) # examplesIf}
 }

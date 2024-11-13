@@ -31,6 +31,7 @@ A keras layer implementing positional encoding using sine/cosine waves.
 Positional encoding layer with sine/cosine matrix of different frequencies.
 }
 \examples{
+
 \donttest{
 library(keras)
 l <- layer_pos_sinusoid_wrapper() 

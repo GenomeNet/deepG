@@ -6,6 +6,7 @@
 #' @param method At least one of the options, `"sum", "max"` or `"mean"`.
 #' @param multi_in Whether to aggregate for a model with multiple inputs (and shared weights).
 #' @examples
+#' 
 #' \donttest{
 #' library(keras)
 #' l <- layer_aggregate_time_dist_wrapper() 
@@ -69,6 +70,7 @@ layer_aggregate_time_dist_wrapper <- function(load_r6 = FALSE, method = "sum", m
 #' @inheritParams create_model_transformer
 #' @param load_r6 Whether to load the R6 layer class.
 #' @examples
+#' 
 #' \donttest{
 #' library(keras)
 #' l <- layer_pos_embedding_wrapper()
@@ -127,6 +129,7 @@ layer_pos_embedding_wrapper <- function(maxlen = 100, vocabulary_size = 4, load_
 #' @inheritParams create_model_transformer
 #' @param load_r6 Whether to load the R6 layer class.
 #' @examples
+#' 
 #' \donttest{
 #' library(keras)
 #' l <- layer_pos_sinusoid_wrapper() 
@@ -191,6 +194,7 @@ layer_pos_sinusoid_wrapper <- function(maxlen = 100, vocabulary_size = 4, n = 10
 #' @param dropout_rate Rate to randomly drop out connections.
 #' @param load_r6 Whether to return the layer class.
 #' @examples
+#' 
 #' \donttest{
 #' library(keras)
 #' l <- layer_transformer_block_wrapper()

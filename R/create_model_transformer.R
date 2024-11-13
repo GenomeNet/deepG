@@ -20,9 +20,11 @@
 #' `_ch_first` / `_ch_last` to decide along which axis. `"both_ch_first"` / `"both_ch_last"` to use max and average together. `"all"` to use all 4 
 #' global pooling options together. If `"flatten"`, will flatten output after last attention block. If `"none"` no flattening applied.
 #' @examples
+#' 
+#' maxlen <- 50
 #' \donttest{
 #' library(keras)
-#' model <- create_model_transformer(maxlen = 50,
+#' model <- create_model_transformer(maxlen = maxlen,
 #'                                   head_size=c(10,12),
 #'                                   num_heads=c(7,8),
 #'                                   ff_dim=c(5,9), 

@@ -37,6 +37,7 @@ A keras layer implementing a transformer block.
 Create transformer block. Consists of self attention, dense layers, layer normalization, recurrent connection and dropout.
 }
 \examples{
+
 \donttest{
 library(keras)
 l <- layer_transformer_block_wrapper()

@@ -24,6 +24,7 @@ A keras layer applying pooling operation(s).
 Aggregate output of time distribution representations using sum, max and/or mean function.
 }
 \examples{
+
 \donttest{
 library(keras)
 l <- layer_aggregate_time_dist_wrapper() 
