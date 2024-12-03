@@ -11,6 +11,7 @@
 #' y_true <- c(1,0,0,1,1,0,1,0,0)  
 #' y_pred <-  c(0.9,0.05,0.05,0.9,0.05,0.05,0.9,0.05,0.05) 
 #' \donttest{
+#' library(keras)
 #' f1_metric <- f1_wrapper(3L, "binary_crossentropy")
 #' f1_metric$update_state(y_true, y_pred)
 #' f1_metric$result()  
@@ -204,6 +205,7 @@ balanced_acc_wrapper <- function(num_targets, cm_dir) {
 #' y_pred <- c(0.9,0.05,0.05,0.9,0.05,0.05,0.9,0.05,0.05) %>% matrix(ncol = 3)
 #' 
 #' \donttest{
+#' library(keras)
 #' auc_metric <- auc_wrapper(3L, "binary_crossentropy")
 #' 
 #' auc_metric$update_state(y_true, y_pred)
