@@ -6,14 +6,6 @@ vignette: >
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
-  
-```{r, message=FALSE}
-library(deepG)
-library(keras)
-library(magrittr)
-library(ggplot2)
-library(reticulate)
-```
 
 ```{r, echo=FALSE, warning=FALSE, message=FALSE}
 
@@ -23,6 +15,15 @@ if (!reticulate::py_module_available("tensorflow")) {
   knitr::opts_chunk$set(eval = TRUE)
 }
 ```
+  
+```{r, message=FALSE}
+library(deepG)
+library(keras)
+library(magrittr)
+library(ggplot2)
+library(reticulate)
+```
+
 
 ```{r, echo=FALSE, warning=FALSE, message=FALSE}
 options(rmarkdown.html_vignette.check_title = FALSE)

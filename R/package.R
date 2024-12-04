@@ -41,7 +41,7 @@
 
 .onAttach <- function(libname, pkgname) {
   
-  tf_available <- reticulate::py_module_available("tensorflow")
+  #tf_available <- reticulate::py_module_available("tensorflow")
 
   # if (!.globals$tf_available) {
   #   packageStartupMessage("TensorFlow is not available. Some examples will be skipped.")
