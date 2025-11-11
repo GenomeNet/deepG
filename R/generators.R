@@ -3,9 +3,9 @@
 #' For a detailed description see the data generator [tutorial](https://deepg.de/articles/data_generator.html).
 #' Will choose one of the generators from \code{\link{generator_fasta_lm}}, 
 #' \code{\link{generator_fasta_label_folder}}, \code{\link{generator_fasta_label_header_csv}}, 
-#' \code{\link{generator_rds}}, \code{\link{generator_random}}, \code{\link{generator_dummy}} or 
-#' \code{\link{generator_fasta_lm}} according to the \code{train_type} and \code{random_sampling}
-#' arguments.
+#' \code{\link{generator_rds}}, \code{\link{generator_random}}, \code{\link{generator_dummy}},
+#' \code{\link{make_pair_generator}} or \code{\link{generator_fasta_lm}} according to the 
+#' \code{train_type} and \code{random_sampling} arguments.
 #'
 #' @inheritParams train_model
 #' @inheritParams generator_fasta_lm
@@ -93,6 +93,26 @@ get_generator <- function(path = NULL,
   
   if (train_type %in% c("label_rds", "lm_rds") & format != "rds") {
     warning(paste("train_type is", train_type, "but format is not 'rds'"))
+  }
+  
+  if (train_type == "pair_stream") {
+    if (random_sampling) {
+      stop("random_sampling is not supported for train_type = 'pair_stream'")
+    }
+    required_names <- c("pairs_file", "xmap_file")
+    if (!is.list(path) || is.null(names(path)) || !all(required_names %in% names(path))) {
+      stop("For train_type = 'pair_stream', path must be a named list with entries ",
+           paste(required_names, collapse = ", "))
+    }
+    seed_val <- if (is.null(seed)) NULL else seed[1]
+    gen <- make_pair_generator(
+      pairs_file = path[["pairs_file"]],
+      xmap_file = path[["xmap_file"]],
+      batch_size = batch_size,
+      shuffle = shuffle_input,
+      seed = seed_val
+    )
+    return(gen)
   }
   
   # adjust batch size

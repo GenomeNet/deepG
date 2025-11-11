@@ -10,7 +10,8 @@
 #' @inheritParams generator_fasta_label_folder
 #' @inheritParams generator_fasta_label_header_csv
 #' @inheritParams get_generator 
-#' @param train_type Either `"lm"`, `"lm_rds"`, `"masked_lm"` for language model; `"label_header"`, `"label_folder"`, `"label_csv"`, `"label_rds"` for classification or `"dummy_gen"`.
+#' @param train_type Either `"lm"`, `"lm_rds"`, `"masked_lm"` for language model; `"label_header"`, `"label_folder"`, `"label_csv"`, `"label_rds"` for classification, `"pair_stream"` for
+#'   siamese training on metadata/X-map pairs, or `"dummy_gen"`.
 #' \itemize{
 #' \item Language model is trained to predict character(s) in a sequence. \cr
 #' \item `"label_header"`/`"label_folder"`/`"label_csv"` are trained to predict a corresponding class given a sequence as input.
@@ -27,13 +28,16 @@
 #' with multiple inputs. 
 #' \item If `"lm_rds"`, generator will iterate over set of .rds files and will split tensor according to `target_len` argument
 #' (targets are last `target_len` nucleotides of each sequence). 
+#' \item If `"pair_stream"`, generator will use `make_pair_generator()` to stream sequence pairs/labels defined by metadata
+#'   (see `?make_pair_generator`). In this case `path` must be a named list with entries `pairs_file` and `xmap_file`.
 #' \item  If `"dummy_gen"`, generator creates random data once and repeatedly feeds these to model.
 #' \item  If `"masked_lm"`, generator maskes some parts of the input. See `masked_lm` argument for details.
 #' }
 #' @param model A keras model.
 #' @param path Path to training data. If \code{train_type} is \code{label_folder}, should be a vector or list
-#' where each entry corresponds to a class (list elements can be directories and/or individual files). If \code{train_type} is not \code{label_folder}, 
-#' can be a single directory or file or a list of directories and/or files.
+#' where each entry corresponds to a class (list elements can be directories and/or individual files). If \code{train_type} is \code{pair_stream}, supply a named list
+#' with entries `pairs_file` (path to metadata produced by `build_pair_metadata()`) and `xmap_file` (path to the one-hot lookup table). For other train types,
+#' \code{path} can be a single directory or file or a list of directories and/or files.
 #' @param path_val Path to validation data. See `path` argument for details.
 #' @param dataset List of training data holding training samples in RAM instead of using generator. Should be list with two entries called `"X"` and `"Y"`.
 #' @param dataset_val List of validation data. Should have two entries called `"X"` and `"Y"`.
@@ -256,7 +260,7 @@ train_model <- function(model = NULL,
   if (train_type != "label_csv") target_from_csv <- NULL
   
   if (train_with_gen) {
-    stopifnot(train_type %in% c("lm", "label_header", "label_folder", "label_csv", "label_rds", "lm_rds", "dummy_gen", "masked_lm"))
+    stopifnot(train_type %in% c("lm", "label_header", "label_folder", "label_csv", "label_rds", "lm_rds", "dummy_gen", "masked_lm", "pair_stream"))
     stopifnot(ambiguous_nuc %in% c("zero", "equal", "discard", "empirical"))
     stopifnot(length(vocabulary) == length(unique(vocabulary)))
     stopifnot(length(vocabulary_label) == length(unique(vocabulary_label)))
@@ -454,6 +458,8 @@ train_model <- function(model = NULL,
       gen.val <- NULL
     }
     
+  } else if (is.null(path_val)){
+    gen.val <- NULL
   }
   
   # skip validation callback
@@ -747,7 +753,7 @@ resume_training_from_model_card <- function(path_model_card,
   } else {
     new_train_args$run_name <- new_run_name
   }
-
+  
   # overwrite args
   if (is.null(seed)) seed <- get_seed()
   new_train_args$seed <- seed
