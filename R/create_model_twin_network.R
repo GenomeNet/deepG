@@ -53,7 +53,8 @@ create_model_twin_network <- function(
     metrics = "acc",
     model_seed = NULL,
     mixed_precision = FALSE,
-    mirrored_strategy = NULL) {
+    mirrored_strategy = NULL,
+    multi_output = NULL) {
   
   if (mixed_precision) tensorflow::tf$keras$mixed_precision$set_global_policy("mixed_float16")
   
@@ -137,7 +138,26 @@ create_model_twin_network <- function(
   }
   
   outputs <- outputs %>% keras::layer_batch_normalization(momentum = batch_norm_momentum)
-  outputs <- outputs %>% keras::layer_dense(units = 1, activation = last_layer_activation, dtype = "float32")
+  
+  
+  if (is.null(multi_output)) {
+    outputs <-
+      outputs %>% keras::layer_dense(units = 1,
+                                     activation = last_layer_activation,
+                                     dtype = "float32")
+  } else {
+    # Generate multiple outputs
+    outputs <- lapply(1:multi_output, function(x) {
+      outputs %>%
+        keras::layer_dense(
+          units = 1,
+          activation = last_layer_activation,
+          dtype = "float32",
+          name = paste0("output_", x)
+        )
+    })
+  }
+  
   model <- keras::keras_model(inputs = list(input_1, input_2), outputs = outputs)
   
   if (compile) {
