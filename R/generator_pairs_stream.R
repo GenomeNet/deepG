@@ -5,7 +5,9 @@
 #' later consumed by \code{make_pair_generator()} and keeps storage demands low
 #' because it omits the one-hot encoded tensors.
 #'
-#' @param cc3_file Path to the RDS file that maps sequence ids to GO terms.
+#' @param go_terms_file Either a character string path to an RDS file that maps
+#'   sequence ids to GO terms, or a named list where each element contains GO
+#'   terms for the corresponding sequence id.
 #' @param output_file Destination for the resulting table. Defaults to
 #'   \code{/vol/projects/BIFO/genomenet/twin_data/rds/CC/pairs_CC_YYYYMMDD.rds}.
 #'   The file extension determines the format (\code{rds} or \code{csv}).
@@ -18,28 +20,47 @@
 #' @param verbose Whether to emit progress messages.
 #'
 #' @examplesIf FALSE
+#' # Using a file path
 #' pairs_df <- build_pair_metadata(
-#'   cc3_file = "/vol/projects/BIFO/genomenet/twin_data/preprocessed/GO_CC_transposed.rds",
+#'   go_terms_file = "/vol/projects/BIFO/genomenet/twin_data/preprocessed/GO_CC_transposed.rds",
 #'   max_pairs = 1e5,
 #'   seed = 123
 #' )
 #' head(pairs_df)
+#' 
+#' # Using an in-memory list
+#' go_terms_list <- list(
+#'   seq1 = c("GO:0005737", "GO:0005634"),
+#'   seq2 = c("GO:0005737", "GO:0008150"),
+#'   seq3 = c("GO:0003674")
+#' )
+#' pairs_df2 <- build_pair_metadata(
+#'   go_terms_file = go_terms_list,
+#'   max_pairs = 10
+#' )
 #'
 #' @returns Invisibly returns the in-memory data frame (mainly for testing).
 #' @export
-build_pair_metadata <- function(cc3_file,
+build_pair_metadata <- function(go_terms_file,
                                 output_file = NULL,
                                 seq_id_filter = NULL,
                                 max_pairs = 2e6,
                                 seed = 42,
                                 verbose = TRUE) {
-  if (!file.exists(cc3_file)) {
-    stop("cc3_file does not exist: ", cc3_file)
+  # Handle both file path and in-memory object
+  if (is.character(go_terms_file)) {
+    if (!file.exists(go_terms_file)) {
+      stop("go_terms_file does not exist: ", go_terms_file)
+    }
+    cc3 <- readRDS(go_terms_file)
+  } else if (is.list(go_terms_file)) {
+    cc3 <- go_terms_file
+  } else {
+    stop("go_terms_file must be either a character string (file path) or a named list.")
   }
   
-  cc3 <- readRDS(cc3_file)
   if (!is.list(cc3) || is.null(names(cc3))) {
-    stop("cc3 must be a named list where each element contains GO terms.")
+    stop("go_terms_file must be a named list where each element contains GO terms.")
   }
   
   if (!is.null(seq_id_filter)) {
@@ -129,7 +150,7 @@ build_pair_metadata <- function(cc3_file,
         seq_id2[idx] <- seq_ids[j]
         labels[idx] <- as.integer(shared_term(i, j))
         if (verbose && idx %% 100000 == 0L) {
-          message("Sampled ", format(idx, big.mark = ","), " pairs...")
+          message(Sys.time(), "Sampled ", format(idx, big.mark = ","), " pairs...")
         }
       }
     }
